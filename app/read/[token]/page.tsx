@@ -31,5 +31,6 @@ export default async function ReadPage({
     .from("documents")
     .createSignedUrl(doc.storage_path, 3600);
 
-  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} />;
+  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} />;
 }
+
