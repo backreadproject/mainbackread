@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const INK = "#1A1D21", PAPER = "#F7F6F3", SURFACE = "#FFFFFF", READER = "#2F4A3F", MARK = "#C4442E", GRAPHITE = "#8A8778", RULE = "#E4E2DB";
-const VOICE = "'Newsreader', Georgia, serif", SANS = "'Inter Tight', system-ui, sans-serif", MONO = "'IBM Plex Mono', monospace";
+const VOICE = "'Aeonik', Arial, sans-serif", SANS = "'Aeonik', Arial, sans-serif", MONO = "'Aeonik', Arial, sans-serif";
 
 type Msg = { role: "user" | "doc"; text: string };
 
@@ -124,7 +124,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
 
   return (
     <div style={{ minHeight: "100vh", background: PAPER, fontFamily: SANS, color: INK }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter+Tight:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+      <style>{`
         .br-ask{transition:opacity .15s}.br-ask:hover{opacity:.82}
         .br-in2{outline:none;transition:border-color .15s}.br-in2:focus{border-color:${INK}}`}</style>
 
@@ -151,7 +151,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
         </div>
 
         <main>
-          {status && <p style={{ fontFamily: VOICE, fontStyle: "italic", fontSize: 16, color: GRAPHITE, textAlign: "center", padding: 48 }}>{status}</p>}
+          {status && <p style={{ fontFamily: VOICE, fontStyle: "normal", fontSize: 16, color: GRAPHITE, textAlign: "center", padding: 48 }}>{status}</p>}
           <div ref={containerRef} />
           {pageCount > 0 && <p style={{ ...mono, textAlign: "center", padding: "16px 0" }}>{pageCount} page{pageCount > 1 ? "s" : ""}</p>}
         </main>

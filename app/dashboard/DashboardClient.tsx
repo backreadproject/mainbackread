@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const INK = "#1A1D21", PAPER = "#F7F6F3", SURFACE = "#FFFFFF", READER = "#2F4A3F", MARK = "#C4442E", GRAPHITE = "#8A8778", RULE = "#E4E2DB";
-const VOICE = "'Newsreader', Georgia, serif", SANS = "'Inter Tight', system-ui, sans-serif", MONO = "'IBM Plex Mono', monospace";
+const VOICE = "'Aeonik', Arial, sans-serif", SANS = "'Aeonik', Arial, sans-serif", MONO = "'Aeonik', Arial, sans-serif";
 
 type Doc = { id: string; title: string; page_count: number; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -66,7 +66,7 @@ export default function DashboardClient({ email, documents }: { email: string; d
 
   return (
     <div style={{ minHeight: "100vh", background: PAPER, fontFamily: SANS, color: INK }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&family=Inter+Tight:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+      <style>{`
         .br-doc{transition:border-color .15s}.br-doc:hover{border-color:${RULE}}
         .br-btn{transition:opacity .15s,transform .1s;cursor:pointer}.br-btn:hover{opacity:.82}.br-btn:active{transform:translateY(1px)}
         .br-up{transition:border-color .15s,background .15s}.br-up:hover{border-color:${INK};background:#fff}`}</style>
@@ -100,7 +100,7 @@ export default function DashboardClient({ email, documents }: { email: string; d
 
         {documents.length === 0 ? (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
-            <p style={{ fontFamily: VOICE, fontStyle: "italic", fontSize: 18, color: GRAPHITE }}>Nothing sent yet. The first upload starts the record.</p>
+            <p style={{ fontFamily: VOICE, fontStyle: "normal", fontSize: 18, color: GRAPHITE }}>Nothing sent yet. The first upload starts the record.</p>
           </div>
         ) : (
           documents.map((d, i) => (

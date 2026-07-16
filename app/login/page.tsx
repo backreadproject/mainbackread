@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const INK = "#1A1D21", PAPER = "#F7F6F3", READER = "#2F4A3F", MARK = "#C4442E", GRAPHITE = "#8A8778", RULE = "#E4E2DB";
-const VOICE = "'Newsreader', Georgia, serif", SANS = "'Inter Tight', system-ui, sans-serif", MONO = "'IBM Plex Mono', monospace";
+const VOICE = "'Aeonik', Arial, sans-serif", SANS = "'Aeonik', Arial, sans-serif", MONO = "'Aeonik', Arial, sans-serif";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: PAPER, display: "grid", gridTemplateColumns: "1.1fr 0.9fr", fontFamily: SANS, color: INK }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=Inter+Tight:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+      <style>{`
         .br-in{width:100%;padding:12px 14px;border:1px solid ${RULE};border-radius:2px;font-size:15px;font-family:${SANS};background:#fff;box-sizing:border-box;outline:none;transition:border-color .15s}
         .br-in:focus{border-color:${INK}}
         .br-sub{transition:opacity .15s}.br-sub:hover{opacity:.6}
@@ -44,7 +44,7 @@ export default function LoginPage() {
           <p style={{ fontFamily: VOICE, fontWeight: 300, fontSize: 44, lineHeight: 1.15, letterSpacing: "-0.02em", margin: 0 }}>
             Every document you send is a conversation you're not in the room for.
           </p>
-          <p style={{ fontFamily: VOICE, fontStyle: "italic", fontWeight: 300, fontSize: 22, lineHeight: 1.4, margin: "24px 0 0", color: "#C9C7BF" }}>
+          <p style={{ fontFamily: VOICE, fontStyle: "normal", fontWeight: 300, fontSize: 22, lineHeight: 1.4, margin: "24px 0 0", color: "#C9C7BF" }}>
             BackRead puts you in the room.
           </p>
         </div>
