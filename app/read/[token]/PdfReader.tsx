@@ -9,6 +9,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
   const [status, setStatus] = useState("Loading document...");
   const [pageCount, setPageCount] = useState(0);
   const renderedRef = useRef(false);
+  const docText = useRef<string>("");
 
   const currentPage = useRef<number | null>(null);
   const enteredAt = useRef<number>(0);
@@ -42,7 +43,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
     try {
       const res = await fetch("/api/ask-live", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token, question: q, currentPage: currentPage.current ?? 1 }),
+        body: JSON.stringify({ token, question: q, currentPage: currentPage.current ?? 1, documentText: docText.current }),
       });
       const json = await res.json();
       setThread((t) => [...t, { role: "doc", text: json.answer ?? json.error ?? "No answer." }]);
@@ -70,6 +71,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
         const container = containerRef.current;
         if (!container) return;
         const wrappers: HTMLDivElement[] = [];
+        const textParts: string[] = [];
 
         for (let n = 1; n <= pdf.numPages; n++) {
           const page = await pdf.getPage(n);
@@ -85,7 +87,14 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
           wrappers.push(wrapper);
           const ctx = canvas.getContext("2d");
           if (ctx) await page.render({ canvasContext: ctx, viewport }).promise;
+
+          // Extract this page's text for the Ask companion.
+          const tc = await page.getTextContent();
+          const pageText = tc.items.map((it) => ("str" in it ? it.str : "")).join(" ");
+          textParts.push(`[Page ${n}]\n${pageText}`);
         }
+
+        docText.current = textParts.join("\n\n").slice(0, 20000); // cap for safety
 
         const observer = new IntersectionObserver((entries) => {
           const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -138,7 +147,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
           </div>
           <div style={{ borderTop: "1px solid #D3D6DA", padding: 12, display: "flex", gap: 8 }}>
             <input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()}
-              placeholder="Is the annual commit negotiable?"
+              placeholder="Ask about the document..."
               style={{ flex: 1, minWidth: 0, border: "1px solid #D3D6DA", borderRadius: 4, padding: "9px 11px", fontSize: 14 }} />
             <button onClick={ask} style={{ background: "#DCF24B", border: "1px solid #15171C", borderRadius: 4, padding: "0 16px", fontSize: 13, fontWeight: 500, cursor: "pointer" }}>Ask</button>
           </div>

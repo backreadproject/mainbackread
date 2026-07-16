@@ -4,9 +4,8 @@ import { runAI, askTask } from "@/lib/ai";
 
 export const runtime = "nodejs";
 
-// Reader-facing. Anonymous (no login) - the share token is the only credential.
 export async function POST(req: NextRequest) {
-  const { token, question, currentPage } = await req.json();
+  const { token, question, currentPage, documentText } = await req.json();
 
   if (typeof question !== "string" || !question.trim()) {
     return NextResponse.json({ error: "Ask a question." }, { status: 400 });
@@ -28,17 +27,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "This link has expired." }, { status: 404 });
   }
 
-  // Run the guarded ask task. (Document text is title-only for now; grounded
-  // answers arrive once PDF text extraction is added. Guardrails work today.)
+  // Use the real extracted text if provided; fall back to title.
+  const text = typeof documentText === "string" && documentText.trim().length > 0
+    ? documentText
+    : doc.title;
+
   const { data } = await runAI(askTask, {
-    documentText: doc.title,
+    documentText: text,
     documentTitle: doc.title,
     question: question.trim(),
     currentPage: Number(currentPage) || 1,
   });
 
-  // THE KEY STEP: the question becomes a signal. This is the strongest signal
-  // the verdict engine has - stated intent, not inferred from dwell.
   await admin.from("signals").insert({
     recipient_id: recipient.id,
     kind: "question",
