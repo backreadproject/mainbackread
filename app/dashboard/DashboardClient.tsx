@@ -8,6 +8,8 @@ type Doc = { id: string; title: string; page_count: number; created_at: string }
 export default function DashboardClient({ email, documents }: { email: string; documents: Doc[] }) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [links, setLinks] = useState<Record<string, string>>({});
+  const [busyId, setBusyId] = useState("");
 
   async function signOut() {
     const supabase = createClient();
@@ -30,7 +32,6 @@ export default function DashboardClient({ email, documents }: { email: string; d
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setError("Not signed in."); setUploading(false); return; }
 
-    // Path: {user_id}/{timestamp}-{filename} — matches the storage RLS policy.
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const path = `${user.id}/${Date.now()}-${safeName}`;
 
@@ -46,6 +47,28 @@ export default function DashboardClient({ email, documents }: { email: string; d
     if (dbErr) { setError("Saved file but could not record it: " + dbErr.message); setUploading(false); return; }
 
     window.location.reload();
+  }
+
+  async function createLink(documentId: string) {
+    setBusyId(documentId);
+    setError("");
+    const supabase = createClient();
+
+    const { data, error: insErr } = await supabase
+      .from("recipients")
+      .insert({ document_id: documentId, label: "Shared link" })
+      .select("share_token")
+      .single();
+
+    if (insErr || !data) {
+      setError("Could not create link: " + (insErr?.message ?? "unknown"));
+      setBusyId("");
+      return;
+    }
+
+    const url = `${window.location.origin}/read/${data.share_token}`;
+    setLinks((prev) => ({ ...prev, [documentId]: url }));
+    setBusyId("");
   }
 
   return (
@@ -77,9 +100,31 @@ export default function DashboardClient({ email, documents }: { email: string; d
           <p style={{ fontSize: 14, color: "#6E7480", textAlign: "center" }}>No documents yet.</p>
         ) : (
           documents.map((d) => (
-            <div key={d.id} style={{ background: "#fff", border: "1px solid #D3D6DA", borderRadius: 6, padding: 16, marginBottom: 10, display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontWeight: 500 }}>{d.title}</span>
-              <span style={{ fontSize: 13, color: "#6E7480" }}>{new Date(d.created_at).toLocaleDateString()}</span>
+            <div key={d.id} style={{ background: "#fff", border: "1px solid #D3D6DA", borderRadius: 6, padding: 16, marginBottom: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontWeight: 500 }}>{d.title}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 13, color: "#6E7480" }}>{new Date(d.created_at).toLocaleDateString()}</span>
+                  <button
+                    onClick={() => createLink(d.id)}
+                    disabled={busyId === d.id}
+                    style={{ background: "#15171C", color: "#fff", border: "none", borderRadius: 4, padding: "6px 12px", fontSize: 13, cursor: "pointer", opacity: busyId === d.id ? 0.5 : 1 }}
+                  >
+                    {busyId === d.id ? "..." : "Create share link"}
+                  </button>
+                </div>
+              </div>
+              {links[d.id] && (
+                <div style={{ marginTop: 12, padding: "10px 12px", background: "#E9EAEC", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+                  <code style={{ fontSize: 12, wordBreak: "break-all" }}>{links[d.id]}</code>
+                  <button
+                    onClick={() => navigator.clipboard.writeText(links[d.id])}
+                    style={{ background: "#fff", border: "1px solid #D3D6DA", borderRadius: 4, padding: "5px 10px", fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}
+                  >
+                    Copy
+                  </button>
+                </div>
+              )}
             </div>
           ))
         )}
