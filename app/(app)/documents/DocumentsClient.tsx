@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", BLUE_SOFT = "#EAF0FF", SLATE = "#64748B", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN_BG = "#E7F7EF", GREEN = "#059669", RED = "#DC2626";
-const AEON = "'Moderat', 'Inter', sans-serif";
+const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", SLATE = "#475569", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN_BG = "#E7F7EF", GREEN = "#059669", RED = "#DC2626";
+const AEON = "var(--font-geist-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Doc = { id: string; title: string; page_count: number; created_at: string };
@@ -37,10 +37,10 @@ export default function DocumentsClient({ documents }: { documents: Doc[] }) {
         .fx-cta{transition:box-shadow .15s,transform .1s;cursor:pointer}.fx-cta:hover{box-shadow:0 6px 18px rgba(45,107,255,0.32)}.fx-cta:active{transform:translateY(1px)}
         .fx-up{transition:border-color .15s,background .15s}.fx-up:hover{border-color:${BLUE};background:#fff}`}</style>
 
-      <main style={{ maxWidth: 820, padding: "40px 40px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
+      <main style={{ maxWidth: 680, padding: "28px 36px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Documents</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Documents</h1>
             <p style={{ fontSize: 14, color: SLATE, margin: 0 }}>Share a tracked link and watch how it's read.</p>
           </div>
           <label className="fx-cta" style={{ background: BLUE, color: "#fff", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 400, cursor: uploading ? "default" : "pointer", boxShadow: "0 4px 12px rgba(45,107,255,0.25)", whiteSpace: "nowrap" }}>
@@ -65,7 +65,7 @@ export default function DocumentsClient({ documents }: { documents: Doc[] }) {
             <a key={d.id} href={`/documents/${d.id}`} className="fx-card" style={{ background: CARD, borderRadius: 14, padding: "18px 20px", marginBottom: 14, boxShadow: SHADOW }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 11, background: BLUE_SOFT, color: BLUE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 11, background: BLUE, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3h8l4 4v14H5z M13 3v4h4" /></svg>
                   </div>
                   <div style={{ minWidth: 0 }}>

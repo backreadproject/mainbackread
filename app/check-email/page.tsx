@@ -1,5 +1,5 @@
-const INK="#0B1220",CANVAS="#F4F6FA",CARD="#FFFFFF",BLUE="#2D6BFF",SLATE="#64748B",BLUE_SOFT="#EAF0FF";
-const INTER="'Moderat', 'Inter', sans-serif";
+const INK="#0A0E17",CANVAS="#FBFBFA",CARD="#FFFFFF",BLUE="#1D4ED8",SLATE="#475569",BLUE_SOFT="#EAF0FF";
+const INTER="var(--font-geist-sans), system-ui, sans-serif";
 export default function CheckEmailPage(){
   return (<div style={{minHeight:"100vh",background:CANVAS,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:INTER,color:INK,padding:40}}>
     <div style={{width:380,background:CARD,borderRadius:16,padding:36,boxShadow:"0 1px 3px rgba(11,18,32,0.04), 0 12px 40px rgba(11,18,32,0.08)",textAlign:"center"}}>

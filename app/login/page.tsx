@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", BLUE_DEEP = "#1B47B8", SLATE = "#64748B", LINE = "#E7EBF2", RED = "#DC2626", GREEN = "#10B981";
-const AEON = "'Moderat', 'Inter', sans-serif";
+const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_DEEP = "#1B47B8", SLATE = "#475569", LINE = "#E7EBF2", RED = "#DC2626", GREEN = "#10B981";
+const AEON = "var(--font-geist-sans), system-ui, sans-serif";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -37,7 +37,7 @@ export default function LoginPage() {
         @media(max-width:820px){.fx-hero{display:none!important}}`}</style>
 
       <div className="fx-hero" style={{ background: `linear-gradient(150deg, ${BLUE} 0%, ${BLUE_DEEP} 100%)`, color: "#fff", padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
-        <div style={{ fontSize: 21, fontWeight: 500, letterSpacing: "-0.01em" }}>BackRead</div>
+        <div style={{ fontSize: 21, fontWeight: 600, letterSpacing: "-0.01em" }}>BackRead</div>
         <div style={{ position: "relative", zIndex: 2 }}>
           <p style={{ fontSize: 38, fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0 }}>Every document you send is a conversation you're not in the room for.</p>
           <p style={{ fontSize: 19, lineHeight: 1.5, margin: "20px 0 0", color: "rgba(255,255,255,0.82)" }}>BackRead puts you in the room.</p>
@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
         <div style={{ width: 348, background: CARD, borderRadius: 16, padding: 32, boxShadow: "0 1px 3px rgba(11,18,32,0.04), 0 12px 40px rgba(11,18,32,0.08)" }}>
-          <h1 style={{ fontSize: 24, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{mode === "signin" ? "Sign in" : "Create your account"}</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{mode === "signin" ? "Sign in" : "Create your account"}</h1>
           <p style={{ fontSize: 14, color: SLATE, margin: "0 0 24px" }}>{mode === "signin" ? "Pick up where your readers left off." : "Start reading your readers back."}</p>
 
           <span style={label}>Email</span>

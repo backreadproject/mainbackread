@@ -1,8 +1,8 @@
 "use client";
 import { useState, useMemo } from "react";
 
-const INK="#0B1220",CANVAS="#F4F6FA",CARD="#FFFFFF",BLUE="#2D6BFF",SLATE="#64748B",MUTE="#94A3B8",LINE="#E7EBF2",GREEN="#059669",GREEN_BG="#E7F7EF",RED="#DC2626";
-const INTER="'Moderat', 'Inter', sans-serif";
+const INK="#0A0E17",CANVAS="#FBFBFA",CARD="#FFFFFF",BLUE="#1D4ED8",SLATE="#475569",MUTE="#94A3B8",LINE="#E7EBF2",GREEN="#059669",GREEN_BG="#E7F7EF",RED="#DC2626";
+const INTER="var(--font-geist-sans), system-ui, sans-serif";
 const SHADOW="0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Sig={kind:string;page:number|null;value:unknown;created_at:string};

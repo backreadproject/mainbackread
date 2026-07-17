@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", SLATE = "#64748B", LINE = "#E7EBF2", GREEN = "#059669", RED = "#DC2626";
-const INTER = "'Moderat', 'Inter', sans-serif";
+const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", SLATE = "#475569", LINE = "#E7EBF2", GREEN = "#059669", RED = "#DC2626";
+const INTER = "var(--font-geist-sans), system-ui, sans-serif";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -32,21 +32,21 @@ export default function ForgotPasswordPage() {
       <div style={{ width: 360, background: CARD, borderRadius: 16, padding: 32, boxShadow: "0 1px 3px rgba(11,18,32,0.04), 0 12px 40px rgba(11,18,32,0.08)" }}>
         {sent ? (
           <>
-            <h1 style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 8px" }}>Check your inbox</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 8px" }}>Check your inbox</h1>
             <p style={{ fontSize: 14, color: SLATE, lineHeight: 1.5, margin: "0 0 20px" }}>If an account exists for {email}, a reset link is on its way. The link opens a page where you set a new password.</p>
-            <a href="/login" className="fx-link" style={{ fontSize: 14, color: BLUE, textDecoration: "none", fontWeight: 500 }}>Back to sign in</a>
+            <a href="/login" className="fx-link" style={{ fontSize: 14, color: BLUE, textDecoration: "none", fontWeight: 400 }}>Back to sign in</a>
           </>
         ) : (
           <>
-            <h1 style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Reset your password</h1>
+            <h1 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Reset your password</h1>
             <p style={{ fontSize: 14, color: SLATE, margin: "0 0 22px" }}>We'll email you a link to set a new one.</p>
             <input className="fx-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 18 }} />
-            <button onClick={submit} disabled={busy || !email} className="fx-cta" style={{ width: "100%", padding: 13, background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 500, fontFamily: INTER, cursor: busy ? "default" : "pointer", opacity: busy || !email ? 0.5 : 1, boxShadow: "0 4px 12px rgba(45,107,255,0.25)", transition: "box-shadow .15s" }}>
+            <button onClick={submit} disabled={busy || !email} className="fx-cta" style={{ width: "100%", padding: 13, background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 400, fontFamily: INTER, cursor: busy ? "default" : "pointer", opacity: busy || !email ? 0.5 : 1, boxShadow: "0 4px 12px rgba(45,107,255,0.25)", transition: "box-shadow .15s" }}>
               {busy ? "Sending…" : "Send reset link"}
             </button>
             {msg && <p style={{ fontSize: 13, color: RED, marginTop: 14 }}>{msg}</p>}
             <p style={{ fontSize: 13, color: SLATE, marginTop: 22, textAlign: "center" }}>
-              Remembered it? <a href="/login" className="fx-link" style={{ color: BLUE, textDecoration: "none", fontWeight: 500 }}>Sign in</a>
+              Remembered it? <a href="/login" className="fx-link" style={{ color: BLUE, textDecoration: "none", fontWeight: 400 }}>Sign in</a>
             </p>
           </>
         )}

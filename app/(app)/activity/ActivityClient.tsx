@@ -1,11 +1,11 @@
 "use client";
-const INK="#0B1220",CARD="#FFFFFF",BLUE="#2D6BFF",SLATE="#64748B",MUTE="#94A3B8",LINE="#E7EBF2";
-const INTER="'Moderat', 'Inter', sans-serif";
+const INK="#0A0E17",CARD="#FFFFFF",BLUE="#1D4ED8",SLATE="#475569",MUTE="#94A3B8",LINE="#E7EBF2";
+const INTER="var(--font-geist-sans), system-ui, sans-serif";
 const SHADOW="0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 function ago(iso:string){const s=Math.floor((Date.now()-new Date(iso).getTime())/1000);if(s<60)return"just now";if(s<3600)return`${Math.floor(s/60)}m ago`;if(s<86400)return`${Math.floor(s/3600)}h ago`;return`${Math.floor(s/86400)}d ago`;}
 export default function ActivityClient({events}:{events:{text:string;at:string;docId?:string}[]}){
   return (<div style={{fontFamily:INTER,color:INK,minHeight:"100vh"}}>
-    <main style={{maxWidth:720,padding:"40px 40px"}}>
+    <main style={{maxWidth:680,padding:"28px 36px"}}>
       <h1 style={{fontSize:26,fontWeight:500,letterSpacing:"-0.015em",margin:"0 0 4px"}}>Activity</h1>
       <p style={{fontSize:14,color:SLATE,margin:"0 0 24px"}}>Everything your readers have done, newest first.</p>
       {events.length===0?(

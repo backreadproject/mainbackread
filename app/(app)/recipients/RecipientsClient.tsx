@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 
-const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", SLATE = "#64748B", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN = "#059669", GREEN_BG = "#E7F7EF";
-const INTER = "'Moderat', 'Inter', sans-serif";
+const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", SLATE = "#475569", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN = "#059669", GREEN_BG = "#E7F7EF";
+const INTER = "var(--font-geist-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Row = { id: string; label: string | null; documentId: string; documentTitle: string; createdAt: string; opened: boolean; questions: number };
@@ -23,7 +23,7 @@ export default function RecipientsClient({ rows }: { rows: Row[] }) {
       <main style={{ maxWidth: 900, padding: "40px 40px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Recipients</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Recipients</h1>
             <p style={{ fontSize: 14, color: SLATE, margin: 0 }}>Everyone you've shared a document with.</p>
           </div>
           <input className="fx-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or document"
@@ -36,14 +36,14 @@ export default function RecipientsClient({ rows }: { rows: Row[] }) {
           </div>
         ) : (
           <div style={{ background: CARD, borderRadius: 14, overflow: "hidden", boxShadow: SHADOW }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1.4fr 0.8fr 0.6fr", gap: 16, padding: "12px 20px", borderBottom: `1px solid ${LINE}`, fontSize: 12, fontWeight: 500, color: MUTE, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1.4fr 0.8fr 0.6fr", gap: 16, padding: "12px 20px", borderBottom: `1px solid ${LINE}`, fontSize: 12, fontWeight: 400, color: MUTE, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               <span>Reader</span><span>Document</span><span>Status</span><span style={{ textAlign: "right" }}>Questions</span>
             </div>
             {filtered.map((r) => (
-              <a key={r.id} href={`/documents/${r.documentId}`} className="fx-row" style={{ display: "grid", gridTemplateColumns: "1.4fr 1.4fr 0.8fr 0.6fr", gap: 16, padding: "16px 20px", borderBottom: `1px solid ${LINE}`, alignItems: "center" }}>
-                <span style={{ fontSize: 15, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
+              <a key={r.id} href={`/recipients/${r.id}`} className="fx-row" style={{ display: "grid", gridTemplateColumns: "1.4fr 1.4fr 0.8fr 0.6fr", gap: 16, padding: "16px 20px", borderBottom: `1px solid ${LINE}`, alignItems: "center" }}>
+                <span style={{ fontSize: 15, fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
                 <span style={{ fontSize: 14, color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
-                <span><span style={{ fontSize: 11, fontWeight: 500, padding: "3px 10px", borderRadius: 20, background: r.opened ? GREEN_BG : "#F1F5F9", color: r.opened ? GREEN : SLATE }}>{r.opened ? "Opened" : "New"}</span></span>
+                <span><span style={{ fontSize: 11, fontWeight: 400, padding: "3px 10px", borderRadius: 20, background: r.opened ? GREEN_BG : "#F1F5F9", color: r.opened ? GREEN : SLATE }}>{r.opened ? "Opened" : "New"}</span></span>
                 <span style={{ fontSize: 14, color: r.questions > 0 ? INK : MUTE, textAlign: "right", fontWeight: r.questions > 0 ? 500 : 400 }}>{r.questions}</span>
               </a>
             ))}

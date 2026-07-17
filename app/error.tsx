@@ -1,6 +1,6 @@
 "use client";
-const INK="#0B1220",CANVAS="#F4F6FA",BLUE="#2D6BFF",SLATE="#64748B";
-const INTER="'Moderat', 'Inter', sans-serif";
+const INK="#0A0E17",CANVAS="#FBFBFA",BLUE="#1D4ED8",SLATE="#475569";
+const INTER="var(--font-geist-sans), system-ui, sans-serif";
 export default function Error({ reset }: { error: Error; reset: () => void }){
   return (<div style={{minHeight:"100vh",background:CANVAS,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:INTER,color:INK,padding:40,textAlign:"center"}}>
     <h1 style={{fontSize:30,fontWeight:500,letterSpacing:"-0.02em",margin:"0 0 10px"}}>Something went wrong.</h1>

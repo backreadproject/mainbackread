@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", BLUE_SOFT = "#EAF0FF", SLATE = "#64748B", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN = "#059669", GREEN_BG = "#E7F7EF", RED = "#DC2626";
-const AEON = "'Moderat', 'Inter', sans-serif";
+const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", SLATE = "#475569", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN = "#059669", GREEN_BG = "#E7F7EF", RED = "#DC2626";
+const AEON = "var(--font-geist-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Doc = { id: string; title: string; created_at: string };
@@ -61,14 +61,14 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
   return (
     <div style={{ fontFamily: AEON, color: INK, minHeight: "100vh" }}>
       <style>{`.fx-b{transition:box-shadow .15s,transform .1s;cursor:pointer}.fx-b:hover{opacity:.9}.fx-b:active{transform:translateY(1px)}
-        .fx-rec{transition:background .12s;cursor:pointer}.fx-rec:hover{background:#F4F6FA}.fx-in:focus{border-color:${BLUE}}`}</style>
+        .fx-rec{transition:background .12s;cursor:pointer}.fx-rec:hover{background:#FBFBFA}.fx-in:focus{border-color:${BLUE}}`}</style>
 
       <div style={{ padding: "28px 40px 0" }}>
         <a href="/documents" style={{ fontSize: 13, color: SLATE, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M15 6l-6 6 6 6" /></svg>
           Documents
         </a>
-        <h1 style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{doc.title}</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{doc.title}</h1>
         <p style={{ fontSize: 14, color: SLATE, margin: 0 }}>{recs.length} recipient{recs.length === 1 ? "" : "s"}</p>
       </div>
 
@@ -115,7 +115,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                    <h2 style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.01em", margin: 0 }}>{sel.label || "Unnamed reader"}</h2>
+                    <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.01em", margin: 0 }}>{sel.label || "Unnamed reader"}</h2>
                     <button onClick={() => { setEditing(sel.id); setNameDraft(sel.label || ""); }} className="fx-b" style={{ fontSize: 13, color: BLUE, fontWeight: 400, background: "none", border: "none", cursor: "pointer", fontFamily: AEON }}>Rename</button>
                   </div>
                 )}
@@ -165,7 +165,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                         <span style={{ fontSize: 12, fontWeight: 400, color: SLATE }}>Reading</span>
                         <span style={{ fontSize: 11, fontWeight: 400, padding: "3px 10px", borderRadius: 20, background: verdicts[sel.id].confidence === "high" ? GREEN_BG : "#F1F5F9", color: verdicts[sel.id].confidence === "high" ? GREEN : SLATE }}>{verdicts[sel.id].confidence} confidence</span>
                       </div>
-                      <p style={{ fontSize: 20, fontWeight: 500, lineHeight: 1.3, letterSpacing: "-0.01em", margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
+                      <p style={{ fontSize: 20, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em", margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
                       <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.6, margin: "0 0 14px" }}>{verdicts[sel.id].reasoning}</p>
                       <div style={{ background: "#fff", borderRadius: 10, padding: "12px 14px" }}>
                         <div style={{ fontSize: 12, fontWeight: 400, color: BLUE, marginBottom: 3 }}>Do this next</div>
