@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -10,7 +10,7 @@ type Msg = { role: "user" | "doc"; text: string };
 
 export default function PdfReader({ title, fileUrl, token }: { title: string; fileUrl: string; token: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState("Opening document…");
+  const [status, setStatus] = useState("Opening documentâ€¦");
   const [pageCount, setPageCount] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const renderedRef = useRef(false);
@@ -82,7 +82,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
           container.appendChild(wrapper);
           wrappers.push(wrapper);
           const ctx = canvas.getContext("2d");
-          if (ctx) await page.render({ canvasContext: ctx, viewport }).promise;
+          if (ctx) await page.render({ canvas, canvasContext: ctx, viewport }).promise;
           const tc = await page.getTextContent();
           textParts.push(`[Page ${n}]\n` + tc.items.map((it) => ("str" in it ? it.str : "")).join(" "));
         }
@@ -148,11 +148,11 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
                 <div style={{ fontSize: 14, lineHeight: 1.55, background: m.role === "user" ? CANVAS : BLUE_SOFT, borderRadius: 10, padding: "10px 12px", color: m.role === "doc" ? "#1E3A8A" : INK }}>{m.text}</div>
               </div>
             ))}
-            {asking && <div style={{ fontSize: 13, color: SLATE }}>reading…</div>}
+            {asking && <div style={{ fontSize: 13, color: SLATE }}>readingâ€¦</div>}
             <div ref={threadEnd} />
           </div>
           <div style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 8 }}>
-            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="Ask about the document…"
+            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="Ask about the documentâ€¦"
               style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: AEON, background: "#fff", outline: "none" }} />
             <button onClick={ask} className="fx-ask" style={{ background: BLUE, color: "#fff", border: "none", borderRadius: 10, padding: "0 18px", fontSize: 14, fontWeight: 400, fontFamily: AEON, cursor: "pointer" }}>Ask</button>
           </div>
@@ -161,3 +161,4 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
     </div>
   );
 }
+
