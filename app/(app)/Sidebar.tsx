@@ -8,6 +8,7 @@ const AEON = "'Moderat', 'Inter', sans-serif";
 
 const NAV = [
   { href: "/documents", label: "Documents", d: "M5 3h8l4 4v14H5z M13 3v4h4" },
+  { href: "/activity", label: "Activity", d: "M3 12h4l3 8 4-16 3 8h4" },
   { href: "/recipients", label: "Recipients", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6" },
   { href: "/settings", label: "Settings", d: "M12 15a3 3 0 100-6 3 3 0 000 6z M19.4 13a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-2.7 1.1V21a2 2 0 11-4 0v-.2a1.6 1.6 0 00-2.7-1.1l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00-1.1-2.7H3a2 2 0 110-4h.2A1.6 1.6 0 004.3 6l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H9a1.6 1.6 0 001-1.5V3a2 2 0 114 0v.2a1.6 1.6 0 002.7 1.1l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.4 1.8z" },
   { href: "/account", label: "Account", d: "M12 12a4 4 0 100-8 4 4 0 000 8z M4 21a8 8 0 0116 0" },

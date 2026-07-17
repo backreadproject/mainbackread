@@ -60,6 +60,9 @@ export default function LoginPage() {
           <span style={label}>Password</span>
           <input className="fx-in" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 22 }} />
 
+          <div style={{ textAlign: "right", marginBottom: 16, marginTop: -8 }}>
+            <a href="/forgot-password" style={{ fontSize: 13, color: SLATE, textDecoration: "none" }}>Forgot password?</a>
+          </div>
           <button onClick={submit} disabled={busy || !email || !password} className="fx-cta"
             style={{ width: "100%", padding: 13, background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 400, fontFamily: AEON, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.5 : 1, boxShadow: "0 4px 12px rgba(45,107,255,0.25)" }}>
             {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
