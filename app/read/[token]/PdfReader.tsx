@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", GREEN = "#10B981", SLATE = "#475569", LINE = "#E7EBF2";
-const AEON = "var(--font-geist-sans), system-ui, sans-serif";
+const AEON = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Msg = { role: "user" | "doc"; text: string };
@@ -145,7 +145,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
             {thread.map((m, i) => (
               <div key={i} style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 11, fontWeight: 400, color: m.role === "user" ? SLATE : BLUE, marginBottom: 5 }}>{m.role === "user" ? "You" : "The document"}</div>
-                <div style={{ fontSize: 14, lineHeight: 1.55, background: m.role === "user" ? CANVAS : BLUE_SOFT, borderRadius: 10, padding: "10px 12px", color: m.role === "doc" ? "#1E3A8A" : INK }}>{m.text}</div>
+                <div style={{ fontSize: 14, lineHeight: 1.48, background: m.role === "user" ? CANVAS : BLUE_SOFT, borderRadius: 10, padding: "10px 12px", color: m.role === "doc" ? "#1E3A8A" : INK }}>{m.text}</div>
               </div>
             ))}
             {asking && <div style={{ fontSize: 13, color: SLATE }}>reading…</div>}

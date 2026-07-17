@@ -1,5 +1,5 @@
 const NIGHT = "#070B14", INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", GREEN = "#10B981", GREEN_BG = "#E7F7EF", SLATE = "#475569", MUTE = "#94A3B8", LINE = "#E7EBF2", CLOUD = "rgba(255,255,255,0.72)";
-const INTER = "var(--font-geist-sans), system-ui, sans-serif";
+const INTER = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 export default function LandingPage() {
@@ -69,10 +69,10 @@ export default function LandingPage() {
           <h2 style={{ fontSize: 40, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 24px" }}>
             You hit send, and the document goes dark.
           </h2>
-          <p style={{ fontSize: 19, color: SLATE, lineHeight: 1.6, margin: "0 0 20px" }}>
+          <p style={{ fontSize: 19, color: SLATE, lineHeight: 1.5, margin: "0 0 20px" }}>
             The most important conversation about your company happens in a room you're not in. A prospect forwards your deck to their CFO. An investor re-reads your pricing three times and says nothing. Someone gets stuck on slide 7 and quietly closes the tab.
           </p>
-          <p style={{ fontSize: 19, color: SLATE, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: 19, color: SLATE, lineHeight: 1.5, margin: 0 }}>
             You get none of it. A read receipt, maybe. A heatmap, if you're lucky — which tells you where the eyes went, and leaves you to guess what the mind did. So you follow up blind, at the wrong time, about the wrong thing. <span style={{ color: INK, fontWeight: 400 }}>BackRead ends the guessing.</span>
           </p>
         </div>
@@ -83,10 +83,10 @@ export default function LandingPage() {
           <div>
             <p style={eyebrow}>Ask BackRead</p>
             <h2 style={{ fontSize: 34, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>The document that answers their questions</h2>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: "0 0 16px" }}>
               Your reader opens the deck and finds a reader beside them. They ask what they were too polite to email — and get an answer, grounded only in your material, in your voice, inside the limits you set.
             </p>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: 0 }}>
               A heatmap is a guess at interest. A question <span style={{ color: INK, fontWeight: 400 }}>is</span> interest — and every one lands in your inbox as a signal.
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function LandingPage() {
               <span style={{ fontSize: 11, fontWeight: 400, padding: "3px 10px", borderRadius: 20, background: GREEN_BG, color: "#059669" }}>high confidence</span>
             </div>
             <p style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.3, letterSpacing: "-0.01em", margin: "0 0 12px" }}>Pricing is the blocker — not the product.</p>
-            <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.6, margin: "0 0 16px" }}>She's convinced by the traction and stuck on the annual commit. Finance is already involved.</p>
+            <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.5, margin: "0 0 16px" }}>She's convinced by the traction and stuck on the annual commit. Finance is already involved.</p>
             <div style={{ background: CANVAS, borderRadius: 10, padding: "12px 14px" }}>
               <div style={{ fontSize: 12, fontWeight: 400, color: BLUE, marginBottom: 3 }}>Do this next</div>
               <p style={{ fontSize: 15, fontWeight: 400, margin: 0 }}>Send commercial terms addressing the commit — not another call.</p>
@@ -115,10 +115,10 @@ export default function LandingPage() {
           <div>
             <p style={eyebrow}>Read the reader</p>
             <h2 style={{ fontSize: 34, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>It doesn't send you charts. It sends you a verdict.</h2>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: "0 0 16px" }}>
               Dwell, scroll-backs, re-opens, forwards, questions asked — BackRead fuses every signal into a read of the deal, not the document.
             </p>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: 0 }}>
               You shouldn't have to be an analyst to read your own deck. The chart is the receipt. The verdict is the product.
             </p>
           </div>
@@ -130,10 +130,10 @@ export default function LandingPage() {
           <div>
             <p style={eyebrow}>Your deck learns</p>
             <h2 style={{ fontSize: 34, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 16px" }}>Every send makes the next one sharper</h2>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: "0 0 16px" }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: "0 0 16px" }}>
               BackRead sees where readers stall, skim, and quietly give up — across every send, every recipient. Then it proposes the fix.
             </p>
-            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 17, color: SLATE, lineHeight: 1.5, margin: 0 }}>
               You approve. It ships. Your deck gets better while you sleep — and nothing changes without your say-so.
             </p>
           </div>
@@ -160,7 +160,7 @@ export default function LandingPage() {
               <div key={s.n} className="lp-card" style={{ background: CARD, borderRadius: 16, padding: 26, boxShadow: SHADOW }}>
                 <div style={{ fontSize: 13, fontWeight: 400, color: BLUE, marginBottom: 14 }}>{s.n}</div>
                 <h3 style={{ fontSize: 19, fontWeight: 400, letterSpacing: "-0.01em", margin: "0 0 8px" }}>{s.t}</h3>
-                <p style={{ fontSize: 15, color: SLATE, lineHeight: 1.6, margin: 0 }}>{s.b}</p>
+                <p style={{ fontSize: 15, color: SLATE, lineHeight: 1.5, margin: 0 }}>{s.b}</p>
               </div>
             ))}
           </div>
@@ -173,7 +173,7 @@ export default function LandingPage() {
           <h2 style={{ fontSize: 38, fontWeight: 400, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 20px" }}>
             Everyone else measures attention. We capture intent.
           </h2>
-          <p style={{ fontSize: 19, color: CLOUD, lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: 19, color: CLOUD, lineHeight: 1.5, margin: 0 }}>
             Page views and time-on-slide are a proxy — they tell you where the eyes went and leave you to guess the rest. The moment a document can answer questions, the guessing ends: the reader tells you the objection, and BackRead tells you what to do about it. That's a capability a dashboard structurally cannot have.
           </p>
         </div>
@@ -194,7 +194,7 @@ export default function LandingPage() {
             ].map((u) => (
               <div key={u.t} style={{ background: CARD, borderRadius: 14, padding: 22, boxShadow: SHADOW }}>
                 <h3 style={{ fontSize: 16, fontWeight: 400, margin: "0 0 6px" }}>{u.t}</h3>
-                <p style={{ fontSize: 14, color: SLATE, lineHeight: 1.55, margin: 0 }}>{u.b}</p>
+                <p style={{ fontSize: 14, color: SLATE, lineHeight: 1.48, margin: 0 }}>{u.b}</p>
               </div>
             ))}
           </div>

@@ -1,2 +1,2 @@
-import { redirect } from "next/navigation";
-export default function DashboardRedirect() { redirect("/documents"); }
+﻿import { redirect } from "next/navigation";
+export default function DashboardRedirect() { redirect("/overview"); }

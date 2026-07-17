@@ -1,82 +1,43 @@
-"use client";
-
+﻿"use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
-const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_DEEP = "#1B47B8", SLATE = "#475569", LINE = "#E7EBF2", RED = "#DC2626", GREEN = "#10B981";
-const AEON = "var(--font-geist-sans), system-ui, sans-serif";
-
+import { T } from "@/lib/theme";
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [msg, setMsg] = useState("");
-  const [busy, setBusy] = useState(false);
-
+  const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
   async function submit() {
     setBusy(true); setMsg("");
     const supabase = createClient();
-    if (mode === "signup") {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) setMsg(error.message); else window.location.href = "/documents";
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMsg(error.message); else window.location.href = "/documents";
-    }
+    if (mode === "signup") { const { error } = await supabase.auth.signUp({ email, password }); if (error) setMsg(error.message); else window.location.href = "/overview"; }
+    else { const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setMsg(error.message); else window.location.href = "/overview"; }
     setBusy(false);
   }
-
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 14px", fontSize: 15, fontFamily: AEON, background: "#fff", outline: "none" };
-  const label = { fontSize: 13, fontWeight: 400, color: SLATE, display: "block", marginBottom: 7 };
-
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 15, fontFamily: T.font, background: "#fff" };
+  const label = { fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 7 };
   return (
-    <div style={{ minHeight: "100vh", background: CANVAS, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", fontFamily: AEON, color: INK }}>
-      <style>{`.fx-in:focus{border-color:${BLUE}}
-        .fx-cta{transition:box-shadow .15s,transform .1s}.fx-cta:hover{box-shadow:0 8px 22px rgba(45,107,255,0.35)}.fx-cta:active{transform:translateY(1px)}
-        .fx-link{transition:opacity .15s}.fx-link:hover{opacity:.7}
-        @media(max-width:820px){.fx-hero{display:none!important}}`}</style>
-
-      <div className="fx-hero" style={{ background: `linear-gradient(150deg, ${BLUE} 0%, ${BLUE_DEEP} 100%)`, color: "#fff", padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
-        <div style={{ fontSize: 21, fontWeight: 600, letterSpacing: "-0.01em" }}>BackRead</div>
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <p style={{ fontSize: 38, fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0 }}>Every document you send is a conversation you're not in the room for.</p>
-          <p style={{ fontSize: 19, lineHeight: 1.5, margin: "20px 0 0", color: "rgba(255,255,255,0.82)" }}>BackRead puts you in the room.</p>
+    <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
+      <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-cta:hover{background:${T.greenHover}}.t-link:hover{opacity:.7}@media(max-width:820px){.t-hero{display:none!important}}`}</style>
+      <div className="t-hero" style={{ background: T.sidebarGradient, color: "#fff", padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ color: T.brandGreen, fontSize: 20 }}>â—‰</span><span style={{ fontSize: 20, fontWeight: 700, letterSpacing: T.trackingTight }}>BackRead</span></div>
+        <div>
+          <h1 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: 0 }}>Every document reaches.<br /><span style={{ color: T.brandGreen }}>Every reader, understood.</span></h1>
+          <p style={{ fontSize: 18, lineHeight: 1.5, margin: "20px 0 0", color: "rgba(255,255,255,0.72)" }}>Send a document that answers questions, watches how it's read, and tells you what to do next.</p>
         </div>
-        <svg width="100%" height="70" style={{ position: "absolute", left: 0, bottom: 100, opacity: 0.4 }} aria-hidden="true">
-          <defs><linearGradient id="rt" x1="0" x2="1"><stop offset="0" stopColor="#fff" stopOpacity="0" /><stop offset="0.5" stopColor="#fff" /><stop offset="1" stopColor={GREEN} stopOpacity="0.5" /></linearGradient></defs>
-          <path d="M60 36 Q 200 10, 320 36 T 620 30" stroke="url(#rt)" strokeWidth="2.5" fill="none" />
-          <circle cx="320" cy="36" r="4" fill="#fff" />
-        </svg>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", position: "relative", zIndex: 2 }}>The document reads the reader.</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>The document reads the reader.</div>
       </div>
-
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-        <div style={{ width: 348, background: CARD, borderRadius: 16, padding: 32, boxShadow: "0 1px 3px rgba(11,18,32,0.04), 0 12px 40px rgba(11,18,32,0.08)" }}>
-          <h1 style={{ fontSize: 24, fontWeight: 600, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{mode === "signin" ? "Sign in" : "Create your account"}</h1>
-          <p style={{ fontSize: 14, color: SLATE, margin: "0 0 24px" }}>{mode === "signin" ? "Pick up where your readers left off." : "Start reading your readers back."}</p>
-
-          <span style={label}>Email</span>
-          <input className="fx-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: T.canvas }}>
+        <div style={{ width: 356, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
+          <h1 style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+          <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
+          <span style={label}>Work email</span>
+          <input className="t-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
           <span style={label}>Password</span>
-          <input className="fx-in" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 22 }} />
-
-          <div style={{ textAlign: "right", marginBottom: 16, marginTop: -8 }}>
-            <a href="/forgot-password" style={{ fontSize: 13, color: SLATE, textDecoration: "none" }}>Forgot password?</a>
-          </div>
-          <button onClick={submit} disabled={busy || !email || !password} className="fx-cta"
-            style={{ width: "100%", padding: 13, background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 400, fontFamily: AEON, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.5 : 1, boxShadow: "0 4px 12px rgba(45,107,255,0.25)" }}>
-            {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-
-          {msg && <p style={{ fontSize: 13, color: RED, marginTop: 14 }}>{msg}</p>}
-
-          <p style={{ fontSize: 13, color: SLATE, marginTop: 24, textAlign: "center" }}>
-            {mode === "signin" ? "New here? " : "Already have an account? "}
-            <button className="fx-link" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(""); }}
-              style={{ background: "none", border: "none", color: BLUE, fontWeight: 400, fontFamily: AEON, fontSize: 13, cursor: "pointer" }}>
-              {mode === "signin" ? "Create an account" : "Sign in"}
-            </button>
-          </p>
+          <input className="t-in" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 10 }} />
+          <div style={{ textAlign: "right", marginBottom: 18 }}><a href="/forgot-password" className="t-link" style={{ fontSize: 13, color: T.body, textDecoration: "none" }}>Forgot password?</a></div>
+          <button onClick={submit} disabled={busy || !email || !password} className="t-cta" style={{ width: "100%", padding: 13, background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.5 : 1 }}>{busy ? "One momentâ€¦" : mode === "signin" ? "Log in" : "Create account"}</button>
+          {msg && <p style={{ fontSize: 13, color: "#B42318", marginTop: 14 }}>{msg}</p>}
+          <p style={{ fontSize: 13, color: T.body, marginTop: 22, textAlign: "center" }}>{mode === "signin" ? "New here? " : "Have an account? "}<button className="t-link" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(""); }} style={{ background: "none", border: "none", color: T.green, fontWeight: 600, fontFamily: T.font, fontSize: 13, cursor: "pointer" }}>{mode === "signin" ? "Create an account" : "Log in"}</button></p>
         </div>
       </div>
     </div>

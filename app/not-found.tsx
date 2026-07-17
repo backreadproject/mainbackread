@@ -1,6 +1,6 @@
 import Link from "next/link";
 const INK="#0A0E17",CANVAS="#FBFBFA",BLUE="#1D4ED8",SLATE="#475569";
-const INTER="var(--font-geist-sans), system-ui, sans-serif";
+const INTER="var(--font-dm-sans), system-ui, sans-serif";
 export default function NotFound(){
   return (<div style={{minHeight:"100vh",background:CANVAS,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",fontFamily:INTER,color:INK,padding:40,textAlign:"center"}}>
     <div style={{fontSize:14,fontWeight:500,color:BLUE,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:12}}>404</div>

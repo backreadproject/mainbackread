@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", SLATE = "#475569", LINE = "#E7EBF2", GREEN = "#059669", RED = "#DC2626";
-const INTER = "var(--font-geist-sans), system-ui, sans-serif";
+const INTER = "var(--font-dm-sans), system-ui, sans-serif";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
