@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#1A1D21", PAPER = "#F7F6F3", READER = "#2F4A3F", MARK = "#C4442E", GRAPHITE = "#8A8778", RULE = "#E4E2DB";
-const VOICE = "'Aeonik', Arial, sans-serif", SANS = "'Aeonik', Arial, sans-serif", MONO = "'Aeonik', Arial, sans-serif";
+const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", BLUE_DEEP = "#1B47B8", SLATE = "#64748B", LINE = "#E7EBF2", RED = "#DC2626", GREEN = "#10B981";
+const AEON = "'Moderat', 'Inter', sans-serif";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -18,76 +18,59 @@ export default function LoginPage() {
     const supabase = createClient();
     if (mode === "signup") {
       const { error } = await supabase.auth.signUp({ email, password });
-      setMsg(error ? error.message : "Account created. You're signed in.");
-      if (!error) window.location.href = "/dashboard";
+      if (error) setMsg(error.message); else window.location.href = "/documents";
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMsg(error.message);
-      else window.location.href = "/dashboard";
+      if (error) setMsg(error.message); else window.location.href = "/documents";
     }
     setBusy(false);
   }
 
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${LINE}`, borderRadius: 10, padding: "12px 14px", fontSize: 15, fontFamily: AEON, background: "#fff", outline: "none" };
+  const label = { fontSize: 13, fontWeight: 400, color: SLATE, display: "block", marginBottom: 7 };
+
   return (
-    <div style={{ minHeight: "100vh", background: PAPER, display: "grid", gridTemplateColumns: "1.1fr 0.9fr", fontFamily: SANS, color: INK }}>
-      <style>{`
-        .br-in{width:100%;padding:12px 14px;border:1px solid ${RULE};border-radius:2px;font-size:15px;font-family:${SANS};background:#fff;box-sizing:border-box;outline:none;transition:border-color .15s}
-        .br-in:focus{border-color:${INK}}
-        .br-sub{transition:opacity .15s}.br-sub:hover{opacity:.6}
-        @media(max-width:820px){.br-left{display:none!important}}`}</style>
+    <div style={{ minHeight: "100vh", background: CANVAS, display: "grid", gridTemplateColumns: "1.05fr 0.95fr", fontFamily: AEON, color: INK }}>
+      <style>{`.fx-in:focus{border-color:${BLUE}}
+        .fx-cta{transition:box-shadow .15s,transform .1s}.fx-cta:hover{box-shadow:0 8px 22px rgba(45,107,255,0.35)}.fx-cta:active{transform:translateY(1px)}
+        .fx-link{transition:opacity .15s}.fx-link:hover{opacity:.7}
+        @media(max-width:820px){.fx-hero{display:none!important}}`}</style>
 
-      {/* Left — the thesis, editorial */}
-      <div className="br-left" style={{ background: INK, color: PAPER, padding: "56px 64px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
-        <div style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: GRAPHITE }}>BackRead</div>
-
+      <div className="fx-hero" style={{ background: `linear-gradient(150deg, ${BLUE} 0%, ${BLUE_DEEP} 100%)`, color: "#fff", padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative", overflow: "hidden" }}>
+        <div style={{ fontSize: 21, fontWeight: 500, letterSpacing: "-0.01em" }}>BackRead</div>
         <div style={{ position: "relative", zIndex: 2 }}>
-          <p style={{ fontFamily: VOICE, fontWeight: 300, fontSize: 44, lineHeight: 1.15, letterSpacing: "-0.02em", margin: 0 }}>
-            Every document you send is a conversation you're not in the room for.
-          </p>
-          <p style={{ fontFamily: VOICE, fontStyle: "normal", fontWeight: 300, fontSize: 22, lineHeight: 1.4, margin: "24px 0 0", color: "#C9C7BF" }}>
-            BackRead puts you in the room.
-          </p>
+          <p style={{ fontSize: 38, fontWeight: 400, lineHeight: 1.2, letterSpacing: "-0.02em", margin: 0 }}>Every document you send is a conversation you're not in the room for.</p>
+          <p style={{ fontSize: 19, lineHeight: 1.5, margin: "20px 0 0", color: "rgba(255,255,255,0.82)" }}>BackRead puts you in the room.</p>
         </div>
-
-        {/* The read-trace: a marginal rail that thickens with dwell */}
-        <svg width="100%" height="80" style={{ position: "absolute", left: 0, bottom: 90, opacity: 0.5 }} aria-hidden="true">
-          <defs><linearGradient id="rt" x1="0" x2="1"><stop offset="0" stopColor={MARK} stopOpacity="0"/><stop offset="0.5" stopColor={MARK}/><stop offset="1" stopColor={MARK} stopOpacity="0.2"/></linearGradient></defs>
-          <path d="M64 40 Q 200 12, 320 40 T 620 34" stroke="url(#rt)" strokeWidth="2" fill="none"/>
-          <circle cx="320" cy="40" r="4" fill={MARK}/>
+        <svg width="100%" height="70" style={{ position: "absolute", left: 0, bottom: 100, opacity: 0.4 }} aria-hidden="true">
+          <defs><linearGradient id="rt" x1="0" x2="1"><stop offset="0" stopColor="#fff" stopOpacity="0" /><stop offset="0.5" stopColor="#fff" /><stop offset="1" stopColor={GREEN} stopOpacity="0.5" /></linearGradient></defs>
+          <path d="M60 36 Q 200 10, 320 36 T 620 30" stroke="url(#rt)" strokeWidth="2.5" fill="none" />
+          <circle cx="320" cy="36" r="4" fill="#fff" />
         </svg>
-
-        <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: "0.08em", color: GRAPHITE, position: "relative", zIndex: 2 }}>
-          The document reads the reader.
-        </div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", position: "relative", zIndex: 2 }}>The document reads the reader.</div>
       </div>
 
-      {/* Right — the form, quiet */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-        <div style={{ width: 340 }}>
-          <h1 style={{ fontFamily: VOICE, fontWeight: 400, fontSize: 30, letterSpacing: "-0.02em", margin: "0 0 4px" }}>
-            {mode === "signin" ? "Sign in" : "Create your account"}
-          </h1>
-          <p style={{ fontSize: 14, color: GRAPHITE, margin: "0 0 28px" }}>
-            {mode === "signin" ? "Pick up where your readers left off." : "Start reading your readers back."}
-          </p>
+        <div style={{ width: 348, background: CARD, borderRadius: 16, padding: 32, boxShadow: "0 1px 3px rgba(11,18,32,0.04), 0 12px 40px rgba(11,18,32,0.08)" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>{mode === "signin" ? "Sign in" : "Create your account"}</h1>
+          <p style={{ fontSize: 14, color: SLATE, margin: "0 0 24px" }}>{mode === "signin" ? "Pick up where your readers left off." : "Start reading your readers back."}</p>
 
-          <label style={{ fontFamily: MONO, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: GRAPHITE, display: "block", marginBottom: 6 }}>Email</label>
-          <input className="br-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: 16 }} />
+          <span style={label}>Email</span>
+          <input className="fx-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
+          <span style={label}>Password</span>
+          <input className="fx-in" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 22 }} />
 
-          <label style={{ fontFamily: MONO, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", color: GRAPHITE, display: "block", marginBottom: 6 }}>Password</label>
-          <input className="br-in" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ marginBottom: 24 }} />
-
-          <button onClick={submit} disabled={busy || !email || !password}
-            style={{ width: "100%", padding: 13, background: INK, color: PAPER, border: "none", borderRadius: 2, fontSize: 14, fontWeight: 500, fontFamily: SANS, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.45 : 1, transition: "opacity .15s" }}>
+          <button onClick={submit} disabled={busy || !email || !password} className="fx-cta"
+            style={{ width: "100%", padding: 13, background: BLUE, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 400, fontFamily: AEON, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.5 : 1, boxShadow: "0 4px 12px rgba(45,107,255,0.25)" }}>
             {busy ? "One moment…" : mode === "signin" ? "Sign in" : "Create account"}
           </button>
 
-          {msg && <p style={{ fontSize: 13, color: MARK, marginTop: 14 }}>{msg}</p>}
+          {msg && <p style={{ fontSize: 13, color: RED, marginTop: 14 }}>{msg}</p>}
 
-          <p style={{ fontSize: 13, color: GRAPHITE, marginTop: 28, textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: SLATE, marginTop: 24, textAlign: "center" }}>
             {mode === "signin" ? "New here? " : "Already have an account? "}
-            <button className="br-sub" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(""); }}
-              style={{ background: "none", border: "none", color: INK, fontWeight: 500, fontFamily: SANS, fontSize: 13, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+            <button className="fx-link" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(""); }}
+              style={{ background: "none", border: "none", color: BLUE, fontWeight: 400, fontFamily: AEON, fontSize: 13, cursor: "pointer" }}>
               {mode === "signin" ? "Create an account" : "Sign in"}
             </button>
           </p>

@@ -1,11 +1,12 @@
-const INK="#1A1D21",GRAPHITE="#8A8778",RULE="#E4E2DB",AEON="'Aeonik', Arial, sans-serif";
+const INK="#0B1220",SLATE="#64748B",CARD="#FFFFFF",AEON="'Moderat', 'Inter', sans-serif";
+const SHADOW="0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 export default function SettingsPage(){
-  return (<div style={{fontFamily:AEON,color:INK}}>
-    <header style={{borderBottom:`1px solid ${RULE}`,padding:"22px 40px"}}>
-      <h1 style={{fontWeight:500,fontSize:26,letterSpacing:"-0.01em",margin:0}}>Settings</h1>
-    </header>
-    <main style={{maxWidth:780,padding:"32px 40px"}}>
-      <p style={{fontSize:16,color:GRAPHITE}}>Workspace name, defaults, and preferences. Coming in the next build.</p>
+  return (<div style={{fontFamily:AEON,color:INK,minHeight:"100vh"}}>
+    <main style={{maxWidth:820,padding:"40px 40px"}}>
+      <h1 style={{fontSize:26,fontWeight:400,letterSpacing:"-0.015em",margin:"0 0 24px"}}>Settings</h1>
+      <div style={{background:CARD,borderRadius:14,padding:32,boxShadow:SHADOW}}>
+        <p style={{fontSize:15,color:SLATE,margin:0,lineHeight:1.6}}>Settings tools are coming in the next build.</p>
+      </div>
     </main>
   </div>);
 }

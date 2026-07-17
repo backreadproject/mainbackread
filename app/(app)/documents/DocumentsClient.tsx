@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const INK = "#1A1D21", PAPER = "#F7F6F3", SURFACE = "#FFFFFF", MARK = "#C4442E", GRAPHITE = "#8A8778", RULE = "#E4E2DB";
-const AEON = "'Aeonik', Arial, sans-serif";
+const INK = "#0B1220", CANVAS = "#F4F6FA", CARD = "#FFFFFF", BLUE = "#2D6BFF", BLUE_SOFT = "#EAF0FF", SLATE = "#64748B", MUTE = "#94A3B8", LINE = "#E7EBF2", GREEN_BG = "#E7F7EF", GREEN = "#059669", RED = "#DC2626";
+const AEON = "'Moderat', 'Inter', sans-serif";
+const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Doc = { id: string; title: string; page_count: number; created_at: string };
 
@@ -30,42 +31,49 @@ export default function DocumentsClient({ documents }: { documents: Doc[] }) {
     window.location.reload();
   }
 
-  const mono = { fontFamily: AEON, fontSize: 11, textTransform: "uppercase" as const, letterSpacing: "0.08em", color: GRAPHITE };
-
   return (
-    <div style={{ fontFamily: AEON, color: INK }}>
-      <style>{`.br-doc{transition:border-color .15s,background .15s;text-decoration:none;color:inherit;display:block}.br-doc:hover{border-color:${GRAPHITE};background:#fff}
-        .br-up{transition:border-color .15s,background .15s}.br-up:hover{border-color:${INK};background:#fff}`}</style>
+    <div style={{ fontFamily: AEON, color: INK, minHeight: "100vh" }}>
+      <style>{`.fx-card{transition:box-shadow .15s,transform .1s;text-decoration:none;color:inherit;display:block}.fx-card:hover{box-shadow:0 2px 6px rgba(11,18,32,0.06),0 12px 32px rgba(11,18,32,0.08);transform:translateY(-1px)}
+        .fx-cta{transition:box-shadow .15s,transform .1s;cursor:pointer}.fx-cta:hover{box-shadow:0 6px 18px rgba(45,107,255,0.32)}.fx-cta:active{transform:translateY(1px)}
+        .fx-up{transition:border-color .15s,background .15s}.fx-up:hover{border-color:${BLUE};background:#fff}`}</style>
 
-      <header style={{ borderBottom: `1px solid ${RULE}`, padding: "22px 40px" }}>
-        <h1 style={{ fontFamily: AEON, fontWeight: 500, fontSize: 26, letterSpacing: "-0.01em", margin: 0 }}>Documents</h1>
-      </header>
+      <main style={{ maxWidth: 820, padding: "40px 40px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 }}>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-0.015em", margin: "0 0 4px" }}>Documents</h1>
+            <p style={{ fontSize: 14, color: SLATE, margin: 0 }}>Share a tracked link and watch how it's read.</p>
+          </div>
+          <label className="fx-cta" style={{ background: BLUE, color: "#fff", borderRadius: 10, padding: "11px 18px", fontSize: 14, fontWeight: 400, cursor: uploading ? "default" : "pointer", boxShadow: "0 4px 12px rgba(45,107,255,0.25)", whiteSpace: "nowrap" }}>
+            <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
+            {uploading ? "Uploading…" : "+ Add document"}
+          </label>
+        </div>
 
-      <main style={{ maxWidth: 780, padding: "32px 40px" }}>
-        <label className="br-up" style={{ display: "block", border: `1.5px dashed ${RULE}`, borderRadius: 4, padding: 40, textAlign: "center", marginBottom: 32, cursor: uploading ? "default" : "pointer" }}>
-          <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
-          <div style={{ ...mono, marginBottom: 4 }}>{uploading ? "Uploading" : "PDF"}</div>
-          <p style={{ fontFamily: AEON, fontSize: 17, fontWeight: 500, color: INK, margin: 0 }}>{uploading ? "One moment…" : "Add a document"}</p>
-        </label>
-
-        {error && <p style={{ color: MARK, fontSize: 14, marginBottom: 20 }}>{error}</p>}
+        {error && <p style={{ color: RED, fontSize: 14, marginBottom: 18 }}>{error}</p>}
 
         {documents.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "48px 0" }}>
-            <p style={{ fontSize: 16, color: GRAPHITE }}>Nothing sent yet. Your first upload starts the record.</p>
-          </div>
+          <label className="fx-up" style={{ display: "block", background: CARD, border: `2px dashed ${LINE}`, borderRadius: 14, padding: 48, textAlign: "center", cursor: "pointer", boxShadow: SHADOW }}>
+            <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
+            <div style={{ width: 48, height: 48, borderRadius: 13, background: BLUE_SOFT, color: BLUE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px" }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14 M5 12h14" /></svg>
+            </div>
+            <p style={{ fontSize: 16, fontWeight: 400, margin: "0 0 4px" }}>Add your first document</p>
+            <p style={{ fontSize: 14, color: SLATE, margin: 0 }}>Upload a PDF to start reading your readers.</p>
+          </label>
         ) : (
-          documents.map((d, i) => (
-            <a key={d.id} href={`/documents/${d.id}`} className="br-doc" style={{ background: SURFACE, border: `1px solid ${RULE}`, borderRadius: 4, padding: "18px 20px", marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 12, minWidth: 0 }}>
-                  <span style={{ ...mono, fontSize: 12 }}>{String(i + 1).padStart(2, "0")}</span>
-                  <span style={{ fontFamily: AEON, fontWeight: 500, fontSize: 18, letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
+          documents.map((d) => (
+            <a key={d.id} href={`/documents/${d.id}`} className="fx-card" style={{ background: CARD, borderRadius: 14, padding: "18px 20px", marginBottom: 14, boxShadow: SHADOW }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 11, background: BLUE_SOFT, color: BLUE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3h8l4 4v14H5z M13 3v4h4" /></svg>
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 16, fontWeight: 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</div>
+                    <div style={{ fontSize: 13, color: MUTE, marginTop: 2 }}>Shared {new Date(d.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</div>
+                  </div>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                  <span style={{ fontSize: 13, color: GRAPHITE }}>{new Date(d.created_at).toLocaleDateString()}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GRAPHITE} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6l6 6-6 6" /></svg>
-                </div>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><path d="M9 6l6 6-6 6" /></svg>
               </div>
             </a>
           ))
