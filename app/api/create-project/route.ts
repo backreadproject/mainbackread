@@ -1,8 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  // Authenticate + confirm org membership via session client.
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
@@ -17,8 +19,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Project name is required." }, { status: 400 });
   }
 
-  // RLS insert policy: created_by = me AND is_org_member(org). Satisfied.
-  const { data: project, error } = await supabase
+  // Write with the admin client. We've already verified the caller is a member
+  // of ctx.org via getOrgContext, so this is safe and avoids the RLS
+  // insert-then-read-back chicken-and-egg (same pattern as create-org).
+  const admin = createAdminClient();
+  const { data: project, error } = await admin
     .from("projects")
     .insert({ name: name.trim(), organization_id: ctx.org.id, created_by: user.id })
     .select("id, name")
