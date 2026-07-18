@@ -3,19 +3,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
-  // Authenticate the caller with the session-aware client.
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const { name } = await req.json();
+  const { name, migrateDocuments } = await req.json();
   if (!name || typeof name !== "string" || !name.trim()) {
     return NextResponse.json({ error: "Organization name is required." }, { status: 400 });
   }
 
-  // Use the admin client for the writes. This is a trusted server route and we've
-  // already verified the user. Admin bypasses RLS, which avoids the chicken-and-egg
-  // where reading back a freshly-created org fails because membership isn't set yet.
   const admin = createAdminClient();
 
   // 1. Create the org.
@@ -38,5 +34,22 @@ export async function POST(req: Request) {
     .upsert({ id: user.id, account_type: "organization", active_org_id: org.id, updated_at: new Date().toISOString() });
   if (profErr) return NextResponse.json({ error: profErr.message }, { status: 400 });
 
-  return NextResponse.json({ ok: true, org });
+  // 4. Optionally migrate the user's existing personal documents into the org.
+  //    owner_id stays the user; they just become org-scoped (project_id stays null).
+  let migratedCount = 0;
+  if (migrateDocuments) {
+    const { data: moved, error: migErr } = await admin
+      .from("documents")
+      .update({ organization_id: org.id })
+      .eq("owner_id", user.id)
+      .is("organization_id", null)
+      .select("id");
+    if (migErr) {
+      // Non-fatal: org is created; just report that migration didn't complete.
+      return NextResponse.json({ ok: true, org, migrated: 0, migrateWarning: migErr.message });
+    }
+    migratedCount = moved?.length ?? 0;
+  }
+
+  return NextResponse.json({ ok: true, org, migrated: migratedCount });
 }

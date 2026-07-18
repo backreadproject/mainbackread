@@ -10,6 +10,7 @@ type Org = { id: string; name: string } | null;
 export default function MembersClient({ org, role, members: initial }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[] }) {
   const [members, setMembers] = useState(initial);
   const [orgName, setOrgName] = useState("");
+  const [migrateDocuments, setMigrateDocuments] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,7 +24,7 @@ export default function MembersClient({ org, role, members: initial }: { org: Or
   async function createOrg() {
     if (!orgName.trim()) return;
     setCreating(true); setError("");
-    const res = await fetch("/api/create-org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: orgName.trim() }) });
+    const res = await fetch("/api/create-org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), migrateDocuments }) });
     const json = await res.json();
     if (!res.ok) { setError(json.error ?? "Could not create organization."); setCreating(false); return; }
     window.location.reload();
@@ -66,6 +67,10 @@ export default function MembersClient({ org, role, members: initial }: { org: Or
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>Organization name</span>
             <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder="Acme Inc." style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 14 }} />
+            <label style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16, cursor: "pointer", fontSize: 14, color: T.body }}>
+              <input type="checkbox" checked={migrateDocuments} onChange={(e) => setMigrateDocuments(e.target.checked)} style={{ width: 16, height: 16, accentColor: T.green, cursor: "pointer" }} />
+              Move my existing documents into this organization
+            </label>
             <button onClick={createOrg} disabled={creating || !orgName.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: creating || !orgName.trim() ? 0.5 : 1 }}>{creating ? "Creating…" : "Create organization"}</button>
             {error && <p style={{ fontSize: 13, color: "#B42318", marginTop: 12 }}>{error}</p>}
             <p style={{ fontSize: 12, color: T.muted, marginTop: 16, lineHeight: 1.5 }}>Creating an organization moves your account into team mode. You become the owner.</p>
