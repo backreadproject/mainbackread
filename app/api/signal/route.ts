@@ -1,36 +1,33 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notifyOwnerOfOpen } from "@/lib/notify";
-
+import { notify } from "@/lib/notify";
 export const runtime = "nodejs";
-
 export async function POST(req: NextRequest) {
   const { token, kind, page, value } = await req.json();
   if (!token || !kind) return NextResponse.json({ error: "Missing fields" }, { status: 400 });
-
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, label, document_id, documents ( title, owner_id )")
+    .select("id, label, first_name, last_name, opened_notified, document_id, documents ( id, title, owner_id )")
     .eq("share_token", token)
     .single();
-
   if (!recipient) return NextResponse.json({ error: "Invalid link" }, { status: 404 });
-
   await admin.from("signals").insert({ recipient_id: recipient.id, kind, page: page ?? null, value: value ?? null });
-
-  // Fire an email alert the first time a reader opens (best-effort, non-blocking).
-  if (kind === "opened") {
-    const doc = recipient.documents as unknown as { title: string; owner_id: string } | undefined;
+  // Notify the owner the FIRST time this reader opens the document (in-app; best-effort).
+  if (kind === "opened" && !recipient.opened_notified) {
+    const doc = recipient.documents as unknown as { id: string; title: string; owner_id: string } | undefined;
     if (doc) {
-      const { data: owner } = await admin.auth.admin.getUserById(doc.owner_id);
-      const email = owner?.user?.email;
-      if (email) {
-        // don't await — never block the reader's experience on an email
-        notifyOwnerOfOpen({ ownerEmail: email, readerLabel: recipient.label || "A reader", docTitle: doc.title });
-      }
+      await admin.from("recipients").update({ opened_notified: true }).eq("id", recipient.id);
+      const readerName = recipient.label || `${recipient.first_name ?? ""} ${recipient.last_name ?? ""}`.trim() || "A reader";
+      notify({
+        userId: doc.owner_id,
+        type: "reader_opened",
+        title: `${readerName} opened ${doc.title}`,
+        body: "They have started reading. Open BackRead to read their read.",
+        link: `/documents/${doc.id}`,
+        email: null,
+      });
     }
   }
-
   return NextResponse.json({ ok: true });
 }
