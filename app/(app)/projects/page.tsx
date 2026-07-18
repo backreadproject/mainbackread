@@ -4,7 +4,7 @@ import ProjectsClient from "./ProjectsClient";
 
 export default async function ProjectsPage() {
   const ctx = await getOrgContext();
-  if (ctx.accountType !== "organization" || !ctx.org) {
+  if (!ctx.org) {
     return <ProjectsClient projects={[]} orgless />;
   }
   const supabase = await createClient();

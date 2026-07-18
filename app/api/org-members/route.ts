@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   const docId = searchParams.get("docId");
 
   const ctx = await getOrgContext();
-  if (ctx.accountType !== "organization" || !ctx.org) {
+  if (!ctx.org) {
     return NextResponse.json({ isOrg: false, members: [], canManage: false });
   }
 

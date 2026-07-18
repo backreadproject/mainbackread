@@ -5,7 +5,7 @@ import DocumentsClient from "./DocumentsClient";
 export default async function DocumentsPage() {
   const supabase = await createClient();
   const ctx = await getOrgContext();
-  const isOrg = ctx.accountType === "organization" && !!ctx.org;
+  const isOrg = !!ctx.org;
 
   // Projects available for assignment (RLS-limited to what I can see).
   let projects: { id: string; name: string }[] = [];

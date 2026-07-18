@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const ctx = await getOrgContext();
-  if (ctx.accountType !== "organization" || !ctx.org) {
+  if (!ctx.org) {
     return NextResponse.json({ error: "Projects require an organization." }, { status: 403 });
   }
 

@@ -1,25 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type OrgContext = {
-  accountType: "personal" | "organization";
+  accountType: "personal" | "company" | "organization";
   org: { id: string; name: string } | null;
   role: "owner" | "admin" | "member" | null;
+  trialStartedAt: string | null;
 };
 
 // Reads the current user's org context (account type, active org, their role).
 export async function getOrgContext(): Promise<OrgContext> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { accountType: "personal", org: null, role: null };
+  if (!user) return { accountType: "personal", org: null, role: null, trialStartedAt: null };
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("account_type, active_org_id")
+    .select("account_type, active_org_id, trial_started_at")
     .eq("id", user.id)
     .single();
 
-  if (!profile || profile.account_type !== "organization" || !profile.active_org_id) {
-    return { accountType: "personal", org: null, role: null };
+  const acctType = (profile?.account_type as OrgContext["accountType"]) ?? "personal";
+  const trialStartedAt = (profile?.trial_started_at as string | null) ?? null;
+
+  // If they haven't set up an org yet, return their account type but no org.
+  if (!profile || !profile.active_org_id) {
+    return { accountType: acctType, org: null, role: null, trialStartedAt };
   }
 
   const { data: org } = await supabase
@@ -35,11 +40,12 @@ export async function getOrgContext(): Promise<OrgContext> {
     .eq("user_id", user.id)
     .single();
 
-  if (!org) return { accountType: "personal", org: null, role: null };
+  if (!org) return { accountType: acctType, org: null, role: null, trialStartedAt };
 
   return {
-    accountType: "organization",
+    accountType: acctType,
     org: { id: org.id, name: org.name },
     role: (membership?.role as OrgContext["role"]) ?? "member",
+    trialStartedAt,
   };
 }

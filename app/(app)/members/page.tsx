@@ -5,9 +5,9 @@ import MembersClient from "./MembersClient";
 export default async function MembersPage() {
   const ctx = await getOrgContext();
 
-  if (ctx.accountType !== "organization" || !ctx.org) {
+  if (!ctx.org) {
     // No org yet — show the create-org state.
-    return <MembersClient org={null} role={null} members={[]} invites={[]} />;
+    return <MembersClient org={null} role={null} members={[]} invites={[]} accountType={ctx.accountType} trialStartedAt={ctx.trialStartedAt} />;
   }
 
   const supabase = await createClient();
@@ -36,5 +36,5 @@ export default async function MembersPage() {
     joinedAt: r.created_at,
   }));
 
-  return <MembersClient org={ctx.org} role={ctx.role} members={members} invites={invites} />;
+  return <MembersClient org={ctx.org} role={ctx.role} members={members} invites={invites} accountType={ctx.accountType} trialStartedAt={ctx.trialStartedAt} />;
 }

@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 export default function LoginPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState("");
+  const [accountType, setAccountType] = useState<"personal" | "company">("personal");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
   const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim());
@@ -19,9 +20,15 @@ export default function LoginPage() {
       });
       if (error) { setMsg(error.message); setBusy(false); return; }
       if (data.user) {
-        await supabase.from("profiles").upsert({ id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(), updated_at: new Date().toISOString() });
+        const profileRow: Record<string, unknown> = {
+          id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(),
+          account_type: accountType, updated_at: new Date().toISOString(),
+        };
+        if (accountType === "company") profileRow.trial_started_at = new Date().toISOString();
+        await supabase.from("profiles").upsert(profileRow);
       }
-      window.location.href = "/documents";
+      // Company accounts go set up their org; personal accounts go to documents.
+      window.location.href = accountType === "company" ? "/members" : "/documents";
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setMsg(error.message); else window.location.href = "/documents";
@@ -45,6 +52,17 @@ export default function LoginPage() {
         <div style={{ width: 356, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
           <h1 style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
+          {mode === "signup" && (
+            <div style={{ marginBottom: 16 }}>
+              <span style={label}>Account type</span>
+              <div style={{ display: "flex", gap: 8 }}>
+                {([["personal", "Personal"], ["company", "Company"]] as const).map(([val, lbl]) => (
+                  <button key={val} type="button" onClick={() => setAccountType(val)} style={{ flex: 1, padding: "10px 12px", borderRadius: T.rInput, border: `1px solid ${accountType === val ? T.green : T.border}`, background: accountType === val ? T.greenSoft : "#fff", color: accountType === val ? T.greenText : T.body, fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{lbl}</button>
+                ))}
+              </div>
+              {accountType === "company" && <p style={{ fontSize: 12, color: T.greenText, margin: "8px 0 0", lineHeight: 1.5 }}>Company accounts include a 7-day free trial. You'll set up your organization next.</p>}
+            </div>
+          )}
           {mode === "signup" && (
             <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
               <div style={{ flex: 1 }}>

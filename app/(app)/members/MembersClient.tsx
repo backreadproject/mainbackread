@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
+import { trialInfo } from "@/lib/trial";
 
 type Member = { id: string; userId: string; email: string | null; role: "owner" | "admin" | "member"; joinedAt: string };
 type Org = { id: string; name: string } | null;
 type Invite = { id: string; email: string; firstName: string; lastName: string; role: "admin" | "member"; createdAt: string; expiresAt: string };
 
-export default function MembersClient({ org, role, members: initial, invites: initialInvites = [] }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[]; invites?: Invite[] }) {
+export default function MembersClient({ org, role, members: initial, invites: initialInvites = [], accountType = "personal", trialStartedAt = null }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[]; invites?: Invite[]; accountType?: "personal" | "company" | "organization"; trialStartedAt?: string | null }) {
   const [members, setMembers] = useState(initial);
   const [orgName, setOrgName] = useState("");
   const [orgDomain, setOrgDomain] = useState("");
@@ -88,11 +89,28 @@ export default function MembersClient({ org, role, members: initial, invites: in
 
   // ---- No org yet: create-org state ----
   if (!org) {
+    const isCompany = accountType === "company" || accountType === "organization";
+    const trial = trialInfo(trialStartedAt);
+    if (!isCompany) {
+      return (
+        <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
+          <main style={{ maxWidth: 560, padding: "26px 30px" }}>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Organization</h1>
+            <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>Organizations are part of company accounts.</p>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 32, textAlign: "center" }}>
+              <p style={{ fontSize: 15, color: T.body, margin: "0 0 8px" }}>You're on a personal account.</p>
+              <p style={{ fontSize: 14, color: T.muted, margin: 0, lineHeight: 1.5 }}>Company accounts unlock organizations, team members, projects, and shared documents. Upgrading to a company account will be available soon.</p>
+            </div>
+          </main>
+        </div>
+      );
+    }
     return (
       <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
         <main style={{ maxWidth: 560, padding: "26px 30px" }}>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Organization</h1>
-          <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>Create an organization to share documents and read your pipeline as a team.</p>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Set up your organization</h1>
+          <p style={{ fontSize: 14, color: T.body, margin: "0 0 16px" }}>Create your organization to share documents and read your pipeline as a team.</p>
+          {trial.started && trial.active && <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: T.greenText }}>Your free trial is active. {trial.daysLeft} day{trial.daysLeft === 1 ? "" : "s"} left.</div>}
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>Organization name</span>
             <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder="Acme Inc." style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 }} />

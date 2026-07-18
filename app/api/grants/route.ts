@@ -61,7 +61,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
   const ctx = await getOrgContext();
-  if (ctx.accountType !== "organization" || !ctx.org) return NextResponse.json({ error: "Organization required." }, { status: 403 });
+  if (!ctx.org) return NextResponse.json({ error: "Organization required." }, { status: 403 });
 
   const { resourceType, resourceId, granteeType, granteeId, permission } = await req.json();
   if (!["document", "project"].includes(resourceType) || !resourceId) return NextResponse.json({ error: "Bad resource." }, { status: 400 });
