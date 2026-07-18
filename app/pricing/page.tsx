@@ -1,4 +1,4 @@
-import MarketingNav from "./MarketingNav";
+import MarketingNav from "../MarketingNav";
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
