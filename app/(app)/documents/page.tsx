@@ -3,7 +3,7 @@ import DocumentsClient from "./DocumentsClient";
 
 export default async function DocumentsPage() {
   const supabase = await createClient();
-  const { data: docs } = await supabase.from("documents").select("id, title, created_at").order("created_at", { ascending: false });
+  const { data: docs } = await supabase.from("documents").select("id, title, created_at, archived_at").order("created_at", { ascending: false });
   const documents = docs ?? [];
   const docIds = documents.map((d) => d.id);
 
@@ -43,7 +43,7 @@ export default async function DocumentsPage() {
   totalReads = openedRecipients.size;
 
   const rows = documents.map((d) => ({
-    id: d.id, title: d.title, createdAt: d.created_at,
+    id: d.id, title: d.title, createdAt: d.created_at, archived: !!d.archived_at,
     recipients: recByDoc[d.id] ?? 0,
     reads: (openedByDoc[d.id]?.size) ?? 0,
     questions: questionsByDoc[d.id] ?? 0,

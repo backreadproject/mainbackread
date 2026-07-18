@@ -19,7 +19,7 @@ export default function LandingPage() {
 
       <MarketingNav />
 
-      <section style={{ background: GRADIENT, color: "#fff", position: "relative", overflow: "hidden" }}>
+      <section style={{ background: GRADIENT, color: "#fff", position: "relative", overflow: "hidden", marginTop: -72, paddingTop: 72 }}>
         <div style={{ ...wrap, padding: "84px 32px 100px", position: "relative", zIndex: 2 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(31,169,113,0.14)", border: "1px solid rgba(31,169,113,0.35)", color: "#7FE3B8", fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: 20, marginBottom: 28 }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: BRAND }} />
