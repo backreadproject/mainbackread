@@ -48,7 +48,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
   );
 
   return (
-    <aside style={{ width: 232, background: T.sidebarGradient, display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh", fontFamily: T.font, letterSpacing: T.tracking, padding: "20px 16px" }}>
+    <aside style={{ width: 232, boxSizing: "border-box", background: T.sidebarGradient, display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh", maxHeight: "100vh", overflow: "hidden", fontFamily: T.font, letterSpacing: T.tracking, padding: "20px 16px" }}>
       <style>{`.t-nav{transition:background .12s}.t-nav:hover{background:${T.sidebarHover}}.t-out{transition:background .12s}.t-out:hover{background:${T.sidebarHover}}`}</style>
 
       <a href="/" title="Back to site" style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 18px", textDecoration: "none" }}>
@@ -65,14 +65,14 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
         <NotificationBell />
       </div>
 
-      <nav style={{ flex: 1 }}>
+      <nav style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
         {section("Main")}
         {NAV_MAIN.filter((n) => isOrg || !n.orgOnly).map(item)}
         {section("Configure")}
         {NAV_CONFIG.filter((n) => isOrg || !n.orgOnly).map(item)}
       </nav>
 
-      <div style={{ borderTop: `1px solid ${T.sidebarCard}`, paddingTop: 12, marginTop: 12 }}>
+      <div style={{ borderTop: `1px solid ${T.sidebarCard}`, paddingTop: 12, marginTop: 12, flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10, minWidth: 0 }}>
           <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initial}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>

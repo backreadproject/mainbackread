@@ -27,9 +27,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: T.canvas }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: T.canvas }}>
       <Sidebar email={user.email ?? ""} workspaceName={workspaceName} isOrg={isOrg} avatarUrl={avatarUrl} />
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, height: "100vh", overflowY: "auto" }}>
         {trial.started && trial.active && (
           <div style={{ background: "#FEF7EC", borderBottom: "1px solid #FDE7C7", padding: "8px 30px", fontSize: 13, color: "#B54708", display: "flex", alignItems: "center", gap: 8 }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B54708" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 2" /></svg>
