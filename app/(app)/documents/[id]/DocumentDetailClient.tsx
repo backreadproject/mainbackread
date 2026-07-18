@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
+import ShareDialog from "@/app/(app)/ShareDialog";
 
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string };
@@ -18,6 +19,11 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
   const [editing, setEditing] = useState<string | null>(null);
   const [nameDraft, setNameDraft] = useState("");
   const [error, setError] = useState("");
+  const [sharing, setSharing] = useState(false);
+  const [shareInfo, setShareInfo] = useState<{ isOrg: boolean; canManage: boolean; members: { userId: string; email: string | null }[] }>({ isOrg: false, canManage: false, members: [] });
+  useEffect(() => {
+    fetch(`/api/org-members?docId=${doc.id}`).then((r) => r.json()).then((d) => setShareInfo({ isOrg: !!d.isOrg, canManage: !!d.canManage, members: d.members ?? [] })).catch(() => {});
+  }, [doc.id]);
 
   const summary = useMemo(() => {
     const map: Record<string, { opens: number; dwell: Record<number, number>; questions: { text: string; escalated?: boolean }[] }> = {};
@@ -61,7 +67,10 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
           <span style={{ color: T.muted }}>‹</span> Documents
         </a>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{doc.title}</h1>
-        <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{recs.length} recipient{recs.length === 1 ? "" : "s"}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{recs.length} recipient{recs.length === 1 ? "" : "s"}</p>
+          {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={{ background: T.greenSoft, color: T.greenText, fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font }}>Share with team</button>}
+        </div>
       </div>
 
       {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
@@ -152,6 +161,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
           )}
         </div>
       </div>
+    {sharing && <ShareDialog resourceType="document" resourceId={doc.id} resourceName={doc.title} members={shareInfo.members} onClose={() => setSharing(false)} />}
     </div>
   );
 }

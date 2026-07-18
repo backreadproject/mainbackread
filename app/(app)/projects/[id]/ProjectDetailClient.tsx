@@ -1,11 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { T, microLabel } from "@/lib/theme";
+import ShareDialog from "@/app/(app)/ShareDialog";
 
 type Project = { id: string; name: string; created_at: string };
 type Doc = { id: string; title: string; created_at: string };
 
-export default function ProjectDetailClient({ project, documents, canManage }: { project: Project; documents: Doc[]; canManage: boolean }) {
+type Member = { userId: string; email: string | null };
+export default function ProjectDetailClient({ project, documents, canManage, members }: { project: Project; documents: Doc[]; canManage: boolean; members: Member[] }) {
+  const [sharing, setSharing] = useState(false);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:#FCFCFD}`}</style>
@@ -16,7 +20,7 @@ export default function ProjectDetailClient({ project, documents, canManage }: {
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{project.name}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{documents.length} document{documents.length === 1 ? "" : "s"} you can see</p>
           </div>
-          {/* Share button placeholder — wired in the sharing batch */}
+          {canManage && <button onClick={() => setSharing(true)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>Share with team</button>}
         </div>
       </div>
 
@@ -39,6 +43,7 @@ export default function ProjectDetailClient({ project, documents, canManage }: {
           </div>
         )}
       </main>
+      {sharing && <ShareDialog resourceType="project" resourceId={project.id} resourceName={project.name} members={members} onClose={() => setSharing(false)} />}
     </div>
   );
 }

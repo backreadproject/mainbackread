@@ -19,5 +19,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     .eq("project_id", id)
     .order("created_at", { ascending: false });
 
-  return <ProjectDetailClient project={project} documents={docs ?? []} canManage={ctx.role === "owner" || ctx.role === "admin"} />;
+  // Org members for the share picker (only if org context).
+  let members: { userId: string; email: string | null }[] = [];
+  if (ctx.org) {
+    const { data: mem } = await supabase.from("organization_members").select("user_id, email").eq("organization_id", ctx.org.id);
+    members = (mem ?? []).map((m) => ({ userId: m.user_id, email: (m.email as string | null) ?? null }));
+  }
+
+  return <ProjectDetailClient project={project} documents={docs ?? []} canManage={ctx.role === "owner" || ctx.role === "admin"} members={members} />;
 }
