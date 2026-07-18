@@ -107,7 +107,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
           <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>Archived{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Documents</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Manage the documents you share and how they're read.</p>
@@ -146,7 +146,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         )}
 
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "visible" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
+          <div className="tab-bar" style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
             {view === "active" ? (
               <div style={{ display: "inline-flex", gap: 4 }}>{[["all", "All"], ["opened", "Opened"], ["unopened", "Unopened"]].map(([k, l]) => seg(k as typeof filter, l))}</div>
             ) : (
@@ -165,13 +165,13 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             </div>
             {filtered.map((r, i) => (
               <div key={r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
-                <a href={`/documents/${r.id}`} style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{r.title}</a>
-                <span style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
-                <span style={{ fontSize: 14, color: T.body }}>{r.reads}</span>
-                <span style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
-                <span style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "—"}</span>
-                <span style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
-                <span><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? "Archived" : r.reads > 0 ? "Active" : "Awaiting"}</span></span>
+                <a href={`/documents/${r.id}`} className="data-cell dc-title" style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{r.title}</a>
+                <span className="data-cell" data-label="Recipients" style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
+                <span className="data-cell" data-label="Reads" style={{ fontSize: 14, color: T.body }}>{r.reads}</span>
+                <span className="data-cell" data-label="Questions" style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
+                <span className="data-cell" data-label="Project" style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "—"}</span>
+                <span className="data-cell" data-label="Added" style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
+                <span className="data-cell" data-label="Status"><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? "Archived" : r.reads > 0 ? "Active" : "Awaiting"}</span></span>
                 <div style={{ position: "relative", justifySelf: "end" }}>
                   <button onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === r.id ? null : r.id); }} aria-label="Actions" style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, borderRadius: 6, lineHeight: 0 }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>

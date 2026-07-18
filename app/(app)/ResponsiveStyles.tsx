@@ -16,7 +16,15 @@ export default function ResponsiveStyles() {
         .card-grid-3 { grid-template-columns: repeat(2, 1fr); }
         .stat-grid-3 { grid-template-columns: repeat(3, 1fr); }
       }
+      /* Tab bars that might overflow scroll horizontally instead of colliding */
+      .tab-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tab-scroll::-webkit-scrollbar { display: none; }
+
       @media (max-width: 720px) {
+        .page-header { flex-direction: column !important; gap: 14px; align-items: stretch !important; }
+        .page-header select, .page-header label, .page-header a, .page-header button { width: 100%; box-sizing: border-box; text-align: center; }
+        .tab-bar { flex-wrap: wrap; gap: 10px !important; }
+        .tab-bar > span { margin-left: 0 !important; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
         .stat-grid-3 { grid-template-columns: repeat(2, 1fr); }
         .card-grid-3 { grid-template-columns: 1fr; }
@@ -27,14 +35,23 @@ export default function ResponsiveStyles() {
         .row-head { display: none !important; }
         .data-row {
           display: block !important;
-          border: 1px solid var(--row-border, #EAECEF);
+          border: 1px solid #EAECEF;
           border-radius: 12px;
           margin-bottom: 10px;
           padding: 14px 16px !important;
         }
-        .data-row > * { display: block; width: 100%; }
-        .data-cell { margin-bottom: 6px; }
-        .data-cell:last-child { margin-bottom: 0; }
+        .data-row > * { display: flex !important; width: auto; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; }
+        .data-cell[data-label]::before {
+          content: attr(data-label);
+          font-size: 12px; font-weight: 600; color: #667085;
+          text-transform: uppercase; letter-spacing: 0.03em;
+        }
+        .dc-title {
+          font-size: 15px !important; font-weight: 700 !important;
+          padding-bottom: 8px !important; margin-bottom: 4px;
+          border-bottom: 1px solid #F2F4F7;
+          white-space: normal !important; justify-content: flex-start !important;
+        }
       }
     `}</style>
   );
