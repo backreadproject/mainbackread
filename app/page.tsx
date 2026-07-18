@@ -38,15 +38,19 @@ export default function LandingPage() {
           .lp-four{grid-template-columns:1fr 1fr!important}
           .lp-trail-line{display:none!important}
           .lp-hero-h1{font-size:44px!important}
+          .lp-h1-a{font-size:49px!important;display:inline-block}
+          .lp-h1-b{font-size:39px!important;display:inline-block}
           .lp-hero-sub{font-size:18px!important}
-          .lp-hero-pad{padding:118px 32px 76px!important}
+          .lp-hero-pad{padding:168px 32px 76px!important}
         }
         @media(max-width:520px){
           .lp-hero-h1{font-size:33px!important;margin-bottom:18px!important}
+          .lp-h1-a{font-size:38px!important;line-height:1.04!important;display:inline-block}
+          .lp-h1-b{font-size:28px!important;line-height:1.04!important;display:inline-block}
           .lp-hero-sub{font-size:16px!important;margin-bottom:26px!important}
           .lp-hero-badge{margin-bottom:20px!important}
           .lp-pad{padding-left:20px!important;padding-right:20px!important}
-          .lp-hero-pad{padding:104px 20px 56px!important}
+          .lp-hero-pad{padding:154px 20px 56px!important}
           .lp-sec{padding-top:56px!important;padding-bottom:56px!important}
           .lp-four{grid-template-columns:1fr!important}
           .lp-cta-h2{font-size:30px!important}
@@ -73,13 +77,13 @@ export default function LandingPage() {
             Now in beta, free for early users
           </div>
           <h1 className="lp-hero-h1" style={{ fontSize: 62, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: 760 }}>
-            Every reader leaves a trail.<br /><span style={{ color: BRAND }}>Now you can follow it.</span>
+            <span className="lp-h1-a">Every reader leaves a trail.</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>Now you can follow it.</span>
           </h1>
           <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 36px", color: CLOUD, maxWidth: 560 }}>
             BackRead turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.
           </p>
           <div className="lp-hero-ctas" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <a href="/login" className="lp-a lp-cta" style={{ background: GREEN, color: "#fff", fontSize: 16, fontWeight: 600, padding: "14px 28px", borderRadius: 12 }}>Start free</a>
+            <a href="/login" className="lp-a lp-cta" style={{ background: GREEN, color: "#fff", fontSize: 16, fontWeight: 600, padding: "14px 28px", borderRadius: 12 }}>Start here</a>
             <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.20)" }}>See how it works</a>
           </div>
           <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: CLOUDDIM, margin: "26px 0 0", textTransform: "uppercase" }}>No card required. Your first document live in minutes.</p>
