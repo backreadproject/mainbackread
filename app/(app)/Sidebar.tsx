@@ -46,10 +46,10 @@ export default function Sidebar({ email, workspaceName }: { email: string; works
     <aside style={{ width: 232, background: T.sidebarGradient, display: "flex", flexDirection: "column", position: "sticky", top: 0, height: "100vh", fontFamily: T.font, letterSpacing: T.tracking, padding: "20px 16px" }}>
       <style>{`.t-nav{transition:background .12s}.t-nav:hover{background:${T.sidebarHover}}.t-out{transition:background .12s}.t-out:hover{background:${T.sidebarHover}}`}</style>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 18px" }}>
+      <a href="/" title="Back to site" style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 18px", textDecoration: "none" }}>
         <span style={{ color: T.brandGreen, fontSize: 18 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span>
         <span style={{ color: "#fff", fontSize: 19, fontWeight: 700, letterSpacing: T.trackingTight }}>BackRead</span>
-      </div>
+      </a>
 
       <div style={{ background: T.sidebarCard, borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{wsInitial}</div>
@@ -71,6 +71,7 @@ export default function Sidebar({ email, workspaceName }: { email: string; works
           <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{initial}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
         </div>
+        <a href="/" className="t-out" style={{ display: "block", width: "100%", boxSizing: "border-box", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none", marginBottom: 8 }}>View site</a>
         <button onClick={signOut} className="t-out" style={{ width: "100%", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "9px 12px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>Sign out</button>
       </div>
     </aside>

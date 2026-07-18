@@ -1,3 +1,4 @@
+import MarketingNav from "./MarketingNav";
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
@@ -51,18 +52,7 @@ export default function PricingPage() {
         @media(max-width:820px){.m-tiers{grid-template-columns:1fr!important}.m-nav-links{display:none!important}}
       `}</style>
 
-      <div style={{ background: NIGHT }}>
-        <nav style={{ ...wrap, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 32px" }}>
-          <a href="/" className="m-a" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span>BackRead</a>
-          <div className="m-nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
-            <a href="/#how" className="m-a" style={{ color: CLOUD, fontSize: 15 }}>How it works</a>
-            <a href="/#why" className="m-a" style={{ color: CLOUD, fontSize: 15 }}>Why BackRead</a>
-            <a href="/pricing" className="m-a" style={{ color: "#fff", fontSize: 15, fontWeight: 600 }}>Pricing</a>
-            <a href="/login" className="m-a" style={{ color: CLOUD, fontSize: 15 }}>Sign in</a>
-          </div>
-          <a href="/login" className="m-a m-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 8 }}>Start free</a>
-        </nav>
-      </div>
+      <MarketingNav activePricing />
 
       <section style={{ background: GRADIENT, color: "#fff", padding: "72px 0 130px", textAlign: "center" }}>
         <div style={wrap}>
