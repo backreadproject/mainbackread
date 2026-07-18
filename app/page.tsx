@@ -256,6 +256,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* COMPOUNDING BAND */}
+      <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 84, paddingBottom: 84 }}>
         <div style={{ maxWidth: 760 }}>
           <p style={{ ...eyebrow, margin: "0 0 18px" }}>The long game</p>
           <p className="lp-longgame" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.34, letterSpacing: "-0.02em", color: INK, margin: 0 }}>
