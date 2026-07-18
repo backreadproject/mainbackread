@@ -18,7 +18,7 @@ const LINE = "#EAECEF";
 const CLOUD = "rgba(255,255,255,0.72)";
 const CLOUDDIM = "rgba(255,255,255,0.45)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
-const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
+const GRADIENT = "linear-gradient(180deg, #061711 0%, #0B2E22 45%, #15503A 80%, #2E6B4A 100%)";
 
 export default function LandingPage() {
   const wrap = { maxWidth: 1080, margin: "0 auto", padding: "0 32px" } as const;
@@ -57,6 +57,9 @@ export default function LandingPage() {
           .lp-hero-fine{font-size:11px!important;margin-top:20px!important}
           .lp-hero-ctas a{flex:1 1 0!important;text-align:center!important;padding-left:12px!important;padding-right:12px!important;font-size:15px!important;white-space:nowrap!important}
           h2{font-size:30px!important}
+          .lp-longgame{font-size:21px!important;line-height:1.4!important}
+          .lp-compare{font-size:13px!important}
+          .lp-compare > div{padding-left:12px!important;padding-right:12px!important}
         }
       `}</style>
 
@@ -74,7 +77,7 @@ export default function LandingPage() {
         <div className="lp-hero-pad" style={{ ...wrap, padding: "128px 32px 104px", position: "relative", zIndex: 2 }}>
           <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(31,169,113,0.12)", border: "1px solid rgba(31,169,113,0.34)", color: BRAND, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: BRAND }} />
-            Now in beta, free for early users
+            Join 5000+ users
           </div>
           <h1 className="lp-hero-h1" style={{ fontSize: 62, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: 760 }}>
             <span className="lp-h1-a">Every reader leaves a trail.</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>Now you can follow it.</span>
@@ -116,13 +119,14 @@ export default function LandingPage() {
             Three things happen the moment your reader opens it.
           </h2>
           <div className="lp-trail" style={{ position: "relative" }}>
-            <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19.25, top: 20, bottom: 20, width: 1.5, background: "linear-gradient(180deg, transparent, rgba(31,169,113,0.5), transparent)" }} />
             {[
               ["01", "The document answers, in your voice", "Your reader asks a question inside the document itself. BackRead answers from what you approved, and when a question crosses into territory only you should handle, it holds the line and flags it for you instead of guessing."],
               ["02", "It watches how the reading goes", "Every pause, re-read, and question becomes a signal. You see which sections held attention, which were skipped, and where a reader hesitated, the quiet tells that a reply email never contains."],
               ["03", "It returns a verdict on the deal", "BackRead reads the pattern of the whole reading and tells you where things stand, so you know whether to push, to wait, or to rewrite before you send it to the next person."],
             ].map(([n, title, body], i) => (
               <div className="lp-step" key={i} style={{ display: "flex", gap: 26, alignItems: "flex-start", paddingBottom: i < 2 ? 44 : 0, position: "relative" }}>
+                {/* connector: from the bottom of this circle to the top of the next one */}
+                {i < 2 && <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19.25, top: 44, bottom: 0, width: 1.5, background: "rgba(31,169,113,0.35)" }} />}
                 <div className="lp-node" style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(31,169,113,0.14)", border: "1.5px solid " + BRAND, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14, fontWeight: 700, color: BRAND, transition: "background .16s, box-shadow .16s", position: "relative", zIndex: 2 }}>{n}</div>
                 <div style={{ paddingTop: 4 }}>
                   <h3 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.01em", margin: "0 0 8px" }}>{title}</h3>
@@ -188,11 +192,73 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* COMPOUNDING BAND */}
-      <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 84, paddingBottom: 84 }}>
+      {/* HOW BACKREAD COMPARES */}
+      <section id="compare" className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
+        <p style={{ ...eyebrow, margin: "0 0 16px" }}>How BackRead compares</p>
+        <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 14px", maxWidth: 640, color: INK }}>
+          You already have tools that watch. None of them listen.
+        </h2>
+        <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 48px", maxWidth: 620 }}>
+          Read receipts and document analytics tell you that something happened. BackRead tells you what it meant.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
+          {/* header row */}
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>What you learn</div>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, borderLeft: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>Read receipts and analytics</div>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, background: GREEN_SOFT, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT }}>BackRead</div>
+          {[
+            ["Whether it was opened", "Yes", "Yes"],
+            ["Time spent per page", "Sometimes", "Yes"],
+            ["The questions the reader had", "No", "Yes, captured as they read"],
+            ["What the reader was deciding", "No", "Read as stated intent"],
+            ["A verdict on where the deal stands", "No", "Every time"],
+            ["Gets sharper across sends", "No", "Compounds with every document"],
+          ].map(([label, them, us], i, arr) => (
+            <div key={i} style={{ display: "contents" }}>
+              <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 15, fontWeight: 600, color: INK }}>{label}</div>
+              <div style={{ padding: "16px 22px", borderLeft: "1px solid " + LINE, borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 14.5, color: BODY }}>{them}</div>
+              <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 14.5, color: INK, fontWeight: 600, background: "rgba(31,169,113,0.05)" }}>{us}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* PRODUCT PREVIEW */}
+      <section style={{ background: GRADIENT, color: "#fff" }}>
+        <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
+          <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
+            <div>
+              <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>See it in action</p>
+              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 18px" }}>The verdict is the first thing you see.</h2>
+              <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: "0 0 16px" }}>
+                Open a document in BackRead and you do not start with a chart to decode. You start with a plain read on the relationship, written the way a sharp colleague would tell you across a desk.
+              </p>
+              <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: 0 }}>
+                Underneath it sits the trail: every question, every pause, every re-read that led to the call.
+              </p>
+            </div>
+            {/* mock verdict card */}
+            <div style={{ background: "#fff", borderRadius: 18, padding: 26, boxShadow: "0 24px 60px rgba(0,0,0,0.28)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <span style={{ width: 8, height: 8, borderRadius: 9, background: BRAND }} />
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: GREEN_TEXT }}>Verdict</span>
+              </div>
+              <p style={{ fontSize: 18, fontWeight: 600, color: INK, lineHeight: 1.4, margin: "0 0 18px" }}>Warm. The reader went deep on pricing and terms, then came back to the summary twice. Prepare for a question about the annual commit.</p>
+              <div style={{ borderTop: "1px solid " + LINE, paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                {[["Pricing page", "Read 3 times"], ["Terms and conditions", "Re-read, paused 40s"], ["Executive summary", "Returned to last"]].map(([a, b], i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 14, color: INK, fontWeight: 600 }}>{a}</span>
+                    <span style={{ fontSize: 13, color: BODY }}>{b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
         <div style={{ maxWidth: 760 }}>
           <p style={{ ...eyebrow, margin: "0 0 18px" }}>The long game</p>
-          <p style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.34, letterSpacing: "-0.02em", color: INK, margin: 0 }}>
+          <p className="lp-longgame" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.34, letterSpacing: "-0.02em", color: INK, margin: 0 }}>
             The first document you send with BackRead already reads its reader. The hundredth one knows what to say before the question is asked. That gap is the moat, and it grows every time you hit send.
           </p>
         </div>
@@ -209,7 +275,7 @@ export default function LandingPage() {
             Stop sending documents into the dark.
           </h2>
           <p style={{ fontSize: 19, lineHeight: 1.55, color: CLOUD, margin: "0 auto 34px", maxWidth: 520 }}>
-            Send your next document with BackRead and read the reader back. Free while we are in beta.
+            Send your next document with BackRead and read the reader back.
           </p>
           <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: GREEN, color: "#fff", fontSize: 17, fontWeight: 600, padding: "15px 34px", borderRadius: 12 }}>Start free</a>
         </div>
@@ -225,6 +291,8 @@ export default function LandingPage() {
           <span style={{ fontSize: 13, letterSpacing: "0.02em", color: CLOUDDIM }}>The document reads the reader.</span>
           <div style={{ display: "flex", gap: 22 }}>
             <a href="/pricing" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Pricing</a>
+            <a href="/privacy" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Privacy</a>
+            <a href="/terms" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Terms</a>
             <a href="/login" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Sign in</a>
           </div>
         </div>
