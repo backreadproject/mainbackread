@@ -38,8 +38,8 @@ export default function LoginPage() {
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 15, fontFamily: T.font, background: "#fff" };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 7 };
   return (
-    <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
-      <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-cta:hover{background:${T.greenHover}}.t-link:hover{opacity:.7}@media(max-width:820px){.t-hero{display:none!important}}`}</style>
+    <div className="login-grid" style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1.05fr 0.95fr", fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
+      <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-cta:hover{background:${T.greenHover}}.t-link:hover{opacity:.7}@media(max-width:820px){.t-hero{display:none!important}.login-grid{grid-template-columns:1fr!important}}`}</style>
       <div className="t-hero" style={{ background: T.sidebarGradient, color: "#fff", padding: "56px 60px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ color: T.brandGreen, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span><span style={{ fontSize: 20, fontWeight: 700, letterSpacing: T.trackingTight }}>BackRead</span></div>
         <div>

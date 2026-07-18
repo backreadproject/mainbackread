@@ -205,14 +205,14 @@ export default function MembersClient({ org, role, members: initial, invites: in
           </div>
           {members.map((m, i) => (
             <div key={m.id} className="data-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "14px 18px", borderBottom: i < members.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+              <div className="data-cell dc-title" style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 9, background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{m.avatarUrl ? <img src={m.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : `${(m.firstName?.[0] ?? "").toUpperCase()}${(m.lastName?.[0] ?? "").toUpperCase()}` || (m.email?.[0] ?? "?").toUpperCase()}</div>
                 <div style={{ minWidth: 0 }}>
                   {(m.firstName || m.lastName) && <div style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{`${m.firstName ?? ""} ${m.lastName ?? ""}`.trim()}</div>}
                   <div style={{ fontSize: (m.firstName || m.lastName) ? 12 : 14, fontWeight: (m.firstName || m.lastName) ? 400 : 600, color: (m.firstName || m.lastName) ? T.muted : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.email ?? "Member"}</div>
                 </div>
               </div>
-              <span>
+              <span className="data-cell" data-label="Role">
                 {canManage && m.role !== "owner" ? (
                   <select value={m.role} onChange={(e) => changeRole(m.id, e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, fontFamily: T.font, background: "#fff", color: T.body, textTransform: "capitalize" }}>
                     <option value="member">Member</option>
@@ -220,7 +220,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
                   </select>
                 ) : roleBadge(m.role)}
               </span>
-              <span style={{ fontSize: 14, color: T.body }}>{new Date(m.joinedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
+              <span className="data-cell" data-label="Joined" style={{ fontSize: 14, color: T.body }}>{new Date(m.joinedAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
               <span style={{ justifySelf: "end" }}>
                 {canManage && m.role !== "owner" && (
                   <button onClick={() => removeMember(m.id)} aria-label="Remove member" title="Remove" style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, lineHeight: 0 }}>

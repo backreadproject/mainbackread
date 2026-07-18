@@ -52,11 +52,11 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
             </div>
             {filtered.map((r, i) => (
               <a key={r.id} href={`/recipients/${r.id}`} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 0.8fr 0.7fr 0.9fr", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
-                <span style={{ fontSize: 14, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
-                <span style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
-                <span style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
-                <span><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.opened ? T.pillPosBg : T.pillNeutralBg, color: r.opened ? T.pillPosText : T.pillNeutralText }}>{r.opened ? "Opened" : "New"}</span></span>
+                <span className="data-cell dc-title" style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
+                <span className="data-cell" data-label="Document" style={{ fontSize: 14, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
+                <span className="data-cell" data-label="Questions" style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
+                <span className="data-cell" data-label="Added" style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
+                <span className="data-cell" data-label="Status"><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.opened ? T.pillPosBg : T.pillNeutralBg, color: r.opened ? T.pillPosText : T.pillNeutralText }}>{r.opened ? "Opened" : "New"}</span></span>
               </a>
             ))}
           </>)}
