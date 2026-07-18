@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
+import ProspectModal from "@/app/(app)/documents/[id]/ProspectModal";
 
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string };
@@ -167,13 +168,24 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
 }
 
 function ShareButton({ documentId, onCreated }: { documentId: string; onCreated: (r: Rec) => void }) {
-  const [busy, setBusy] = useState(false);
-  async function create() {
-    setBusy(true);
-    const supabase = createClient();
-    const { data } = await supabase.from("recipients").insert({ document_id: documentId, label: null }).select("id, label, share_token, created_at").single();
-    if (data) onCreated(data as Rec);
-    setBusy(false);
-  }
-  return <button onClick={create} disabled={busy} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{busy ? "…" : "+ New link"}</button>;
+  const [open, setOpen] = useState(false);
+  const [notice, setNotice] = useState("");
+  return (
+    <>
+      <button onClick={() => setOpen(true)} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Share with Prospect</button>
+      {notice && <span style={{ fontSize: 11, color: T.body, marginLeft: 8 }}>{notice}</span>}
+      {open && (
+        <ProspectModal
+          documentId={documentId}
+          onClose={() => setOpen(false)}
+          onCreated={(rec, readUrl, emailInfo) => {
+            onCreated(rec as Rec);
+            setOpen(false);
+            if (emailInfo) setNotice(emailInfo.sent ? "Email sent." : (emailInfo.warning ?? "Link created."));
+            setTimeout(() => setNotice(""), 6000);
+          }}
+        />
+      )}
+    </>
+  );
 }
