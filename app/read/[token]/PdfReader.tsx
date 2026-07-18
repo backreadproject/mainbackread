@@ -82,7 +82,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
           container.appendChild(wrapper);
           wrappers.push(wrapper);
           const ctx = canvas.getContext("2d");
-          if (ctx) await page.render({ canvasContext: ctx, viewport }).promise;
+          if (ctx) await page.render({ canvas, canvasContext: ctx, viewport }).promise;
           const tc = await page.getTextContent();
           textParts.push(`[Page ${n}]\n` + tc.items.map((it) => ("str" in it ? it.str : "")).join(" "));
         }
