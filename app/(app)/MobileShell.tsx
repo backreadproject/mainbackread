@@ -34,9 +34,11 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
           }
           .app-body { position: relative; }
           .app-sidebar-wrap {
-            position: fixed; top: 0; left: 0; height: 100vh; z-index: 60;
+            position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; z-index: 60;
             transform: translateX(-100%); transition: transform .25s ease;
           }
+          .app-sidebar-wrap > div { height: 100%; }
+          .app-sidebar-wrap aside { height: 100dvh !important; max-height: 100dvh !important; }
           .app-shell.drawer-open .app-sidebar-wrap { transform: translateX(0); }
           .app-scrim {
             display: block; position: fixed; inset: 0; z-index: 55;
