@@ -49,7 +49,7 @@ export default function LoginPage() {
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>The document reads the reader.</div>
       </div>
       <div className="login-form-pane" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 40, background: T.canvas }}>
-        <div style={{ width: "100%", maxWidth: 356, boxSizing: "border-box", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
+        <div style={{ width: "100%", maxWidth: 356, boxSizing: "border-box", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 16, padding: 32, boxShadow: "0 0 0 1px rgba(59,156,120,0.10), 0 8px 40px rgba(14,92,63,0.14), 0 2px 12px rgba(10,20,16,0.05)" }}>
           <h1 style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
           {mode === "signup" && (

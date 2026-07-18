@@ -41,19 +41,30 @@ export default function LandingPage() {
           .lp-trail{padding-left:0!important}
           .lp-trail-line{display:none!important}
         }
+        @media(max-width:860px){
+          .lp-hero-pad{padding:56px 28px 64px!important}
+          .lp-hero-h1{font-size:42px!important}
+          .lp-hero-sub{font-size:18px!important}
+        }
         @media(max-width:520px){
-          .lp-hero-h1{font-size:34px!important}
+          .lp-hero-h1{font-size:32px!important;margin-bottom:18px!important}
+          .lp-hero-sub{font-size:16px!important;margin-bottom:26px!important}
+          .lp-hero-badge{margin-bottom:20px!important}
           .lp-pad{padding-left:20px!important;padding-right:20px!important}
-          .lp-hero-pad{padding:64px 20px 72px!important}
-          .lp-sec{padding-top:64px!important;padding-bottom:64px!important}
+          .lp-hero-pad{padding:40px 20px 52px!important}
+          .lp-sec{padding-top:56px!important;padding-bottom:56px!important}
           .lp-four{grid-template-columns:1fr!important}
-          .lp-cta-h2{font-size:32px!important}
+          .lp-cta-h2{font-size:30px!important}
+          .lp-hero-fine{font-size:11px!important;margin-top:20px!important}
+          .lp-hero-ctas{flex-direction:column!important;align-items:stretch!important}
+          .lp-hero-ctas a{text-align:center!important}
+          h2{font-size:30px!important}
         }
       `}</style>
 
-      {/* ===== NAV ===== */}
-      <div style={{ background: INK }}>
-        <nav className="lp-pad" style={{ ...wrap, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "22px 28px" }}>
+      {/* ===== NAV (sticky) ===== */}
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(10,20,16,0.82)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <nav className="lp-pad" style={{ ...wrap, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 28px" }}>
           <span style={{ display: "flex", alignItems: "center", gap: 9, color: "#fff", fontSize: 20, fontWeight: 600, letterSpacing: "-0.01em" }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={LIVING} strokeWidth="2.2" /><circle cx="12" cy="12" r="3.4" fill={LIVING} /></svg>
             BackRead
@@ -62,6 +73,7 @@ export default function LandingPage() {
             <a href="#how" className="lp-a lp-link" style={{ color: CLOUD, fontSize: 15 }}>How it works</a>
             <a href="#why" className="lp-a lp-link" style={{ color: CLOUD, fontSize: 15 }}>Why BackRead</a>
             <a href="#uses" className="lp-a lp-link" style={{ color: CLOUD, fontSize: 15 }}>Use cases</a>
+            <a href="/pricing" className="lp-a lp-link" style={{ color: CLOUD, fontSize: 15 }}>Pricing</a>
             <a href="/login" className="lp-a lp-link" style={{ color: CLOUD, fontSize: 15 }}>Sign in</a>
           </div>
           <a href="/login" className="lp-a lp-cta" style={{ background: LIVING, color: INK, fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 10 }}>Start free</a>
@@ -77,21 +89,21 @@ export default function LandingPage() {
           <circle cx="40" cy="540" r="4" fill={LIVING} />
         </svg>
         <div className="lp-hero-pad" style={{ ...wrap, padding: "96px 28px 108px", position: "relative", zIndex: 2 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(59,156,120,0.12)", border: "1px solid rgba(59,156,120,0.32)", color: LIVING, fontFamily: MONO, fontSize: 12, letterSpacing: "0.08em", padding: "6px 14px", borderRadius: 20, marginBottom: 30 }}>
+          <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(59,156,120,0.12)", border: "1px solid rgba(59,156,120,0.32)", color: LIVING, fontFamily: MONO, fontSize: 12, letterSpacing: "0.08em", padding: "6px 14px", borderRadius: 20, marginBottom: 30 }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: LIVING }} />
             NOW IN BETA, FREE FOR EARLY USERS
           </div>
           <h1 className="lp-hero-h1" style={{ fontSize: 64, fontWeight: 600, lineHeight: 1.04, letterSpacing: "-0.035em", margin: "0 0 26px", maxWidth: 780 }}>
             Every reader leaves a trail.<br /><span style={{ color: LIVING }}>Now you can follow it.</span>
           </h1>
-          <p style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 38px", color: CLOUD, maxWidth: 560 }}>
+          <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 38px", color: CLOUD, maxWidth: 560 }}>
             BackRead turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.
           </p>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+          <div className="lp-hero-ctas" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
             <a href="/login" className="lp-a lp-cta" style={{ background: LIVING, color: INK, fontSize: 16, fontWeight: 600, padding: "14px 28px", borderRadius: 12 }}>Start free</a>
             <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.18)" }}>See how it works</a>
           </div>
-          <p style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: CLOUDDIM, margin: "26px 0 0" }}>NO CARD REQUIRED. YOUR FIRST DOCUMENT LIVE IN MINUTES.</p>
+          <p className="lp-hero-fine" style={{ fontFamily: MONO, fontSize: 12, letterSpacing: "0.06em", color: CLOUDDIM, margin: "26px 0 0" }}>NO CARD REQUIRED. YOUR FIRST DOCUMENT LIVE IN MINUTES.</p>
         </div>
       </section>
 
