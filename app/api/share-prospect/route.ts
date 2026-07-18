@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
-// Creates a prospect recipient (with name), returns the read link.
-// If mode === 'email', also dispatches a branded email via Resend.
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -14,10 +13,20 @@ export async function POST(req: Request) {
   if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
 
+  // Verify the caller can actually see/act on this document (defense in depth).
+  // The session client's SELECT is RLS-scoped, so if this returns a row, the
+  // user legitimately has access to the document.
+  const { data: docRow } = await supabase.from("documents").select("title").eq("id", documentId).single();
+  if (!docRow) return NextResponse.json({ error: "You don't have access to that document." }, { status: 403 });
+  const docTitle = docRow.title ?? "a document";
+
   const label = `${firstName.trim()} ${lastName.trim()}`;
 
-  // Create the recipient. RLS: caller must be able to see/edit the document.
-  const { data: rec, error } = await supabase
+  // Create the recipient via the ADMIN client. We've authenticated the user and
+  // confirmed document access above, so bypassing RLS here is safe and avoids the
+  // insert-then-read-back policy trap (same pattern as create-org/project/grants).
+  const admin = createAdminClient();
+  const { data: rec, error } = await admin
     .from("recipients")
     .insert({
       document_id: documentId,
@@ -31,19 +40,13 @@ export async function POST(req: Request) {
     .single();
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
 
-  // Get the document title for the email.
-  const { data: docRow } = await supabase.from("documents").select("title").eq("id", documentId).single();
-  const docTitle = docRow?.title ?? "a document";
-
   const origin = new URL(req.url).origin;
   const readUrl = `${origin}/read/${rec.share_token}`;
 
-  // Email dispatch via Resend.
   if (mode === "email") {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
     const FROM = process.env.PROSPECT_FROM_EMAIL || "BackRead <onboarding@resend.dev>";
     if (!RESEND_API_KEY) {
-      // Recipient created, but email can't send without the key. Report gracefully.
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but email is not configured yet (RESEND_API_KEY missing). Copy the link to send manually." });
     }
 
@@ -54,18 +57,13 @@ export async function POST(req: Request) {
       const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: FROM,
-          to: [email.trim()],
-          subject: `${senderName} shared "${docTitle}" with you`,
-          html,
-        }),
+        body: JSON.stringify({ from: FROM, to: [email.trim()], subject: `${senderName} shared "${docTitle}" with you`, html }),
       });
       if (!resp.ok) {
         const txt = await resp.text();
         return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: `Recipient created, but the email failed to send: ${txt.slice(0, 200)}` });
       }
-    } catch (e) {
+    } catch {
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but the email service could not be reached." });
     }
     return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: true });
