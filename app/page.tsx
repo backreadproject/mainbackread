@@ -30,7 +30,7 @@ export default function LandingPage() {
         .lp-a{text-decoration:none}
         .lp-cta{transition:transform .12s, box-shadow .15s}.lp-cta:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(11,122,75,0.30)}.lp-cta:active{transform:translateY(0)}
         .lp-ghost{transition:background .15s,border-color .15s}.lp-ghost:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.30)}
-        .lp-card{transition:transform .16s, box-shadow .16s, border-color .16s}.lp-card:hover{transform:translateY(-3px);box-shadow:0 18px 48px rgba(15,23,41,0.10);border-color:${BRAND}}
+        .lp-card{transition:transform .16s, box-shadow .16s, border-color .16s;box-shadow:0 0 0 1px rgba(31,169,113,0.08), 0 8px 30px rgba(11,122,75,0.10), 0 2px 10px rgba(15,23,41,0.04)}.lp-card:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(31,169,113,0.18), 0 18px 48px rgba(11,122,75,0.18);border-color:${BRAND}}
         .lp-step:hover .lp-node{background:${BRAND};box-shadow:0 0 0 6px rgba(31,169,113,0.14)}
         @media(max-width:860px){
           .lp-two{grid-template-columns:1fr!important;gap:36px!important}
@@ -39,14 +39,14 @@ export default function LandingPage() {
           .lp-trail-line{display:none!important}
           .lp-hero-h1{font-size:44px!important}
           .lp-hero-sub{font-size:18px!important}
-          .lp-hero-pad{padding:64px 32px 76px!important}
+          .lp-hero-pad{padding:118px 32px 76px!important}
         }
         @media(max-width:520px){
           .lp-hero-h1{font-size:33px!important;margin-bottom:18px!important}
           .lp-hero-sub{font-size:16px!important;margin-bottom:26px!important}
           .lp-hero-badge{margin-bottom:20px!important}
           .lp-pad{padding-left:20px!important;padding-right:20px!important}
-          .lp-hero-pad{padding:40px 20px 56px!important}
+          .lp-hero-pad{padding:104px 20px 56px!important}
           .lp-sec{padding-top:56px!important;padding-bottom:56px!important}
           .lp-four{grid-template-columns:1fr!important}
           .lp-cta-h2{font-size:30px!important}
@@ -67,7 +67,7 @@ export default function LandingPage() {
 
         <MarketingNav />
 
-        <div className="lp-hero-pad" style={{ ...wrap, padding: "72px 32px 104px", position: "relative", zIndex: 2 }}>
+        <div className="lp-hero-pad" style={{ ...wrap, padding: "128px 32px 104px", position: "relative", zIndex: 2 }}>
           <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(31,169,113,0.12)", border: "1px solid rgba(31,169,113,0.34)", color: BRAND, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: BRAND }} />
             Now in beta, free for early users

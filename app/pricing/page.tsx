@@ -58,7 +58,7 @@ export default function PricingPage() {
         @media(max-width:560px){.m-tiers{grid-template-columns:1fr!important}.m-nav-links{display:none!important}}
       `}</style>
       <MarketingNav activePricing />
-      <section style={{ background: GRADIENT, color: "#fff", padding: "72px 0 130px", textAlign: "center", marginTop: -72, paddingTop: 130 }}>
+      <section style={{ background: GRADIENT, color: "#fff", padding: "128px 0 130px", textAlign: "center" }}>
         <div style={wrap}>
           <h1 style={{ fontSize: 48, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 14px" }}>Pricing that scales with your sends</h1>
           <p style={{ fontSize: 19, color: CLOUD, margin: 0, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>Start free. Upgrade when reading your readers becomes part of how you close.</p>
