@@ -62,7 +62,7 @@ export default function NotificationBell() {
         {unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "#F04438", color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread > 9 ? "9+" : unread}</span>}
       </button>
       {open && (
-        <div style={{ position: "absolute", top: 42, right: 0, width: 320, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 200, overflow: "hidden", fontFamily: T.font }}>
+        <div style={{ position: "absolute", top: 42, left: 0, width: 300, maxWidth: "calc(100vw - 40px)", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 200, overflow: "hidden", fontFamily: T.font }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>Notifications</span>
             {unread > 0 && <button onClick={markAll} style={{ background: "none", border: "none", color: T.green, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>Mark all read</button>}
