@@ -1,9 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
+import { getOrgContext } from "@/lib/org-context";
 import DocumentsClient from "./DocumentsClient";
 
 export default async function DocumentsPage() {
   const supabase = await createClient();
-  const { data: docs } = await supabase.from("documents").select("id, title, created_at, archived_at").order("created_at", { ascending: false });
+  const ctx = await getOrgContext();
+  const isOrg = ctx.accountType === "organization" && !!ctx.org;
+
+  // Projects available for assignment (RLS-limited to what I can see).
+  let projects: { id: string; name: string }[] = [];
+  if (isOrg && ctx.org) {
+    const { data: projs } = await supabase.from("projects").select("id, name").eq("organization_id", ctx.org.id).order("name");
+    projects = projs ?? [];
+  }
+
+  const { data: docs } = await supabase.from("documents").select("id, title, created_at, archived_at, project_id").order("created_at", { ascending: false });
   const documents = docs ?? [];
   const docIds = documents.map((d) => d.id);
 
@@ -42,8 +53,11 @@ export default async function DocumentsPage() {
   }
   totalReads = openedRecipients.size;
 
+  const projMap = new Map(projects.map((p) => [p.id, p.name]));
   const rows = documents.map((d) => ({
     id: d.id, title: d.title, createdAt: d.created_at, archived: !!d.archived_at,
+    projectId: (d.project_id as string | null) ?? null,
+    projectName: d.project_id ? (projMap.get(d.project_id) ?? null) : null,
     recipients: recByDoc[d.id] ?? 0,
     reads: (openedByDoc[d.id]?.size) ?? 0,
     questions: questionsByDoc[d.id] ?? 0,
@@ -59,5 +73,5 @@ export default async function DocumentsPage() {
     activeReaders: recipients.length,
   };
 
-  return <DocumentsClient rows={rows} stats={stats} />;
+  return <DocumentsClient rows={rows} stats={stats} isOrg={isOrg} orgId={ctx.org?.id ?? null} projects={projects} />;
 }

@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 
-type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number };
+type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
+type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
 
 const ICONS = {
@@ -27,8 +28,9 @@ function StatCard({ icon, label, value, sub }: { icon: string; label: string; va
   );
 }
 
-export default function DocumentsClient({ rows: initialRows, stats }: { rows: Row[]; stats: Stats }) {
+export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [] }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[] }) {
   const [rows, setRows] = useState(initialRows);
+  const [uploadProject, setUploadProject] = useState<string>("");
   const [view, setView] = useState<"active" | "archived">("active");
   const [filter, setFilter] = useState<"all" | "opened" | "unopened">("all");
   const [uploading, setUploading] = useState(false);
@@ -58,7 +60,9 @@ export default function DocumentsClient({ rows: initialRows, stats }: { rows: Ro
     const path = `${user.id}/${Date.now()}-${safeName}`;
     const { error: upErr } = await supabase.storage.from("documents").upload(path, file);
     if (upErr) { setError("Upload failed. " + upErr.message); setUploading(false); return; }
-    const { error: dbErr } = await supabase.from("documents").insert({ owner_id: user.id, title: file.name.replace(/\.pdf$/i, ""), storage_path: path });
+    const insertRow: Record<string, unknown> = { owner_id: user.id, title: file.name.replace(/\.pdf$/i, ""), storage_path: path };
+    if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
+    const { error: dbErr } = await supabase.from("documents").insert(insertRow);
     if (dbErr) { setError("Couldn't record it. " + dbErr.message); setUploading(false); return; }
     window.location.reload();
   }
@@ -81,6 +85,14 @@ export default function DocumentsClient({ rows: initialRows, stats }: { rows: Ro
     setBusy(false); setConfirmDelete(null);
   }
 
+  async function moveToProject(id: string, projectId: string | null) {
+    setMenuOpen(null);
+    const supabase = createClient();
+    const { error } = await supabase.from("documents").update({ project_id: projectId }).eq("id", id);
+    if (error) { setError(error.message); return; }
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, projectId, projectName: projectId ? (projects.find((p) => p.id === projectId)?.name ?? null) : null } : r)));
+  }
+
   const seg = (key: typeof filter, label: string) => (
     <button key={key} onClick={() => setFilter(key)} style={{ background: filter === key ? T.green : "transparent", color: filter === key ? "#fff" : T.body, fontSize: 13, fontWeight: filter === key ? 600 : 500, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font }}>{label}</button>
   );
@@ -101,10 +113,18 @@ export default function DocumentsClient({ rows: initialRows, stats }: { rows: Ro
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Manage the documents you share and how they're read.</p>
           </div>
           {view === "active" && (
-            <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
-              <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
-              {uploading ? "Uploading…" : "+ Add document"}
-            </label>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {isOrg && projects.length > 0 && (
+                <select value={uploadProject} onChange={(e) => setUploadProject(e.target.value)} title="Upload into project" style={{ border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff", color: T.body }}>
+                  <option value="">No project</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              )}
+              <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
+                <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
+                {uploading ? "Uploading…" : "+ Add document"}
+              </label>
+            </div>
           )}
         </div>
 
@@ -140,15 +160,16 @@ export default function DocumentsClient({ rows: initialRows, stats }: { rows: Ro
               <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{view === "archived" ? "No archived documents." : rows.filter((r) => !r.archived).length === 0 ? "No documents yet. Add one to start reading your readers." : "No documents match this filter."}</p>
             </div>
           ) : (<>
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 0.9fr 1fr 0.9fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
-              <span>Document</span><span>Recipients</span><span>Reads</span><span>Questions</span><span>Shared</span><span>Status</span><span></span>
+            <div style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+              <span>Document</span><span>Recipients</span><span>Reads</span><span>Questions</span><span>Project</span><span>Shared</span><span>Status</span><span></span>
             </div>
             {filtered.map((r, i) => (
-              <div key={r.id} className="t-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 0.8fr 0.9fr 1fr 0.9fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
+              <div key={r.id} className="t-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
                 <a href={`/documents/${r.id}`} style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{r.title}</a>
                 <span style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
                 <span style={{ fontSize: 14, color: T.body }}>{r.reads}</span>
                 <span style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
+                <span style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "—"}</span>
                 <span style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
                 <span><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? "Archived" : r.reads > 0 ? "Active" : "Awaiting"}</span></span>
                 <div style={{ position: "relative", justifySelf: "end" }}>
@@ -162,7 +183,16 @@ export default function DocumentsClient({ rows: initialRows, stats }: { rows: Ro
                       ) : (
                         <button className="t-menu-item" onClick={() => setArchived(r.id, true)} disabled={busy} style={menuItem}>Archive</button>
                       )}
-                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "#B42318" }}>Delete</button>
+                      {isOrg && projects.length > 0 && (
+                        <div style={{ borderTop: `1px solid ${T.border}`, margin: "4px 0", paddingTop: 4 }}>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", padding: "4px 12px" }}>Move to project</div>
+                          {r.projectId && <button className="t-menu-item" onClick={() => moveToProject(r.id, null)} style={menuItem}>Remove from project</button>}
+                          {projects.filter((p) => p.id !== r.projectId).map((p) => (
+                            <button key={p.id} className="t-menu-item" onClick={() => moveToProject(r.id, p.id)} style={menuItem}>{p.name}</button>
+                          ))}
+                        </div>
+                      )}
+                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "#B42318", borderTop: `1px solid ${T.border}`, marginTop: 4 }}>Delete</button>
                     </div>
                   )}
                 </div>
