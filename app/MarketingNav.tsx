@@ -1,37 +1,29 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-
 const BRAND = "#1FA971", GREEN = "#0B7A4B", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
-
 const CircleMark = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
 );
-
 export default function MarketingNav({ activePricing = false }: { activePricing?: boolean }) {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [scrolled, setScrolled] = useState(false);
-
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => setAuthed(!!data.user));
   }, []);
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
   const link = { color: CLOUD, fontSize: 15, textDecoration: "none" } as const;
-
   return (
     <div style={{
-      position: "sticky", top: 0, zIndex: 50, fontFamily: DM,
-      background: scrolled ? "rgba(8,32,25,0.72)" : "transparent",
+      position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, fontFamily: DM,
+      background: scrolled ? "rgba(8,32,25,0.82)" : "transparent",
       backdropFilter: scrolled ? "saturate(180%) blur(12px)" : "none",
       WebkitBackdropFilter: scrolled ? "saturate(180%) blur(12px)" : "none",
       borderBottom: scrolled ? "1px solid rgba(255,255,255,0.08)" : "1px solid transparent",
@@ -48,7 +40,7 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
         {authed === null ? (
           <span style={{ width: 160 }} />
         ) : authed ? (
-          <a href="/overview" className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Open app →</a>
+          <a href="/overview" className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Open app</a>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>Sign in</a>

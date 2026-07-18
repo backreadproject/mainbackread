@@ -51,8 +51,7 @@ export default function LandingPage() {
           .lp-four{grid-template-columns:1fr!important}
           .lp-cta-h2{font-size:30px!important}
           .lp-hero-fine{font-size:11px!important;margin-top:20px!important}
-          .lp-hero-ctas{flex-direction:column!important;align-items:stretch!important}
-          .lp-hero-ctas a{text-align:center!important;width:100%!important;box-sizing:border-box!important}
+          .lp-hero-ctas a{flex:1 1 0!important;text-align:center!important;padding-left:12px!important;padding-right:12px!important;font-size:15px!important;white-space:nowrap!important}
           h2{font-size:30px!important}
         }
       `}</style>
@@ -112,8 +111,8 @@ export default function LandingPage() {
           <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 60px", maxWidth: 620 }}>
             Three things happen the moment your reader opens it.
           </h2>
-          <div className="lp-trail" style={{ position: "relative", paddingLeft: 8 }}>
-            <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19, top: 12, bottom: 12, width: 1.5, background: "linear-gradient(180deg, transparent, rgba(31,169,113,0.5), transparent)" }} />
+          <div className="lp-trail" style={{ position: "relative" }}>
+            <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19.25, top: 20, bottom: 20, width: 1.5, background: "linear-gradient(180deg, transparent, rgba(31,169,113,0.5), transparent)" }} />
             {[
               ["01", "The document answers, in your voice", "Your reader asks a question inside the document itself. BackRead answers from what you approved, and when a question crosses into territory only you should handle, it holds the line and flags it for you instead of guessing."],
               ["02", "It watches how the reading goes", "Every pause, re-read, and question becomes a signal. You see which sections held attention, which were skipped, and where a reader hesitated, the quiet tells that a reply email never contains."],

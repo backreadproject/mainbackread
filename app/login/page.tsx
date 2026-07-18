@@ -48,12 +48,12 @@ export default function LoginPage() {
         </div>
         <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>The document reads the reader.</div>
       </div>
-      <div className="login-form-pane" style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "56px 40px", background: T.canvas, minHeight: "100vh", boxSizing: "border-box", overflowY: "auto" }}>
-        <div style={{ width: "100%", maxWidth: 356, boxSizing: "border-box", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 16, padding: 32, boxShadow: "0 0 0 1px rgba(59,156,120,0.10), 0 8px 40px rgba(14,92,63,0.14), 0 2px 12px rgba(10,20,16,0.05)" }}>
+      <div className="login-form-pane" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 40px", background: T.canvas, minHeight: "100vh", boxSizing: "border-box" }}>
+        <div style={{ width: "100%", maxWidth: 356, boxSizing: "border-box", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 16, padding: 26, boxShadow: "0 0 0 1px rgba(59,156,120,0.10), 0 8px 40px rgba(14,92,63,0.14), 0 2px 12px rgba(10,20,16,0.05)" }}>
           <h1 style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
-          <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
+          <p style={{ fontSize: 14, color: T.body, margin: "0 0 18px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
           {mode === "signup" && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
               <span style={label}>Account type</span>
               <div style={{ display: "flex", gap: 8 }}>
                 {([["personal", "Personal"], ["company", "Company"]] as const).map(([val, lbl]) => (
@@ -64,7 +64,7 @@ export default function LoginPage() {
             </div>
           )}
           {mode === "signup" && (
-            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+            <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
               <div style={{ flex: 1 }}>
                 <span style={label}>First name</span>
                 <input className="t-in" placeholder="Sarah" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={input} />
@@ -76,7 +76,7 @@ export default function LoginPage() {
             </div>
           )}
           <span style={label}>Work email</span>
-          <input className="t-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
+          <input className="t-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 12 }} />
           <span style={label}>Password</span>
           <div style={{ position: "relative", marginBottom: 10 }}>
             <input className="t-in" type={showPassword ? "text" : "password"} placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} style={{ ...input, marginBottom: 0, paddingRight: 44 }} />
