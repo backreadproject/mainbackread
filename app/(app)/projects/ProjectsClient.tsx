@@ -5,7 +5,7 @@ import { T, microLabel } from "@/lib/theme";
 
 type Project = { id: string; name: string; createdAt: string; docCount: number };
 
-export default function ProjectsClient({ projects, orgless }: { projects: Project[]; orgless: boolean }) {
+export default function ProjectsClient({ projects, orgless, personal = false }: { projects: Project[]; orgless: boolean; personal?: boolean }) {
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -42,7 +42,7 @@ export default function ProjectsClient({ projects, orgless }: { projects: Projec
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Projects</h1>
-            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Group documents and share a whole set with your team at once.</p>
+            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{personal ? "Group your documents into private collections." : "Group documents and share a whole set with your team at once."}</p>
           </div>
           <button onClick={() => setShowNew((v) => !v)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>+ New project</button>
         </div>

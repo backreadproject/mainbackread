@@ -26,5 +26,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     members = (mem ?? []).map((m) => ({ userId: m.user_id, email: (m.email as string | null) ?? null }));
   }
 
-  return <ProjectDetailClient project={project} documents={docs ?? []} canManage={ctx.role === "owner" || ctx.role === "admin"} members={members} />;
+  const canManage = ctx.org ? (ctx.role === "owner" || ctx.role === "admin") : true;
+  return <ProjectDetailClient project={project} documents={docs ?? []} canManage={canManage} members={members} />;
 }

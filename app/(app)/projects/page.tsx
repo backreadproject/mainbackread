@@ -4,18 +4,20 @@ import ProjectsClient from "./ProjectsClient";
 
 export default async function ProjectsPage() {
   const ctx = await getOrgContext();
-  if (!ctx.org) {
-    return <ProjectsClient projects={[]} orgless />;
-  }
   const supabase = await createClient();
-  // RLS already limits to projects I can see (creator or granted).
-  const { data: projects } = await supabase
-    .from("projects")
-    .select("id, name, created_at")
-    .eq("organization_id", ctx.org.id)
-    .order("created_at", { ascending: false });
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Doc counts per project (only docs I can see, RLS-limited).
+  // Fetch projects: org projects for org accounts, personal (org-less) projects otherwise.
+  // RLS (can_see_project) already limits rows appropriately, but we scope the query too.
+  let projectsQuery = supabase.from("projects").select("id, name, created_at").order("created_at", { ascending: false });
+  if (ctx.org) {
+    projectsQuery = projectsQuery.eq("organization_id", ctx.org.id);
+  } else {
+    projectsQuery = projectsQuery.is("organization_id", null).eq("created_by", user?.id ?? "");
+  }
+  const { data: projects } = await projectsQuery;
+
+  // Doc counts per project (RLS-limited).
   const ids = (projects ?? []).map((p) => p.id);
   const counts: Record<string, number> = {};
   if (ids.length) {
@@ -24,5 +26,5 @@ export default async function ProjectsPage() {
   }
 
   const rows = (projects ?? []).map((p) => ({ id: p.id, name: p.name, createdAt: p.created_at, docCount: counts[p.id] ?? 0 }));
-  return <ProjectsClient projects={rows} orgless={false} />;
+  return <ProjectsClient projects={rows} orgless={false} personal={!ctx.org} />;
 }
