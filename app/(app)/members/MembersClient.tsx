@@ -6,41 +6,70 @@ import { T, microLabel } from "@/lib/theme";
 
 type Member = { id: string; userId: string; email: string | null; role: "owner" | "admin" | "member"; joinedAt: string };
 type Org = { id: string; name: string } | null;
+type Invite = { id: string; email: string; firstName: string; lastName: string; role: "admin" | "member"; createdAt: string; expiresAt: string };
 
-export default function MembersClient({ org, role, members: initial }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[] }) {
+export default function MembersClient({ org, role, members: initial, invites: initialInvites = [] }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[]; invites?: Invite[] }) {
   const [members, setMembers] = useState(initial);
   const [orgName, setOrgName] = useState("");
+  const [orgDomain, setOrgDomain] = useState("");
   const [migrateDocuments, setMigrateDocuments] = useState(true);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
 
-  const [addEmail, setAddEmail] = useState("");
-  const [addRole, setAddRole] = useState<"admin" | "member">("member");
+  const [invites, setInvites] = useState(initialInvites);
+  const [iEmail, setIEmail] = useState("");
+  const [iFirst, setIFirst] = useState("");
+  const [iLast, setILast] = useState("");
+  const [iRole, setIRole] = useState<"admin" | "member">("member");
   const [adding, setAdding] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [inviteNote, setInviteNote] = useState("");
 
   const canManage = role === "owner" || role === "admin";
 
   async function createOrg() {
     if (!orgName.trim()) return;
     setCreating(true); setError("");
-    const res = await fetch("/api/create-org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), migrateDocuments }) });
+    const res = await fetch("/api/create-org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), domain: orgDomain.trim(), migrateDocuments }) });
     const json = await res.json();
     if (!res.ok) { setError(json.error ?? "Could not create organization."); setCreating(false); return; }
     window.location.reload();
   }
 
-  async function addMember() {
-    const email = addEmail.trim().toLowerCase();
-    if (!email || !org) return;
-    setAdding(true); setError("");
-    // Look up the user by email via an API (admin) — Stage 4 does full invites.
-    // For Stage 3 we add an existing user by email.
-    const res = await fetch("/api/add-member", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ organizationId: org.id, email, role: addRole }) });
+  async function lookupName() {
+    const email = iEmail.trim().toLowerCase();
+    if (!email || iFirst || iLast) return;
+    // Auto-fill name if this email already has a BackRead account.
+    try {
+      const res = await fetch(`/api/lookup-user?email=${encodeURIComponent(email)}`);
+      const d = await res.json();
+      if (d.found) { if (d.firstName) setIFirst(d.firstName); if (d.lastName) setILast(d.lastName); }
+    } catch {}
+  }
+
+  async function sendInvite() {
+    const email = iEmail.trim().toLowerCase();
+    if (!email || !iFirst.trim() || !iLast.trim() || !org) { setError("Name and email are required."); return; }
+    setAdding(true); setError(""); setInviteNote("");
+    const res = await fetch("/api/create-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole }) });
     const json = await res.json();
-    if (!res.ok) { setError(json.error ?? "Could not add member."); setAdding(false); return; }
-    setMembers((prev) => [...prev, json.member]);
-    setAddEmail(""); setShowAdd(false); setAdding(false);
+    if (!res.ok) { setError(json.error ?? "Could not send invitation."); setAdding(false); return; }
+    if (json.addedDirectly) {
+      setInviteNote("That person already had an account and was added to the team.");
+      window.location.reload();
+      return;
+    }
+    if (json.emailSent) setInviteNote("Invitation sent.");
+    else setInviteNote(json.emailWarning ?? "Invitation created.");
+    setIEmail(""); setIFirst(""); setILast("");
+    // Refresh invites list from server on next load; optimistically add.
+    setInvites((prev) => [{ id: json.invite?.id ?? Math.random().toString(), email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole, createdAt: new Date().toISOString(), expiresAt: "" }, ...prev]);
+    setAdding(false);
+  }
+
+  async function revokeInvite(id: string) {
+    const res = await fetch("/api/revoke-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ inviteId: id }) });
+    if (res.ok) setInvites((prev) => prev.filter((i) => i.id !== id));
   }
 
   async function changeRole(memberId: string, newRole: "admin" | "member") {
@@ -66,7 +95,9 @@ export default function MembersClient({ org, role, members: initial }: { org: Or
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>Create an organization to share documents and read your pipeline as a team.</p>
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>Organization name</span>
-            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder="Acme Inc." style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 14 }} />
+            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder="Acme Inc." style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>Company domain <span style={{ fontWeight: 400, color: T.muted }}>(optional)</span></span>
+            <input value={orgDomain} onChange={(e) => setOrgDomain(e.target.value)} placeholder="acme.com" style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 14 }} />
             <label style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16, cursor: "pointer", fontSize: 14, color: T.body }}>
               <input type="checkbox" checked={migrateDocuments} onChange={(e) => setMigrateDocuments(e.target.checked)} style={{ width: 16, height: 16, accentColor: T.green, cursor: "pointer" }} />
               Move my existing documents into this organization
@@ -104,26 +135,50 @@ export default function MembersClient({ org, role, members: initial }: { org: Or
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Members</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Manage who's in {org.name} and what they can do.</p>
           </div>
-          {canManage && <button onClick={() => setShowAdd((v) => !v)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>+ Add member</button>}
+          {canManage && <button onClick={() => setShowAdd((v) => !v)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>+ Invite member</button>}
         </div>
 
         {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
 
         {showAdd && canManage && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 18, marginBottom: 18, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <input className="t-in" value={addEmail} onChange={(e) => setAddEmail(e.target.value)} placeholder="teammate@company.com" style={{ flex: 1, minWidth: 200, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
-            <select value={addRole} onChange={(e) => setAddRole(e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }}>
-              <option value="member">Member</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button onClick={addMember} disabled={adding || !addEmail.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: adding || !addEmail.trim() ? 0.5 : 1 }}>{adding ? "Adding…" : "Add"}</button>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 18, marginBottom: 18 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: T.heading, marginBottom: 12 }}>Invite a teammate</div>
+            <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+              <input className="t-in" value={iFirst} onChange={(e) => setIFirst(e.target.value)} placeholder="First name" style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
+              <input className="t-in" value={iLast} onChange={(e) => setILast(e.target.value)} placeholder="Last name" style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
+            </div>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <input className="t-in" value={iEmail} onChange={(e) => setIEmail(e.target.value)} onBlur={lookupName} placeholder="teammate@company.com" style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
+              <select value={iRole} onChange={(e) => setIRole(e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }}>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button onClick={sendInvite} disabled={adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", opacity: adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim() ? 0.5 : 1 }}>{adding ? "Sending…" : "Send invite"}</button>
+            </div>
+            {inviteNote && <p style={{ fontSize: 13, color: inviteNote.includes("sent") || inviteNote.includes("added") ? T.greenText : T.body, margin: "10px 0 0" }}>{inviteNote}</p>}
+          </div>
+        )}
+
+        {invites.length > 0 && (
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden", marginBottom: 18 }}>
+            <div style={{ padding: "12px 18px", borderBottom: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600, color: T.heading }}>Pending invitations</div>
+            {invites.map((inv, i) => (
+              <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 40px", gap: 12, padding: "12px 18px", borderBottom: i < invites.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{inv.firstName} {inv.lastName}</div>
+                  <div style={{ fontSize: 12, color: T.muted }}>{inv.email}</div>
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708", textTransform: "uppercase", letterSpacing: "0.04em", justifySelf: "start" }}>Pending · {inv.role}</span>
+                {canManage && <button onClick={() => revokeInvite(inv.id)} aria-label="Revoke" style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, justifySelf: "end", lineHeight: 0 }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18 M6 6l12 12" /></svg></button>}
+              </div>
+            ))}
           </div>
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
           {stat("Total members", active)}
           {stat("Owners & admins", admins)}
-          {stat("Pending invites", 0)}
+          {stat("Pending invites", invites.length)}
         </div>
 
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>

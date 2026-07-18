@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const { name, migrateDocuments } = await req.json();
+  const { name, domain, migrateDocuments } = await req.json();
   if (!name || typeof name !== "string" || !name.trim()) {
     return NextResponse.json({ error: "Organization name is required." }, { status: 400 });
   }
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   // 1. Create the org.
   const { data: org, error: orgErr } = await admin
     .from("organizations")
-    .insert({ name: name.trim(), created_by: user.id })
+    .insert({ name: name.trim(), domain: domain?.trim() || null, created_by: user.id })
     .select("id, name")
     .single();
   if (orgErr || !org) return NextResponse.json({ error: orgErr?.message ?? "Could not create organization." }, { status: 400 });
