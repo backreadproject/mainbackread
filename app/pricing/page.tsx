@@ -53,7 +53,7 @@ export default function PricingPage() {
 
       <div style={{ background: NIGHT }}>
         <nav style={{ ...wrap, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 32px" }}>
-          <a href="/" className="m-a" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8 }}><span style={{ color: BRAND }}>◉</span>BackRead</a>
+          <a href="/" className="m-a" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span>BackRead</a>
           <div className="m-nav-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
             <a href="/#how" className="m-a" style={{ color: CLOUD, fontSize: 15 }}>How it works</a>
             <a href="/#why" className="m-a" style={{ color: CLOUD, fontSize: 15 }}>Why BackRead</a>
@@ -118,7 +118,7 @@ export default function PricingPage() {
 
       <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: MUTE, padding: "36px 0" }}>
         <div style={{ ...wrap, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" className="m-a" style={{ fontSize: 14, color: MUTE, display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}>◉</span> BackRead, the document reads the reader.</a>
+          <a href="/" className="m-a" style={{ fontSize: 14, color: MUTE, display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, the document reads the reader.</a>
           <div style={{ display: "flex", gap: 24 }}>
             <a href="/pricing" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Pricing</a>
             <a href="#" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Privacy</a>

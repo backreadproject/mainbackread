@@ -31,7 +31,7 @@ export default function OverviewClient({ stats, recentEvents, hasData }: { stats
       <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 26 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{greeting()} 👋</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{greeting()}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Here's how your documents are being read today.</p>
           </div>
           <div style={{ textAlign: "right" }}><div style={{ fontSize: 13, color: T.muted }}>{today}</div></div>

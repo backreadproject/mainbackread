@@ -47,7 +47,7 @@ export default function Sidebar({ email, workspaceName }: { email: string; works
       <style>{`.t-nav{transition:background .12s}.t-nav:hover{background:${T.sidebarHover}}.t-out{transition:background .12s}.t-out:hover{background:${T.sidebarHover}}`}</style>
 
       <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "0 6px 18px" }}>
-        <span style={{ color: T.brandGreen, fontSize: 18 }}>◉</span>
+        <span style={{ color: T.brandGreen, fontSize: 18 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span>
         <span style={{ color: "#fff", fontSize: 19, fontWeight: 700, letterSpacing: T.trackingTight }}>BackRead</span>
       </div>
 
