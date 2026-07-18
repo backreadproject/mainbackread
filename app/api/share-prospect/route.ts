@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -50,7 +51,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but email is not configured yet (RESEND_API_KEY missing). Copy the link to send manually." });
     }
 
-    const senderName = `${(user.user_metadata?.full_name as string) || user.email || "A BackRead user"}`;
+    // Sender identity for the email: "First Last from Organization".
+    const ctx = await getOrgContext();
+    const { data: prof } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single();
+    const first = (prof?.first_name as string) || (user.user_metadata?.first_name as string) || "";
+    const last = (prof?.last_name as string) || (user.user_metadata?.last_name as string) || "";
+    const personName = `${first} ${last}`.trim();
+    const orgName = ctx.org?.name?.trim() || "";
+    let senderName: string;
+    if (personName && orgName) senderName = `${personName} from ${orgName}`;
+    else if (personName) senderName = personName;
+    else if (orgName) senderName = orgName;
+    else senderName = "A BackRead user";
     const html = brandedEmail({ firstName: firstName.trim(), senderName, docTitle, readUrl });
 
     try {

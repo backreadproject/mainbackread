@@ -2,10 +2,25 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, pageHeading } from "@/lib/theme";
-export default function AccountClient({ email }: { email: string }) {
+export default function AccountClient({ email, firstName: initialFirst = "", lastName: initialLast = "" }: { email: string; firstName?: string; lastName?: string }) {
   const [pw, setPw] = useState(""); const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(""); const [delBusy, setDelBusy] = useState(false); const [delMsg, setDelMsg] = useState("");
+  const [firstName, setFirstName] = useState(initialFirst); const [lastName, setLastName] = useState(initialLast);
+  const [nameMsg, setNameMsg] = useState(""); const [nameBusy, setNameBusy] = useState(false);
+  const needsName = !initialFirst || !initialLast;
   const canDelete = confirm.trim().toLowerCase() === "delete";
+  async function saveName() {
+    if (!firstName.trim() || !lastName.trim()) { setNameMsg("First and last name are required."); return; }
+    setNameBusy(true); setNameMsg("");
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setNameMsg("Session expired."); setNameBusy(false); return; }
+    await supabase.auth.updateUser({ data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}` } });
+    const { error } = await supabase.from("profiles").upsert({ id: user.id, first_name: firstName.trim(), last_name: lastName.trim(), updated_at: new Date().toISOString() });
+    // Also update the org membership email row's display if present is not needed; name lives on profile.
+    setNameMsg(error ? error.message : "Name saved.");
+    setNameBusy(false);
+  }
   async function changePassword() { if (pw.length < 6) { setMsg("Use at least 6 characters."); return; } setBusy(true); setMsg(""); const supabase = createClient(); const { error } = await supabase.auth.updateUser({ password: pw }); setMsg(error ? error.message : "Password updated."); setPw(""); setBusy(false); }
   async function deleteAccount() { if (!canDelete) return; setDelBusy(true); setDelMsg(""); const res = await fetch("/api/delete-account", { method: "POST" }); const json = await res.json(); if (!res.ok) { setDelMsg(json.error ?? "Couldn't delete."); setDelBusy(false); return; } const supabase = createClient(); await supabase.auth.signOut(); window.location.href = "/login"; }
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" };
@@ -17,6 +32,16 @@ export default function AccountClient({ email }: { email: string }) {
       <main style={{ maxWidth: 560, padding: "26px 30px" }}>
         <h1 style={{ ...pageHeading, marginBottom: 20 }}>Account</h1>
         <div style={card}><span style={label}>Email</span><p style={{ fontSize: 16, color: T.heading, margin: 0 }}>{email}</p></div>
+        <div style={{ ...card, ...(needsName ? { border: `1px solid ${T.green}`, background: T.greenSoft } : {}) }}>
+          <span style={label}>Your name</span>
+          {needsName && <p style={{ fontSize: 13, color: T.greenText, margin: "0 0 12px", lineHeight: 1.5 }}>Add your name so teammates and prospects see who shared a document, not just your email.</p>}
+          <div style={{ display: "flex", gap: 10 }}>
+            <input className="t-in" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First name" style={{ ...input, flex: 1 }} />
+            <input className="t-in" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last name" style={{ ...input, flex: 1 }} />
+          </div>
+          <button onClick={saveName} disabled={nameBusy || !firstName.trim() || !lastName.trim()} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: nameBusy || !firstName.trim() || !lastName.trim() ? 0.45 : 1 }}>{nameBusy ? "Saving…" : "Save name"}</button>
+          {nameMsg && <p style={{ fontSize: 13, color: nameMsg === "Name saved." ? T.greenText : "#B42318", marginTop: 12 }}>{nameMsg}</p>}
+        </div>
         <div style={card}>
           <span style={label}>Change password</span>
           <input className="t-in" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="New password" style={input} />

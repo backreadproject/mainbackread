@@ -4,13 +4,28 @@ import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
 export default function LoginPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [showPassword, setShowPassword] = useState(false);
+  const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
+  const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim());
   async function submit() {
+    if (!canSubmit) return;
     setBusy(true); setMsg("");
     const supabase = createClient();
-    if (mode === "signup") { const { error } = await supabase.auth.signUp({ email, password }); if (error) setMsg(error.message); else window.location.href = "/documents"; }
-    else { const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setMsg(error.message); else window.location.href = "/documents"; }
+    if (mode === "signup") {
+      const { data, error } = await supabase.auth.signUp({
+        email, password,
+        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}` } },
+      });
+      if (error) { setMsg(error.message); setBusy(false); return; }
+      if (data.user) {
+        await supabase.from("profiles").upsert({ id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(), updated_at: new Date().toISOString() });
+      }
+      window.location.href = "/documents";
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setMsg(error.message); else window.location.href = "/documents";
+    }
     setBusy(false);
   }
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 15, fontFamily: T.font, background: "#fff" };
@@ -30,6 +45,18 @@ export default function LoginPage() {
         <div style={{ width: 356, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
           <h1 style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mode === "signin" ? "Log in to access your account." : "Start reading your readers back."}</p>
+          {mode === "signup" && (
+            <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+              <div style={{ flex: 1 }}>
+                <span style={label}>First name</span>
+                <input className="t-in" placeholder="Sarah" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={input} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <span style={label}>Last name</span>
+                <input className="t-in" placeholder="Chen" value={lastName} onChange={(e) => setLastName(e.target.value)} style={input} />
+              </div>
+            </div>
+          )}
           <span style={label}>Work email</span>
           <input className="t-in" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ ...input, marginBottom: 16 }} />
           <span style={label}>Password</span>
@@ -44,7 +71,7 @@ export default function LoginPage() {
             </button>
           </div>
           <div style={{ textAlign: "right", marginBottom: 18 }}><a href="/forgot-password" className="t-link" style={{ fontSize: 13, color: T.body, textDecoration: "none" }}>Forgot password?</a></div>
-          <button onClick={submit} disabled={busy || !email || !password} className="t-cta" style={{ width: "100%", padding: 13, background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: busy ? "default" : "pointer", opacity: busy || !email || !password ? 0.5 : 1 }}>{busy ? "One moment…" : mode === "signin" ? "Log in" : "Create account"}</button>
+          <button onClick={submit} disabled={busy || !canSubmit} className="t-cta" style={{ width: "100%", padding: 13, background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: busy ? "default" : "pointer", opacity: busy || !canSubmit ? 0.5 : 1 }}>{busy ? "One moment…" : mode === "signin" ? "Log in" : "Create account"}</button>
           {msg && <p style={{ fontSize: 13, color: "#B42318", marginTop: 14 }}>{msg}</p>}
           <p style={{ fontSize: 13, color: T.body, marginTop: 22, textAlign: "center" }}>{mode === "signin" ? "New here? " : "Have an account? "}<button className="t-link" onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(""); }} style={{ background: "none", border: "none", color: T.green, fontWeight: 600, fontFamily: T.font, fontSize: 13, cursor: "pointer" }}>{mode === "signin" ? "Create an account" : "Log in"}</button></p>
         </div>
