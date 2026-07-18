@@ -77,8 +77,10 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
           <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initial}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
         </div>
-        <a href="/" className="t-out" style={{ display: "block", width: "100%", boxSizing: "border-box", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none", marginBottom: 8 }}>View site</a>
-        <button onClick={signOut} className="t-out" style={{ width: "100%", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "9px 12px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>Sign out</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="t-out" style={{ flex: 1, boxSizing: "border-box", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "9px 10px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>View site</a>
+          <button onClick={signOut} className="t-out" style={{ flex: 1, textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "9px 10px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>Sign out</button>
+        </div>
       </div>
     </aside>
   );
