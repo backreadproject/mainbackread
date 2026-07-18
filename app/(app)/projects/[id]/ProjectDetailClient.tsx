@@ -31,11 +31,11 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
           </div>
         ) : (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+            <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
               <span>Document</span><span>Added</span>
             </div>
             {documents.map((d, i) => (
-              <a key={d.id} href={`/documents/${d.id}`} className="t-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "15px 18px", borderBottom: i < documents.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+              <a key={d.id} href={`/documents/${d.id}`} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "15px 18px", borderBottom: i < documents.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
                 <span style={{ fontSize: 14, color: T.body }}>{new Date(d.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
               </a>

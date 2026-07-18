@@ -181,7 +181,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden", marginBottom: 18 }}>
             <div style={{ padding: "12px 18px", borderBottom: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600, color: T.heading }}>Pending invitations</div>
             {invites.map((inv, i) => (
-              <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 40px", gap: 12, padding: "12px 18px", borderBottom: i < invites.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+              <div key={inv.id} className="data-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 40px", gap: 12, padding: "12px 18px", borderBottom: i < invites.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{inv.firstName} {inv.lastName}</div>
                   <div style={{ fontSize: 12, color: T.muted }}>{inv.email}</div>
@@ -193,18 +193,18 @@ export default function MembersClient({ org, role, members: initial, invites: in
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
+        <div className="stat-grid-3" style={{ marginBottom: 22 }}>
           {stat("Total members", active)}
           {stat("Owners & admins", admins)}
           {stat("Pending invites", invites.length)}
         </div>
 
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+          <div className="row-head" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
             <span>Member</span><span>Role</span><span>Joined</span><span></span>
           </div>
           {members.map((m, i) => (
-            <div key={m.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "14px 18px", borderBottom: i < members.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+            <div key={m.id} className="data-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "14px 18px", borderBottom: i < members.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
                 <div style={{ width: 34, height: 34, borderRadius: 9, background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{m.avatarUrl ? <img src={m.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : `${(m.firstName?.[0] ?? "").toUpperCase()}${(m.lastName?.[0] ?? "").toUpperCase()}` || (m.email?.[0] ?? "?").toUpperCase()}</div>
                 <div style={{ minWidth: 0 }}>

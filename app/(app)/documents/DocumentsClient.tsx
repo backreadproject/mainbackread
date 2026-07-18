@@ -132,7 +132,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
 
         {view === "active" && (
           <>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 18 }}>
+            <div className="stat-grid" style={{ marginBottom: 18 }}>
               <StatCard icon={ICONS.doc} label="Documents" value={stats.documents} sub={`${stats.shared} shared`} />
               <StatCard icon={ICONS.eye} label="Total reads" value={stats.totalReads} sub={`${stats.pendingReads} pending`} />
               <StatCard icon={ICONS.msg} label="Questions" value={stats.questions} sub={`${stats.escalated} escalated`} />
@@ -160,11 +160,11 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
               <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{view === "archived" ? "No archived documents." : rows.filter((r) => !r.archived).length === 0 ? "No documents yet. Add one to start reading your readers." : "No documents match this filter."}</p>
             </div>
           ) : (<>
-            <div style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+            <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
               <span>Document</span><span>Recipients</span><span>Reads</span><span>Questions</span><span>Project</span><span>Shared</span><span>Status</span><span></span>
             </div>
             {filtered.map((r, i) => (
-              <div key={r.id} className="t-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
+              <div key={r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
                 <a href={`/documents/${r.id}`} style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{r.title}</a>
                 <span style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
                 <span style={{ fontSize: 14, color: T.body }}>{r.reads}</span>

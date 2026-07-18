@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "./Sidebar";
 import MobileShell from "./MobileShell";
+import ResponsiveStyles from "./ResponsiveStyles";
 import { getOrgContext } from "@/lib/org-context";
 import { T } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
@@ -29,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <MobileShell sidebar={<Sidebar email={user.email ?? ""} workspaceName={workspaceName} isOrg={isOrg} avatarUrl={avatarUrl} />}>
+      <ResponsiveStyles />
       {trial.started && trial.active && (
         <div style={{ background: "#FEF7EC", borderBottom: "1px solid #FDE7C7", padding: "8px 20px", fontSize: 13, color: "#B54708", display: "flex", alignItems: "center", gap: 8 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B54708" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 2" /></svg>

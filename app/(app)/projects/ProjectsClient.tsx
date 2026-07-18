@@ -61,7 +61,7 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
             <p style={{ fontSize: 15, color: T.body, margin: 0 }}>No projects yet. Create one to group and share documents.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+          <div className="card-grid-3">
             {projects.map((p) => (
               <a key={p.id} href={`/projects/${p.id}`} className="t-card" style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 20 }}>
                 <div style={{ width: 38, height: 38, borderRadius: 10, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>

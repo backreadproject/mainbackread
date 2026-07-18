@@ -45,14 +45,14 @@ export default function OverviewClient({ stats, recentEvents, hasData }: { stats
             <a href="/documents" style={{ display: "inline-block", background: T.green, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: T.rBtn, textDecoration: "none" }}>Add a document →</a>
           </div>
         ) : (<>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+          <div className="stat-grid" style={{ marginBottom: 22 }}>
             <StatCard icon={ICONS.doc} label="Documents" value={stats.documents} sub="shared" />
             <StatCard icon={ICONS.users} label="Recipients" value={stats.recipients} sub="total readers" />
             <StatCard icon={ICONS.eye} label="Reads" value={stats.reads} sub="opened so far" />
             <StatCard icon={ICONS.msg} label="Questions" value={stats.questions} sub="asked" />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+          <div className="two-col">
             <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
               <div style={{ padding: "14px 18px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>Recent activity</span>

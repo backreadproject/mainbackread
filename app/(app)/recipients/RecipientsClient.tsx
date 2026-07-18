@@ -33,7 +33,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Recipients</h1>
           <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Everyone you've shared a document with.</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+        <div className="stat-grid" style={{ marginBottom: 22 }}>
           <StatCard icon={ICONS.users} label="Total readers" value={stats.total} sub={`${stats.total} shared`} />
           <StatCard icon={ICONS.eye} label="Opened" value={stats.opened} sub={`${stats.unopened} not yet`} />
           <StatCard icon={ICONS.msg} label="Questions" value={stats.questions} sub="asked in total" />
@@ -47,11 +47,11 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
           {filtered.length === 0 ? (
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{rows.length === 0 ? "No recipients yet. Share a document to start." : "No readers match."}</p></div>
           ) : (<>
-            <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 0.8fr 0.7fr 0.9fr", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+            <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 0.8fr 0.7fr 0.9fr", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
               <span>Reader</span><span>Document</span><span>Questions</span><span>Shared</span><span>Status</span>
             </div>
             {filtered.map((r, i) => (
-              <a key={r.id} href={`/recipients/${r.id}`} className="t-row" style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 0.8fr 0.7fr 0.9fr", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+              <a key={r.id} href={`/recipients/${r.id}`} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1.5fr 1.5fr 0.8fr 0.7fr 0.9fr", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
                 <span style={{ fontSize: 14, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
                 <span style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
