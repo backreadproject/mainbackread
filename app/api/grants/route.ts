@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
+import { notify, notifyEmail } from "@/lib/notify";
 import { NextResponse } from "next/server";
 
 // Helper: does the caller have 'manage' on this resource?
@@ -84,6 +85,23 @@ export async function POST(req: Request) {
     .select("id, grantee_type, grantee_id, permission")
     .single();
   if (error || !grant) return NextResponse.json({ error: error?.message ?? "Could not share." }, { status: 400 });
+
+  // Notify the grantee (only for direct user grants).
+  if (granteeType === "user") {
+    const origin = new URL(req.url).origin;
+    const link = resourceType === "document" ? `${origin}/documents/${resourceId}` : `${origin}/projects/${resourceId}`;
+    const { data: prof } = await admin.from("profiles").select("first_name, last_name").eq("id", user.id).single();
+    const sharer = `${(prof?.first_name as string) || ""} ${(prof?.last_name as string) || ""}`.trim() || "A teammate";
+    const { data: targetMember } = await admin.from("organization_members").select("email").eq("organization_id", ctx.org.id).eq("user_id", granteeId).maybeSingle();
+    await notify({
+      userId: granteeId,
+      type: "doc_shared",
+      title: `${sharer} shared a ${resourceType} with you`,
+      body: `You now have ${permission} access.`,
+      link: resourceType === "document" ? `/documents/${resourceId}` : `/projects/${resourceId}`,
+      email: targetMember?.email ? { to: targetMember.email, subject: `${sharer} shared a ${resourceType} with you on BackRead`, html: notifyEmail(`${sharer} shared a ${resourceType} with you`, `You now have ${permission} access. Open BackRead to view it.`, link, "Open in BackRead") } : null,
+    });
+  }
 
   return NextResponse.json({ ok: true, grant });
 }

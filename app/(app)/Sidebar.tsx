@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import NotificationBell from "@/app/(app)/NotificationBell";
 
 const NAV_MAIN = [
   { href: "/overview", label: "Overview", d: "M4 4h7v7H4z M13 4h7v4h-7z M13 11h7v9h-7z M4 14h7v6H4z" },
@@ -55,10 +56,11 @@ export default function Sidebar({ email, workspaceName, isOrg = false }: { email
 
       <div style={{ background: T.sidebarCard, borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{wsInitial}</div>
-        <div style={{ lineHeight: 1.2, minWidth: 0 }}>
+        <div style={{ lineHeight: 1.2, minWidth: 0, flex: 1 }}>
           <div style={{ fontSize: 9, color: T.sidebarSection, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{isOrg ? "Organization" : "Workspace"}</div>
           <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws}</div>
         </div>
+        <NotificationBell />
       </div>
 
       <nav style={{ flex: 1 }}>

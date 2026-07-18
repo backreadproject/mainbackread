@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
+import { notify, notifyEmail } from "@/lib/notify";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -28,6 +29,15 @@ export async function POST(req: Request) {
     if (alreadyMember) return NextResponse.json({ error: "That person is already a member." }, { status: 409 });
     await admin.from("organization_members").insert({ organization_id: ctx.org.id, user_id: existing.id, role, email: cleanEmail });
     await admin.from("profiles").upsert({ id: existing.id, account_type: "organization", active_org_id: ctx.org.id, updated_at: new Date().toISOString() });
+    const origin0 = new URL(req.url).origin;
+    await notify({
+      userId: existing.id,
+      type: "added_to_org",
+      title: `You were added to ${ctx.org.name}`,
+      body: `You now have access as ${role}.`,
+      link: "/overview",
+      email: { to: cleanEmail, subject: `You've been added to ${ctx.org.name} on BackRead`, html: notifyEmail(`You've joined ${ctx.org.name}`, `You now have access as ${role}. Open BackRead to get started.`, `${origin0}/overview`, "Open BackRead") },
+    });
     return NextResponse.json({ ok: true, addedDirectly: true });
   }
 
