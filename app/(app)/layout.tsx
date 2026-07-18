@@ -15,13 +15,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   let workspaceName: string | undefined;
   let isOrg = false;
-  const { data: profileRow } = await supabase.from("profiles").select("workspace_name, avatar_url").eq("id", user.id).single();
+  const { data: profileRow } = await supabase.from("profiles").select("first_name, last_name, avatar_url").eq("id", user.id).single();
   const avatarUrl = (profileRow?.avatar_url as string) || null;
   if (ctx.org) {
     workspaceName = ctx.org.name;
     isOrg = true;
   } else {
-    workspaceName = profileRow?.workspace_name ?? undefined;
+    const fn = (profileRow?.first_name as string) || "";
+    const ln = (profileRow?.last_name as string) || "";
+    workspaceName = `${fn} ${ln}`.trim() || undefined;
   }
 
   return (

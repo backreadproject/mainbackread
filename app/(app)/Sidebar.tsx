@@ -57,7 +57,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
       <div style={{ background: T.sidebarCard, borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{wsInitial}</div>
         <div style={{ lineHeight: 1.2, minWidth: 0, flex: 1 }}>
-          <div style={{ fontSize: 9, color: T.sidebarSection, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{isOrg ? "Organization" : "Workspace"}</div>
+          <div style={{ fontSize: 9, color: T.sidebarSection, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{isOrg ? "Organization" : "Personal"}</div>
           <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws}</div>
         </div>
         <NotificationBell />
