@@ -1,0 +1,44 @@
+"use client";
+
+import { T, microLabel } from "@/lib/theme";
+
+type Project = { id: string; name: string; created_at: string };
+type Doc = { id: string; title: string; created_at: string };
+
+export default function ProjectDetailClient({ project, documents, canManage }: { project: Project; documents: Doc[]; canManage: boolean }) {
+  return (
+    <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:#FCFCFD}`}</style>
+      <div style={{ padding: "26px 30px 0" }}>
+        <a href="/projects" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}><span style={{ color: T.muted }}>‹</span> Projects</a>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{project.name}</h1>
+            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{documents.length} document{documents.length === 1 ? "" : "s"} you can see</p>
+          </div>
+          {/* Share button placeholder — wired in the sharing batch */}
+        </div>
+      </div>
+
+      <main style={{ maxWidth: 900, padding: "22px 30px 40px" }}>
+        {documents.length === 0 ? (
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 40, textAlign: "center" }}>
+            <p style={{ fontSize: 15, color: T.body, margin: 0 }}>No documents in this project yet, or none shared with you.</p>
+          </div>
+        ) : (
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
+              <span>Document</span><span>Added</span>
+            </div>
+            {documents.map((d, i) => (
+              <a key={d.id} href={`/documents/${d.id}`} className="t-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "15px 18px", borderBottom: i < documents.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
+                <span style={{ fontSize: 14, color: T.body }}>{new Date(d.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
+              </a>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

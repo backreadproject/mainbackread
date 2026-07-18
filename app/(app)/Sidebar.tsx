@@ -7,6 +7,7 @@ import { T } from "@/lib/theme";
 const NAV_MAIN = [
   { href: "/overview", label: "Overview", d: "M4 4h7v7H4z M13 4h7v4h-7z M13 11h7v9h-7z M4 14h7v6H4z" },
   { href: "/documents", label: "Documents", d: "M5 3h8l4 4v14H5z M13 3v4h4" },
+  { href: "/projects", label: "Projects", d: "M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
   { href: "/activity", label: "Activity", d: "M3 12h4l3 8 4-16 3 8h4" },
   { href: "/recipients", label: "Recipients", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6" },
 ];
@@ -16,7 +17,7 @@ const NAV_CONFIG = [
   { href: "/account", label: "Account", d: "M12 12a4 4 0 100-8 4 4 0 000 8z M4 21a8 8 0 0116 0" },
 ];
 
-export default function Sidebar({ email, workspaceName }: { email: string; workspaceName?: string }) {
+export default function Sidebar({ email, workspaceName, isOrg = false }: { email: string; workspaceName?: string; isOrg?: boolean }) {
   const pathname = usePathname();
   async function signOut() {
     const supabase = createClient();
@@ -55,7 +56,7 @@ export default function Sidebar({ email, workspaceName }: { email: string; works
       <div style={{ background: T.sidebarCard, borderRadius: 10, padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
         <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 }}>{wsInitial}</div>
         <div style={{ lineHeight: 1.2, minWidth: 0 }}>
-          <div style={{ fontSize: 9, color: T.sidebarSection, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>Workspace</div>
+          <div style={{ fontSize: 9, color: T.sidebarSection, textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{isOrg ? "Organization" : "Workspace"}</div>
           <div style={{ fontSize: 13, color: "#fff", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ws}</div>
         </div>
       </div>
