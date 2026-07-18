@@ -36,7 +36,7 @@ export default function LandingPage() {
       </div>
 
       <section style={{ background: NIGHT, color: "#fff", position: "relative", overflow: "hidden" }}>
-        <div className="lp-hero-pad" className="lp-pad" style={{ ...wrap, padding: "84px 32px 100px", position: "relative", zIndex: 2 }}>
+        <div className="lp-hero-pad lp-pad" style={{ ...wrap, padding: "84px 32px 100px", position: "relative", zIndex: 2 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(45,107,255,0.12)", border: "1px solid rgba(45,107,255,0.3)", color: "#8FB4FF", fontSize: 13, fontWeight: 500, padding: "6px 14px", borderRadius: 20, marginBottom: 28 }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: GREEN }} />
             Now in beta — free for early users
