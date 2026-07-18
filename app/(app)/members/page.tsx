@@ -28,13 +28,24 @@ export default async function MembersPage() {
   }));
 
   const rows = memberRows ?? [];
-  const members = rows.map((r) => ({
-    id: r.id,
-    userId: r.user_id,
-    email: (r.email as string | null) ?? null,
-    role: r.role as "owner" | "admin" | "member",
-    joinedAt: r.created_at,
-  }));
+  const userIds = rows.map((r) => r.user_id).filter(Boolean);
+  const { data: profileRows } = userIds.length
+    ? await supabase.from("profiles").select("id, first_name, last_name, avatar_url").in("id", userIds)
+    : { data: [] as { id: string; first_name: string | null; last_name: string | null; avatar_url: string | null }[] };
+  const profileMap = new Map((profileRows ?? []).map((p) => [p.id, p]));
+  const members = rows.map((r) => {
+    const p = profileMap.get(r.user_id);
+    return {
+      id: r.id,
+      userId: r.user_id,
+      email: (r.email as string | null) ?? null,
+      firstName: (p?.first_name as string) || "",
+      lastName: (p?.last_name as string) || "",
+      avatarUrl: (p?.avatar_url as string) || null,
+      role: r.role as "owner" | "admin" | "member",
+      joinedAt: r.created_at,
+    };
+  });
 
   return <MembersClient org={ctx.org} role={ctx.role} members={members} invites={invites} accountType={ctx.accountType} trialStartedAt={ctx.trialStartedAt} />;
 }

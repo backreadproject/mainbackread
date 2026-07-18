@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 
-type Member = { id: string; userId: string; email: string | null; role: "owner" | "admin" | "member"; joinedAt: string };
+type Member = { id: string; userId: string; email: string | null; firstName?: string; lastName?: string; avatarUrl?: string | null; role: "owner" | "admin" | "member"; joinedAt: string };
 type Org = { id: string; name: string } | null;
 type Invite = { id: string; email: string; firstName: string; lastName: string; role: "admin" | "member"; createdAt: string; expiresAt: string };
 
@@ -206,8 +206,11 @@ export default function MembersClient({ org, role, members: initial, invites: in
           {members.map((m, i) => (
             <div key={m.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "14px 18px", borderBottom: i < members.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{(m.email?.[0] ?? "?").toUpperCase()}</div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.email ?? "Member"}</span>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{m.avatarUrl ? <img src={m.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : `${(m.firstName?.[0] ?? "").toUpperCase()}${(m.lastName?.[0] ?? "").toUpperCase()}` || (m.email?.[0] ?? "?").toUpperCase()}</div>
+                <div style={{ minWidth: 0 }}>
+                  {(m.firstName || m.lastName) && <div style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{`${m.firstName ?? ""} ${m.lastName ?? ""}`.trim()}</div>}
+                  <div style={{ fontSize: (m.firstName || m.lastName) ? 12 : 14, fontWeight: (m.firstName || m.lastName) ? 400 : 600, color: (m.firstName || m.lastName) ? T.muted : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{m.email ?? "Member"}</div>
+                </div>
               </div>
               <span>
                 {canManage && m.role !== "owner" ? (

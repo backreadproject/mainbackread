@@ -18,7 +18,7 @@ const NAV_CONFIG = [
   { href: "/account", label: "Account", d: "M12 12a4 4 0 100-8 4 4 0 000 8z M4 21a8 8 0 0116 0" },
 ];
 
-export default function Sidebar({ email, workspaceName, isOrg = false }: { email: string; workspaceName?: string; isOrg?: boolean }) {
+export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl = null }: { email: string; workspaceName?: string; isOrg?: boolean; avatarUrl?: string | null }) {
   const pathname = usePathname();
   async function signOut() {
     const supabase = createClient();
@@ -72,7 +72,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false }: { email
 
       <div style={{ borderTop: `1px solid ${T.sidebarCard}`, paddingTop: 12, marginTop: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10, minWidth: 0 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{initial}</div>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: T.brandGreen, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>{avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initial}</div>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
         </div>
         <a href="/" className="t-out" style={{ display: "block", width: "100%", boxSizing: "border-box", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none", marginBottom: 8 }}>View site</a>

@@ -15,17 +15,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   let workspaceName: string | undefined;
   let isOrg = false;
+  const { data: profileRow } = await supabase.from("profiles").select("workspace_name, avatar_url").eq("id", user.id).single();
+  const avatarUrl = (profileRow?.avatar_url as string) || null;
   if (ctx.org) {
     workspaceName = ctx.org.name;
     isOrg = true;
   } else {
-    const { data: profile } = await supabase.from("profiles").select("workspace_name").eq("id", user.id).single();
-    workspaceName = profile?.workspace_name ?? undefined;
+    workspaceName = profileRow?.workspace_name ?? undefined;
   }
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: T.canvas }}>
-      <Sidebar email={user.email ?? ""} workspaceName={workspaceName} isOrg={isOrg} />
+      <Sidebar email={user.email ?? ""} workspaceName={workspaceName} isOrg={isOrg} avatarUrl={avatarUrl} />
       <div style={{ flex: 1, minWidth: 0 }}>
         {trial.started && trial.active && (
           <div style={{ background: "#FEF7EC", borderBottom: "1px solid #FDE7C7", padding: "8px 30px", fontSize: 13, color: "#B54708", display: "flex", alignItems: "center", gap: 8 }}>
