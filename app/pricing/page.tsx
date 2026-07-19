@@ -1,53 +1,16 @@
 import MarketingNav from "../MarketingNav";
+import { getLocale } from "@/lib/locale-server";
+import { getDict } from "@/lib/i18n";
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
 const LEMON = "#D8E84A";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
-const TIERS = [
-  {
-    name: "Free",
-    price: "$0",
-    cadence: "forever",
-    tagline: "For trying BackRead on a real send.",
-    cta: "Start here",
-    highlight: false,
-    features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"],
-  },
-  {
-    name: "Pro",
-    price: "$29",
-    cadence: "per month",
-    tagline: "For founders and sellers who send often.",
-    cta: "Start Pro",
-    highlight: true,
-    features: ["Unlimited documents", "Ask BackRead companion", "The verdict engine", "Question and intent signals", "Email alerts on every open", "Priority support"],
-  },
-  {
-    name: "Business",
-    price: "$99",
-    cadence: "per month",
-    tagline: "For teams reading their pipeline together.",
-    cta: "Start Business",
-    highlight: false,
-    features: ["Everything in Pro", "Up to 10 team seats", "Shared workspace", "Team activity feed", "Advanced verdict history", "Onboarding session"],
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    cadence: "contact us",
-    tagline: "For organizations with security and scale needs.",
-    cta: "Contact us",
-    highlight: false,
-    features: ["Everything in Business", "Unlimited team seats", "SSO and advanced security", "Custom data retention", "Dedicated support", "Onboarding and training"],
-  },
-];
-const FAQ = [
-  { q: "Do my readers need an account?", a: "No. They open a link and read. BackRead captures intent without asking anything of them." },
-  { q: "Can I change plans later?", a: "Yes. Upgrade or downgrade at any time, and the change applies from your next cycle." },
-  { q: "Is my document data private?", a: "Documents are stored privately and only visible to the people you share a link with. You can delete anything at any time." },
-  { q: "What counts as a document?", a: "Any PDF or deck you upload and share. Reads, questions, and verdicts on it are all included in your plan." },
-];
-export default function PricingPage() {
+export default async function PricingPage() {
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const nav = { how: d.nav.how, why: d.nav.why, pricing: d.nav.pricing, signin: d.nav.signin, start: d.nav.start, openApp: d.nav.openApp };
+  const TIERS = d.pricing.tiers;
+  const FAQ = d.pricing.faq;
   const wrap = { maxWidth: 1080, margin: "0 auto", padding: "0 32px" } as const;
   return (
     <div style={{ fontFamily: DM, letterSpacing: "-0.011em", color: INK, background: CANVAS, fontWeight: 400, minHeight: "100vh" }}>
@@ -59,18 +22,18 @@ export default function PricingPage() {
         @media(max-width:980px){.m-tiers{grid-template-columns:1fr 1fr!important}}
         @media(max-width:560px){.m-tiers{grid-template-columns:1fr!important}.m-nav-links{display:none!important}}
       `}</style>
-      <MarketingNav activePricing />
+      <MarketingNav activePricing locale={locale} labels={nav} />
       <section style={{ background: GRADIENT, color: "#fff", padding: "128px 0 130px", textAlign: "center" }}>
         <div style={wrap}>
-          <h1 style={{ fontSize: 48, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 14px" }}>Pricing that scales with your sends</h1>
-          <p style={{ fontSize: 19, color: CLOUD, margin: 0, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>Start free. Upgrade when reading your readers becomes part of how you close.</p>
+          <h1 style={{ fontSize: 48, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 14px" }}>{d.pricing.heroTitle}</h1>
+          <p style={{ fontSize: 19, color: CLOUD, margin: 0, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>{d.pricing.heroSub}</p>
         </div>
       </section>
       <section style={{ marginTop: -90, position: "relative", zIndex: 2, paddingBottom: 80 }}>
         <div className="m-tiers" style={{ ...wrap, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, alignItems: "start" }}>
           {TIERS.map((t) => (
             <div key={t.name} className="m-card" style={{ background: CARD, borderRadius: 16, border: t.highlight ? `2px solid ${GREEN}` : `1px solid ${LINE}`, padding: 26, boxShadow: t.highlight ? "0 12px 40px rgba(11,122,75,0.16)" : "0 1px 3px rgba(15,23,41,0.04), 0 8px 24px rgba(15,23,41,0.05)", position: "relative" }}>
-              {t.highlight && <div style={{ position: "absolute", top: -12, left: 26, background: GREEN, color: "#fff", fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 16, textTransform: "uppercase", letterSpacing: "0.05em" }}>Most popular</div>}
+              {t.highlight && <div style={{ position: "absolute", top: -12, left: 26, background: GREEN, color: "#fff", fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 16, textTransform: "uppercase", letterSpacing: "0.05em" }}>{d.pricing.popular}</div>}
               <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 6 }}>{t.name}</div>
               <p style={{ fontSize: 13, color: BODY, margin: "0 0 18px", lineHeight: 1.4, minHeight: 54 }}>{t.tagline}</p>
               <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 22 }}>
@@ -92,7 +55,7 @@ export default function PricingPage() {
       </section>
       <section style={{ background: "#fff", borderTop: `1px solid ${LINE}`, padding: "80px 0" }}>
         <div style={{ ...wrap, maxWidth: 760 }}>
-          <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 32px", textAlign: "center" }}>Questions, answered</h2>
+          <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 32px", textAlign: "center" }}>{d.pricing.faqTitle}</h2>
           {FAQ.map((f) => (
             <div key={f.q} style={{ borderBottom: `1px solid ${LINE}`, padding: "20px 0" }}>
               <div style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 6 }}>{f.q}</div>
@@ -103,14 +66,14 @@ export default function PricingPage() {
       </section>
       <section style={{ background: GRADIENT, color: "#fff", padding: "80px 0", textAlign: "center" }}>
         <div style={wrap}>
-          <h2 style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 14px" }}>Start reading your readers today.</h2>
-          <p style={{ fontSize: 18, color: CLOUD, margin: "0 0 30px" }}>Free for your first 5 documents. No card needed.</p>
-          <a href="/login" className="m-a m-cta-lemon" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 30px", borderRadius: 10 }}>Start here</a>
+          <h2 style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 14px" }}>{d.pricing.ctaTitle}</h2>
+          <p style={{ fontSize: 18, color: CLOUD, margin: "0 0 30px" }}>{d.pricing.ctaSub}</p>
+          <a href="/login" className="m-a m-cta-lemon" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 30px", borderRadius: 10 }}>{d.pricing.ctaBtn}</a>
         </div>
       </section>
       <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: "#fff", padding: "36px 0" }}>
         <div style={{ ...wrap, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" className="m-a" style={{ fontSize: 14, color: "#fff", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, the document reads the reader.</a>
+          <a href="/" className="m-a" style={{ fontSize: 14, color: "#fff", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, {d.footer.tagline.toLowerCase()}</a>
           <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
             <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="m-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
             <a href="/pricing" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Pricing</a>

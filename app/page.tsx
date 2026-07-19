@@ -1,4 +1,6 @@
 import MarketingNav from "./MarketingNav";
+import { getLocale } from "@/lib/locale-server";
+import { getDict } from "@/lib/i18n";
 
 // BackRead landing. Uses the shared MarketingNav (sticky, transparent over hero,
 // auth-aware, blurs on scroll). DM Sans throughout. Existing brand palette.
@@ -21,7 +23,10 @@ const LEMON = "#D8E84A";      // lemon accent (buttons use dark-green text on th
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #061711 0%, #0B2E22 45%, #15503A 80%, #2E6B4A 100%)";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const locale = await getLocale();
+  const d = getDict(locale);
+  const nav = { how: d.nav.how, why: d.nav.why, pricing: d.nav.pricing, signin: d.nav.signin, start: d.nav.start, openApp: d.nav.openApp };
   const wrap = { maxWidth: 1080, margin: "0 auto", padding: "0 32px" } as const;
   const eyebrow = { fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: GREEN_TEXT };
 
@@ -78,24 +83,24 @@ export default function LandingPage() {
           <circle cx="40" cy="540" r="4" fill={BRAND} />
         </svg>
 
-        <MarketingNav />
+        <MarketingNav locale={locale} labels={nav} />
 
         <div className="lp-hero-pad" style={{ ...wrap, padding: "158px 32px 104px", position: "relative", zIndex: 2 }}>
           <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(216,232,74,0.12)", border: "1px solid rgba(216,232,74,0.40)", color: LEMON, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
             <span style={{ width: 6, height: 6, borderRadius: 9, background: LEMON }} />
-            Join 5,000+ users
+            {d.hero.badge}
           </div>
           <h1 className="lp-hero-h1" style={{ fontSize: 62, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: 760 }}>
-            <span className="lp-h1-a">Every reader leaves a trail.</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>Now you can follow it.</span>
+            <span className="lp-h1-a">{d.hero.titleA}</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>{d.hero.titleB}</span>
           </h1>
           <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 36px", color: CLOUD, maxWidth: 560 }}>
-            BackRead turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.
+            {d.hero.sub}
           </p>
           <div className="lp-hero-ctas" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <a href="/login" className="lp-a lp-cta" style={{ background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 28px", borderRadius: 12 }}>Start here</a>
-            <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.20)" }}>See how it works</a>
+            <a href="/login" className="lp-a lp-cta" style={{ background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 28px", borderRadius: 12 }}>{d.hero.start}</a>
+            <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.20)" }}>{d.hero.seeHow}</a>
           </div>
-          <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: "#FFFFFF", margin: "26px 0 0", textTransform: "uppercase" }}>Your first document live in minutes.</p>
+          <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: "#FFFFFF", margin: "26px 0 0", textTransform: "uppercase" }}>{d.hero.fine}</p>
         </div>
       </section>
 
@@ -103,15 +108,15 @@ export default function LandingPage() {
       <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 92, paddingBottom: 92 }}>
         <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: 64, alignItems: "start" }}>
           <div>
-            <p style={{ ...eyebrow, margin: "0 0 16px" }}>The blind spot</p>
-            <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>You send the document. Then the silence begins.</h2>
+            <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.problem.eyebrow}</p>
+            <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>{d.problem.title}</h2>
           </div>
           <div style={{ paddingTop: 8 }}>
             <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: "0 0 20px" }}>
-              A proposal, a deck, a memo goes out. You wait. You do not know who opened it, which page made them pause, what question they never asked out loud, or whether the deal is warm or already gone.
+              {d.problem.p1}
             </p>
             <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: 0 }}>
-              Read receipts tell you a file was opened. Analytics tell you seconds on a page. Neither tells you what the reader actually wanted. BackRead was built to close that gap.
+              {d.problem.p2}
             </p>
           </div>
         </div>
@@ -120,16 +125,16 @@ export default function LandingPage() {
       {/* HOW IT WORKS (the trail) */}
       <section id="how" style={{ background: GRADIENT, color: "#fff" }}>
         <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 100 }}>
-          <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>How it works</p>
+          <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>{d.how.eyebrow}</p>
           <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 60px", maxWidth: 620 }}>
-            Three things happen the moment your reader opens it.
+            {d.how.title}
           </h2>
           <div className="lp-trail" style={{ position: "relative" }}>
             {[
-              ["01", "The document answers, in your voice", "Your reader asks a question inside the document itself. BackRead answers from what you approved, and when a question crosses into territory only you should handle, it holds the line and flags it for you instead of guessing."],
-              ["02", "It watches how the reading goes", "Every pause, re-read, and question becomes a signal. You see which sections held attention, which were skipped, and where a reader hesitated, the quiet tells that a reply email never contains."],
-              ["03", "It returns a verdict on the deal", "BackRead reads the pattern of the whole reading and tells you where things stand, so you know whether to push, to wait, or to rewrite before you send it to the next person."],
-            ].map(([n, title, body], i) => (
+              [d.how.s1t, d.how.s1b],
+              [d.how.s2t, d.how.s2b],
+              [d.how.s3t, d.how.s3b],
+            ].map(([title, body], i) => { const n = String(i + 1).padStart(2, "0"); return (
               <div className="lp-step" key={i} style={{ display: "flex", gap: 26, alignItems: "flex-start", paddingBottom: i < 2 ? 44 : 0, position: "relative" }}>
                 {/* connector: from the bottom of this circle to the top of the next one */}
                 {i < 2 && <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19.25, top: 44, bottom: 0, width: 1.5, background: "rgba(31,169,113,0.35)" }} />}
@@ -139,25 +144,25 @@ export default function LandingPage() {
                   <p style={{ fontSize: 17, lineHeight: 1.6, color: CLOUD, margin: 0, maxWidth: 620 }}>{body}</p>
                 </div>
               </div>
-            ))}
+            ); })}
           </div>
         </div>
       </section>
 
       {/* WHY BACKREAD */}
       <section id="why" className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
-        <p style={{ ...eyebrow, margin: "0 0 16px" }}>Why BackRead</p>
+        <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.why.eyebrow}</p>
         <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 14px", maxWidth: 640, color: INK }}>
-          Attention is not intent.
+          {d.why.title}
         </h2>
         <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 52px", maxWidth: 620 }}>
-          Everyone else measures whether eyes were on the page. BackRead reads what the reader was actually trying to decide.
+          {d.why.sub}
         </p>
         <div className="lp-three" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
           {[
-            ["The document reads the reader", "Instead of a static file, you send something that listens. It captures stated intent, the questions a reader types, not just the seconds they linger."],
-            ["A verdict on the deal, not the document", "You do not get another dashboard to interpret. You get a plain read on where the relationship stands and what to do next."],
-            ["It compounds with every send", "Each document learns from the readings before it. What you send tomorrow is sharper than what you sent today, because it remembers."],
+            [d.why.c1t, d.why.c1b],
+            [d.why.c2t, d.why.c2b],
+            [d.why.c3t, d.why.c3b],
           ].map(([title, body], i) => (
             <div className="lp-card" key={i} style={{ background: CARD, border: "1px solid " + LINE, borderRadius: 16, padding: 28 }}>
               <div style={{ width: 40, height: 40, borderRadius: 11, background: GREEN_SOFT, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -175,19 +180,19 @@ export default function LandingPage() {
         <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 88, paddingBottom: 88 }}>
           <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 56, alignItems: "center", marginBottom: 48 }}>
             <div>
-              <p style={{ ...eyebrow, margin: "0 0 16px" }}>Use cases</p>
-              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>For any document that matters after it leaves your hands.</h2>
+              <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.uses.eyebrow}</p>
+              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>{d.uses.title}</h2>
             </div>
             <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: 0, paddingTop: 4 }}>
-              If a document carries a decision, and you cannot be in the room when it is read, BackRead goes in your place. It works the same whether you are raising, selling, reporting, or being diligenced.
+              {d.uses.sub}
             </p>
           </div>
           <div className="lp-four" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
             {[
-              ["Fundraising", "Send a deck that answers an investor's questions and tells you which ones to prepare for."],
-              ["Sales proposals", "Know whether a proposal landed before the follow up call, not after the deal goes quiet."],
-              ["Board and investor updates", "See which parts of a memo drew scrutiny, and walk into the meeting already knowing."],
-              ["Diligence and data rooms", "Watch how a serious reader moves through the material, page by page, question by question."],
+              [d.uses.u1t, d.uses.u1b],
+              [d.uses.u2t, d.uses.u2b],
+              [d.uses.u3t, d.uses.u3b],
+              [d.uses.u4t, d.uses.u4b],
             ].map(([title, body], i) => (
               <div className="lp-card" key={i} style={{ background: CARD, border: "1px solid " + LINE, borderRadius: 14, padding: 22 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em", margin: "0 0 8px", color: INK }}>{title}</h3>
@@ -200,27 +205,22 @@ export default function LandingPage() {
 
       {/* HOW BACKREAD COMPARES */}
       <section id="compare" className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
-        <p style={{ ...eyebrow, margin: "0 0 16px" }}>How BackRead compares</p>
+        <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.compare.eyebrow}</p>
         <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 14px", maxWidth: 640, color: INK }}>
-          You already have tools that watch. None of them listen.
+          {d.compare.title}
         </h2>
         <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 48px", maxWidth: 620 }}>
-          Read receipts and document analytics tell you that something happened. BackRead tells you what it meant.
+          {d.compare.sub}
         </p>
-        <div className="lp-swipe-hint" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5" /></svg><span>Swipe to compare</span></div>
+        <div className="lp-swipe-hint" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5" /></svg><span>{d.compare.swipe}</span></div>
         <div className="lp-compare-outer" style={{ position: "relative" }}>
         <div className="lp-compare-wrap"><div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
           {/* header row */}
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>What you learn</div>
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, borderLeft: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>Read receipts and analytics</div>
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, background: GREEN_SOFT, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT }}>BackRead</div>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>{d.compare.colWhat}</div>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, borderLeft: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>{d.compare.colThem}</div>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, background: GREEN_SOFT, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT }}>{d.compare.colUs}</div>
           {[
-            ["Whether it was opened", "Yes", "Yes"],
-            ["Time spent per page", "Sometimes", "Yes"],
-            ["The questions the reader had", "No", "Yes, captured as they read"],
-            ["What the reader was deciding", "No", "Read as stated intent"],
-            ["A verdict on where the deal stands", "No", "Every time"],
-            ["Gets sharper across sends", "No", "Compounds with every document"],
+            ...d.compare.rows,
           ].map(([label, them, us], i, arr) => (
             <div key={i} style={{ display: "contents" }}>
               <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 15, fontWeight: 600, color: INK }}>{label}</div>
@@ -241,24 +241,24 @@ export default function LandingPage() {
         <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
           <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
             <div>
-              <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>See it in action</p>
-              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 18px" }}>The verdict is the first thing you see.</h2>
+              <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>{d.preview.eyebrow}</p>
+              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 18px" }}>{d.preview.title}</h2>
               <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: "0 0 16px" }}>
-                Open a document in BackRead and you do not start with a chart to decode. You start with a plain read on the relationship, written the way a sharp colleague would tell you across a desk.
+                {d.preview.p1}
               </p>
               <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: 0 }}>
-                Underneath it sits the trail: every question, every pause, every re-read that led to the call.
+                {d.preview.p2}
               </p>
             </div>
             {/* mock verdict card */}
             <div style={{ background: "#fff", borderRadius: 18, padding: 26, boxShadow: "0 24px 60px rgba(0,0,0,0.28)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                 <span style={{ width: 8, height: 8, borderRadius: 9, background: BRAND }} />
-                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: GREEN_TEXT }}>Verdict</span>
+                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: GREEN_TEXT }}>{d.preview.verdictLabel}</span>
               </div>
-              <p style={{ fontSize: 18, fontWeight: 600, color: INK, lineHeight: 1.4, margin: "0 0 18px" }}>Warm. The reader went deep on pricing and terms, then came back to the summary twice. Prepare for a question about the annual commit.</p>
+              <p style={{ fontSize: 18, fontWeight: 600, color: INK, lineHeight: 1.4, margin: "0 0 18px" }}>{d.preview.verdict}</p>
               <div style={{ borderTop: "1px solid " + LINE, paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-                {[["Pricing page", "Read 3 times"], ["Terms and conditions", "Re-read, paused 40s"], ["Executive summary", "Returned to last"]].map(([a, b], i) => (
+                {[[d.preview.row1a, d.preview.row1b], [d.preview.row2a, d.preview.row2b], [d.preview.row3a, d.preview.row3b]].map(([a, b], i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: 14, color: INK, fontWeight: 600 }}>{a}</span>
                     <span style={{ fontSize: 13, color: BODY }}>{b}</span>
@@ -273,9 +273,9 @@ export default function LandingPage() {
       {/* COMPOUNDING BAND */}
       <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 84, paddingBottom: 84 }}>
         <div style={{ maxWidth: 760 }}>
-          <p style={{ ...eyebrow, margin: "0 0 18px" }}>The long game</p>
+          <p style={{ ...eyebrow, margin: "0 0 18px" }}>{d.longGame.eyebrow}</p>
           <p className="lp-longgame" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.34, letterSpacing: "-0.02em", color: INK, margin: 0 }}>
-            The first document you send with BackRead already reads its reader. The hundredth one knows what to say before the question is asked. That gap is the moat, and it grows every time you hit send.
+            {d.longGame.body}
           </p>
         </div>
       </section>
@@ -288,12 +288,12 @@ export default function LandingPage() {
         </svg>
         <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 100, paddingBottom: 104, position: "relative", zIndex: 2, textAlign: "center" }}>
           <h2 className="lp-cta-h2" style={{ fontSize: 46, fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.03em", margin: "0 auto 20px", maxWidth: 640 }}>
-            Stop sending documents into the dark.
+            {d.closing.title}
           </h2>
           <p style={{ fontSize: 19, lineHeight: 1.55, color: CLOUD, margin: "0 auto 34px", maxWidth: 520 }}>
-            Send your next document with BackRead and read the reader back.
+            {d.closing.sub}
           </p>
-          <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 17, fontWeight: 700, padding: "15px 34px", borderRadius: 12 }}>Start free</a>
+          <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 17, fontWeight: 700, padding: "15px 34px", borderRadius: 12 }}>{d.closing.start}</a>
         </div>
       </section>
 
@@ -304,13 +304,13 @@ export default function LandingPage() {
             <span style={{ color: BRAND }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span>
             BackRead
           </span>
-          <span style={{ fontSize: 13, letterSpacing: "0.02em", color: "#fff" }}>The document reads the reader.</span>
+          <span style={{ fontSize: 13, letterSpacing: "0.02em", color: "#fff" }}>{d.footer.tagline}</span>
           <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
             <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="lp-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
-            <a href="/pricing" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Pricing</a>
-            <a href="/privacy" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Privacy</a>
-            <a href="/terms" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Terms</a>
-            <a href="/login" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Sign in</a>
+            <a href="/pricing" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.pricing}</a>
+            <a href="/privacy" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.privacy}</a>
+            <a href="/terms" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.terms}</a>
+            <a href="/login" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.signin}</a>
           </div>
         </div>
       </footer>

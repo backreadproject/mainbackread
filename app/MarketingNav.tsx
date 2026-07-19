@@ -1,12 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import type { Locale } from "@/lib/i18n";
+
 const BRAND = "#1FA971", GREEN = "#0B7A4B", NIGHT = "#082019", LEMON = "#D8E84A", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const CircleMark = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
 );
-export default function MarketingNav({ activePricing = false }: { activePricing?: boolean }) {
+
+type NavLabels = { how: string; why: string; pricing: string; signin: string; start: string; openApp: string };
+
+export default function MarketingNav({ activePricing = false, locale = "en", labels }: { activePricing?: boolean; locale?: Locale; labels?: NavLabels }) {
+  const t: NavLabels = labels ?? { how: "How it works", why: "Why BackRead", pricing: "Pricing", signin: "Sign in", start: "Start here", openApp: "Open app" };
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -46,33 +53,31 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
       <nav style={{ maxWidth: 1080, margin: "0 auto", padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <a href="/" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}><span style={{ color: BRAND }}><CircleMark /></span>BackRead</a>
 
-        {/* Desktop center links */}
         <div className="mn-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
-          <a href="/#how" style={link}>How it works</a>
-          <a href="/#why" style={link}>Why BackRead</a>
-          <a href="/pricing" style={{ ...link, color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400 }}>Pricing</a>
+          <a href="/#how" style={link}>{t.how}</a>
+          <a href="/#why" style={link}>{t.why}</a>
+          <a href="/pricing" style={{ ...link, color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400 }}>{t.pricing}</a>
         </div>
 
-        {/* Desktop right side: full auth buttons */}
-        <div className="mn-desktop-only" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div className="mn-desktop-only" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <LanguageSwitcher current={locale} dark />
           {authed === null ? (
-            <span style={{ width: 160 }} />
+            <span style={{ width: 150 }} />
           ) : authed ? (
-            <a href="/overview" className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Open app</a>
+            <a href="/overview" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>{t.openApp}</a>
           ) : (
             <>
-              <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>Sign in</a>
-              <a href="/login" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Start here</a>
+              <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.signin}</a>
+              <a href="/login" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>{t.start}</a>
             </>
           )}
         </div>
 
-        {/* Mobile right side: single Sign in + hamburger */}
         <div className="mn-mobile-only" style={{ alignItems: "center", gap: 10 }}>
           {authed ? (
-            <a href="/overview" className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "8px 16px", borderRadius: 8, textDecoration: "none" }}>Open app</a>
+            <a href="/overview" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "8px 16px", borderRadius: 8, textDecoration: "none" }}>{t.openApp}</a>
           ) : (
-            <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "8px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>Sign in</a>
+            <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "8px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.signin}</a>
           )}
           <button className="mn-hamburger" onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" style={{ alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", cursor: "pointer" }}>
             {menuOpen ? (
@@ -84,13 +89,13 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
         </div>
       </nav>
 
-      {/* Mobile dropdown menu */}
       {menuOpen && (
         <div className="mn-mobile-only" style={{ flexDirection: "column", padding: "8px 32px 20px", gap: 4, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <a href="/#how" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>How it works</a>
-          <a href="/#why" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>Why BackRead</a>
-          <a href="/pricing" onClick={() => setMenuOpen(false)} style={{ color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>Pricing</a>
-          {!authed && <a href="/login" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>Start here</a>}
+          <a href="/#how" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>{t.how}</a>
+          <a href="/#why" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>{t.why}</a>
+          <a href="/pricing" onClick={() => setMenuOpen(false)} style={{ color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>{t.pricing}</a>
+          <div style={{ padding: "12px 0" }}><LanguageSwitcher current={locale} dark /></div>
+          {!authed && <a href="/login" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>{t.start}</a>}
         </div>
       )}
     </div>
