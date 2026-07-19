@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
@@ -17,11 +17,11 @@ export async function POST(req: NextRequest) {
   // RLS on `recipients` ensures this only returns a row the sender owns.
   const { data: recipient } = await supabase
     .from("recipients")
-    .select("id, label, documents ( title, owner_id )")
+    .select("id, label, documents ( title, owner_id, extracted_text )")
     .eq("id", recipientId)
     .single();
 
-  const doc = recipient?.documents as unknown as { title: string; owner_id: string } | undefined;
+  const doc = recipient?.documents as unknown as { title: string; owner_id: string; extracted_text: string | null } | undefined;
   if (!recipient || !doc || doc.owner_id !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -62,8 +62,12 @@ export async function POST(req: NextRequest) {
 
   const backtracks = pages.filter((p) => p.visits > 1).map((p) => `re-read page ${p.page} (${p.visits} times)`);
 
+  // Use the real extracted text so the verdict reasons about the document,
+  // not just its title. Fall back to title if extraction hasn't run yet.
+  const docText = (doc.extracted_text ?? "").trim() || doc.title;
+
   const { data, cost } = await runAI(verdictTask, {
-    documentText: doc.title,
+    documentText: docText,
     documentTitle: doc.title,
     readerName: recipient.label ?? "Reader",
     readerOrg: "",

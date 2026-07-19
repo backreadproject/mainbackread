@@ -2,16 +2,14 @@ import type { Task, RunResult, Provider, ProviderName } from "./types";
 import { priceOf, ZERO_USAGE } from "./models";
 import { mockProvider } from "./providers/mock";
 import { anthropicProvider } from "./providers/anthropic";
-
 export * from "./types";
 export { askTask, type AskInput, type AskOutput } from "./tasks/ask";
 export { verdictTask, type VerdictInput, type VerdictOutput } from "./tasks/verdict";
-
+export { ocrTask, type OcrInput, type OcrOutput } from "./tasks/ocr";
 const PROVIDERS: Record<ProviderName, Provider> = {
   mock: mockProvider,
   anthropic: anthropicProvider,
 };
-
 function selectProvider(): ProviderName {
   const p = (process.env.AI_PROVIDER ?? "mock") as ProviderName;
   if (!PROVIDERS[p]) throw new Error(`Unknown AI_PROVIDER: ${p}`);
@@ -22,7 +20,6 @@ function selectProvider(): ProviderName {
   }
   return p;
 }
-
 /** Models sometimes wrap JSON in fences despite instructions. Strip and parse. */
 function extractJson(raw: string): unknown {
   const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
@@ -31,13 +28,12 @@ function extractJson(raw: string): unknown {
   if (start === -1 || end === -1) throw new Error("No JSON object in response");
   return JSON.parse(cleaned.slice(start, end + 1));
 }
-
 /**
  * The single entry point for every AI call in BackRead.
  *
  * Nothing else in the codebase talks to a model. That means switching provider,
  * adding caching, adding a semantic cache, or logging spend per document is a
- * change in ONE file — not an archaeology expedition through route handlers.
+ * change in ONE file -- not an archaeology expedition through route handlers.
  */
 export async function runAI<TIn, TOut>(
   task: Task<TIn, TOut>,
@@ -46,7 +42,6 @@ export async function runAI<TIn, TOut>(
 ): Promise<RunResult<TOut>> {
   const started = Date.now();
   const providerName = selectProvider();
-
   if (providerName === "mock") {
     await PROVIDERS.mock.complete({
       tier: task.tier,
@@ -65,7 +60,6 @@ export async function runAI<TIn, TOut>(
     logCost(task.id, result, opts.documentId);
     return result;
   }
-
   const provider = PROVIDERS[providerName];
   const req = {
     tier: task.tier,
@@ -73,11 +67,11 @@ export async function runAI<TIn, TOut>(
     system: task.system(input),
     user: task.user(input),
     maxTokens: task.maxTokens,
+    // Vision tasks (OCR) provide images; text tasks leave this undefined.
+    images: task.images ? task.images(input) : undefined,
   };
-
   const retries = opts.retries ?? 1;
   let lastErr: unknown;
-
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const completion = await provider.complete(req);
@@ -96,12 +90,10 @@ export async function runAI<TIn, TOut>(
       if (err instanceof Error && /Anthropic 4\d\d/.test(err.message)) break;
     }
   }
-
   throw new Error(`runAI[${task.id}] failed: ${lastErr instanceof Error ? lastErr.message : String(lastErr)}`);
 }
-
 /**
- * Cost per document is the number that tells you when — and whether — to
+ * Cost per document is the number that tells you when -- and whether -- to
  * optimise. Log it from day one and you will never have to guess.
  * Swap console for your metrics sink when you have one.
  */

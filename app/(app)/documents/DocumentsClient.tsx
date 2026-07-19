@@ -1,22 +1,18 @@
 "use client";
-
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
-
 const ICONS = {
   doc: "M5 3h8l4 4v14H5z M13 3v4h4",
   eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z M12 15a3 3 0 100-6 3 3 0 000 6z",
   msg: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
   users: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6",
 };
-
 function StatCard({ icon, label, value, sub }: { icon: string; label: string; value: number; sub: string }) {
   return (
     <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
@@ -29,7 +25,6 @@ function StatCard({ icon, label, value, sub }: { icon: string; label: string; va
     </div>
   );
 }
-
 export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [] }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[] }) {
   const locale = useLocale();
   const dp = getDict(locale).documentsPage;
@@ -42,7 +37,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
-
   const inView = useMemo(() => rows.filter((r) => (view === "archived" ? r.archived : !r.archived)), [rows, view]);
   const filtered = useMemo(() => {
     if (view === "archived") return inView;
@@ -50,12 +44,15 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     if (filter === "unopened") return inView.filter((r) => r.reads === 0);
     return inView;
   }, [inView, filter, view]);
-
   const archivedCount = rows.filter((r) => r.archived).length;
-
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
-    if (file.type !== "application/pdf") { setError(dp.choosePdf); return; }
+    const okType =
+      file.type === "application/pdf" ||
+      file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+      file.type.startsWith("image/") ||
+      /\.(pdf|docx|jpe?g|png|webp|gif)$/i.test(file.name);
+    if (!okType) { setError(dp.chooseSupported); return; }
     setUploading(true); setError("");
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -64,13 +61,20 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     const path = `${user.id}/${Date.now()}-${safeName}`;
     const { error: upErr } = await supabase.storage.from("documents").upload(path, file);
     if (upErr) { setError(dp.uploadFailed + upErr.message); setUploading(false); return; }
-    const insertRow: Record<string, unknown> = { owner_id: user.id, title: file.name.replace(/\.pdf$/i, ""), storage_path: path };
+    const cleanTitle = file.name.replace(/\.(pdf|docx|jpe?g|png|webp|gif)$/i, "");
+    const insertRow: Record<string, unknown> = { owner_id: user.id, title: cleanTitle, storage_path: path };
     if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
-    const { error: dbErr } = await supabase.from("documents").insert(insertRow);
-    if (dbErr) { setError(dp.couldntRecord + dbErr.message); setUploading(false); return; }
+    const { data: inserted, error: dbErr } = await supabase.from("documents").insert(insertRow).select("id").single();
+    if (dbErr || !inserted) { setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); return; }
+    try {
+      await fetch("/api/extract-document", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ documentId: inserted.id }),
+      });
+    } catch { /* extraction is best-effort; ignore */ }
     window.location.reload();
   }
-
   async function setArchived(id: string, archived: boolean) {
     setMenuOpen(null); setBusy(true);
     const supabase = createClient();
@@ -79,7 +83,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, archived } : r)));
     setBusy(false);
   }
-
   async function doDelete(row: Row) {
     setBusy(true);
     const supabase = createClient();
@@ -88,7 +91,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     setRows((prev) => prev.filter((r) => r.id !== row.id));
     setBusy(false); setConfirmDelete(null);
   }
-
   async function moveToProject(id: string, projectId: string | null) {
     setMenuOpen(null);
     const supabase = createClient();
@@ -96,21 +98,17 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     if (error) { setError(error.message); return; }
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, projectId, projectName: projectId ? (projects.find((p) => p.id === projectId)?.name ?? null) : null } : r)));
   }
-
   const seg = (key: typeof filter, label: string) => (
     <button key={key} onClick={() => setFilter(key)} style={{ background: filter === key ? T.green : "transparent", color: filter === key ? "#fff" : T.body, fontSize: 13, fontWeight: filter === key ? 600 : 500, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font }}>{label}</button>
   );
-
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }} onClick={() => menuOpen && setMenuOpen(null)}>
       <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:#F8F9FA}`}</style>
-
       <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: "#EDEFF2", padding: 4, borderRadius: 9, marginBottom: 22 }}>
           <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
           <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
         </div>
-
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{dp.title}</h1>
@@ -125,15 +123,13 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                 </select>
               )}
               <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
-                <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
+                <input type="file" accept="application/pdf,.docx,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
                 {uploading ? dp.uploading : dp.addDocument}
               </label>
             </div>
           )}
         </div>
-
         {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
-
         {view === "active" && (
           <>
             <div className="stat-grid" style={{ marginBottom: 18 }}>
@@ -148,7 +144,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             </div>
           </>
         )}
-
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "visible" }}>
           <div className="tab-bar" style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
             {view === "active" ? (
@@ -158,7 +153,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             )}
             <span style={{ fontSize: 13, color: T.muted, marginLeft: "auto" }}>{filtered.length} {filtered.length === 1 ? dp.documentCountOne : dp.documentCountMany}</span>
           </div>
-
           {filtered.length === 0 ? (
             <div style={{ padding: 44, textAlign: "center" }}>
               <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{view === "archived" ? dp.emptyArchived : rows.filter((r) => !r.archived).length === 0 ? dp.emptyNone : dp.emptyFilter}</p>
@@ -205,7 +199,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
           </>)}
         </div>
       </main>
-
       {confirmDelete && (
         <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 400, maxWidth: "100%" }}>
@@ -221,5 +214,4 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     </div>
   );
 }
-
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };

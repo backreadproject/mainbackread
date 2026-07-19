@@ -1,26 +1,26 @@
 import type { Provider, CompletionRequest, CompletionResult } from "../types";
 import { MODELS } from "../models";
-
 const ENDPOINT = "https://api.anthropic.com/v1/messages";
-
 /**
  * The one thing that matters here: cache_control on the document block.
  * The document is byte-identical across every question from every reader for
  * the document's entire life. That is the ideal caching shape, and it takes
  * repeated input down to 10% of standard rate. Without it you are paying full
  * price to re-read the same deck a thousand times.
+ *
+ * Vision: when a request carries images (OCR of a scanned page or an uploaded
+ * image), they ride in the user message as image blocks ahead of the text. The
+ * text-only path is unchanged, so ask/verdict behave exactly as before.
  */
 export const anthropicProvider: Provider = {
   name: "anthropic",
   async complete(req: CompletionRequest): Promise<CompletionResult> {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) throw new Error("ANTHROPIC_API_KEY is not set. Use AI_PROVIDER=mock to build without one.");
-
     const model = MODELS[req.tier].id;
-
     const system = [
       { type: "text", text: req.system },
-      // Cached block goes LAST — the cache prefix must be stable, and anything
+      // Cached block goes LAST -- the cache prefix must be stable, and anything
       // after a cache breakpoint is re-read every time.
       {
         type: "text",
@@ -28,7 +28,17 @@ export const anthropicProvider: Provider = {
         cache_control: { type: "ephemeral" },
       },
     ];
-
+    // Build the user content. Text-only stays a plain string (unchanged behavior).
+    // With images, prepend image blocks, then the text block.
+    const userContent = (req.images && req.images.length > 0)
+      ? [
+          ...req.images.map((img) => ({
+            type: "image" as const,
+            source: { type: "base64" as const, media_type: img.mediaType, data: img.data },
+          })),
+          { type: "text" as const, text: req.user },
+        ]
+      : req.user;
     const res = await fetch(ENDPOINT, {
       method: "POST",
       headers: {
@@ -40,21 +50,18 @@ export const anthropicProvider: Provider = {
         model,
         max_tokens: req.maxTokens,
         system,
-        messages: [{ role: "user", content: req.user }],
+        messages: [{ role: "user", content: userContent }],
       }),
     });
-
     if (!res.ok) {
       const body = await res.text();
       throw new Error(`Anthropic ${res.status}: ${body.slice(0, 300)}`);
     }
-
     const data = await res.json();
     const text = (data.content ?? [])
       .filter((b: { type: string }) => b.type === "text")
       .map((b: { text: string }) => b.text)
       .join("");
-
     const u = data.usage ?? {};
     return {
       text,
