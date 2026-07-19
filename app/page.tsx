@@ -17,6 +17,7 @@ const MUTE = "#98A2B3";
 const LINE = "#EAECEF";
 const CLOUD = "rgba(255,255,255,0.72)";
 const CLOUDDIM = "rgba(255,255,255,0.45)";
+const LEMON = "#D8E84A";      // lemon accent (buttons use dark-green text on this)
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #061711 0%, #0B2E22 45%, #15503A 80%, #2E6B4A 100%)";
 
@@ -28,7 +29,7 @@ export default function LandingPage() {
     <div style={{ fontFamily: DM, letterSpacing: "-0.011em", color: INK, background: CANVAS, fontWeight: 400, overflowX: "hidden" }}>
       <style>{`
         .lp-a{text-decoration:none}
-        .lp-cta{transition:transform .12s, box-shadow .15s}.lp-cta:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(11,122,75,0.30)}.lp-cta:active{transform:translateY(0)}
+        .lp-cta{transition:transform .12s, box-shadow .15s}.lp-cta:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(216,232,74,0.35)}.lp-cta:active{transform:translateY(0)}
         .lp-ghost{transition:background .15s,border-color .15s}.lp-ghost:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.30)}
         .lp-card{transition:transform .16s, box-shadow .16s, border-color .16s;box-shadow:0 0 0 1px rgba(31,169,113,0.08), 0 8px 30px rgba(11,122,75,0.10), 0 2px 10px rgba(15,23,41,0.04)}.lp-card:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(31,169,113,0.18), 0 18px 48px rgba(11,122,75,0.18);border-color:${BRAND}}
         .lp-step:hover .lp-node{background:${BRAND};box-shadow:0 0 0 6px rgba(31,169,113,0.14)}
@@ -58,7 +59,8 @@ export default function LandingPage() {
           .lp-hero-ctas a{flex:1 1 0!important;text-align:center!important;padding-left:12px!important;padding-right:12px!important;font-size:15px!important;white-space:nowrap!important}
           h2{font-size:30px!important}
           .lp-longgame{font-size:21px!important;line-height:1.4!important}
-          .lp-compare{font-size:13px!important}
+          .lp-compare-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+          .lp-compare{min-width:560px!important;font-size:13px!important}
           .lp-compare > div{padding-left:12px!important;padding-right:12px!important}
         }
       `}</style>
@@ -74,10 +76,10 @@ export default function LandingPage() {
 
         <MarketingNav />
 
-        <div className="lp-hero-pad" style={{ ...wrap, padding: "128px 32px 104px", position: "relative", zIndex: 2 }}>
-          <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(31,169,113,0.12)", border: "1px solid rgba(31,169,113,0.34)", color: BRAND, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
-            <span style={{ width: 6, height: 6, borderRadius: 9, background: BRAND }} />
-            Join 5000+ users
+        <div className="lp-hero-pad" style={{ ...wrap, padding: "158px 32px 104px", position: "relative", zIndex: 2 }}>
+          <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(216,232,74,0.12)", border: "1px solid rgba(216,232,74,0.40)", color: LEMON, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
+            <span style={{ width: 6, height: 6, borderRadius: 9, background: LEMON }} />
+            Join 5,000+ users
           </div>
           <h1 className="lp-hero-h1" style={{ fontSize: 62, fontWeight: 700, lineHeight: 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: 760 }}>
             <span className="lp-h1-a">Every reader leaves a trail.</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>Now you can follow it.</span>
@@ -86,10 +88,10 @@ export default function LandingPage() {
             BackRead turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.
           </p>
           <div className="lp-hero-ctas" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <a href="/login" className="lp-a lp-cta" style={{ background: GREEN, color: "#fff", fontSize: 16, fontWeight: 600, padding: "14px 28px", borderRadius: 12 }}>Start here</a>
+            <a href="/login" className="lp-a lp-cta" style={{ background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 28px", borderRadius: 12 }}>Start here</a>
             <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.20)" }}>See how it works</a>
           </div>
-          <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: CLOUDDIM, margin: "26px 0 0", textTransform: "uppercase" }}>No card required. Your first document live in minutes.</p>
+          <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: "#FFFFFF", margin: "26px 0 0", textTransform: "uppercase" }}>Your first document live in minutes.</p>
         </div>
       </section>
 
@@ -201,7 +203,7 @@ export default function LandingPage() {
         <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 48px", maxWidth: 620 }}>
           Read receipts and document analytics tell you that something happened. BackRead tells you what it meant.
         </p>
-        <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
+        <div className="lp-compare-wrap"><div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
           {/* header row */}
           <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>What you learn</div>
           <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, borderLeft: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>Read receipts and analytics</div>
@@ -220,6 +222,7 @@ export default function LandingPage() {
               <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 14.5, color: INK, fontWeight: 600, background: "rgba(31,169,113,0.05)" }}>{us}</div>
             </div>
           ))}
+        </div>
         </div>
       </section>
 
@@ -280,7 +283,7 @@ export default function LandingPage() {
           <p style={{ fontSize: 19, lineHeight: 1.55, color: CLOUD, margin: "0 auto 34px", maxWidth: 520 }}>
             Send your next document with BackRead and read the reader back.
           </p>
-          <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: GREEN, color: "#fff", fontSize: 17, fontWeight: 600, padding: "15px 34px", borderRadius: 12 }}>Start free</a>
+          <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 17, fontWeight: 700, padding: "15px 34px", borderRadius: 12 }}>Start free</a>
         </div>
       </section>
 
