@@ -4,9 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
-const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", GREEN = "#10B981", SLATE = "#475569", LINE = "#E7EBF2";
+const INK = "#0F1729", CANVAS = "#F4F6F3", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_HOVER = "#0A6A41", BRAND = "#1FA971", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", ANSWER_INK = "#0B3D2A", NEUTRAL_BUBBLE = "#F1F3F0", SLATE = "#8A9299", BODY = "#475467", LINE = "#EEF0EC", HEAT_MID = "#3FB587", HEAT_OFF = "#DBE0DC";
 const AEON = "var(--font-dm-sans), system-ui, sans-serif";
-const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
+const SHADOW = "0 1px 2px rgba(9,30,22,0.05), 0 8px 20px rgba(9,30,22,0.05)";
+const SHADOW_PANEL = "0 1px 2px rgba(9,30,22,0.04), 0 12px 34px rgba(9,30,22,0.06)";
 
 type Msg = { role: "user" | "doc"; text: string };
 
@@ -113,52 +114,61 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
 
   return (
     <div style={{ minHeight: "100vh", background: CANVAS, fontFamily: AEON, color: INK }}>
-      <style>{`.fx-ask{transition:box-shadow .15s}.fx-ask:hover{box-shadow:0 6px 18px rgba(45,107,255,0.28)}.fx-in:focus{border-color:${BLUE}}`}</style>
+      <style>{`.fx-ask{transition:background .15s}.fx-ask:hover{background:${GREEN_HOVER}}.fx-in:focus{border-color:${BRAND};box-shadow:0 0 0 3px rgba(31,169,113,0.14)}`}</style>
 
       <header style={{ background: CARD, borderBottom: `1px solid ${LINE}`, position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ width: 28, height: 28, borderRadius: 9, background: GREEN_SOFT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={BRAND} strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill={BRAND} /></svg>
+          </span>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
-          <h1 style={{ fontSize: 16, fontWeight: 400, margin: 0, marginLeft: "auto", color: SLATE }}>{title}</h1>
+          <h1 style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "50%" }}>{title}</h1>
         </div>
       </header>
 
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: 28, display: "grid", gridTemplateColumns: "24px minmax(0,1.55fr) minmax(0,1fr)", gap: 20, alignItems: "start" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto", padding: 24, display: "grid", gridTemplateColumns: "14px minmax(0,1.5fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
 
-        <div style={{ position: "sticky", top: 90, height: "78vh", display: "flex", flexDirection: "column", gap: 4, paddingTop: 4 }}>
+        <div style={{ position: "sticky", top: 92, height: "78vh", display: "flex", flexDirection: "column", gap: 6, paddingTop: 6, alignItems: "center" }}>
           {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
             const d = dwellView[p] ?? 0;
-            const w = 3 + (d / maxDwell) * 9;
+            const w = 2 + (d / maxDwell) * 2;
             return <div key={p} title={`Page ${p}: ${(d / 1000).toFixed(1)}s`}
-              style={{ width: activePage === p ? w + 4 : w, height: `${100 / Math.max(pageCount, 1)}%`, minHeight: 6, background: d > 0 ? (activePage === p ? BLUE : GREEN) : LINE, borderRadius: 20, transition: "width .3s, background .3s" }} />;
+              style={{ width: activePage === p ? w + 2 : w, height: `${100 / Math.max(pageCount, 1)}%`, minHeight: 6, background: d > 0 ? (activePage === p ? GREEN : HEAT_MID) : HEAT_OFF, borderRadius: 20, transition: "width .3s, background .3s" }} />;
           })}
         </div>
 
         <main>
-          {status && <p style={{ fontSize: 15, color: SLATE, textAlign: "center", padding: 48 }}>{status}</p>}
+          {status && <p style={{ fontSize: 15, color: BODY, textAlign: "center", padding: 48 }}>{status}</p>}
           <div ref={containerRef} />
           {pageCount > 0 && <p style={{ fontSize: 13, color: SLATE, textAlign: "center", padding: "16px 0" }}>{pageCount} {pageCount > 1 ? r.pageMany : r.pageOne}</p>}
         </main>
 
-        <aside style={{ position: "sticky", top: 90, background: CARD, borderRadius: 14, boxShadow: SHADOW, display: "flex", flexDirection: "column", height: "78vh", overflow: "hidden" }}>
-          <div style={{ padding: "14px 18px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 8, height: 8, borderRadius: 9, background: BLUE }} />
-            <span style={{ fontSize: 14, fontWeight: 400 }}>{r.askTitle}</span>
+        <aside style={{ position: "sticky", top: 92, background: CARD, borderRadius: 14, boxShadow: SHADOW_PANEL, display: "flex", flexDirection: "column", height: "78vh", overflow: "hidden" }}>
+          <div style={{ padding: "15px 16px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 9 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 20, background: BRAND, boxShadow: "0 0 0 3px rgba(31,169,113,0.16)", flexShrink: 0 }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: INK, lineHeight: 1.25 }}>{r.askTitle}</span>
           </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: 18 }}>
-            {thread.length === 0 && <p style={{ fontSize: 15, lineHeight: 1.5, color: SLATE, margin: 0 }}>{r.askEmpty}</p>}
+          <div style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+            {thread.length === 0 && <p style={{ fontSize: 14, lineHeight: 1.5, color: BODY, margin: 0 }}>{r.askEmpty}</p>}
             {thread.map((m, i) => (
-              <div key={i} style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 400, color: m.role === "user" ? SLATE : BLUE, marginBottom: 5 }}>{m.role === "user" ? r.you : r.theDocument}</div>
-                <div style={{ fontSize: 14, lineHeight: 1.48, background: m.role === "user" ? CANVAS : BLUE_SOFT, borderRadius: 10, padding: "10px 12px", color: m.role === "doc" ? "#1E3A8A" : INK }}>{m.text}</div>
-              </div>
+              m.role === "user" ? (
+                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", background: NEUTRAL_BUBBLE, borderRadius: "14px 14px 4px 14px", padding: "10px 13px", fontSize: 13.5, color: INK, lineHeight: 1.45 }}>{m.text}</div>
+              ) : (
+                <div key={i} style={{ maxWidth: "90%" }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 600, color: GREEN_TEXT, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{r.theDocument}</div>
+                  <div style={{ background: GREEN_SOFT, borderRadius: "4px 14px 14px 14px", padding: "11px 13px", fontSize: 13.5, color: ANSWER_INK, lineHeight: 1.5 }}>{m.text}</div>
+                </div>
+              )
             ))}
             {asking && <div style={{ fontSize: 13, color: SLATE }}>{r.reading}</div>}
             <div ref={threadEnd} />
           </div>
-          <div style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 8 }}>
+          <div style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 9, alignItems: "center" }}>
             <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder={r.askPlaceholder}
-              style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: AEON, background: "#fff", outline: "none" }} />
-            <button onClick={ask} className="fx-ask" style={{ background: BLUE, color: "#fff", border: "none", borderRadius: 10, padding: "0 18px", fontSize: 14, fontWeight: 400, fontFamily: AEON, cursor: "pointer" }}>{r.ask}</button>
+              style={{ flex: 1, minWidth: 0, border: `1px solid #E3E7E3`, borderRadius: 22, padding: "10px 15px", fontSize: 13.5, fontFamily: AEON, background: "#FAFBFA", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
+            <button onClick={ask} className="fx-ask" style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 22, padding: "10px 20px", fontSize: 13.5, fontWeight: 600, fontFamily: AEON, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              {r.ask} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
           </div>
         </aside>
       </div>
