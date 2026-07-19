@@ -378,6 +378,15 @@ const en = {
     docCountOne: "document",
     docCountMany: "documents",
   },
+  projectDetailPage: {
+    back: "Projects",
+    docCountOne: "document you can see",
+    docCountMany: "documents you can see",
+    shareWithTeam: "Share with team",
+    empty: "No documents in this project yet, or none shared with you.",
+    colDocument: "Document",
+    colAdded: "Added",
+  },
 };
 
 const fr: Dict = {
@@ -748,6 +757,15 @@ const fr: Dict = {
     emptyNone: "Aucun projet pour l'instant. Créez-en un pour regrouper et partager des documents.",
     docCountOne: "document",
     docCountMany: "documents",
+  },
+  projectDetailPage: {
+    back: "Projets",
+    docCountOne: "document que vous pouvez voir",
+    docCountMany: "documents que vous pouvez voir",
+    shareWithTeam: "Partager avec l'équipe",
+    empty: "Aucun document dans ce projet pour l'instant, ou aucun partagé avec vous.",
+    colDocument: "Document",
+    colAdded: "Ajouté",
   },
 };
 
