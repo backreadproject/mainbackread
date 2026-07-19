@@ -48,10 +48,16 @@ export default function MarketingNav({ activePricing = false, locale = "en", lab
           .mn-desktop-only{display:none!important}
           .mn-hamburger{display:flex!important}
           .mn-mobile-only{display:flex!important}
+          .mn-nav{padding:16px 18px!important;gap:8px!important}
+          .mn-logo{font-size:19px!important}
+        }
+        @media(max-width:380px){
+          .mn-logo{font-size:17px!important}
+          .mn-nav{padding:16px 14px!important}
         }
       `}</style>
-      <nav style={{ maxWidth: 1080, margin: "0 auto", padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <a href="/" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8, textDecoration: "none" }}><span style={{ color: BRAND }}><CircleMark /></span>BackRead</a>
+      <nav className="mn-nav" style={{ maxWidth: 1080, margin: "0 auto", padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+        <a href="/" className="mn-logo" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0 }}><span style={{ color: BRAND }}><CircleMark /></span>BackRead</a>
 
         <div className="mn-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <a href="/#how" style={link}>{t.how}</a>
@@ -77,7 +83,7 @@ export default function MarketingNav({ activePricing = false, locale = "en", lab
           {authed ? (
             <a href="/overview" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "8px 16px", borderRadius: 8, textDecoration: "none" }}>{t.openApp}</a>
           ) : (
-            <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "8px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.signin}</a>
+            <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "8px 14px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)", whiteSpace: "nowrap" }}>{t.signin}</a>
           )}
           <button className="mn-hamburger" onClick={() => setMenuOpen((v) => !v)} aria-label="Menu" style={{ alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.18)", color: "#fff", cursor: "pointer" }}>
             {menuOpen ? (
