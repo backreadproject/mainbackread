@@ -1,18 +1,22 @@
 "use client";
 import { T, microLabel } from "@/lib/theme";
-function ago(iso: string) { const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000); if (s < 60) return "just now"; if (s < 3600) return `${Math.floor(s / 60)}m ago`; if (s < 86400) return `${Math.floor(s / 3600)}h ago`; return `${Math.floor(s / 86400)}d ago`; }
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 export default function ActivityClient({ events, stats }: { events: { text: string; at: string; kind: string }[]; stats: { total: number; opens: number; questions: number } }) {
+  const locale = useLocale();
+  const ap = getDict(locale).activityPage;
+  function ago(iso: string) { const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000); if (s < 60) return ap.justNow; if (s < 3600) return `${Math.floor(s / 60)}m`; if (s < 86400) return `${Math.floor(s / 3600)}h`; return `${Math.floor(s / 86400)}d`; }
   const stat = (label: string, value: number) => (<div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: "14px 16px", flex: 1 }}><div style={{ ...microLabel, marginBottom: 6 }}>{label}</div><div style={{ fontSize: 22, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight }}>{value}</div></div>);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <main style={{ maxWidth: 760, padding: "26px 30px" }}>
         <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Activity</h1>
-          <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Everything your readers have done, newest first.</p>
+          <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{ap.title}</h1>
+          <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{ap.subtitle}</p>
         </div>
-        <div style={{ display: "flex", gap: 14, marginBottom: 22 }}>{stat("Events", stats.total)}{stat("Opens", stats.opens)}{stat("Questions", stats.questions)}</div>
+        <div style={{ display: "flex", gap: 14, marginBottom: 22 }}>{stat(ap.events, stats.total)}{stat(ap.opens, stats.opens)}{stat(ap.questions, stats.questions)}</div>
         {events.length === 0 ? (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 40, textAlign: "center" }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>No activity yet. Share a document, and reads and questions show up here.</p></div>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 40, textAlign: "center" }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{ap.empty}</p></div>
         ) : (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
             {events.map((e, i) => (
