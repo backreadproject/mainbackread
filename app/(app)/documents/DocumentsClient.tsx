@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
@@ -29,6 +31,8 @@ function StatCard({ icon, label, value, sub }: { icon: string; label: string; va
 }
 
 export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [] }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[] }) {
+  const locale = useLocale();
+  const dp = getDict(locale).documentsPage;
   const [rows, setRows] = useState(initialRows);
   const [uploadProject, setUploadProject] = useState<string>("");
   const [view, setView] = useState<"active" | "archived">("active");
@@ -51,19 +55,19 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
-    if (file.type !== "application/pdf") { setError("Choose a PDF to upload."); return; }
+    if (file.type !== "application/pdf") { setError(dp.choosePdf); return; }
     setUploading(true); setError("");
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError("Session expired. Sign in again."); setUploading(false); return; }
+    if (!user) { setError(dp.sessionExpired); setUploading(false); return; }
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const path = `${user.id}/${Date.now()}-${safeName}`;
     const { error: upErr } = await supabase.storage.from("documents").upload(path, file);
-    if (upErr) { setError("Upload failed. " + upErr.message); setUploading(false); return; }
+    if (upErr) { setError(dp.uploadFailed + upErr.message); setUploading(false); return; }
     const insertRow: Record<string, unknown> = { owner_id: user.id, title: file.name.replace(/\.pdf$/i, ""), storage_path: path };
     if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
     const { error: dbErr } = await supabase.from("documents").insert(insertRow);
-    if (dbErr) { setError("Couldn't record it. " + dbErr.message); setUploading(false); return; }
+    if (dbErr) { setError(dp.couldntRecord + dbErr.message); setUploading(false); return; }
     window.location.reload();
   }
 
@@ -103,26 +107,26 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
 
       <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: "#EDEFF2", padding: 4, borderRadius: 9, marginBottom: 22 }}>
-          <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>Active</button>
-          <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>Archived{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
+          <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
+          <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
         </div>
 
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>Documents</h1>
-            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>Manage the documents you share and how they're read.</p>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{dp.title}</h1>
+            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{dp.subtitle}</p>
           </div>
           {view === "active" && (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               {isOrg && projects.length > 0 && (
-                <select value={uploadProject} onChange={(e) => setUploadProject(e.target.value)} title="Upload into project" style={{ border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff", color: T.body }}>
-                  <option value="">No project</option>
+                <select value={uploadProject} onChange={(e) => setUploadProject(e.target.value)} title={dp.uploadIntoProject} style={{ border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff", color: T.body }}>
+                  <option value="">{dp.noProject}</option>
                   {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               )}
               <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
                 <input type="file" accept="application/pdf" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
-                {uploading ? "Uploading…" : "+ Add document"}
+                {uploading ? dp.uploading : dp.addDocument}
               </label>
             </div>
           )}
@@ -133,14 +137,14 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         {view === "active" && (
           <>
             <div className="stat-grid" style={{ marginBottom: 18 }}>
-              <StatCard icon={ICONS.doc} label="Documents" value={stats.documents} sub={`${stats.shared} shared`} />
-              <StatCard icon={ICONS.eye} label="Total reads" value={stats.totalReads} sub={`${stats.pendingReads} pending`} />
-              <StatCard icon={ICONS.msg} label="Questions" value={stats.questions} sub={`${stats.escalated} escalated`} />
-              <StatCard icon={ICONS.users} label="Active readers" value={stats.activeReaders} sub={`${stats.activeReaders} recipients`} />
+              <StatCard icon={ICONS.doc} label={dp.statDocuments} value={stats.documents} sub={`${stats.shared} ${dp.statShared}`} />
+              <StatCard icon={ICONS.eye} label={dp.statTotalReads} value={stats.totalReads} sub={`${stats.pendingReads} ${dp.statPending}`} />
+              <StatCard icon={ICONS.msg} label={dp.statQuestions} value={stats.questions} sub={`${stats.escalated} ${dp.statEscalated}`} />
+              <StatCard icon={ICONS.users} label={dp.statActiveReaders} value={stats.activeReaders} sub={`${stats.activeReaders} ${dp.statRecipients}`} />
             </div>
             <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4 M12 8h.01" /></svg>
-              <span style={{ fontSize: 13, color: T.greenText }}>Verdicts sharpen as readers spend more time with each document.</span>
+              <span style={{ fontSize: 13, color: T.greenText }}>{dp.verdictHint}</span>
             </div>
           </>
         )}
@@ -148,51 +152,51 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "visible" }}>
           <div className="tab-bar" style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
             {view === "active" ? (
-              <div style={{ display: "inline-flex", gap: 4 }}>{[["all", "All"], ["opened", "Opened"], ["unopened", "Unopened"]].map(([k, l]) => seg(k as typeof filter, l))}</div>
+              <div style={{ display: "inline-flex", gap: 4 }}>{[["all", dp.filterAll], ["opened", dp.filterOpened], ["unopened", dp.filterUnopened]].map(([k, l]) => seg(k as typeof filter, l))}</div>
             ) : (
-              <span style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>Archived documents</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>{dp.archivedDocuments}</span>
             )}
-            <span style={{ fontSize: 13, color: T.muted, marginLeft: "auto" }}>{filtered.length} document{filtered.length === 1 ? "" : "s"}</span>
+            <span style={{ fontSize: 13, color: T.muted, marginLeft: "auto" }}>{filtered.length} {filtered.length === 1 ? dp.documentCountOne : dp.documentCountMany}</span>
           </div>
 
           {filtered.length === 0 ? (
             <div style={{ padding: 44, textAlign: "center" }}>
-              <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{view === "archived" ? "No archived documents." : rows.filter((r) => !r.archived).length === 0 ? "No documents yet. Add one to start reading your readers." : "No documents match this filter."}</p>
+              <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{view === "archived" ? dp.emptyArchived : rows.filter((r) => !r.archived).length === 0 ? dp.emptyNone : dp.emptyFilter}</p>
             </div>
           ) : (<>
             <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
-              <span>Document</span><span>Recipients</span><span>Reads</span><span>Questions</span><span>Project</span><span>Shared</span><span>Status</span><span></span>
+              <span>{dp.colDocument}</span><span>{dp.colRecipients}</span><span>{dp.colReads}</span><span>{dp.colQuestions}</span><span>{dp.colProject}</span><span>{dp.colShared}</span><span>{dp.colStatus}</span><span></span>
             </div>
             {filtered.map((r, i) => (
               <div key={r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.8fr 40px", gap: 12, padding: "15px 18px", borderBottom: i < filtered.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center", position: "relative" }}>
                 <a href={`/documents/${r.id}`} className="data-cell dc-title" style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none" }}>{r.title}</a>
-                <span className="data-cell" data-label="Recipients" style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
-                <span className="data-cell" data-label="Reads" style={{ fontSize: 14, color: T.body }}>{r.reads}</span>
-                <span className="data-cell" data-label="Questions" style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
-                <span className="data-cell" data-label="Project" style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "—"}</span>
-                <span className="data-cell" data-label="Added" style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}</span>
-                <span className="data-cell" data-label="Status"><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? "Archived" : r.reads > 0 ? "Active" : "Awaiting"}</span></span>
+                <span className="data-cell" data-label={dp.colRecipients} style={{ fontSize: 14, color: T.body }}>{r.recipients}</span>
+                <span className="data-cell" data-label={dp.colReads} style={{ fontSize: 14, color: T.body }}>{r.reads}</span>
+                <span className="data-cell" data-label={dp.colQuestions} style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
+                <span className="data-cell" data-label={dp.colProject} style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "\u2014"}</span>
+                <span className="data-cell" data-label={dp.colAdded} style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(locale === "fr" ? "fr-FR" : undefined, { day: "numeric", month: "short" })}</span>
+                <span className="data-cell" data-label={dp.colStatus}><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? dp.statusArchived : r.reads > 0 ? dp.statusActive : dp.statusAwaiting}</span></span>
                 <div style={{ position: "relative", justifySelf: "end" }}>
-                  <button onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === r.id ? null : r.id); }} aria-label="Actions" style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, borderRadius: 6, lineHeight: 0 }}>
+                  <button onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === r.id ? null : r.id); }} aria-label={dp.actions} style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, borderRadius: 6, lineHeight: 0 }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
                   </button>
                   {menuOpen === r.id && (
                     <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 8px 30px rgba(15,23,41,0.12)", width: 160, zIndex: 20, overflow: "hidden", padding: 4 }}>
                       {r.archived ? (
-                        <button className="t-menu-item" onClick={() => setArchived(r.id, false)} disabled={busy} style={menuItem}>Restore</button>
+                        <button className="t-menu-item" onClick={() => setArchived(r.id, false)} disabled={busy} style={menuItem}>{dp.restore}</button>
                       ) : (
-                        <button className="t-menu-item" onClick={() => setArchived(r.id, true)} disabled={busy} style={menuItem}>Archive</button>
+                        <button className="t-menu-item" onClick={() => setArchived(r.id, true)} disabled={busy} style={menuItem}>{dp.archive}</button>
                       )}
                       {isOrg && projects.length > 0 && (
                         <div style={{ borderTop: `1px solid ${T.border}`, margin: "4px 0", paddingTop: 4 }}>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", padding: "4px 12px" }}>Move to project</div>
-                          {r.projectId && <button className="t-menu-item" onClick={() => moveToProject(r.id, null)} style={menuItem}>Remove from project</button>}
+                          <div style={{ fontSize: 10, fontWeight: 600, color: T.muted, textTransform: "uppercase", letterSpacing: "0.06em", padding: "4px 12px" }}>{dp.moveToProject}</div>
+                          {r.projectId && <button className="t-menu-item" onClick={() => moveToProject(r.id, null)} style={menuItem}>{dp.removeFromProject}</button>}
                           {projects.filter((p) => p.id !== r.projectId).map((p) => (
                             <button key={p.id} className="t-menu-item" onClick={() => moveToProject(r.id, p.id)} style={menuItem}>{p.name}</button>
                           ))}
                         </div>
                       )}
-                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "#B42318", borderTop: `1px solid ${T.border}`, marginTop: 4 }}>Delete</button>
+                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "#B42318", borderTop: `1px solid ${T.border}`, marginTop: 4 }}>{dp.del}</button>
                     </div>
                   )}
                 </div>
@@ -205,11 +209,11 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
       {confirmDelete && (
         <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 400, maxWidth: "100%" }}>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 8px", letterSpacing: T.trackingTight }}>Delete this document?</h3>
-            <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 20px" }}>Deleting "{confirmDelete.title}" removes it, its share links, and every signal on it. This cannot be undone.</p>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 8px", letterSpacing: T.trackingTight }}>{dp.deleteTitle}</h3>
+            <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 20px" }}>{dp.deleteBodyA}{confirmDelete.title}{dp.deleteBodyB}</p>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setConfirmDelete(null)} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>Cancel</button>
-              <button onClick={() => doDelete(confirmDelete)} disabled={busy} style={{ background: "#D92D20", color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? "Deleting…" : "Delete"}</button>
+              <button onClick={() => setConfirmDelete(null)} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{dp.cancel}</button>
+              <button onClick={() => doDelete(confirmDelete)} disabled={busy} style={{ background: "#D92D20", color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? dp.deleting : dp.del}</button>
             </div>
           </div>
         </div>
