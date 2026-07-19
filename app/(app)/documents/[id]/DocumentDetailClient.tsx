@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
 import ProspectModal from "@/app/(app)/documents/[id]/ProspectModal";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string };
@@ -12,6 +14,8 @@ type Sig = { recipient_id: string; kind: string; page: number | null; value: unk
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
 
 export default function DocumentDetailClient({ doc, recipients, signals }: { doc: Doc; recipients: Rec[]; signals: Sig[] }) {
+  const locale = useLocale();
+  const dd = getDict(locale).documentDetailPage;
   const [recs, setRecs] = useState(recipients);
   const [selected, setSelected] = useState<string | null>(recipients[0]?.id ?? null);
   const [verdicts, setVerdicts] = useState<Record<string, Verdict>>({});
@@ -42,7 +46,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
     setVerdictBusy(id); setError("");
     const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: id }) });
     const json = await res.json();
-    if (!res.ok) { setError(json.error ?? "Couldn't read the reader."); setVerdictBusy(""); return; }
+    if (!res.ok) { setError(json.error ?? dd.couldntRead); setVerdictBusy(""); return; }
     setVerdicts((p) => ({ ...p, [id]: json.verdict })); setVerdictBusy("");
   }
   async function saveName(id: string) {
@@ -65,12 +69,12 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
 
       <div style={{ padding: "26px 30px 0" }}>
         <a href="/documents" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
-          <span style={{ color: T.muted }}>‹</span> Documents
+          <span style={{ color: T.muted }}>{"\u2039"}</span> {dd.back}
         </a>
         <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{doc.title}</h1>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{recs.length} recipient{recs.length === 1 ? "" : "s"}</p>
-          {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={{ background: T.greenSoft, color: T.greenText, fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font }}>Share with team</button>}
+          <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{recs.length} {recs.length === 1 ? dd.recipientOne : dd.recipientMany}</p>
+          {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={{ background: T.greenSoft, color: T.greenText, fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font }}>{dd.shareWithTeam}</button>}
         </div>
       </div>
 
@@ -79,15 +83,15 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
       <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: 18, padding: "22px 30px 40px", alignItems: "start" }}>
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={microLabel}>Recipients</span>
+            <span style={microLabel}>{dd.recipients}</span>
             <ShareButton documentId={doc.id} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
           </div>
-          {recs.length === 0 ? <p style={{ fontSize: 14, color: T.body, padding: "6px 2px" }}>No links yet.</p> : recs.map((r) => {
+          {recs.length === 0 ? <p style={{ fontSize: 14, color: T.body, padding: "6px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
             const s = summary[r.id]; const active = r.id === selected; const opened = s && s.opens > 0;
             return (
               <div key={r.id} className="t-rec" onClick={() => setSelected(r.id)} style={{ padding: "10px 11px", borderRadius: 8, marginBottom: 3, background: active ? T.greenSoft : "transparent", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 14, fontWeight: active ? 600 : 500, color: active ? T.greenText : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || "Unnamed reader"}</span>
-                {pill(!!opened, opened ? "Opened" : "New")}
+                <span style={{ fontSize: 14, fontWeight: active ? 600 : 500, color: active ? T.greenText : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || dd.unnamedReader}</span>
+                {pill(!!opened, opened ? dd.opened : dd.isNew)}
               </div>
             );
           })}
@@ -95,34 +99,34 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
 
         <div>
           {!sel ? (
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 28 }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>Select a recipient to see how they read.</p></div>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 28 }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.selectRecipient}</p></div>
           ) : (
             <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
               <div style={{ marginBottom: 20 }}>
                 {editing === sel.id ? (
                   <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
-                    <input className="t-in" autoFocus value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveName(sel.id)} placeholder="e.g. Sarah at Meridian" style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "8px 11px", fontSize: 16, fontFamily: T.font, fontWeight: 600, color: T.heading }} />
-                    <button onClick={() => saveName(sel.id)} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>Save</button>
+                    <input className="t-in" autoFocus value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveName(sel.id)} placeholder={dd.renamePlaceholder} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "8px 11px", fontSize: 16, fontFamily: T.font, fontWeight: 600, color: T.heading }} />
+                    <button onClick={() => saveName(sel.id)} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{dd.save}</button>
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                    <h2 style={{ fontSize: 20, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: 0 }}>{sel.label || "Unnamed reader"}</h2>
-                    <button onClick={() => { setEditing(sel.id); setNameDraft(sel.label || ""); }} className="t-b" style={{ fontSize: 13, color: T.green, fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: T.font }}>Rename</button>
+                    <h2 style={{ fontSize: 20, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: 0 }}>{sel.label || dd.unnamedReader}</h2>
+                    <button onClick={() => { setEditing(sel.id); setNameDraft(sel.label || ""); }} className="t-b" style={{ fontSize: 13, color: T.green, fontWeight: 600, background: "none", border: "none", cursor: "pointer", fontFamily: T.font }}>{dd.rename}</button>
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: T.canvas, borderRadius: T.rInput, maxWidth: 520 }}>
                   <span style={{ fontSize: 12, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>/read/{sel.share_token}</span>
-                  <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? "Copied" : "Copy"}</button>
+                  <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
                 </div>
               </div>
 
               {selSum && selSum.opens > 0 ? (
                 <>
-                  <div style={{ ...microLabel, marginBottom: 12 }}>How they read</div>
+                  <div style={{ ...microLabel, marginBottom: 12 }}>{dd.howTheyRead}</div>
                   <div style={{ marginBottom: 24 }}>
-                    {Object.keys(selSum.dwell).length === 0 ? <p style={{ fontSize: 14, color: T.body }}>Opened, no page dwell yet.</p> : Object.entries(selSum.dwell).sort((a, b) => Number(a[0]) - Number(b[0])).map(([page, ms]) => (
+                    {Object.keys(selSum.dwell).length === 0 ? <p style={{ fontSize: 14, color: T.body }}>{dd.openedNoDwell}</p> : Object.entries(selSum.dwell).sort((a, b) => Number(a[0]) - Number(b[0])).map(([page, ms]) => (
                       <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
-                        <span style={{ fontSize: 12, color: T.body, width: 48, fontWeight: 500 }}>Page {page}</span>
+                        <span style={{ fontSize: 12, color: T.body, width: 48, fontWeight: 500 }}>{dd.page} {page}</span>
                         <div style={{ flex: 1, height: 8, background: T.canvas, borderRadius: 20, overflow: "hidden", maxWidth: 340 }}><div style={{ width: `${(Number(ms) / maxDwell) * 100}%`, height: "100%", background: T.green, borderRadius: 20 }} /></div>
                         <span style={{ fontSize: 13, color: T.body }}>{(Number(ms) / 1000).toFixed(1)}s</span>
                       </div>
@@ -130,34 +134,34 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                   </div>
 
                   {selSum.questions.length > 0 && (<>
-                    <div style={{ ...microLabel, marginBottom: 12 }}>What they asked</div>
+                    <div style={{ ...microLabel, marginBottom: 12 }}>{dd.whatTheyAsked}</div>
                     <div style={{ marginBottom: 24 }}>{selSum.questions.map((q, i) => (
                       <div key={i} style={{ background: T.canvas, borderRadius: T.rInput, padding: "12px 14px", marginBottom: 8 }}>
                         <p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{q.text}</p>
-                        {q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "#B42318", marginTop: 4, display: "inline-block" }}>Escalated — commercial question</span>}
+                        {q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "#B42318", marginTop: 4, display: "inline-block" }}>{dd.escalated}</span>}
                       </div>
                     ))}</div>
                   </>)}
 
-                  <div style={{ ...microLabel, marginBottom: 12 }}>Verdict</div>
+                  <div style={{ ...microLabel, marginBottom: 12 }}>{dd.verdict}</div>
                   {verdicts[sel.id] ? (
                     <div style={{ background: T.canvas, borderRadius: T.rCard, padding: 20 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>Reading</span>
-                        {pill(verdicts[sel.id].confidence === "high", verdicts[sel.id].confidence + " confidence")}
+                        <span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{dd.reading}</span>
+                        {pill(verdicts[sel.id].confidence === "high", verdicts[sel.id].confidence + dd.confidenceSuffix)}
                       </div>
                       <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
                       <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdicts[sel.id].reasoning}</p>
                       <div style={{ background: "#fff", borderRadius: T.rInput, padding: "12px 14px" }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>Do this next</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{dd.doThisNext}</div>
                         <p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdicts[sel.id].nextAction}</p>
                       </div>
                     </div>
                   ) : (
-                    <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{verdictBusy === sel.id ? "Reading…" : "Read the reader"}</button>
+                    <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
                   )}
                 </>
-              ) : <p style={{ fontSize: 15, color: T.body, margin: 0 }}>This reader hasn't opened the document yet. Their read appears here once they do.</p>}
+              ) : <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.notOpenedYet}</p>}
             </div>
           )}
         </div>
@@ -168,11 +172,13 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
 }
 
 function ShareButton({ documentId, onCreated }: { documentId: string; onCreated: (r: Rec) => void }) {
+  const locale = useLocale();
+  const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState("");
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Share with Prospect</button>
+      <button onClick={() => setOpen(true)} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{dd.shareWithProspect}</button>
       {notice && <span style={{ fontSize: 11, color: T.body, marginLeft: 8 }}>{notice}</span>}
       {open && (
         <ProspectModal
@@ -181,7 +187,7 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
           onCreated={(rec, readUrl, emailInfo) => {
             onCreated(rec as Rec);
             setOpen(false);
-            if (emailInfo) setNotice(emailInfo.sent ? "Email sent." : (emailInfo.warning ?? "Link created."));
+            if (emailInfo) setNotice(emailInfo.sent ? dd.emailSent : (emailInfo.warning ?? dd.linkCreated));
             setTimeout(() => setNotice(""), 6000);
           }}
         />
