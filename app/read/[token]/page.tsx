@@ -15,7 +15,7 @@ export default async function ReadPage({
 
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, documents ( title, storage_path )")
+    .select("id, first_name, documents ( title, storage_path )")
     .eq("share_token", token)
     .single();
 
@@ -31,9 +31,12 @@ export default async function ReadPage({
     );
   }
 
+  const firstName = (recipient.first_name as string | null)?.trim() || "";
+  const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
+
   const { data: signed } = await admin.storage
     .from("documents")
     .createSignedUrl(doc.storage_path, 3600);
 
-  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} />;
+  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} greeting={greeting} />;
 }

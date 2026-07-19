@@ -10,7 +10,7 @@ const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 
 type Msg = { role: "user" | "doc"; text: string };
 
-export default function PdfReader({ title, fileUrl, token }: { title: string; fileUrl: string; token: string }) {
+export default function PdfReader({ title, fileUrl, token, greeting }: { title: string; fileUrl: string; token: string; greeting: string }) {
   const locale = useLocale();
   const r = getDict(locale).readerPage;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -117,7 +117,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
 
       <header style={{ background: CARD, borderBottom: `1px solid ${LINE}`, position: "sticky", top: 0, zIndex: 10 }}>
         <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ fontSize: 18, fontWeight: 400, letterSpacing: "-0.01em" }}>BackRead</span>
+          <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
           <h1 style={{ fontSize: 16, fontWeight: 400, margin: 0, marginLeft: "auto", color: SLATE }}>{title}</h1>
         </div>
       </header>
