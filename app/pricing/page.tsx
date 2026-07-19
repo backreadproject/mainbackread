@@ -108,14 +108,15 @@ export default function PricingPage() {
           <a href="/login" className="m-a m-cta-lemon" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 30px", borderRadius: 10 }}>Start here</a>
         </div>
       </section>
-      <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: MUTE, padding: "36px 0" }}>
+      <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: "#fff", padding: "36px 0" }}>
         <div style={{ ...wrap, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" className="m-a" style={{ fontSize: 14, color: MUTE, display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, the document reads the reader.</a>
-          <div style={{ display: "flex", gap: 24 }}>
-            <a href="/pricing" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Pricing</a>
-            <a href="#" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Privacy</a>
-            <a href="#" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Terms</a>
-            <a href="/login" className="m-a" style={{ color: MUTE, fontSize: 13 }}>Sign in</a>
+          <a href="/" className="m-a" style={{ fontSize: 14, color: "#fff", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, the document reads the reader.</a>
+          <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
+            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="m-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
+            <a href="/pricing" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Pricing</a>
+            <a href="/privacy" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Privacy</a>
+            <a href="/terms" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Terms</a>
+            <a href="/login" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Sign in</a>
           </div>
         </div>
       </footer>

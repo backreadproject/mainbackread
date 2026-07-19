@@ -139,8 +139,7 @@ const SECTIONS: Section[] = [
     id: "contact",
     h: "13. Contact us",
     body: [
-      "If you have any question about this policy, or wish to exercise a right, please contact our data protection team. We treat every message from a user or a reader with care and respond promptly.",
-      "Contact details will be published here before launch.",
+      "If you have any question about this policy, or wish to exercise a right, the fastest way to reach our data protection team is the live chat on our website. We treat every message from a user or a reader with care and respond promptly.",
     ],
   },
 ];
@@ -165,7 +164,7 @@ export default function PrivacyPage() {
         <div style={wrap}>
           {/* quick summary card */}
           <div style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 16, padding: 26, marginBottom: 44, boxShadow: "0 8px 30px rgba(11,122,75,0.08)" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT, margin: "0 0 14px" }}>The short version</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT, margin: "0 0 14px" }}>Summary</h2>
             <ul style={{ margin: 0, padding: "0 0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 "We collect only what we need to run BackRead well.",

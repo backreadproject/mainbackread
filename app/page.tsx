@@ -31,6 +31,8 @@ export default function LandingPage() {
         .lp-a{text-decoration:none}
         .lp-cta{transition:transform .12s, box-shadow .15s}.lp-cta:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(216,232,74,0.35)}.lp-cta:active{transform:translateY(0)}
         .lp-ghost{transition:background .15s,border-color .15s}.lp-ghost:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.30)}
+        .lp-swipe-hint{display:none;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#067647;margin-bottom:12px}
+        .lp-compare-fade{display:none;position:absolute;top:0;right:0;bottom:0;width:44px;pointer-events:none;border-radius:0 16px 16px 0;background:linear-gradient(90deg, rgba(248,249,250,0), rgba(248,249,250,0.9))}
         .lp-card{transition:transform .16s, box-shadow .16s, border-color .16s;box-shadow:0 0 0 1px rgba(31,169,113,0.08), 0 8px 30px rgba(11,122,75,0.10), 0 2px 10px rgba(15,23,41,0.04)}.lp-card:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(31,169,113,0.18), 0 18px 48px rgba(11,122,75,0.18);border-color:${BRAND}}
         .lp-step:hover .lp-node{background:${BRAND};box-shadow:0 0 0 6px rgba(31,169,113,0.14)}
         @media(max-width:860px){
@@ -62,6 +64,8 @@ export default function LandingPage() {
           .lp-compare-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
           .lp-compare{min-width:560px!important;font-size:13px!important}
           .lp-compare > div{padding-left:12px!important;padding-right:12px!important}
+          .lp-swipe-hint{display:flex!important}
+          .lp-compare-fade{display:block!important}
         }
       `}</style>
 
@@ -203,6 +207,8 @@ export default function LandingPage() {
         <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 48px", maxWidth: 620 }}>
           Read receipts and document analytics tell you that something happened. BackRead tells you what it meant.
         </p>
+        <div className="lp-swipe-hint" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5" /></svg><span>Swipe to compare</span></div>
+        <div className="lp-compare-outer" style={{ position: "relative" }}>
         <div className="lp-compare-wrap"><div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
           {/* header row */}
           <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>What you learn</div>
@@ -224,6 +230,10 @@ export default function LandingPage() {
           ))}
         </div>
         </div>
+        {/* right-edge fade cue (mobile only) */}
+        <div className="lp-compare-fade" aria-hidden="true" />
+        </div>
+
       </section>
 
       {/* PRODUCT PREVIEW */}
@@ -294,12 +304,13 @@ export default function LandingPage() {
             <span style={{ color: BRAND }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span>
             BackRead
           </span>
-          <span style={{ fontSize: 13, letterSpacing: "0.02em", color: CLOUDDIM }}>The document reads the reader.</span>
-          <div style={{ display: "flex", gap: 22 }}>
-            <a href="/pricing" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Pricing</a>
-            <a href="/privacy" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Privacy</a>
-            <a href="/terms" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Terms</a>
-            <a href="/login" className="lp-a" style={{ color: CLOUD, fontSize: 14 }}>Sign in</a>
+          <span style={{ fontSize: 13, letterSpacing: "0.02em", color: "#fff" }}>The document reads the reader.</span>
+          <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
+            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="lp-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
+            <a href="/pricing" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Pricing</a>
+            <a href="/privacy" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Privacy</a>
+            <a href="/terms" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Terms</a>
+            <a href="/login" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>Sign in</a>
           </div>
         </div>
       </footer>
