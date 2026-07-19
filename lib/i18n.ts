@@ -110,10 +110,10 @@ const en = {
     ctaSub: "Free for your first 5 documents. No card needed.",
     ctaBtn: "Start here",
     tiers: [
-      { name: "Free", price: "$0", cadence: "forever", tagline: "For trying BackRead on a real send.", cta: "Start here", features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"] },
-      { name: "Pro", price: "$29", cadence: "per month", tagline: "For founders and sellers who send often.", cta: "Start Pro", features: ["Unlimited documents", "Ask BackRead companion", "The verdict engine", "Question and intent signals", "Email alerts on every open", "Priority support"] },
-      { name: "Business", price: "$99", cadence: "per month", tagline: "For teams reading their pipeline together.", cta: "Start Business", features: ["Everything in Pro", "Up to 10 team seats", "Shared workspace", "Team activity feed", "Advanced verdict history", "Onboarding session"] },
-      { name: "Enterprise", price: "Custom", cadence: "contact us", tagline: "For organizations with security and scale needs.", cta: "Contact us", features: ["Everything in Business", "Unlimited team seats", "SSO and advanced security", "Custom data retention", "Dedicated support", "Onboarding and training"] },
+      { name: "Free", price: "$0", cadence: "forever", tagline: "For trying BackRead on a real send.", cta: "Start here", highlight: false, features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"] },
+      { name: "Pro", price: "$29", cadence: "per month", tagline: "For founders and sellers who send often.", cta: "Start Pro", highlight: true, features: ["Unlimited documents", "Ask BackRead companion", "The verdict engine", "Question and intent signals", "Email alerts on every open", "Priority support"] },
+      { name: "Business", price: "$99", cadence: "per month", tagline: "For teams reading their pipeline together.", cta: "Start Business", highlight: false, features: ["Everything in Pro", "Up to 10 team seats", "Shared workspace", "Team activity feed", "Advanced verdict history", "Onboarding session"] },
+      { name: "Enterprise", price: "Custom", cadence: "contact us", tagline: "For organizations with security and scale needs.", cta: "Contact us", highlight: false, features: ["Everything in Business", "Unlimited team seats", "SSO and advanced security", "Custom data retention", "Dedicated support", "Onboarding and training"] },
     ],
     faq: [
       { q: "Do my readers need an account?", a: "No. They open a link and read. BackRead captures intent without asking anything of them." },
@@ -229,10 +229,10 @@ const fr: Dict = {
     ctaSub: "Gratuit pour vos 5 premiers documents. Sans carte bancaire.",
     ctaBtn: "Commencer",
     tiers: [
-      { name: "Gratuit", price: "0 $", cadence: "pour toujours", tagline: "Pour essayer BackRead sur un envoi réel.", cta: "Commencer", features: ["Jusqu'à 5 documents", "Suivi des lecteurs et traces de lecture", "Chronologies par lecteur", "1 espace de travail"] },
-      { name: "Pro", price: "29 $", cadence: "par mois", tagline: "Pour les fondateurs et vendeurs qui envoient souvent.", cta: "Choisir Pro", features: ["Documents illimités", "Compagnon Ask BackRead", "Le moteur de verdict", "Signaux de questions et d'intention", "Alertes e-mail à chaque ouverture", "Support prioritaire"] },
-      { name: "Business", price: "99 $", cadence: "par mois", tagline: "Pour les équipes qui lisent leur pipeline ensemble.", cta: "Choisir Business", features: ["Tout de Pro", "Jusqu'à 10 sièges d'équipe", "Espace de travail partagé", "Fil d'activité d'équipe", "Historique de verdicts avancé", "Session d'intégration"] },
-      { name: "Enterprise", price: "Sur mesure", cadence: "nous contacter", tagline: "Pour les organisations aux besoins de sécurité et d'échelle.", cta: "Nous contacter", features: ["Tout de Business", "Sièges d'équipe illimités", "SSO et sécurité avancée", "Rétention des données personnalisée", "Support dédié", "Intégration et formation"] },
+      { name: "Gratuit", price: "0 $", cadence: "pour toujours", tagline: "Pour essayer BackRead sur un envoi réel.", cta: "Commencer", highlight: false, features: ["Jusqu'à 5 documents", "Suivi des lecteurs et traces de lecture", "Chronologies par lecteur", "1 espace de travail"] },
+      { name: "Pro", price: "29 $", cadence: "par mois", tagline: "Pour les fondateurs et vendeurs qui envoient souvent.", cta: "Choisir Pro", highlight: true, features: ["Documents illimités", "Compagnon Ask BackRead", "Le moteur de verdict", "Signaux de questions et d'intention", "Alertes e-mail à chaque ouverture", "Support prioritaire"] },
+      { name: "Business", price: "99 $", cadence: "par mois", tagline: "Pour les équipes qui lisent leur pipeline ensemble.", cta: "Choisir Business", highlight: false, features: ["Tout de Pro", "Jusqu'à 10 sièges d'équipe", "Espace de travail partagé", "Fil d'activité d'équipe", "Historique de verdicts avancé", "Session d'intégration"] },
+      { name: "Enterprise", price: "Sur mesure", cadence: "nous contacter", tagline: "Pour les organisations aux besoins de sécurité et d'échelle.", cta: "Nous contacter", highlight: false, features: ["Tout de Business", "Sièges d'équipe illimités", "SSO et sécurité avancée", "Rétention des données personnalisée", "Support dédié", "Intégration et formation"] },
     ],
     faq: [
       { q: "Mes lecteurs ont-ils besoin d'un compte ?", a: "Non. Ils ouvrent un lien et lisent. BackRead capte l'intention sans rien leur demander." },
