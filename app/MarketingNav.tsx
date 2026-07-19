@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-const BRAND = "#1FA971", GREEN = "#0B7A4B", NIGHT = "#082019", CLOUD = "rgba(255,255,255,0.72)";
+const BRAND = "#1FA971", GREEN = "#0B7A4B", NIGHT = "#082019", LEMON = "#D8E84A", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const CircleMark = () => (
   <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
@@ -31,7 +31,7 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
       transition: "background .25s ease, border-color .25s ease, backdrop-filter .25s ease",
     }}>
       <style>{`
-        .mn-cta{transition:background .15s}.mn-cta:hover{background:#0A6A41}
+        .mn-cta{transition:background .15s}.mn-cta:hover{background:#CDDD3E}
         .mn-links a:hover{color:#fff}
         .mn-signin{transition:background .15s}.mn-signin:hover{background:rgba(255,255,255,0.08)}
         .mn-hamburger{display:none}
@@ -62,7 +62,7 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
           ) : (
             <>
               <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>Sign in</a>
-              <a href="/login" className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Start free</a>
+              <a href="/login" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>Start here</a>
             </>
           )}
         </div>
@@ -90,7 +90,7 @@ export default function MarketingNav({ activePricing = false }: { activePricing?
           <a href="/#how" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>How it works</a>
           <a href="/#why" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>Why BackRead</a>
           <a href="/pricing" onClick={() => setMenuOpen(false)} style={{ color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>Pricing</a>
-          {!authed && <a href="/login" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: GREEN, color: "#fff", fontSize: 15, fontWeight: 600, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>Start free</a>}
+          {!authed && <a href="/login" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>Start here</a>}
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import MarketingNav from "../MarketingNav";
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
+const LEMON = "#D8E84A";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
 const TIERS = [
@@ -8,7 +9,7 @@ const TIERS = [
     price: "$0",
     cadence: "forever",
     tagline: "For trying BackRead on a real send.",
-    cta: "Start free",
+    cta: "Start here",
     highlight: false,
     features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"],
   },
@@ -53,6 +54,7 @@ export default function PricingPage() {
       <style>{`
         .m-a{text-decoration:none}
         .m-cta{transition:background .15s,transform .1s}.m-cta:hover{background:#0A6A41}.m-cta:active{transform:translateY(1px)}
+        .m-cta-lemon{transition:background .15s,transform .1s}.m-cta-lemon:hover{background:#CDDD3E}.m-cta-lemon:active{transform:translateY(1px)}
         .m-card{transition:transform .15s,box-shadow .15s}.m-card:hover{transform:translateY(-3px)}
         @media(max-width:980px){.m-tiers{grid-template-columns:1fr 1fr!important}}
         @media(max-width:560px){.m-tiers{grid-template-columns:1fr!important}.m-nav-links{display:none!important}}
@@ -75,7 +77,7 @@ export default function PricingPage() {
                 <span style={{ fontSize: 34, fontWeight: 700, color: INK, letterSpacing: "-0.03em" }}>{t.price}</span>
                 <span style={{ fontSize: 13, color: MUTE }}>{t.cadence}</span>
               </div>
-              <a href="/login" className="m-a m-cta" style={{ display: "block", textAlign: "center", background: t.highlight ? GREEN : "#fff", color: t.highlight ? "#fff" : INK, border: t.highlight ? "none" : `1px solid ${LINE}`, fontSize: 15, fontWeight: 600, padding: "12px", borderRadius: 10, marginBottom: 24 }}>{t.cta}</a>
+              <a href="/login" className={t.highlight ? "m-a m-cta-lemon" : "m-a m-cta"} style={{ display: "block", textAlign: "center", background: t.highlight ? LEMON : GREEN, color: t.highlight ? "#08301F" : "#fff", border: "none", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 10, marginBottom: 24 }}>{t.cta}</a>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {t.features.map((f) => (
                   <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
@@ -103,7 +105,7 @@ export default function PricingPage() {
         <div style={wrap}>
           <h2 style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 14px" }}>Start reading your readers today.</h2>
           <p style={{ fontSize: 18, color: CLOUD, margin: "0 0 30px" }}>Free for your first 5 documents. No card needed.</p>
-          <a href="/login" className="m-a m-cta" style={{ display: "inline-block", background: GREEN, color: "#fff", fontSize: 16, fontWeight: 600, padding: "14px 30px", borderRadius: 10 }}>Start free</a>
+          <a href="/login" className="m-a m-cta-lemon" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 30px", borderRadius: 10 }}>Start here</a>
         </div>
       </section>
       <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: MUTE, padding: "36px 0" }}>
