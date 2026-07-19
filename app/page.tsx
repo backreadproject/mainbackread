@@ -90,7 +90,7 @@ export default async function LandingPage() {
             <span style={{ width: 6, height: 6, borderRadius: 9, background: LEMON }} />
             {d.hero.badge}
           </div>
-          <h1 className="lp-hero-h1" style={{ fontSize: locale === "fr" ? 46 : 62, fontWeight: 700, lineHeight: locale === "fr" ? 1.12 : 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: locale === "fr" ? 900 : 760, whiteSpace: locale === "fr" ? "nowrap" : "normal" }}>
+          <h1 className="lp-hero-h1" style={{ fontSize: locale === "fr" ? 53 : 62, fontWeight: 700, lineHeight: locale === "fr" ? 1.12 : 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: locale === "fr" ? 960 : 760, whiteSpace: locale === "fr" ? "nowrap" : "normal" }}>
             <span className="lp-h1-a">{d.hero.titleA}</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>{d.hero.titleB}</span>
           </h1>
           <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 36px", color: CLOUD, maxWidth: 560 }}>

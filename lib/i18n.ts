@@ -139,7 +139,7 @@ const fr: Dict = {
     titleB: "Vous pouvez enfin la suivre.",
     sub: "BackRead transforme chaque document que vous envoyez en un compagnon vivant qui répond aux questions de votre lecteur, observe comment il est lu, et vous dit où en est réellement l'affaire.",
     start: "Commencer",
-    seeHow: "Voir comment ça marche",
+    seeHow: "Voir comment",
     fine: "Votre premier document en ligne en quelques minutes.",
   },
   problem: {
