@@ -45,14 +45,14 @@ export default async function LandingPage() {
           .lp-three{grid-template-columns:1fr!important}
           .lp-four{grid-template-columns:1fr 1fr!important}
           .lp-trail-line{display:none!important}
-          .lp-hero-h1{font-size:40px!important;white-space:normal!important}
+          .lp-hero-h1{font-size:44px!important;white-space:normal!important}
           .lp-h1-a{font-size:49px!important;display:inline-block}
           .lp-h1-b{font-size:39px!important;display:inline-block}
           .lp-hero-sub{font-size:18px!important}
           .lp-hero-pad{padding:168px 32px 76px!important}
         }
         @media(max-width:520px){
-          .lp-hero-h1{font-size:30px!important;margin-bottom:18px!important;white-space:normal!important}
+          .lp-hero-h1{font-size:33px!important;margin-bottom:18px!important;white-space:normal!important}
           .lp-h1-a{font-size:38px!important;line-height:1.04!important;display:inline-block}
           .lp-h1-b{font-size:28px!important;line-height:1.04!important;display:inline-block}
           .lp-hero-sub{font-size:16px!important;margin-bottom:26px!important}
@@ -90,7 +90,7 @@ export default async function LandingPage() {
             <span style={{ width: 6, height: 6, borderRadius: 9, background: LEMON }} />
             {d.hero.badge}
           </div>
-          <h1 className="lp-hero-h1" style={{ fontSize: 48, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 24px", maxWidth: 900, whiteSpace: "nowrap" }}>
+          <h1 className="lp-hero-h1" style={{ fontSize: locale === "fr" ? 46 : 62, fontWeight: 700, lineHeight: locale === "fr" ? 1.12 : 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: locale === "fr" ? 900 : 760, whiteSpace: locale === "fr" ? "nowrap" : "normal" }}>
             <span className="lp-h1-a">{d.hero.titleA}</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>{d.hero.titleB}</span>
           </h1>
           <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 36px", color: CLOUD, maxWidth: 560 }}>
