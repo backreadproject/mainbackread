@@ -619,6 +619,11 @@ const en = {
     couldntCompose: "Couldn't draft that. Try again.",
     needAsk: "Pick an option or type what you need.",
   },
+  relayPage: {
+    title: "Document delivery",
+    body: "This is a private document-sharing service. Documents shared with you arrive as a direct link.",
+    hint: "If you were sent a link, open it to view your document. Links are private to you.",
+  },
 };
 
 const fr: Dict = {
@@ -1230,6 +1235,11 @@ const fr: Dict = {
     copied: "Copié",
     couldntCompose: "Impossible de rédiger cela. Réessayez.",
     needAsk: "Choisissez une option ou décrivez ce qu'il vous faut.",
+  },
+  relayPage: {
+    title: "Livraison de documents",
+    body: "Ceci est un service privé de partage de documents. Les documents partagés avec vous arrivent sous forme de lien direct.",
+    hint: "Si un lien vous a été envoyé, ouvrez-le pour consulter votre document. Les liens vous sont privés.",
   },
 };
 

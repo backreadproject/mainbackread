@@ -51,7 +51,8 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
     await supabase.from("recipients").update({ label }).eq("id", id);
     setRecs((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r))); setEditing(null);
   }
-  function copyLink(token: string) { navigator.clipboard.writeText(`${window.location.origin}/read/${token}`); setCopied(token); setTimeout(() => setCopied(""), 1500); }
+  const readerOrigin = (process.env.NEXT_PUBLIC_READER_ORIGIN || "").replace(/\/+$/, "") || (typeof window !== "undefined" ? window.location.origin : "");
+  function copyLink(token: string) { navigator.clipboard.writeText(`${readerOrigin}/read/${token}`); setCopied(token); setTimeout(() => setCopied(""), 1500); }
   const sel = recs.find((r) => r.id === selected);
   const selSum = selected ? summary[selected] : null;
   const maxDwell = selSum ? Math.max(1, ...Object.values(selSum.dwell)) : 1;
@@ -104,7 +105,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: T.canvas, borderRadius: T.rInput, maxWidth: 520 }}>
-                  <span style={{ fontSize: 12, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>/read/{sel.share_token}</span>
+                  <span style={{ fontSize: 12, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{readerOrigin.replace(/^https?:\/\//, "")}/read/{sel.share_token}</span>
                   <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
                 </div>
               </div>
