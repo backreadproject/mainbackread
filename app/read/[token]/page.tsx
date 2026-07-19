@@ -1,5 +1,7 @@
-﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import PdfReader from "./PdfReader";
+import { getLocale } from "@/lib/locale-server";
+import { getDict } from "@/lib/i18n";
 
 export default async function ReadPage({
   params,
@@ -7,6 +9,8 @@ export default async function ReadPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const locale = await getLocale();
+  const r = getDict(locale).readerPage;
   const admin = createAdminClient();
 
   const { data: recipient } = await admin
@@ -22,7 +26,7 @@ export default async function ReadPage({
   if (!recipient || !doc) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#E9EAEC", fontFamily: "system-ui, sans-serif" }}>
-        <p style={{ color: "#6E7480" }}>This link is invalid or has expired.</p>
+        <p style={{ color: "#6E7480" }}>{r.invalidLink}</p>
       </div>
     );
   }
@@ -33,4 +37,3 @@ export default async function ReadPage({
 
   return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} />;
 }
-

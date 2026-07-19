@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 
 const INK = "#0A0E17", CANVAS = "#FBFBFA", CARD = "#FFFFFF", BLUE = "#1D4ED8", BLUE_SOFT = "#EAF0FF", GREEN = "#10B981", SLATE = "#475569", LINE = "#E7EBF2";
 const AEON = "var(--font-dm-sans), system-ui, sans-serif";
@@ -9,8 +11,10 @@ const SHADOW = "0 1px 3px rgba(11,18,32,0.04), 0 8px 24px rgba(11,18,32,0.05)";
 type Msg = { role: "user" | "doc"; text: string };
 
 export default function PdfReader({ title, fileUrl, token }: { title: string; fileUrl: string; token: string }) {
+  const locale = useLocale();
+  const r = getDict(locale).readerPage;
   const containerRef = useRef<HTMLDivElement>(null);
-  const [status, setStatus] = useState("Opening document…");
+  const [status, setStatus] = useState(r.opening);
   const [pageCount, setPageCount] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const renderedRef = useRef(false);
@@ -48,8 +52,8 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
     try {
       const res = await fetch("/api/ask-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, question: q, currentPage: currentPage.current ?? 1, documentText: docText.current }) });
       const json = await res.json();
-      setThread((t) => [...t, { role: "doc", text: json.answer ?? json.error ?? "No answer." }]);
-    } catch { setThread((t) => [...t, { role: "doc", text: "Couldn't reach the document. Try again." }]); }
+      setThread((t) => [...t, { role: "doc", text: json.answer ?? json.error ?? r.noAnswer }]);
+    } catch { setThread((t) => [...t, { role: "doc", text: r.couldntReach }]); }
     setAsking(false);
   }
 
@@ -96,7 +100,7 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
         }, { threshold: [0.25, 0.5, 0.75] });
         wrappers.forEach((w) => observer.observe(w));
       } catch (err) {
-        setStatus("Couldn't open this document. " + (err instanceof Error ? err.message : String(err)));
+        setStatus(r.couldntOpen + (err instanceof Error ? err.message : String(err)));
       }
     })();
     const onHide = () => leavePage();
@@ -132,29 +136,29 @@ export default function PdfReader({ title, fileUrl, token }: { title: string; fi
         <main>
           {status && <p style={{ fontSize: 15, color: SLATE, textAlign: "center", padding: 48 }}>{status}</p>}
           <div ref={containerRef} />
-          {pageCount > 0 && <p style={{ fontSize: 13, color: SLATE, textAlign: "center", padding: "16px 0" }}>{pageCount} page{pageCount > 1 ? "s" : ""}</p>}
+          {pageCount > 0 && <p style={{ fontSize: 13, color: SLATE, textAlign: "center", padding: "16px 0" }}>{pageCount} {pageCount > 1 ? r.pageMany : r.pageOne}</p>}
         </main>
 
         <aside style={{ position: "sticky", top: 90, background: CARD, borderRadius: 14, boxShadow: SHADOW, display: "flex", flexDirection: "column", height: "78vh", overflow: "hidden" }}>
           <div style={{ padding: "14px 18px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ width: 8, height: 8, borderRadius: 9, background: BLUE }} />
-            <span style={{ fontSize: 14, fontWeight: 400 }}>Ask BackRead</span>
+            <span style={{ fontSize: 14, fontWeight: 400 }}>{r.askTitle}</span>
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: 18 }}>
-            {thread.length === 0 && <p style={{ fontSize: 15, lineHeight: 1.5, color: SLATE, margin: 0 }}>Ask this document anything. It answers from what's inside it.</p>}
+            {thread.length === 0 && <p style={{ fontSize: 15, lineHeight: 1.5, color: SLATE, margin: 0 }}>{r.askEmpty}</p>}
             {thread.map((m, i) => (
               <div key={i} style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, fontWeight: 400, color: m.role === "user" ? SLATE : BLUE, marginBottom: 5 }}>{m.role === "user" ? "You" : "The document"}</div>
+                <div style={{ fontSize: 11, fontWeight: 400, color: m.role === "user" ? SLATE : BLUE, marginBottom: 5 }}>{m.role === "user" ? r.you : r.theDocument}</div>
                 <div style={{ fontSize: 14, lineHeight: 1.48, background: m.role === "user" ? CANVAS : BLUE_SOFT, borderRadius: 10, padding: "10px 12px", color: m.role === "doc" ? "#1E3A8A" : INK }}>{m.text}</div>
               </div>
             ))}
-            {asking && <div style={{ fontSize: 13, color: SLATE }}>reading…</div>}
+            {asking && <div style={{ fontSize: 13, color: SLATE }}>{r.reading}</div>}
             <div ref={threadEnd} />
           </div>
           <div style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 8 }}>
-            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder="Ask about the document…"
+            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder={r.askPlaceholder}
               style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 12px", fontSize: 14, fontFamily: AEON, background: "#fff", outline: "none" }} />
-            <button onClick={ask} className="fx-ask" style={{ background: BLUE, color: "#fff", border: "none", borderRadius: 10, padding: "0 18px", fontSize: 14, fontWeight: 400, fontFamily: AEON, cursor: "pointer" }}>Ask</button>
+            <button onClick={ask} className="fx-ask" style={{ background: BLUE, color: "#fff", border: "none", borderRadius: 10, padding: "0 18px", fontSize: 14, fontWeight: 400, fontFamily: AEON, cursor: "pointer" }}>{r.ask}</button>
           </div>
         </aside>
       </div>
