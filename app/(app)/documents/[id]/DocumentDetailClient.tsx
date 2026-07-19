@@ -1,18 +1,16 @@
 "use client";
-
 import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
 import ProspectModal from "@/app/(app)/documents/[id]/ProspectModal";
+import ComposeWorkspace from "@/app/(app)/documents/[id]/ComposeWorkspace";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
-
 export default function DocumentDetailClient({ doc, recipients, signals }: { doc: Doc; recipients: Rec[]; signals: Sig[] }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
@@ -29,7 +27,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
   useEffect(() => {
     fetch(`/api/org-members?docId=${doc.id}`).then((r) => r.json()).then((d) => setShareInfo({ isOrg: !!d.isOrg, canManage: !!d.canManage, members: d.members ?? [] })).catch(() => {});
   }, [doc.id]);
-
   const summary = useMemo(() => {
     const map: Record<string, { opens: number; dwell: Record<number, number>; questions: { text: string; escalated?: boolean }[] }> = {};
     for (const r of recs) map[r.id] = { opens: 0, dwell: {}, questions: [] };
@@ -41,7 +38,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
     }
     return map;
   }, [signals, recs]);
-
   async function readTheReader(id: string) {
     setVerdictBusy(id); setError("");
     const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: id }) });
@@ -56,17 +52,13 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
     setRecs((prev) => prev.map((r) => (r.id === id ? { ...r, label } : r))); setEditing(null);
   }
   function copyLink(token: string) { navigator.clipboard.writeText(`${window.location.origin}/read/${token}`); setCopied(token); setTimeout(() => setCopied(""), 1500); }
-
   const sel = recs.find((r) => r.id === selected);
   const selSum = selected ? summary[selected] : null;
   const maxDwell = selSum ? Math.max(1, ...Object.values(selSum.dwell)) : 1;
-
   const pill = (pos: boolean, txt: string) => (<span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: pos ? T.pillPosBg : T.pillNeutralBg, color: pos ? T.pillPosText : T.pillNeutralText }}>{txt}</span>);
-
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-b{cursor:pointer;transition:opacity .12s}.t-b:hover{opacity:.88}.t-rec{transition:background .12s;cursor:pointer}.t-rec:hover{background:#FCFCFD}.t-in:focus{border-color:${T.green};outline:none}`}</style>
-
       <div style={{ padding: "26px 30px 0" }}>
         <a href="/documents" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
           <span style={{ color: T.muted }}>{"\u2039"}</span> {dd.back}
@@ -77,9 +69,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
           {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={{ background: T.greenSoft, color: T.greenText, fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font }}>{dd.shareWithTeam}</button>}
         </div>
       </div>
-
       {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
-
       <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: 18, padding: "22px 30px 40px", alignItems: "start" }}>
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -96,7 +86,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
             );
           })}
         </div>
-
         <div>
           {!sel ? (
             <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 28 }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.selectRecipient}</p></div>
@@ -119,7 +108,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                   <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
                 </div>
               </div>
-
               {selSum && selSum.opens > 0 ? (
                 <>
                   <div style={{ ...microLabel, marginBottom: 12 }}>{dd.howTheyRead}</div>
@@ -132,7 +120,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                       </div>
                     ))}
                   </div>
-
                   {selSum.questions.length > 0 && (<>
                     <div style={{ ...microLabel, marginBottom: 12 }}>{dd.whatTheyAsked}</div>
                     <div style={{ marginBottom: 24 }}>{selSum.questions.map((q, i) => (
@@ -142,21 +129,23 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                       </div>
                     ))}</div>
                   </>)}
-
                   <div style={{ ...microLabel, marginBottom: 12 }}>{dd.verdict}</div>
                   {verdicts[sel.id] ? (
-                    <div style={{ background: T.canvas, borderRadius: T.rCard, padding: 20 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{dd.reading}</span>
-                        {pill(verdicts[sel.id].confidence === "high", verdicts[sel.id].confidence + dd.confidenceSuffix)}
+                    <>
+                      <div style={{ background: T.canvas, borderRadius: T.rCard, padding: 20 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{dd.reading}</span>
+                          {pill(verdicts[sel.id].confidence === "high", verdicts[sel.id].confidence + dd.confidenceSuffix)}
+                        </div>
+                        <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
+                        <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdicts[sel.id].reasoning}</p>
+                        <div style={{ background: "#fff", borderRadius: T.rInput, padding: "12px 14px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{dd.doThisNext}</div>
+                          <p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdicts[sel.id].nextAction}</p>
+                        </div>
                       </div>
-                      <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
-                      <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdicts[sel.id].reasoning}</p>
-                      <div style={{ background: "#fff", borderRadius: T.rInput, padding: "12px 14px" }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{dd.doThisNext}</div>
-                        <p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdicts[sel.id].nextAction}</p>
-                      </div>
-                    </div>
+                      <ComposeWorkspace recipientId={sel.id} verdict={verdicts[sel.id]} />
+                    </>
                   ) : (
                     <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
                   )}
@@ -170,7 +159,6 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
     </div>
   );
 }
-
 function ShareButton({ documentId, onCreated }: { documentId: string; onCreated: (r: Rec) => void }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;

@@ -6,6 +6,7 @@ export * from "./types";
 export { askTask, type AskInput, type AskOutput } from "./tasks/ask";
 export { verdictTask, type VerdictInput, type VerdictOutput } from "./tasks/verdict";
 export { ocrTask, type OcrInput, type OcrOutput } from "./tasks/ocr";
+export { composeTask, type ComposeInput, type ComposeOutput } from "./tasks/compose";
 const PROVIDERS: Record<ProviderName, Provider> = {
   mock: mockProvider,
   anthropic: anthropicProvider,
