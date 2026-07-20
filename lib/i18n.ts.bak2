@@ -665,23 +665,6 @@ const en = {
     footerTagline: "Private document delivery",
     footerRights: "All rights reserved.",
   },
-  sidebar: {
-    overview: "Overview",
-    documents: "Documents",
-    projects: "Projects",
-    activity: "Activity",
-    recipients: "Recipients",
-    members: "Members",
-    settings: "Settings",
-    account: "Account",
-    main: "Main",
-    configure: "Configure",
-    organization: "Organization",
-    personal: "Personal",
-    viewSite: "View site",
-    signOut: "Sign out",
-    backToSite: "Back to site",
-  },
 };
 
 const fr: Dict = {
@@ -1339,23 +1322,6 @@ const fr: Dict = {
     ctaBody: "Ouvrez-le pour consulter votre document. Tout ce dont vous avez besoin se trouve dans le lien reçu.",
     footerTagline: "Livraison privée de documents",
     footerRights: "Tous droits réservés.",
-  },
-  sidebar: {
-    overview: "Vue d'ensemble",
-    documents: "Documents",
-    projects: "Projets",
-    activity: "Activit\u00e9",
-    recipients: "Destinataires",
-    members: "Membres",
-    settings: "Param\u00e8tres",
-    account: "Compte",
-    main: "Principal",
-    configure: "Configuration",
-    organization: "Organisation",
-    personal: "Personnel",
-    viewSite: "Voir le site",
-    signOut: "Se d\u00e9connecter",
-    backToSite: "Retour au site",
   },
 };
 
