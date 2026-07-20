@@ -9,46 +9,82 @@ const AEON = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 2px rgba(9,30,22,0.05), 0 8px 20px rgba(9,30,22,0.05)";
 const SHADOW_PANEL = "0 1px 2px rgba(9,30,22,0.04), 0 12px 34px rgba(9,30,22,0.06)";
 
-// pdf.js v6 calls Uint8Array.prototype.toHex() inside the PDF worker (to compute the
-// document fingerprint). That method is missing on older mobile browsers, which crashes
-// the reader with "a.toHex is not a function". This installs a compatible fallback only
-// when the native method is absent. It must stay fully self-contained: its source is also
-// stringified and run inside the worker (a separate JS scope) below, so it may not
-// reference anything outside itself.
-function installUint8Polyfill() {
-  const proto = Uint8Array.prototype as unknown as Record<string, unknown>;
-  const ctor = Uint8Array as unknown as Record<string, unknown>;
-  if (typeof proto.toHex !== "function") {
-    proto.toHex = function (this: Uint8Array) {
+// pdf.js v6 assumes a very recent browser and calls several 2024/2025 JS methods that older
+// mobile browsers do not have yet, which crashes the reader ("X is not a function"). This
+// installs compatible fallbacks only where the native method is missing. It must stay fully
+// self-contained (no references outside itself): its source is stringified and also run
+// inside the PDF worker, which is a separate JS scope.
+function installModernPolyfills() {
+  // Uint8Array hex/base64 — the worker uses toHex() for the document fingerprint.
+  const u8 = Uint8Array.prototype as unknown as Record<string, unknown>;
+  const U8 = Uint8Array as unknown as Record<string, unknown>;
+  if (typeof u8.toHex !== "function") {
+    u8.toHex = function (this: Uint8Array) {
       let out = "";
-      for (let i = 0; i < this.length; i++) {
-        out += (this[i] >>> 4).toString(16) + (this[i] & 15).toString(16);
-      }
+      for (let i = 0; i < this.length; i++) out += (this[i] >>> 4).toString(16) + (this[i] & 15).toString(16);
       return out;
     };
   }
-  if (typeof ctor.fromHex !== "function") {
-    ctor.fromHex = function (hex: string) {
-      const clean = String(hex);
-      const len = clean.length >>> 1;
-      const arr = new Uint8Array(len);
-      for (let i = 0; i < len; i++) arr[i] = parseInt(clean.substr(i * 2, 2), 16);
-      return arr;
+  if (typeof U8.fromHex !== "function") {
+    U8.fromHex = function (hex: string) {
+      const c = String(hex); const n = c.length >>> 1; const a = new Uint8Array(n);
+      for (let i = 0; i < n; i++) a[i] = parseInt(c.substr(i * 2, 2), 16);
+      return a;
     };
   }
-  if (typeof proto.toBase64 !== "function") {
-    proto.toBase64 = function (this: Uint8Array) {
-      let bin = "";
-      for (let i = 0; i < this.length; i++) bin += String.fromCharCode(this[i]);
-      return btoa(bin);
+  if (typeof u8.toBase64 !== "function") {
+    u8.toBase64 = function (this: Uint8Array) {
+      let s = ""; for (let i = 0; i < this.length; i++) s += String.fromCharCode(this[i]);
+      return btoa(s);
     };
   }
-  if (typeof ctor.fromBase64 !== "function") {
-    ctor.fromBase64 = function (b64: string) {
-      const bin = atob(String(b64));
-      const arr = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-      return arr;
+  if (typeof U8.fromBase64 !== "function") {
+    U8.fromBase64 = function (b64: string) {
+      const bin = atob(String(b64)); const a = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+      return a;
+    };
+  }
+  // Map / WeakMap getOrInsert + getOrInsertComputed — pdf.js uses getOrInsertComputed heavily
+  // on both the main thread and the worker.
+  const addUpsert = (proto: Record<string, unknown>) => {
+    if (typeof proto.getOrInsert !== "function") {
+      proto.getOrInsert = function (this: Map<unknown, unknown>, key: unknown, value: unknown) {
+        if (this.has(key)) return this.get(key);
+        this.set(key, value); return value;
+      };
+    }
+    if (typeof proto.getOrInsertComputed !== "function") {
+      proto.getOrInsertComputed = function (this: Map<unknown, unknown>, key: unknown, cb: (k: unknown) => unknown) {
+        if (this.has(key)) return this.get(key);
+        const v = cb(key); this.set(key, v); return v;
+      };
+    }
+  };
+  addUpsert(Map.prototype as unknown as Record<string, unknown>);
+  addUpsert(WeakMap.prototype as unknown as Record<string, unknown>);
+  // Promise.try
+  const Pr = Promise as unknown as Record<string, unknown>;
+  if (typeof Pr.try !== "function") {
+    Pr.try = function (fn: (...a: unknown[]) => unknown, ...args: unknown[]) {
+      return new Promise((resolve) => resolve(fn(...args)));
+    };
+  }
+  // Set methods — cheap insurance for older engines.
+  const sp = Set.prototype as unknown as Record<string, unknown>;
+  if (typeof sp.intersection !== "function") {
+    sp.intersection = function (this: Set<unknown>, other: { has: (v: unknown) => boolean }) {
+      const r = new Set<unknown>(); for (const v of this) if (other.has(v)) r.add(v); return r;
+    };
+  }
+  if (typeof sp.union !== "function") {
+    sp.union = function (this: Set<unknown>, other: Iterable<unknown>) {
+      const r = new Set<unknown>(this); for (const v of other) r.add(v); return r;
+    };
+  }
+  if (typeof sp.difference !== "function") {
+    sp.difference = function (this: Set<unknown>, other: { has: (v: unknown) => boolean }) {
+      const r = new Set<unknown>(); for (const v of this) if (!other.has(v)) r.add(v); return r;
     };
   }
 }
@@ -109,17 +145,18 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
     renderedRef.current = true;
     (async () => {
       try {
+        // Install fallbacks on the main thread BEFORE pdf.js loads, so nothing is missing
+        // even at module-evaluation time.
+        installModernPolyfills();
         const pdfjs = await import("pdfjs-dist");
         const cdnWorker = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-        // toHex runs inside the worker, so install the fallback there by wrapping the real
-        // worker. We give pdf.js a worker SOURCE (not a port): it treats this same-origin
-        // blob as its worker, keeps its own readiness handshake, and if the worker ever
-        // errors it falls back to a main-thread worker, where the line below has already
-        // installed the same fallback.
-        installUint8Polyfill();
+        // toHex/getOrInsertComputed etc. also run inside the worker, so wrap the real worker
+        // with the same fallbacks. We give pdf.js a worker SOURCE (not a port): it keeps its
+        // readiness handshake and, if the worker errors, falls back to a main-thread worker
+        // where the fallbacks above are already installed.
         try {
           const workerBody =
-            "(" + installUint8Polyfill.toString() + ")();\n" +
+            "(" + installModernPolyfills.toString() + ")();\n" +
             "await import(" + JSON.stringify(cdnWorker) + ");";
           pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
             new Blob([workerBody], { type: "text/javascript" })
