@@ -164,7 +164,16 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
         } catch {
           pdfjs.GlobalWorkerOptions.workerSrc = cdnWorker;
         }
-        const pdf = await pdfjs.getDocument({ url: fileUrl }).promise;
+        // Tell pdf.js where its character maps and standard fonts live, or it renders text
+        // as garbled glyphs and burns time on per-glyph fallback. jsdelivr mirrors the exact
+        // pdfjs-dist version's assets.
+        const assets = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}`;
+        const pdf = await pdfjs.getDocument({
+          url: fileUrl,
+          cMapUrl: `${assets}/cmaps/`,
+          cMapPacked: true,
+          standardFontDataUrl: `${assets}/standard_fonts/`,
+        }).promise;
         setPageCount(pdf.numPages); setStatus("");
         send("opened", null, { pages: pdf.numPages });
         const container = containerRef.current;
