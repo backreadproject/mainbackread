@@ -106,10 +106,12 @@ const TIERS: Tier[] = [
 ];
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Is this just a read receipt?", a: "No. A receipt says a file was opened. BackRead shows what they read closely, what they asked, where they doubted, and whether they are ready to move. Attention is not intent, and only one of them wins deals." },
-  { q: "Will my reader feel watched?", a: "They open a clean document on a neutral domain, no BackRead branding anywhere. What they do stays private to you. They get the document, you get the read." },
-  { q: "What does Free actually leave out?", a: "Sending by email, saved conversations, verdict history, projects, and all but a couple of documents a month. Enough to see it work, not enough to work on. Real pipelines run on Personal and up." },
-  { q: "Which plan is right for me?", a: "On your own, Personal. Selling as a team, Team. Seats without limits, plus SSO and audit, Business." },
+  { q: "Why not just ask if they read it?", a: "Because people say they are still reviewing. The document does not. It shows the pages they lingered on, the clause they reread, the question they typed. You stop chasing and start knowing." },
+  { q: "Is this just a fancy read receipt?", a: "A receipt is a green dot. BackRead is a verdict: what they wanted, where they hesitated, and whether they are ready to move. Attention is cheap. Intent is what closes." },
+  { q: "What does staying on Free cost me?", a: "Every document past two a month, every reader you cannot email, every read you never get to see again. Free proves the point. Personal lets you act on it." },
+  { q: "Is it worth paying for?", a: "One deal you almost let go cold, saved because you knew the exact moment to follow up, pays for a year. The real question is how many reads you have already missed." },
+  { q: "Will my reader feel watched?", a: "They open a clean document on a neutral domain, with no BackRead branding anywhere. What they do stays yours alone. They get the document, you get the read." },
+  { q: "Which plan should I start on?", a: "On your own, Personal. Selling as a team, Team. Seats without limits, plus SSO and audit, Business. Start today, move up the day you outgrow it." },
 ];
 
 export default function PricingPage() {
@@ -128,12 +130,11 @@ export default function PricingPage() {
       <MarketingNav />
 
       {/* Hero */}
-      <section style={{ background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, color: "#fff", padding: "88px 20px 104px", textAlign: "center" }}>
+      <section style={{ background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, color: "#fff", padding: "88px 20px 92px", textAlign: "center" }}>
         <div style={{ maxWidth: 780, margin: "0 auto" }}>
           <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: BRAND, marginBottom: 16 }}>Pricing</div>
           <h1 style={{ fontSize: 44, lineHeight: 1.06, fontWeight: 700, margin: "0 0 18px", letterSpacing: "-0.02em" }}>Stop guessing where your deals stand.</h1>
-          <p style={{ fontSize: 17.5, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", margin: "0 0 30px" }}>A read receipt says they opened it. BackRead tells you what they wanted, where they hesitated, and whether they are ready to move. Pick the plan that keeps you ahead of the room.</p>
-          <a href="#plans" className="hero-cta" style={{ display: "inline-block", background: BRAND, color: NIGHT, textDecoration: "none", fontSize: 15, fontWeight: 700, padding: "14px 30px", borderRadius: 11 }}>See the plans</a>
+          <p style={{ fontSize: 17.5, lineHeight: 1.6, color: "rgba(255,255,255,0.78)", margin: 0 }}>A read receipt says they opened it. BackRead tells you what they wanted, where they hesitated, and whether they are ready to move. Pick the plan that keeps you ahead of the room.</p>
         </div>
       </section>
 
@@ -208,7 +209,7 @@ export default function PricingPage() {
         <div style={{ maxWidth: 640, margin: "0 auto", background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, borderRadius: 20, padding: "46px 28px", color: "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.02em" }}>Your readers are telling you everything.</h2>
           <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.78)", margin: "0 0 26px", lineHeight: 1.6 }}>Read receipts were never enough. Start free, then pick the plan that keeps you a step ahead.</p>
-          <a href="#plans" className="hero-cta" style={{ display: "inline-block", background: BRAND, color: NIGHT, textDecoration: "none", fontSize: 15, fontWeight: 700, padding: "14px 30px", borderRadius: 11 }}>Choose your plan</a>
+          <a href="/login" className="hero-cta" style={{ display: "inline-block", background: BRAND, color: NIGHT, textDecoration: "none", fontSize: 15, fontWeight: 700, padding: "14px 30px", borderRadius: 11 }}>Start free</a>
         </div>
       </section>
 
