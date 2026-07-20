@@ -276,6 +276,7 @@ const CSS = `
     .rp-dash{padding:14px;gap:12px}
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
     .rp-full{display:none}.rp-short{display:inline}
+    .rp-btn-fr{font-size:11.5px;padding:8px 11px}
     .rp-statb{padding:26px 20px}.rp-statb .big{font-size:36px}
     .rp-ctaband{padding:40px 20px}.rp-ctaband h2{font-size:24px}
     .rp-cmp{gap:10px}
@@ -306,7 +307,7 @@ export default async function LandingPage() {
             <div className="rp-navr">
               <LanguageSwitcher current={locale} dark />
               <a className="sign" href="/login">{c.nav.signin}</a>
-              <a className="rp-btn" href="/login"><span className="rp-full">{c.nav.start}</span><span className="rp-short">{c.nav.startShort}</span></a>
+              <a className={"rp-btn" + (locale === "fr" ? " rp-btn-fr" : "")} href="/login"><span className="rp-full">{c.nav.start}</span><span className="rp-short">{c.nav.startShort}</span></a>
             </div>
           </nav>
         </div>
