@@ -162,7 +162,7 @@ const CSS = `
   .rp-h2{font-size:40px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#F2F7F4;margin:18px 0 0}
   .rp-h2 .g{color:#33E6A2}
   .rp-lead{font-size:17px;line-height:1.62;color:#93A79C;margin:16px 0 0;max-width:600px}
-  .rp-sec{padding:96px 0;position:relative}
+  .rp-sec{padding:96px 0;position:relative;overflow:hidden}
   .rp-center{text-align:center}.rp-center .rp-lead{margin-left:auto;margin-right:auto}
   .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
   .rp-glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
@@ -177,7 +177,7 @@ const CSS = `
   .rp-ring::after{content:"";position:absolute;inset:5px;background:#33E6A2;border-radius:50%}
   .rp-links{display:flex;gap:28px;font-size:14px}.rp-links a{color:#93A79C}
   .rp-navr{display:flex;align-items:center;gap:16px;font-size:14px}.rp-navr a.sign{color:#93A79C}
-  .rp-hero{position:relative;z-index:1;text-align:center;padding:76px 0 40px}
+  .rp-hero{position:relative;z-index:1;text-align:center;padding:76px 0 40px;overflow:hidden}
   .rp-h1{font-size:60px;line-height:1.03;font-weight:700;letter-spacing:-0.035em;margin:22px auto 0;max-width:820px}
   .rp-h1 .g{color:#33E6A2}
   .rp-hero .rp-lead{margin:22px auto 0;max-width:600px;font-size:18px}
@@ -233,7 +233,8 @@ const CSS = `
   .rp-cmp .kv{display:flex;justify-content:space-between;font-size:12px;color:#93A79C;margin:5px 0}.rp-cmp .kv b{color:#F2F7F4}
   .rp-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
   .rp-pill.hot{background:rgba(51,230,162,0.14);color:#33E6A2}.rp-pill.cold{background:rgba(255,255,255,0.06);color:#5F7168}
-  .rp-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .rp-tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .rp-tbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:560px}
   .rp-tbl th{text-align:left;color:#5F7168;font-weight:600;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px}
   .rp-tbl td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,0.06);color:#93A79C}.rp-tbl td b{color:#F2F7F4}
   .rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
@@ -260,8 +261,24 @@ const CSS = `
   @media (max-width:900px){
     .rp-hero{padding:52px 0 30px}.rp-h1{font-size:40px}.rp-h2{font-size:30px}
     .rp-links{display:none}
-    .rp-grid4,.rp-steps,.rp-plans,.rp-dash,.rp-stats{grid-template-columns:1fr}
+    .rp-grid4,.rp-plans{grid-template-columns:repeat(2,1fr)}
+    .rp-steps,.rp-dash,.rp-stats{grid-template-columns:1fr}
     .rp-cap{grid-template-columns:1fr}.rp-cap.rev .txt{order:0}
+  }
+  @media (max-width:560px){
+    .rp-wrap{padding:0 18px}
+    .rp-stage{padding:0 14px;margin-top:40px}
+    .rp-hero{padding:36px 0 20px}.rp-h1{font-size:32px}.rp-hero .rp-lead{font-size:16px}
+    .rp-h2{font-size:25px}.rp-sec{padding:60px 0}
+    .rp-grid4,.rp-plans{grid-template-columns:1fr}
+    .rp-m4{grid-template-columns:1fr 1fr}
+    .rp-dash{padding:14px;gap:12px}
+    .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
+    .rp-statb{padding:26px 20px}.rp-statb .big{font-size:36px}
+    .rp-ctaband{padding:40px 20px}.rp-ctaband h2{font-size:24px}
+    .rp-cmp{gap:10px}
+    .rp-cta-row,.rp-ctarow{flex-direction:column}
+    .rp-btnout,.rp-btnlg{text-align:center}
   }
 `;
 
@@ -390,7 +407,7 @@ export default async function LandingPage() {
             <div style={{ padding: 18 }}>
               <div className="rp-box">
                 <div className="rp-k" style={{ marginBottom: 12 }}>{c.platform.readers}</div>
-                <table className="rp-tbl">
+                <div className="rp-tblwrap"><table className="rp-tbl">
                   <thead><tr><th>{c.platform.cReader}</th><th>{c.platform.cDoc}</th><th>{c.platform.cReads}</th><th>{c.platform.cDwell}</th><th>{c.platform.cQ}</th><th>{c.platform.cVerdict}</th></tr></thead>
                   <tbody>
                     {READERS.map((r, i) => (
@@ -398,7 +415,7 @@ export default async function LandingPage() {
                         <td style={r.v === "ready" ? { color: "#33E6A2" } : undefined}>{vLabel(c, r.v)}</td></tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           </div>
