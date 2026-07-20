@@ -7,10 +7,11 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const { documentId, mode, firstName, lastName, email } = await req.json();
+  const { documentId, mode, firstName, lastName, email, note } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
   if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
+  const noteClean = typeof note === "string" ? note.trim().slice(0, 2000) : "";
   const { data: docRow } = await supabase.from("documents").select("title").eq("id", documentId).single();
   if (!docRow) return NextResponse.json({ error: "You don't have access to that document." }, { status: 403 });
   const docTitle = docRow.title ?? "a document";
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
     else if (personName) senderName = personName;
     else if (orgName) senderName = orgName;
     else senderName = "A colleague";
-    const html = brandedEmail({ firstName: firstName.trim(), senderName, docTitle, readUrl });
+    const html = brandedEmail({ firstName: firstName.trim(), senderName, docTitle, readUrl, note: noteClean });
     try {
       const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -69,7 +70,20 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false });
 }
-function brandedEmail({ firstName, senderName, docTitle, readUrl }: { firstName: string; senderName: string; docTitle: string; readUrl: string }) {
+// Escape user-supplied text before it goes into the email HTML.
+function esc(s: string) {
+  return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+// Turn the sender's note into safe paragraphs: blank lines split paragraphs, single
+// newlines become line breaks.
+function noteToHtml(note: string) {
+  return note.trim().split(/\n{2,}/).map((para) =>
+    `<p style="font-size:15px;color:#0F1729;line-height:1.6;margin:0 0 16px;">${esc(para).replace(/\r?\n/g, "<br>")}</p>`
+  ).join("");
+}
+function brandedEmail({ firstName, senderName, docTitle, readUrl, note }: { firstName: string; senderName: string; docTitle: string; readUrl: string; note?: string }) {
+  const fn = esc(firstName), sn = esc(senderName), dt = esc(docTitle);
+  const noteBlock = note && note.trim() ? noteToHtml(note) : "";
   return `<!doctype html><html><body style="margin:0;background:#F4F6F3;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:520px;margin:0 auto;padding:32px 24px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:28px;">
@@ -79,8 +93,9 @@ function brandedEmail({ firstName, senderName, docTitle, readUrl }: { firstName:
       <span style="font-size:17px;font-weight:700;color:#0F1729;">Documents</span>
     </div>
     <div style="background:#fff;border:1px solid #EAECEF;border-radius:14px;padding:28px;">
-      <p style="font-size:16px;color:#0F1729;margin:0 0 14px;">Hi ${firstName},</p>
-      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 20px;">${senderName} has shared a document with you: <strong style="color:#0F1729;">${docTitle}</strong>.</p>
+      <p style="font-size:16px;color:#0F1729;margin:0 0 14px;">Hi ${fn},</p>
+      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 ${noteBlock ? "20px" : "20px"};">${sn} has shared a document with you: <strong style="color:#0F1729;">${dt}</strong>.</p>
+      ${noteBlock}
       <a href="${readUrl}" style="display:inline-block;background:#0B7A4B;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:10px;">Open the document</a>
       <p style="font-size:13px;color:#98A2B3;line-height:1.5;margin:22px 0 0;">Or paste this link into your browser:<br><span style="color:#475467;">${readUrl}</span></p>
     </div>

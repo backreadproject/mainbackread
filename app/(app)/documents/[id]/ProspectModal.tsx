@@ -1,12 +1,9 @@
 "use client";
-
 import { useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-
 type NewRec = { id: string; label: string | null; share_token: string; created_at: string };
-
 export default function ProspectModal({ documentId, onClose, onCreated }: {
   documentId: string;
   onClose: () => void;
@@ -14,13 +11,17 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
 }) {
   const locale = useLocale();
   const pm = getDict(locale).prospectModal;
+  const fr = locale === "fr";
+  const noteLabel = fr ? "Ajouter un mot (facultatif)" : "Add a note (optional)";
+  const notePlaceholder = fr ? "Une ligne ou deux pour votre destinataire\u2026" : "A line or two so your recipient understands\u2026";
+  const noteHint = fr ? "Laissez vide pour envoyer l'e-mail standard." : "Leave blank to send the standard email.";
   const [step, setStep] = useState<"type" | "link" | "email">("type");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-
   async function submit(mode: "link" | "email") {
     setError("");
     if (!firstName.trim() || !lastName.trim()) { setError(pm.nameRequired); return; }
@@ -28,21 +29,19 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
     setBusy(true);
     const res = await fetch("/api/share-prospect", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ documentId, mode, firstName, lastName, email: mode === "email" ? email : undefined }),
+      body: JSON.stringify({ documentId, mode, firstName, lastName, email: mode === "email" ? email : undefined, note: mode === "email" ? note.trim() : undefined }),
     });
     const json = await res.json();
     if (!res.ok) { setError(json.error ?? pm.somethingWrong); setBusy(false); return; }
     onCreated(json.recipient, json.readUrl, mode === "email" ? { sent: !!json.emailSent, warning: json.emailWarning } : null);
   }
-
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
+  const textareaStyle = { ...input, minHeight: 88, resize: "vertical" as const, marginBottom: 6, lineHeight: 1.5 };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 6 };
-
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 440, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking }}>
         <style>{`.t-in:focus{border-color:${T.green};outline:none}`}</style>
-
         {step === "type" && (
           <>
             <h3 style={{ fontSize: 19, fontWeight: 700, color: T.heading, margin: "0 0 4px", letterSpacing: T.trackingTight }}>{pm.shareTitle}</h3>
@@ -70,7 +69,6 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
             </div>
           </>
         )}
-
         {(step === "link" || step === "email") && (
           <>
             <button onClick={() => { setStep("type"); setError(""); }} style={{ background: "none", border: "none", color: T.body, fontSize: 13, cursor: "pointer", padding: 0, marginBottom: 14, fontFamily: T.font }}>{"\u2039"} {pm.back}</button>
@@ -80,7 +78,15 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
               <div style={{ flex: 1 }}><span style={label}>{pm.firstName}</span><input className="t-in" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Sarah" style={input} /></div>
               <div style={{ flex: 1 }}><span style={label}>{pm.lastName}</span><input className="t-in" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Chen" style={input} /></div>
             </div>
-            {step === "email" && (<><span style={label}>{pm.emailLabel}</span><input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={input} /></>)}
+            {step === "email" && (
+              <>
+                <span style={label}>{pm.emailLabel}</span>
+                <input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={input} />
+                <span style={label}>{noteLabel}</span>
+                <textarea className="t-in" value={note} onChange={(e) => setNote(e.target.value)} placeholder={notePlaceholder} rows={3} maxLength={2000} style={textareaStyle} />
+                <p style={{ fontSize: 12, color: T.body, margin: "0 0 12px", lineHeight: 1.4 }}>{noteHint}</p>
+              </>
+            )}
             {error && <p style={{ fontSize: 13, color: "#B42318", margin: "2px 0 12px" }}>{error}</p>}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
               <button onClick={onClose} style={ghostBtn}>{pm.cancel}</button>
@@ -92,7 +98,6 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
     </div>
   );
 }
-
 const choiceBtn = { display: "block", width: "100%", background: "#fff", border: "1px solid #EAECEF", borderRadius: 12, padding: 16, cursor: "pointer", fontFamily: "inherit" };
 const iconWrap = { width: 36, height: 36, borderRadius: 9, background: "#E7F6EF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const ghostBtn = { background: "#fff", border: "1px solid #EAECEF", borderRadius: 8, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", color: "#0F1729", cursor: "pointer" };
