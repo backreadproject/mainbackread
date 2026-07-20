@@ -9,6 +9,50 @@ const AEON = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 2px rgba(9,30,22,0.05), 0 8px 20px rgba(9,30,22,0.05)";
 const SHADOW_PANEL = "0 1px 2px rgba(9,30,22,0.04), 0 12px 34px rgba(9,30,22,0.06)";
 
+// Older mobile browsers do not have Uint8Array.prototype.toHex (and the sibling base64
+// helpers), which pdf.js v6 calls while parsing a PDF. Without them the reader crashes
+// with "a.toHex is not a function". This installs a compatible fallback only when the
+// native method is missing. It must be fully self-contained: its source is also stringified
+// and run inside the PDF worker (a separate JS scope) below, so it may not reference
+// anything outside itself.
+function installUint8Polyfill() {
+  const proto = Uint8Array.prototype as unknown as Record<string, unknown>;
+  const ctor = Uint8Array as unknown as Record<string, unknown>;
+  if (typeof proto.toHex !== "function") {
+    proto.toHex = function (this: Uint8Array) {
+      let out = "";
+      for (let i = 0; i < this.length; i++) {
+        out += (this[i] >>> 4).toString(16) + (this[i] & 15).toString(16);
+      }
+      return out;
+    };
+  }
+  if (typeof ctor.fromHex !== "function") {
+    ctor.fromHex = function (hex: string) {
+      const clean = String(hex);
+      const len = clean.length >>> 1;
+      const arr = new Uint8Array(len);
+      for (let i = 0; i < len; i++) arr[i] = parseInt(clean.substr(i * 2, 2), 16);
+      return arr;
+    };
+  }
+  if (typeof proto.toBase64 !== "function") {
+    proto.toBase64 = function (this: Uint8Array) {
+      let bin = "";
+      for (let i = 0; i < this.length; i++) bin += String.fromCharCode(this[i]);
+      return btoa(bin);
+    };
+  }
+  if (typeof ctor.fromBase64 !== "function") {
+    ctor.fromBase64 = function (b64: string) {
+      const bin = atob(String(b64));
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return arr;
+    };
+  }
+}
+
 type Msg = { role: "user" | "doc"; text: string };
 
 export default function PdfReader({ title, fileUrl, token, greeting }: { title: string; fileUrl: string; token: string; greeting: string }) {
@@ -66,7 +110,20 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
     (async () => {
       try {
         const pdfjs = await import("pdfjs-dist");
-        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+        const cdnWorker = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+        // Install the fallback on the main thread, then hand pdf.js a worker that installs
+        // the same fallback in the worker scope before loading the real pdf.js worker.
+        installUint8Polyfill();
+        try {
+          const workerBody =
+            "(" + installUint8Polyfill.toString() + ")();\n" +
+            "await import(" + JSON.stringify(cdnWorker) + ");";
+          const workerUrl = URL.createObjectURL(new Blob([workerBody], { type: "text/javascript" }));
+          pdfjs.GlobalWorkerOptions.workerPort = new Worker(workerUrl, { type: "module" });
+        } catch {
+          // If building the wrapped worker fails for any reason, use the CDN worker directly.
+          pdfjs.GlobalWorkerOptions.workerSrc = cdnWorker;
+        }
         const pdf = await pdfjs.getDocument({ url: fileUrl }).promise;
         setPageCount(pdf.numPages); setStatus("");
         send("opened", null, { pages: pdf.numPages });
