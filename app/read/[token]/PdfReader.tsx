@@ -87,7 +87,7 @@ function installModernPolyfills() {
 
 type Msg = { role: "user" | "doc"; text: string };
 
-export default function PdfReader({ title, fileUrl, token, greeting }: { title: string; fileUrl: string; token: string; greeting: string }) {
+export default function PdfReader({ title, fileUrl, token, greeting, initialThread = [] }: { title: string; fileUrl: string; token: string; greeting: string; initialThread?: Msg[] }) {
   const locale = useLocale();
   const r = getDict(locale).readerPage;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -102,7 +102,7 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
   const dwellMs = useRef<Record<number, number>>({});
   const [dwellView, setDwellView] = useState<Record<number, number>>({});
 
-  const [thread, setThread] = useState<Msg[]>([]);
+  const [thread, setThread] = useState<Msg[]>(initialThread);
   const [draft, setDraft] = useState("");
   const [asking, setAsking] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);

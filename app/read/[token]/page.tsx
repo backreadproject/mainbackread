@@ -63,5 +63,18 @@ export default async function ReadPage({
   const { data: signed } = await admin.storage
     .from("documents")
     .createSignedUrl(doc.storage_path, 3600);
-  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} greeting={greeting} />;
+
+  // Load the saved conversation (server-side, service-role only) so it restores on any
+  // device that opens this link. reader_messages is invisible to account holders.
+  const { data: messages } = await admin
+    .from("reader_messages")
+    .select("role, content")
+    .eq("recipient_id", recipient.id as string)
+    .order("created_at", { ascending: true });
+  const initialThread = (messages ?? []).map((m) => ({
+    role: (m.role === "doc" ? "doc" : "user") as "user" | "doc",
+    text: (m.content as string) ?? "",
+  }));
+
+  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} greeting={greeting} initialThread={initialThread} />;
 }

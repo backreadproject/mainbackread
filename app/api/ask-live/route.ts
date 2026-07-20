@@ -17,10 +17,11 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  // Pull the document's stored extracted text alongside its title.
+  // Pull the document's stored extracted text alongside its title (and the document id,
+  // for the transcript store below).
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, documents ( title, extracted_text )")
+    .select("id, document_id, documents ( title, extracted_text )")
     .eq("share_token", token)
     .single();
 
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
   if (!recipient || !doc) {
     return NextResponse.json({ error: "This link has expired." }, { status: 404 });
   }
+  const documentId = (recipient as unknown as { document_id: string | null }).document_id ?? null;
 
   // Prefer server-side extracted text. Fall back to what the browser sent
   // (older docs / gap before extraction finished), then to the title.
@@ -47,12 +49,46 @@ export async function POST(req: NextRequest) {
     locale,
   });
 
+  const pageNum = Number(currentPage) || null;
+
+  // Sender-facing intelligence (unchanged): the question shows in the account holder's
+  // dashboard as a signal, with the escalate/out-of-scope flags.
   await admin.from("signals").insert({
     recipient_id: recipient.id,
     kind: "question",
-    page: Number(currentPage) || null,
+    page: pageNum,
     value: { text: question.trim(), escalated: data.escalate, outOfScope: data.outOfScope },
   });
+
+  // Full transcript (question AND answer) for product improvement and reader persistence.
+  // reader_messages is service-role only (RLS with no policies), so account holders can
+  // never read it — this never surfaces in their dashboard. Best-effort: a transcript
+  // write must never break the reader's answer, so it is wrapped and ignored on failure.
+  try {
+    const t0 = Date.now();
+    await admin.from("reader_messages").insert([
+      {
+        recipient_id: recipient.id,
+        document_id: documentId,
+        role: "user",
+        content: question.trim(),
+        page: pageNum,
+        created_at: new Date(t0).toISOString(),
+      },
+      {
+        recipient_id: recipient.id,
+        document_id: documentId,
+        role: "doc",
+        content: data.answer,
+        page: pageNum,
+        escalate: !!data.escalate,
+        out_of_scope: !!data.outOfScope,
+        created_at: new Date(t0 + 1).toISOString(),
+      },
+    ]);
+  } catch (err) {
+    console.error("[ask-live] transcript write failed", err instanceof Error ? err.message : err);
+  }
 
   return NextResponse.json(data);
 }
