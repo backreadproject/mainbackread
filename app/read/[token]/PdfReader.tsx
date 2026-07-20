@@ -168,11 +168,15 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
         // as garbled glyphs and burns time on per-glyph fallback. jsdelivr mirrors the exact
         // pdfjs-dist version's assets.
         const assets = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}`;
+        // Some mobile browsers/WebViews mangle text when pdf.js renders through generated
+        // web-fonts. disableFontFace makes pdf.js paint the glyph outlines directly, which
+        // renders correctly everywhere (verified against this exact pdf.js version).
         const pdf = await pdfjs.getDocument({
           url: fileUrl,
           cMapUrl: `${assets}/cmaps/`,
           cMapPacked: true,
           standardFontDataUrl: `${assets}/standard_fonts/`,
+          disableFontFace: true,
         }).promise;
         setPageCount(pdf.numPages); setStatus("");
         send("opened", null, { pages: pdf.numPages });
