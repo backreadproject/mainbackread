@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { readerLink } from "@/lib/reader-origin";
+import { resolvePlanForUser, isLocked, checkRecipientLimit, checkSendQuota, logUsage } from "@/lib/plan-context";
 import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -17,6 +18,26 @@ export async function POST(req: Request) {
   const docTitle = docRow.title ?? "a document";
   const label = `${firstName.trim()} ${lastName.trim()}`;
   const admin = createAdminClient();
+
+  // ---- Plan gates -------------------------------------------------------
+  const plan = await resolvePlanForUser(admin, user.id);
+  if (isLocked(plan)) {
+    return NextResponse.json({ error: "Your free trial has ended. Subscribe to keep sharing documents.", trialEnded: true }, { status: 402 });
+  }
+  // Recipients per document (Free = 1). Applies to link and email alike.
+  const recGate = await checkRecipientLimit(admin, plan.plan, documentId);
+  if (!recGate.allowed) {
+    return NextResponse.json({ error: `The ${plan.plan.name} plan allows ${recGate.limit} recipient per document. Upgrade to add more.`, limitReached: true, limit: recGate.limit }, { status: 402 });
+  }
+  // Email sends per month (Free = 5).
+  if (mode === "email") {
+    const sendGate = await checkSendQuota(admin, plan.plan, user.id);
+    if (!sendGate.allowed) {
+      return NextResponse.json({ error: `You've used all ${sendGate.limit} email sends this month on the ${plan.plan.name} plan.`, limitReached: true, limit: sendGate.limit, used: sendGate.used }, { status: 402 });
+    }
+  }
+  // -----------------------------------------------------------------------
+
   const { data: rec, error } = await admin
     .from("recipients")
     .insert({
@@ -30,13 +51,9 @@ export async function POST(req: Request) {
     .select("id, label, share_token, created_at, first_name, last_name, email, delivery")
     .single();
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
-  // Reader links ALWAYS use the private reader-delivery domain, never the app domain.
-  // Fall back to the request origin only if no reader domain is configured (local dev).
   const readUrl = readerLink(rec.share_token, new URL(req.url).origin);
   if (mode === "email") {
     const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    // Send from the reader domain, not the app domain, so nothing in the recipient's
-    // inbox ties back to the marketing/app brand. Override with PROSPECT_FROM_EMAIL.
     const FROM = process.env.PROSPECT_FROM_EMAIL || "Documents <documents@relaydocuments.com>";
     if (!RESEND_API_KEY) {
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but email is not configured yet (RESEND_API_KEY missing). Copy the link to send manually." });
@@ -66,6 +83,8 @@ export async function POST(req: Request) {
     } catch {
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but the email service could not be reached." });
     }
+    // Count this send against the monthly quota.
+    await logUsage(admin, "send", { userId: user.id, orgId: plan.orgId, documentId });
     return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: true });
   }
   return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false });
@@ -74,8 +93,6 @@ export async function POST(req: Request) {
 function esc(s: string) {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
-// Turn the sender's note into safe paragraphs: blank lines split paragraphs, single
-// newlines become line breaks.
 function noteToHtml(note: string) {
   return note.trim().split(/\n{2,}/).map((para) =>
     `<p style="font-size:15px;color:#0F1729;line-height:1.6;margin:0 0 16px;">${esc(para).replace(/\r?\n/g, "<br>")}</p>`
@@ -94,7 +111,7 @@ function brandedEmail({ firstName, senderName, docTitle, readUrl, note }: { firs
     </div>
     <div style="background:#fff;border:1px solid #EAECEF;border-radius:14px;padding:28px;">
       <p style="font-size:16px;color:#0F1729;margin:0 0 14px;">Hi ${fn},</p>
-      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 ${noteBlock ? "20px" : "20px"};">${sn} has shared a document with you: <strong style="color:#0F1729;">${dt}</strong>.</p>
+      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 20px;">${sn} has shared a document with you: <strong style="color:#0F1729;">${dt}</strong>.</p>
       ${noteBlock}
       <a href="${readUrl}" style="display:inline-block;background:#0B7A4B;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:10px;">Open the document</a>
       <p style="font-size:13px;color:#98A2B3;line-height:1.5;margin:22px 0 0;">Or paste this link into your browser:<br><span style="color:#475467;">${readUrl}</span></p>

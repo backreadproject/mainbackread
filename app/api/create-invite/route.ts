@@ -1,30 +1,36 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
+import { resolvePlanForUser, isLocked, checkSeatLimit } from "@/lib/plan-context";
 import { notify, notifyEmail } from "@/lib/notify";
 import { NextResponse } from "next/server";
-
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-
   const ctx = await getOrgContext();
   if (ctx.accountType !== "organization" || !ctx.org) return NextResponse.json({ error: "Organization required." }, { status: 403 });
   if (ctx.role !== "owner" && ctx.role !== "admin") return NextResponse.json({ error: "Only owners and admins can invite." }, { status: 403 });
-
   const { email, firstName, lastName, role } = await req.json();
   if (!email?.trim() || !firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "Name and email are required." }, { status: 400 });
   if (!["admin", "member"].includes(role)) return NextResponse.json({ error: "Invalid role." }, { status: 400 });
-
   const admin = createAdminClient();
-  const cleanEmail = email.trim().toLowerCase();
 
-  // If they already have an account, add them directly to the org instead of inviting.
+  // ---- Plan gates: trial lock + seat cap --------------------------------
+  const plan = await resolvePlanForUser(admin, user.id);
+  if (isLocked(plan)) {
+    return NextResponse.json({ error: "Your free trial has ended. Subscribe to add teammates.", trialEnded: true }, { status: 402 });
+  }
+  const seatGate = await checkSeatLimit(admin, plan.plan, ctx.org.id);
+  if (!seatGate.allowed) {
+    return NextResponse.json({ error: `The ${plan.plan.name} plan includes ${seatGate.limit} seats and they're all in use. Upgrade to add more.`, limitReached: true, limit: seatGate.limit, used: seatGate.used }, { status: 402 });
+  }
+  // -----------------------------------------------------------------------
+
+  const cleanEmail = email.trim().toLowerCase();
   const { data: list } = await admin.auth.admin.listUsers();
   const existing = list.users.find((u) => (u.email ?? "").toLowerCase() === cleanEmail);
   if (existing) {
-    // Already a member?
     const { data: alreadyMember } = await admin.from("organization_members").select("id").eq("organization_id", ctx.org.id).eq("user_id", existing.id).maybeSingle();
     if (alreadyMember) return NextResponse.json({ error: "That person is already a member." }, { status: 409 });
     await admin.from("organization_members").insert({ organization_id: ctx.org.id, user_id: existing.id, role, email: cleanEmail });
@@ -40,29 +46,22 @@ export async function POST(req: Request) {
     });
     return NextResponse.json({ ok: true, addedDirectly: true });
   }
-
-  // Otherwise create an invitation.
   const { data: invite, error } = await admin
     .from("invitations")
     .insert({ organization_id: ctx.org.id, email: cleanEmail, first_name: firstName.trim(), last_name: lastName.trim(), role, invited_by: user.id })
     .select("id, token, first_name")
     .single();
   if (error || !invite) return NextResponse.json({ error: error?.message ?? "Could not create invitation." }, { status: 400 });
-
-  // Send the invitation email via Resend.
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
   const FROM = process.env.PROSPECT_FROM_EMAIL || "BackRead <onboarding@resend.dev>";
   const origin = new URL(req.url).origin;
   const acceptUrl = `${origin}/invite/${invite.token}`;
-
   if (!RESEND_API_KEY) {
     return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: "Invitation created, but email isn't configured. Share this link manually: " + acceptUrl });
   }
-
   const { data: prof } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single();
   const inviterName = `${(prof?.first_name as string) || ""} ${(prof?.last_name as string) || ""}`.trim() || (user.email ?? "A teammate");
   const html = inviteEmail({ firstName: firstName.trim(), inviterName, orgName: ctx.org.name, acceptUrl });
-
   try {
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -76,10 +75,8 @@ export async function POST(req: Request) {
   } catch {
     return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: "Invitation created, but email couldn't send. Share this link: " + acceptUrl });
   }
-
   return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: true });
 }
-
 function inviteEmail({ firstName, inviterName, orgName, acceptUrl }: { firstName: string; inviterName: string; orgName: string; acceptUrl: string }) {
   return `<!doctype html><html><body style="margin:0;background:#F8F9FA;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:520px;margin:0 auto;padding:32px 24px;">
