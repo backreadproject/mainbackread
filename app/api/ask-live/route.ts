@@ -74,6 +74,11 @@ export async function POST(req: NextRequest) {
         role: "user",
         content: question.trim(),
         page: pageNum,
+        // Set explicitly: in a multi-row insert Supabase/PostgREST fills a key that is
+        // missing from one row with NULL (not the column default), and `escalate` /
+        // `out_of_scope` are NOT NULL. Both rows must carry the same keys.
+        escalate: false,
+        out_of_scope: false,
         created_at: new Date(t0).toISOString(),
       },
       {
