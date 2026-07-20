@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
+import { resolvePlanForUser, isLocked, checkVerdictQuota, logUsage } from "@/lib/plan-context";
 
 export const runtime = "nodejs";
 
@@ -9,25 +10,41 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   const { recipientId } = await req.json();
 
-  // Auth: must be logged in AND own the document behind this recipient.
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
 
-  // RLS on `recipients` ensures this only returns a row the sender owns.
   const { data: recipient } = await supabase
     .from("recipients")
-    .select("id, label, documents ( title, owner_id, extracted_text )")
+    .select("id, label, documents ( id, title, owner_id, extracted_text )")
     .eq("id", recipientId)
     .single();
 
-  const doc = recipient?.documents as unknown as { title: string; owner_id: string; extracted_text: string | null } | undefined;
+  const doc = recipient?.documents as unknown as { id: string; title: string; owner_id: string; extracted_text: string | null } | undefined;
   if (!recipient || !doc || doc.owner_id !== user.id) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Pull the raw signals (admin client - signals have no sender-facing RLS read path yet).
   const admin = createAdminClient();
+  const ctx = await resolvePlanForUser(admin, user.id);
+
+  // Soft lock: a company trial that lapsed unpaid can't run new verdicts.
+  if (isLocked(ctx)) {
+    return NextResponse.json({
+      error: "Your free trial has ended. Subscribe to keep reading your readers.",
+      trialEnded: true,
+    }, { status: 402 });
+  }
+
+  // Volume cap: verdict runs per document per month (bites on Free only).
+  const gate = await checkVerdictQuota(admin, ctx.plan, doc.id);
+  if (!gate.allowed) {
+    return NextResponse.json({
+      error: `You've used all ${gate.limit} verdicts for this document this month on the ${ctx.plan.name} plan.`,
+      limitReached: true, limit: gate.limit, used: gate.used, plan: ctx.plan.id,
+    }, { status: 402 });
+  }
+
   const { data: signals } = await admin
     .from("signals")
     .select("kind, page, value, created_at")
@@ -35,8 +52,6 @@ export async function POST(req: NextRequest) {
     .order("created_at", { ascending: true });
 
   const rows = signals ?? [];
-
-  // Shape the raw signals into the verdict task's expected input.
   const dwellByPage: Record<number, { seconds: number; visits: number }> = {};
   const questions: string[] = [];
   let openCount = 0;
@@ -54,16 +69,9 @@ export async function POST(req: NextRequest) {
   }
 
   const pages = Object.entries(dwellByPage).map(([page, d]) => ({
-    page: Number(page),
-    title: `Page ${page}`,
-    seconds: d.seconds,
-    visits: d.visits,
+    page: Number(page), title: `Page ${page}`, seconds: d.seconds, visits: d.visits,
   }));
-
   const backtracks = pages.filter((p) => p.visits > 1).map((p) => `re-read page ${p.page} (${p.visits} times)`);
-
-  // Use the real extracted text so the verdict reasons about the document,
-  // not just its title. Fall back to title if extraction hasn't run yet.
   const docText = (doc.extracted_text ?? "").trim() || doc.title;
 
   const { data, cost } = await runAI(verdictTask, {
@@ -71,12 +79,10 @@ export async function POST(req: NextRequest) {
     documentTitle: doc.title,
     readerName: recipient.label ?? "Reader",
     readerOrg: "",
-    pages,
-    backtracks,
-    questionsAsked: questions,
-    forwardedTo: [],
-    openCount,
+    pages, backtracks, questionsAsked: questions, forwardedTo: [], openCount,
   }, { documentId: doc.title });
+
+  await logUsage(admin, "verdict", { userId: user.id, orgId: ctx.orgId, documentId: doc.id });
 
   return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
 }
