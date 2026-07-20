@@ -23,6 +23,9 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
   const locale = useLocale();
   const s = getDict(locale).sidebar;
   const label = (key: string) => (s as Record<string, string>)[key] ?? key;
+  // French labels are a touch longer; shrink the footer buttons so they stay on one line.
+  const outFont = locale === "fr" ? 11 : 13;
+  const outPad = locale === "fr" ? "9px 6px" : "9px 10px";
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -74,8 +77,8 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <a href="/" target="_blank" rel="noopener noreferrer" className="t-out" style={{ flex: 1, boxSizing: "border-box", textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: "9px 10px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>{label("viewSite")}</a>
-          <button onClick={signOut} className="t-out" style={{ flex: 1, textAlign: "center", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: "9px 10px", fontSize: 13, fontFamily: T.font, color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>{label("signOut")}</button>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="t-out" style={{ flex: 1, boxSizing: "border-box", textAlign: "center", whiteSpace: "nowrap", background: "transparent", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 8, padding: outPad, fontSize: outFont, fontFamily: T.font, color: "rgba(255,255,255,0.7)", textDecoration: "none" }}>{label("viewSite")}</a>
+          <button onClick={signOut} className="t-out" style={{ flex: 1, textAlign: "center", whiteSpace: "nowrap", background: "transparent", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 8, padding: outPad, fontSize: outFont, fontFamily: T.font, color: "rgba(255,255,255,0.85)", cursor: "pointer" }}>{label("signOut")}</button>
         </div>
       </div>
     </aside>
