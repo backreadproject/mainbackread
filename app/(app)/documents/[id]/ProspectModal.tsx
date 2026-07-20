@@ -15,6 +15,7 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
   const noteLabel = fr ? "Ajouter un mot (facultatif)" : "Add a note (optional)";
   const notePlaceholder = fr ? "Une ligne ou deux pour votre destinataire\u2026" : "A line or two so your recipient understands\u2026";
   const noteHint = fr ? "Laissez vide pour envoyer l'e-mail standard." : "Leave blank to send the standard email.";
+  const salutationHint = fr ? "Pas besoin d'ajouter de salutation. Nous les saluons d\u00e9j\u00e0 par leur nom en haut." : "No need to add a greeting. We already address them by name at the top.";
   const [step, setStep] = useState<"type" | "link" | "email">("type");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -84,7 +85,8 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
                 <input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={input} />
                 <span style={label}>{noteLabel}</span>
                 <textarea className="t-in" value={note} onChange={(e) => setNote(e.target.value)} placeholder={notePlaceholder} rows={3} maxLength={2000} style={textareaStyle} />
-                <p style={{ fontSize: 12, color: T.body, margin: "0 0 12px", lineHeight: 1.4 }}>{noteHint}</p>
+                <p style={{ fontSize: 12, color: T.body, margin: "0 0 4px", lineHeight: 1.4 }}>{salutationHint}</p>
+                <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px", lineHeight: 1.4 }}>{noteHint}</p>
               </>
             )}
             {error && <p style={{ fontSize: 13, color: "#B42318", margin: "2px 0 12px" }}>{error}</p>}

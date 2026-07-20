@@ -165,10 +165,21 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
   const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [noticeKind, setNoticeKind] = useState<"success" | "info">("success");
+  const sentMsg = ((dd.emailSent as string) || "").trim() || (locale === "fr" ? "E-mail envoy\u00e9" : "Email sent");
   return (
     <>
       <button onClick={() => setOpen(true)} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{dd.shareWithProspect}</button>
-      {notice && <span style={{ fontSize: 11, color: T.body, marginLeft: 8 }}>{notice}</span>}
+      {notice && (
+        <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1000, background: "#fff", border: `1px solid ${noticeKind === "success" ? T.green : T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, maxWidth: "calc(100vw - 40px)", fontFamily: T.font }}>
+          <span style={{ width: 22, height: 22, borderRadius: 11, background: noticeKind === "success" ? T.greenSoft : T.canvas, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            {noticeKind === "success"
+              ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+              : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.body} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v5M12 16h.01" /></svg>}
+          </span>
+          <span style={{ fontSize: 13.5, color: T.heading, fontWeight: 500, lineHeight: 1.4 }}>{notice}</span>
+        </div>
+      )}
       {open && (
         <ProspectModal
           documentId={documentId}
@@ -176,8 +187,11 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
           onCreated={(rec, readUrl, emailInfo) => {
             onCreated(rec as Rec);
             setOpen(false);
-            if (emailInfo) setNotice(emailInfo.sent ? dd.emailSent : (emailInfo.warning ?? dd.linkCreated));
-            setTimeout(() => setNotice(""), 6000);
+            if (emailInfo) {
+              if (emailInfo.sent) { setNotice(sentMsg); setNoticeKind("success"); }
+              else { setNotice(emailInfo.warning ?? dd.linkCreated); setNoticeKind("info"); }
+              setTimeout(() => setNotice(""), 5000);
+            }
           }}
         />
       )}
