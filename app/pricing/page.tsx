@@ -1,87 +1,224 @@
 import MarketingNav from "../MarketingNav";
-import { getLocale } from "@/lib/locale-server";
-import { getDict } from "@/lib/i18n";
-const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
-const LEMON = "#D8E84A";
-const DM = "var(--font-dm-sans), system-ui, sans-serif";
-const GRADIENT = "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)";
-export default async function PricingPage() {
-  const locale = await getLocale();
-  const d = getDict(locale);
-  const nav = { how: d.nav.how, why: d.nav.why, pricing: d.nav.pricing, signin: d.nav.signin, start: d.nav.start, openApp: d.nav.openApp };
-  const TIERS = d.pricing.tiers;
-  const FAQ = d.pricing.faq;
-  const wrap = { maxWidth: 1080, margin: "0 auto", padding: "0 32px" } as const;
+
+// Prices are placeholders you can edit right here in the TIERS array. Company II
+// is set to a placeholder monthly price; switch it to "Custom" with a contact CTA
+// anytime if you'd rather sell it as contact-sales. Both company plans carry a
+// 7-day free trial. No watermark on any plan, ever.
+const NIGHT = "#082019";
+const GREEN = "#0B7A4B";
+const BRAND = "#1FA971";
+const INK = "#0F1729";
+const BODY = "#475467";
+const MUTE = "#8A9299";
+const BORDER = "#EAECEF";
+const SOFT = "#E7F6EF";
+
+type Tier = {
+  id: string;
+  name: string;
+  price: string;
+  period: string;
+  tagline: string;
+  cta: string;
+  href: string;
+  popular?: boolean;
+  includes?: string;
+  features: string[];
+};
+
+const TIERS: Tier[] = [
+  {
+    id: "free",
+    name: "Free",
+    price: "$0",
+    period: "forever",
+    tagline: "A taste of the real thing.",
+    cta: "Start free",
+    href: "/login",
+    features: [
+      "2 documents per month",
+      "2 verdicts per document each month",
+      "1 recipient per document, 5 email sends a month",
+      "Ask-the-document companion",
+      "Reader tracking: opens, dwell, timeline",
+      "Reader questions and intent capture",
+    ],
+  },
+  {
+    id: "personal",
+    name: "Personal",
+    price: "$29",
+    period: "per month",
+    tagline: "Everything, for one person.",
+    cta: "Start free",
+    href: "/login",
+    popular: true,
+    includes: "Everything in Free, plus",
+    features: [
+      "Unlimited documents, verdicts, recipients and sends",
+      "Projects to group your documents",
+      "Send by email with a personal note",
+      "Saved reader conversations",
+      "Verdict history",
+      "Compose workspace to act on a read",
+      "Link customization: branding, expiry, password, preview",
+      "Weekly activity digest and data export",
+    ],
+  },
+  {
+    id: "company_1",
+    name: "Company I",
+    price: "$99",
+    period: "per month",
+    tagline: "Your team, one workspace.",
+    cta: "Start 7-day trial",
+    href: "/login",
+    includes: "Everything in Personal, plus",
+    features: [
+      "Run an organization with roles",
+      "Up to 20 seats",
+      "Shared workspace and access grants",
+      "Team activity feed",
+      "Compare readers across a document",
+      "Account-level analytics",
+      "7-day free trial",
+    ],
+  },
+  {
+    id: "company_2",
+    name: "Company II",
+    price: "$249",
+    period: "per month",
+    tagline: "Scale, security and control.",
+    cta: "Start 7-day trial",
+    href: "/login",
+    includes: "Everything in Company I, plus",
+    features: [
+      "Unlimited seats",
+      "SSO and SAML",
+      "Granular, custom permissions",
+      "Audit log",
+      "Custom data retention",
+      "A/B document versions",
+      "Slack and webhook alerts",
+      "Zapier and Make integration",
+      "7-day free trial",
+    ],
+  },
+];
+
+const FAQ: { q: string; a: string }[] = [
+  { q: "What counts as a document?", a: "Any file you upload to share and track. On Free you can start two new documents each month; paid plans are unlimited." },
+  { q: "When do the Free limits reset?", a: "On the first of each month. Your documents, verdicts and sends refill then." },
+  { q: "Do the company plans really include a free trial?", a: "Yes. Company I and Company II both start with a 7-day free trial, no card needed to begin." },
+  { q: "Can I change plans later?", a: "Anytime. Move up when you need seats or the security features, and your work stays exactly where it is." },
+  { q: "Is my reader's activity private to them?", a: "Reader links live on a separate, neutral domain, and there is no BackRead watermark on any plan. What a reader does is shown only to you, the sender." },
+];
+
+export default function PricingPage() {
   return (
-    <div style={{ fontFamily: DM, letterSpacing: "-0.011em", color: INK, background: CANVAS, fontWeight: 400, minHeight: "100vh" }}>
+    <div style={{ background: "#F7FBF9", minHeight: "100vh", fontFamily: "'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif", color: INK, letterSpacing: "-0.005em" }}>
       <style>{`
-        .m-a{text-decoration:none}
-        .m-cta{transition:background .15s,transform .1s}.m-cta:hover{background:#0A6A41}.m-cta:active{transform:translateY(1px)}
-        .m-cta-lemon{transition:background .15s,transform .1s}.m-cta-lemon:hover{background:#CDDD3E}.m-cta-lemon:active{transform:translateY(1px)}
-        .m-card{transition:transform .15s,box-shadow .15s}.m-card:hover{transform:translateY(-3px)}
-        @media(max-width:980px){.m-tiers{grid-template-columns:1fr 1fr!important}}
-        @media(max-width:560px){.m-tiers{grid-template-columns:1fr!important}.m-nav-links{display:none!important}}
+        .price-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+        @media (max-width: 1000px) { .price-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 560px) { .price-grid { grid-template-columns: 1fr; } }
+        .tier-cta { transition: background .15s, transform .05s; }
+        .tier-cta:active { transform: translateY(1px); }
       `}</style>
-      <MarketingNav activePricing locale={locale} labels={nav} />
-      <section style={{ background: GRADIENT, color: "#fff", padding: "128px 0 130px", textAlign: "center" }}>
-        <div style={wrap}>
-          <h1 style={{ fontSize: 48, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 14px" }}>{d.pricing.heroTitle}</h1>
-          <p style={{ fontSize: 19, color: CLOUD, margin: 0, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>{d.pricing.heroSub}</p>
+
+      <MarketingNav />
+
+      {/* Hero */}
+      <section style={{ background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, color: "#fff", padding: "84px 20px 96px", textAlign: "center" }}>
+        <div style={{ maxWidth: 760, margin: "0 auto" }}>
+          <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: BRAND, marginBottom: 14 }}>Pricing</div>
+          <h1 style={{ fontSize: 42, lineHeight: 1.08, fontWeight: 700, margin: "0 0 16px", letterSpacing: "-0.02em" }}>Pay for how much you need to know.</h1>
+          <p style={{ fontSize: 17, lineHeight: 1.6, color: "rgba(255,255,255,0.75)", margin: 0 }}>Start free and see your readers read. Move up when you want to send more, run a team, or lock things down. Every plan captures intent, not just attention.</p>
         </div>
       </section>
-      <section style={{ marginTop: -90, position: "relative", zIndex: 2, paddingBottom: 80 }}>
-        <div className="m-tiers" style={{ ...wrap, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 18, alignItems: "start" }}>
+
+      {/* Plan cards */}
+      <section style={{ maxWidth: 1160, margin: "0 auto", padding: "0 20px", transform: "translateY(-48px)" }}>
+        <div className="price-grid">
           {TIERS.map((t) => (
-            <div key={t.name} className="m-card" style={{ background: CARD, borderRadius: 16, border: t.highlight ? `2px solid ${GREEN}` : `1px solid ${LINE}`, padding: 26, boxShadow: t.highlight ? "0 12px 40px rgba(11,122,75,0.16)" : "0 1px 3px rgba(15,23,41,0.04), 0 8px 24px rgba(15,23,41,0.05)", position: "relative" }}>
-              {t.highlight && <div style={{ position: "absolute", top: -12, left: 26, background: GREEN, color: "#fff", fontSize: 11, fontWeight: 600, padding: "4px 12px", borderRadius: 16, textTransform: "uppercase", letterSpacing: "0.05em" }}>{d.pricing.popular}</div>}
-              <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 6 }}>{t.name}</div>
-              <p style={{ fontSize: 13, color: BODY, margin: "0 0 18px", lineHeight: 1.4, minHeight: 54 }}>{t.tagline}</p>
-              <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 22 }}>
-                <span style={{ fontSize: 34, fontWeight: 700, color: INK, letterSpacing: "-0.03em" }}>{t.price}</span>
-                <span style={{ fontSize: 13, color: MUTE }}>{t.cadence}</span>
+            <div key={t.id} style={{
+              background: "#fff",
+              border: t.popular ? `2px solid ${GREEN}` : `1px solid ${BORDER}`,
+              borderRadius: 16,
+              padding: "26px 22px",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: t.popular ? "0 18px 50px rgba(11,122,75,0.16)" : "0 12px 40px rgba(15,23,41,0.06)",
+              position: "relative",
+            }}>
+              {t.popular && (
+                <span style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: GREEN, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 12px", borderRadius: 20 }}>Most popular</span>
+              )}
+              <div style={{ fontSize: 18, fontWeight: 700, color: INK }}>{t.name}</div>
+              <div style={{ fontSize: 13, color: BODY, margin: "4px 0 16px", minHeight: 34, lineHeight: 1.4 }}>{t.tagline}</div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
+                <span style={{ fontSize: 34, fontWeight: 700, color: INK, letterSpacing: "-0.02em" }}>{t.price}</span>
+                <span style={{ fontSize: 13, color: MUTE }}>{t.period}</span>
               </div>
-              <a href="/login" className={t.highlight ? "m-a m-cta-lemon" : "m-a m-cta"} style={{ display: "block", textAlign: "center", background: t.highlight ? LEMON : GREEN, color: t.highlight ? "#08301F" : "#fff", border: "none", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 10, marginBottom: 24 }}>{t.cta}</a>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {t.features.map((f) => (
-                  <div key={f} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                    <span style={{ color: GREEN, flexShrink: 0, marginTop: 2 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg></span>
-                    <span style={{ fontSize: 14, color: BODY, lineHeight: 1.4 }}>{f}</span>
-                  </div>
+              <a href={t.href} className="tier-cta" style={{
+                display: "block", textAlign: "center", textDecoration: "none",
+                background: t.popular ? GREEN : "#fff",
+                color: t.popular ? "#fff" : INK,
+                border: t.popular ? `1px solid ${GREEN}` : `1px solid ${BORDER}`,
+                borderRadius: 10, padding: "11px 16px", fontSize: 14, fontWeight: 600, margin: "16px 0 20px",
+              }}>{t.cta}</a>
+              {t.includes && <div style={{ fontSize: 12, fontWeight: 600, color: GREEN, marginBottom: 10 }}>{t.includes}</div>}
+              <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+                {t.features.map((f, i) => (
+                  <li key={i} style={{ display: "flex", gap: 9, fontSize: 13.5, color: BODY, lineHeight: 1.45 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><path d="M20 6L9 17l-5-5" /></svg>
+                    <span>{f}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           ))}
         </div>
       </section>
-      <section style={{ background: "#fff", borderTop: `1px solid ${LINE}`, padding: "80px 0" }}>
-        <div style={{ ...wrap, maxWidth: 760 }}>
-          <h2 style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.02em", margin: "0 0 32px", textAlign: "center" }}>{d.pricing.faqTitle}</h2>
-          {FAQ.map((f) => (
-            <div key={f.q} style={{ borderBottom: `1px solid ${LINE}`, padding: "20px 0" }}>
-              <div style={{ fontSize: 17, fontWeight: 700, color: INK, marginBottom: 6 }}>{f.q}</div>
-              <p style={{ fontSize: 15, color: BODY, lineHeight: 1.5, margin: 0 }}>{f.a}</p>
+
+      {/* Baseline strip */}
+      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "8px 20px 8px" }}>
+        <div style={{ background: SOFT, border: `1px solid #CDEBD8`, borderRadius: 14, padding: "16px 20px", textAlign: "center", fontSize: 13.5, color: "#1B4332", lineHeight: 1.6 }}>
+          Every plan includes the private reader domain, a mobile-ready reader, English and French, and no watermark, ever.
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section style={{ maxWidth: 780, margin: "0 auto", padding: "56px 20px 20px" }}>
+        <h2 style={{ fontSize: 26, fontWeight: 700, textAlign: "center", margin: "0 0 28px", letterSpacing: "-0.02em" }}>Questions</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {FAQ.map((f, i) => (
+            <div key={i} style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: "18px 20px" }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: INK, marginBottom: 6 }}>{f.q}</div>
+              <div style={{ fontSize: 14, color: BODY, lineHeight: 1.6 }}>{f.a}</div>
             </div>
           ))}
         </div>
       </section>
-      <section style={{ background: GRADIENT, color: "#fff", padding: "80px 0", textAlign: "center" }}>
-        <div style={wrap}>
-          <h2 style={{ fontSize: 38, fontWeight: 700, letterSpacing: "-0.025em", margin: "0 0 14px" }}>{d.pricing.ctaTitle}</h2>
-          <p style={{ fontSize: 18, color: CLOUD, margin: "0 0 30px" }}>{d.pricing.ctaSub}</p>
-          <a href="/login" className="m-a m-cta-lemon" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 30px", borderRadius: 10 }}>{d.pricing.ctaBtn}</a>
+
+      {/* Closing CTA */}
+      <section style={{ padding: "56px 20px 72px", textAlign: "center" }}>
+        <div style={{ maxWidth: 620, margin: "0 auto", background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, borderRadius: 20, padding: "44px 28px", color: "#fff" }}>
+          <h2 style={{ fontSize: 27, fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.02em" }}>See your next document read the room.</h2>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.75)", margin: "0 0 24px", lineHeight: 1.6 }}>Start on Free in a couple of minutes. No card, no watermark.</p>
+          <a href="/login" style={{ display: "inline-block", background: BRAND, color: NIGHT, textDecoration: "none", fontSize: 15, fontWeight: 700, padding: "13px 28px", borderRadius: 11 }}>Start free</a>
         </div>
       </section>
-      <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: "#fff", padding: "36px 0" }}>
-        <div style={{ ...wrap, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" className="m-a" style={{ fontSize: 14, color: "#fff", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{display:"inline-block",verticalAlign:"-0.1em"}}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></svg></span> BackRead, {d.footer.tagline.toLowerCase()}</a>
-          <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
-            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="m-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
-            <a href="/pricing" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Pricing</a>
-            <a href="/privacy" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Privacy</a>
-            <a href="/terms" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Terms</a>
-            <a href="/login" className="m-a" style={{ color: "#fff", fontSize: 13 }}>Sign in</a>
-          </div>
+
+      {/* Footer */}
+      <footer style={{ borderTop: `1px solid ${BORDER}`, padding: "28px 20px", textAlign: "center", color: MUTE, fontSize: 13 }}>
+        <div style={{ display: "flex", gap: 18, justifyContent: "center", flexWrap: "wrap", marginBottom: 10 }}>
+          <a href="/" style={{ color: BODY, textDecoration: "none" }}>Home</a>
+          <a href="/pricing" style={{ color: BODY, textDecoration: "none" }}>Pricing</a>
+          <a href="/privacy" style={{ color: BODY, textDecoration: "none" }}>Privacy</a>
+          <a href="/terms" style={{ color: BODY, textDecoration: "none" }}>Terms</a>
         </div>
+        <div>The document reads the reader.</div>
       </footer>
     </div>
   );
