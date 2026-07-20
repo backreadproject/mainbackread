@@ -682,12 +682,6 @@ const en = {
     signOut: "Sign out",
     backToSite: "Back to site",
   },
-  activity: {
-    opened: "opened",
-    asked: "asked:",
-    unnamedReader: "An unnamed reader",
-    aDocument: "a document",
-  },
 };
 
 const fr: Dict = {
@@ -1362,12 +1356,6 @@ const fr: Dict = {
     viewSite: "Voir le site",
     signOut: "Se d\u00e9connecter",
     backToSite: "Retour au site",
-  },
-  activity: {
-    opened: "a ouvert",
-    asked: "a demand\u00e9 :",
-    unnamedReader: "Un lecteur anonyme",
-    aDocument: "un document",
   },
 };
 
