@@ -62,11 +62,12 @@ export async function POST(req: NextRequest) {
 
   // Full transcript (question AND answer) for product improvement and reader persistence.
   // reader_messages is service-role only (RLS with no policies), so account holders can
-  // never read it — this never surfaces in their dashboard. Best-effort: a transcript
-  // write must never break the reader's answer, so it is wrapped and ignored on failure.
+  // never read it. IMPORTANT: the Supabase client returns query failures in `error` rather
+  // than throwing, so we must inspect `error` directly (a try/catch alone would miss a
+  // missing table, RLS block, or schema mismatch and fail silently).
   try {
     const t0 = Date.now();
-    await admin.from("reader_messages").insert([
+    const { error: txErr } = await admin.from("reader_messages").insert([
       {
         recipient_id: recipient.id,
         document_id: documentId,
@@ -86,8 +87,16 @@ export async function POST(req: NextRequest) {
         created_at: new Date(t0 + 1).toISOString(),
       },
     ]);
+    if (txErr) {
+      console.error("[ask-live] transcript write failed:", JSON.stringify({
+        message: txErr.message,
+        details: (txErr as { details?: string }).details ?? null,
+        hint: (txErr as { hint?: string }).hint ?? null,
+        code: (txErr as { code?: string }).code ?? null,
+      }));
+    }
   } catch (err) {
-    console.error("[ask-live] transcript write failed", err instanceof Error ? err.message : err);
+    console.error("[ask-live] transcript write threw:", err instanceof Error ? err.message : String(err));
   }
 
   return NextResponse.json(data);
