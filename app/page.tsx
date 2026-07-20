@@ -10,7 +10,7 @@ const LINKEDIN = "https://www.linkedin.com/company/readprospects";
 type Plan = { name: string; price: string; per?: string; desc: string; hot?: boolean };
 type Faq = { q: string; a: string };
 type Copy = {
-  nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string };
+  nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string; startShort: string };
   hero: { eyebrow: string; t1: string; t2: string; sub: string; ctaOut: string; ctaLg: string; or: string; sample: string; nocard: string };
   panel: { questions: string; verdict: string; ready: string; sig1: string; sig2: string; sig3: string;
            visits: string; time: string; q: string; intent: string };
@@ -34,7 +34,7 @@ type Copy = {
 
 const COPY: Record<Locale, Copy> = {
   en: {
-    nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start free" },
+    nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start here", startShort: "Start" },
     hero: { eyebrow: "Document intelligence", t1: "Every reader leaves a trail.", t2: "Now you can follow it.",
       sub: "Monitor and understand how people move through the documents you send. Every open, every question, every hesitation, before your follow-up goes cold.",
       ctaOut: "See how it works", ctaLg: "Start 7-day trial", or: "or", sample: "get a sample verdict", nocard: "No card to start \u00b7 your document stays yours, no watermark" },
@@ -85,11 +85,11 @@ const COPY: Record<Locale, Copy> = {
       { q: "Does my reader need an account or an app?", a: "No. They click a link and read. Nothing to install, nothing to sign up for." },
       { q: "Is there a watermark on my document?", a: "Never, on any plan. Your document goes out as your document." },
     ] },
-    cta: { title: "Your readers are telling you everything.", sub: "Read receipts were never enough. Start free, then pick the plan that keeps you a step ahead.", btn: "Start free" },
+    cta: { title: "Your readers are telling you everything.", sub: "Read receipts were never enough. Start free, then pick the plan that keeps you a step ahead.", btn: "Start here" },
     footer: { pricing: "Pricing", privacy: "Privacy", terms: "Terms", signin: "Sign in", tag: "The document reads the reader." },
   },
   fr: {
-    nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer" },
+    nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer", startShort: "Commencer" },
     hero: { eyebrow: "Intelligence documentaire", t1: "Chaque lecteur laisse une trace.", t2: "Suivez-la enfin.",
       sub: "Surveillez et comprenez comment vos lecteurs parcourent les documents que vous envoyez. Chaque ouverture, chaque question, chaque h\u00e9sitation, avant que votre relance ne refroidisse.",
       ctaOut: "Voir le fonctionnement", ctaLg: "Essai gratuit de 7 jours", or: "ou", sample: "obtenir un verdict d'exemple", nocard: "Sans carte pour commencer \u00b7 votre document reste le v\u00f4tre, sans filigrane" },
@@ -140,7 +140,7 @@ const COPY: Record<Locale, Copy> = {
       { q: "Mon lecteur a-t-il besoin d'un compte ou d'une application ?", a: "Non. Il clique sur un lien et lit. Rien \u00e0 installer, aucune inscription." },
       { q: "Y a-t-il un filigrane sur mon document ?", a: "Jamais, quel que soit le forfait. Votre document part tel qu'il est, le v\u00f4tre." },
     ] },
-    cta: { title: "Vos lecteurs vous disent tout.", sub: "Les accus\u00e9s de lecture n'ont jamais suffi. Commencez gratuitement, puis choisissez le forfait qui vous garde une longueur d'avance.", btn: "Commencer gratuitement" },
+    cta: { title: "Vos lecteurs vous disent tout.", sub: "Les accus\u00e9s de lecture n'ont jamais suffi. Commencez gratuitement, puis choisissez le forfait qui vous garde une longueur d'avance.", btn: "Commencer ici" },
     footer: { pricing: "Tarifs", privacy: "Confidentialit\u00e9", terms: "Conditions", signin: "Connexion", tag: "Le document lit le lecteur." },
   },
 };
@@ -167,6 +167,7 @@ const CSS = `
   .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
   .rp-glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
   .rp-btn{background:#1FA971;color:#04120C;font-weight:600;font-size:14px;padding:9px 18px;border-radius:10px;display:inline-block}
+  .rp-full{display:inline}.rp-short{display:none}
   .rp-btnlg{background:#1FA971;color:#04120C;font-weight:700;font-size:15px;padding:14px 26px;border-radius:12px;display:inline-block;box-shadow:0 8px 30px rgba(31,169,113,0.35)}
   .rp-btnout{background:rgba(255,255,255,0.03);color:#F2F7F4;font-weight:600;font-size:15px;padding:14px 24px;border-radius:12px;border:1px solid rgba(255,255,255,0.09);display:inline-block}
   .rp-k{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5F7168}
@@ -274,6 +275,7 @@ const CSS = `
     .rp-m4{grid-template-columns:1fr 1fr}
     .rp-dash{padding:14px;gap:12px}
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
+    .rp-full{display:none}.rp-short{display:inline}
     .rp-statb{padding:26px 20px}.rp-statb .big{font-size:36px}
     .rp-ctaband{padding:40px 20px}.rp-ctaband h2{font-size:24px}
     .rp-cmp{gap:10px}
@@ -304,7 +306,7 @@ export default async function LandingPage() {
             <div className="rp-navr">
               <LanguageSwitcher current={locale} dark />
               <a className="sign" href="/login">{c.nav.signin}</a>
-              <a className="rp-btn" href="/login">{c.nav.start}</a>
+              <a className="rp-btn" href="/login"><span className="rp-full">{c.nav.start}</span><span className="rp-short">{c.nav.startShort}</span></a>
             </div>
           </nav>
         </div>
