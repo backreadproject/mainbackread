@@ -1,4 +1,4 @@
-// BackRead i18n. Cookie-based locale. Phase 1: marketing dictionaries (EN + FR).
+// ReadProspects i18n. Cookie-based locale. Phase 1: marketing dictionaries (EN + FR).
 export type Locale = "en" | "fr";
 export const LOCALES: Locale[] = ["en", "fr"];
 export const DEFAULT_LOCALE: Locale = "en";
@@ -8,7 +8,7 @@ export type Dict = typeof en;
 const en = {
   nav: {
     how: "How it works",
-    why: "Why BackRead",
+    why: "Why ReadProspects",
     pricing: "Pricing",
     signin: "Sign in",
     start: "Start here",
@@ -18,7 +18,7 @@ const en = {
     badge: "Join 5,000+ users",
     titleA: "Every reader leaves a trail.",
     titleB: "Now you can follow it.",
-    sub: "BackRead turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.",
+    sub: "ReadProspects turns every document you send into a live companion that answers your reader's questions, watches how it is read, and tells you where the deal really stands.",
     start: "Start here",
     seeHow: "See how it works",
     fine: "Your first document live in minutes.",
@@ -27,22 +27,22 @@ const en = {
     eyebrow: "The blind spot",
     title: "You send the document. Then the silence begins.",
     p1: "A proposal, a deck, a memo goes out. You wait. You do not know who opened it, which page made them pause, what question they never asked out loud, or whether the deal is warm or already gone.",
-    p2: "Read receipts tell you a file was opened. Analytics tell you seconds on a page. Neither tells you what the reader actually wanted. BackRead was built to close that gap.",
+    p2: "Read receipts tell you a file was opened. Analytics tell you seconds on a page. Neither tells you what the reader actually wanted. ReadProspects was built to close that gap.",
   },
   how: {
     eyebrow: "How it works",
     title: "Three things happen the moment your reader opens it.",
     s1t: "The document answers, in your voice",
-    s1b: "Your reader asks a question inside the document itself. BackRead answers from what you approved, and when a question crosses into territory only you should handle, it holds the line and flags it for you instead of guessing.",
+    s1b: "Your reader asks a question inside the document itself. ReadProspects answers from what you approved, and when a question crosses into territory only you should handle, it holds the line and flags it for you instead of guessing.",
     s2t: "It watches how the reading goes",
     s2b: "Every pause, re-read, and question becomes a signal. You see which sections held attention, which were skipped, and where a reader hesitated, the quiet tells that a reply email never contains.",
     s3t: "It returns a verdict on the deal",
-    s3b: "BackRead reads the pattern of the whole reading and tells you where things stand, so you know whether to push, to wait, or to rewrite before you send it to the next person.",
+    s3b: "ReadProspects reads the pattern of the whole reading and tells you where things stand, so you know whether to push, to wait, or to rewrite before you send it to the next person.",
   },
   why: {
-    eyebrow: "Why BackRead",
+    eyebrow: "Why ReadProspects",
     title: "Attention is not intent.",
-    sub: "Everyone else measures whether eyes were on the page. BackRead reads what the reader was actually trying to decide.",
+    sub: "Everyone else measures whether eyes were on the page. ReadProspects reads what the reader was actually trying to decide.",
     c1t: "The document reads the reader",
     c1b: "Instead of a static file, you send something that listens. It captures stated intent, the questions a reader types, not just the seconds they linger.",
     c2t: "A verdict on the deal, not the document",
@@ -51,13 +51,13 @@ const en = {
     c3b: "Each document learns from the readings before it. What you send tomorrow is sharper than what you sent today, because it remembers.",
   },
   compare: {
-    eyebrow: "How BackRead compares",
+    eyebrow: "How ReadProspects compares",
     title: "You already have tools that watch. None of them listen.",
-    sub: "Read receipts and document analytics tell you that something happened. BackRead tells you what it meant.",
+    sub: "Read receipts and document analytics tell you that something happened. ReadProspects tells you what it meant.",
     swipe: "Swipe to compare",
     colWhat: "What you learn",
     colThem: "Read receipts and analytics",
-    colUs: "BackRead",
+    colUs: "ReadProspects",
     rows: [
       ["Whether it was opened", "Yes", "Yes"],
       ["Time spent per page", "Sometimes", "Yes"],
@@ -70,7 +70,7 @@ const en = {
   preview: {
     eyebrow: "See it in action",
     title: "The verdict is the first thing you see.",
-    p1: "Open a document in BackRead and you do not start with a chart to decode. You start with a plain read on the relationship, written the way a sharp colleague would tell you across a desk.",
+    p1: "Open a document in ReadProspects and you do not start with a chart to decode. You start with a plain read on the relationship, written the way a sharp colleague would tell you across a desk.",
     p2: "Underneath it sits the trail: every question, every pause, every re-read that led to the call.",
     verdictLabel: "Verdict",
     verdict: "Warm. The reader went deep on pricing and terms, then came back to the summary twice. Prepare for a question about the annual commit.",
@@ -81,7 +81,7 @@ const en = {
   uses: {
     eyebrow: "Use cases",
     title: "For any document that matters after it leaves your hands.",
-    sub: "If a document carries a decision, and you cannot be in the room when it is read, BackRead goes in your place. It works the same whether you are raising, selling, reporting, or being diligenced.",
+    sub: "If a document carries a decision, and you cannot be in the room when it is read, ReadProspects goes in your place. It works the same whether you are raising, selling, reporting, or being diligenced.",
     u1t: "Fundraising", u1b: "Send a deck that answers an investor's questions and tells you which ones to prepare for.",
     u2t: "Sales proposals", u2b: "Know whether a proposal landed before the follow up call, not after the deal goes quiet.",
     u3t: "Board and investor updates", u3b: "See which parts of a memo drew scrutiny, and walk into the meeting already knowing.",
@@ -89,11 +89,11 @@ const en = {
   },
   longGame: {
     eyebrow: "The long game",
-    body: "The first document you send with BackRead already reads its reader. The hundredth one knows what to say before the question is asked. That gap is the moat, and it grows every time you hit send.",
+    body: "The first document you send with ReadProspects already reads its reader. The hundredth one knows what to say before the question is asked. That gap is the moat, and it grows every time you hit send.",
   },
   closing: {
     title: "Stop sending documents into the dark.",
-    sub: "Send your next document with BackRead and read the reader back.",
+    sub: "Send your next document with ReadProspects and read the reader back.",
     start: "Start here",
   },
   footer: {
@@ -110,13 +110,13 @@ const en = {
     ctaSub: "Free for your first 5 documents. No card needed.",
     ctaBtn: "Start here",
     tiers: [
-      { name: "Free", price: "$0", cadence: "forever", tagline: "For trying BackRead on a real send.", cta: "Start here", highlight: false, features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"] },
-      { name: "Pro", price: "$29", cadence: "per month", tagline: "For founders and sellers who send often.", cta: "Start Pro", highlight: true, features: ["Unlimited documents", "Ask BackRead companion", "The verdict engine", "Question and intent signals", "Email alerts on every open", "Priority support"] },
+      { name: "Free", price: "$0", cadence: "forever", tagline: "For trying ReadProspects on a real send.", cta: "Start here", highlight: false, features: ["Up to 5 documents", "Reader tracking and read traces", "Per-reader timelines", "1 workspace"] },
+      { name: "Pro", price: "$29", cadence: "per month", tagline: "For founders and sellers who send often.", cta: "Start Pro", highlight: true, features: ["Unlimited documents", "Ask ReadProspects companion", "The verdict engine", "Question and intent signals", "Email alerts on every open", "Priority support"] },
       { name: "Business", price: "$99", cadence: "per month", tagline: "For teams reading their pipeline together.", cta: "Start Business", highlight: false, features: ["Everything in Pro", "Up to 10 team seats", "Shared workspace", "Team activity feed", "Advanced verdict history", "Onboarding session"] },
       { name: "Enterprise", price: "Custom", cadence: "contact us", tagline: "For organizations with security and scale needs.", cta: "Contact us", highlight: false, features: ["Everything in Business", "Unlimited team seats", "SSO and advanced security", "Custom data retention", "Dedicated support", "Onboarding and training"] },
     ],
     faq: [
-      { q: "Do my readers need an account?", a: "No. They open a link and read. BackRead captures intent without asking anything of them." },
+      { q: "Do my readers need an account?", a: "No. They open a link and read. ReadProspects captures intent without asking anything of them." },
       { q: "Can I change plans later?", a: "Yes. Upgrade or downgrade at any time, and the change applies from your next cycle." },
       { q: "Is my document data private?", a: "Documents are stored privately and only visible to the people you share a link with. You can delete anything at any time." },
       { q: "What counts as a document?", a: "Any PDF or deck you upload and share. Reads, questions, and verdicts on it are all included in your plan." },
@@ -124,7 +124,7 @@ const en = {
   },
   auth: {
     // shared
-    brand: "BackRead",
+    brand: "ReadProspects",
     heroTitleA: "Every document reaches.",
     heroTitleB: "Every reader, understood.",
     heroSub: "Send a document that answers questions, watches how it's read, and tells you what to do next.",
@@ -463,7 +463,7 @@ const en = {
     shareAsLink: "Share as link",
     shareAsLinkSub: "Get a tracked link to send yourself",
     sendAsEmail: "Send as email",
-    sendAsEmailSub: "BackRead emails the link for you",
+    sendAsEmailSub: "ReadProspects emails the link for you",
     cancel: "Cancel",
     back: "Back",
     emailIntro: "We'll email the tracked link and record this reader.",
@@ -571,7 +571,7 @@ const en = {
     introA: "Give teammates access to this ",
     introBDoc: "document",
     introBProject: "project",
-    introC: " inside BackRead. This is separate from the read links you send to external recipients.",
+    introC: " inside ReadProspects. This is separate from the read links you send to external recipients.",
     aMember: "A member",
     aRole: "A role",
     chooseMember: "Choose member...",
@@ -693,7 +693,7 @@ const en = {
 const fr: Dict = {
   nav: {
     how: "Comment ça marche",
-    why: "Pourquoi BackRead",
+    why: "Pourquoi ReadProspects",
     pricing: "Tarifs",
     signin: "Se connecter",
     start: "Commencer",
@@ -703,7 +703,7 @@ const fr: Dict = {
     badge: "Rejoignez plus de 5 000 utilisateurs",
     titleA: "Chaque lecteur laisse une trace.",
     titleB: "Vous pouvez enfin la suivre.",
-    sub: "BackRead transforme chaque document que vous envoyez en un compagnon vivant qui répond aux questions de votre lecteur, observe comment il est lu, et vous dit où en est réellement l'affaire.",
+    sub: "ReadProspects transforme chaque document que vous envoyez en un compagnon vivant qui répond aux questions de votre lecteur, observe comment il est lu, et vous dit où en est réellement l'affaire.",
     start: "Commencer",
     seeHow: "Voir comment",
     fine: "Votre premier document en ligne en quelques minutes.",
@@ -712,22 +712,22 @@ const fr: Dict = {
     eyebrow: "L'angle mort",
     title: "Vous envoyez le document. Puis le silence s'installe.",
     p1: "Une proposition, une présentation, une note part. Vous attendez. Vous ne savez pas qui l'a ouverte, quelle page l'a fait hésiter, quelle question n'a jamais été posée à voix haute, ni si l'affaire est chaude ou déjà perdue.",
-    p2: "Les accusés de lecture vous disent qu'un fichier a été ouvert. Les analyses vous donnent des secondes par page. Aucun ne vous dit ce que le lecteur voulait vraiment. BackRead a été conçu pour combler cet écart.",
+    p2: "Les accusés de lecture vous disent qu'un fichier a été ouvert. Les analyses vous donnent des secondes par page. Aucun ne vous dit ce que le lecteur voulait vraiment. ReadProspects a été conçu pour combler cet écart.",
   },
   how: {
     eyebrow: "Comment ça marche",
     title: "Trois choses se produisent dès que votre lecteur l'ouvre.",
     s1t: "Le document répond, avec votre voix",
-    s1b: "Votre lecteur pose une question à l'intérieur même du document. BackRead répond à partir de ce que vous avez approuvé, et lorsqu'une question relève d'un sujet que vous seul devez traiter, il s'abstient et vous le signale au lieu de deviner.",
+    s1b: "Votre lecteur pose une question à l'intérieur même du document. ReadProspects répond à partir de ce que vous avez approuvé, et lorsqu'une question relève d'un sujet que vous seul devez traiter, il s'abstient et vous le signale au lieu de deviner.",
     s2t: "Il observe comment se passe la lecture",
     s2b: "Chaque pause, relecture et question devient un signal. Vous voyez quelles sections ont retenu l'attention, lesquelles ont été ignorées, et où un lecteur a hésité, ces indices discrets qu'un e-mail de réponse ne contient jamais.",
     s3t: "Il rend un verdict sur l'affaire",
-    s3b: "BackRead lit le schéma de toute la lecture et vous dit où en sont les choses, afin que vous sachiez s'il faut relancer, attendre ou réécrire avant de l'envoyer à la personne suivante.",
+    s3b: "ReadProspects lit le schéma de toute la lecture et vous dit où en sont les choses, afin que vous sachiez s'il faut relancer, attendre ou réécrire avant de l'envoyer à la personne suivante.",
   },
   why: {
-    eyebrow: "Pourquoi BackRead",
+    eyebrow: "Pourquoi ReadProspects",
     title: "L'attention n'est pas l'intention.",
-    sub: "Tous les autres mesurent si les yeux étaient sur la page. BackRead lit ce que le lecteur cherchait réellement à décider.",
+    sub: "Tous les autres mesurent si les yeux étaient sur la page. ReadProspects lit ce que le lecteur cherchait réellement à décider.",
     c1t: "Le document lit le lecteur",
     c1b: "Au lieu d'un fichier statique, vous envoyez quelque chose qui écoute. Il capte l'intention exprimée, les questions que tape un lecteur, pas seulement les secondes passées.",
     c2t: "Un verdict sur l'affaire, pas sur le document",
@@ -736,13 +736,13 @@ const fr: Dict = {
     c3b: "Chaque document apprend des lectures précédentes. Ce que vous envoyez demain est plus affûté qu'aujourd'hui, parce qu'il se souvient.",
   },
   compare: {
-    eyebrow: "BackRead face aux autres",
+    eyebrow: "ReadProspects face aux autres",
     title: "Vous avez déjà des outils qui observent. Aucun n'écoute.",
-    sub: "Les accusés de lecture et les analyses vous disent que quelque chose s'est passé. BackRead vous dit ce que cela signifiait.",
+    sub: "Les accusés de lecture et les analyses vous disent que quelque chose s'est passé. ReadProspects vous dit ce que cela signifiait.",
     swipe: "Glissez pour comparer",
     colWhat: "Ce que vous apprenez",
     colThem: "Accusés de lecture et analyses",
-    colUs: "BackRead",
+    colUs: "ReadProspects",
     rows: [
       ["S'il a été ouvert", "Oui", "Oui"],
       ["Temps passé par page", "Parfois", "Oui"],
@@ -755,7 +755,7 @@ const fr: Dict = {
   preview: {
     eyebrow: "En action",
     title: "Le verdict est la première chose que vous voyez.",
-    p1: "Ouvrez un document dans BackRead et vous ne commencez pas par un graphique à déchiffrer. Vous commencez par une lecture claire de la relation, écrite comme un collègue avisé vous le dirait de vive voix.",
+    p1: "Ouvrez un document dans ReadProspects et vous ne commencez pas par un graphique à déchiffrer. Vous commencez par une lecture claire de la relation, écrite comme un collègue avisé vous le dirait de vive voix.",
     p2: "En dessous se trouve la trace : chaque question, chaque pause, chaque relecture qui a mené au verdict.",
     verdictLabel: "Verdict",
     verdict: "Chaud. Le lecteur a étudié en profondeur les prix et les conditions, puis est revenu deux fois au résumé. Préparez-vous à une question sur l'engagement annuel.",
@@ -766,7 +766,7 @@ const fr: Dict = {
   uses: {
     eyebrow: "Cas d'usage",
     title: "Pour tout document qui compte une fois qu'il quitte vos mains.",
-    sub: "Si un document porte une décision et que vous ne pouvez pas être dans la pièce au moment où il est lu, BackRead y va à votre place. Cela fonctionne de la même façon que vous leviez des fonds, vendiez, rendiez compte ou soyez audité.",
+    sub: "Si un document porte une décision et que vous ne pouvez pas être dans la pièce au moment où il est lu, ReadProspects y va à votre place. Cela fonctionne de la même façon que vous leviez des fonds, vendiez, rendiez compte ou soyez audité.",
     u1t: "Levée de fonds", u1b: "Envoyez une présentation qui répond aux questions d'un investisseur et vous dit lesquelles préparer.",
     u2t: "Propositions commerciales", u2b: "Sachez si une proposition a fait mouche avant l'appel de suivi, pas après que l'affaire soit devenue silencieuse.",
     u3t: "Rapports au conseil et aux investisseurs", u3b: "Voyez quelles parties d'une note ont suscité l'examen, et entrez en réunion en le sachant déjà.",
@@ -774,11 +774,11 @@ const fr: Dict = {
   },
   longGame: {
     eyebrow: "Le long terme",
-    body: "Le premier document que vous envoyez avec BackRead lit déjà son lecteur. Le centième sait quoi dire avant même que la question ne soit posée. Cet écart est le fossé concurrentiel, et il grandit à chaque envoi.",
+    body: "Le premier document que vous envoyez avec ReadProspects lit déjà son lecteur. Le centième sait quoi dire avant même que la question ne soit posée. Cet écart est le fossé concurrentiel, et il grandit à chaque envoi.",
   },
   closing: {
     title: "Cessez d'envoyer vos documents dans le noir.",
-    sub: "Envoyez votre prochain document avec BackRead et lisez le lecteur en retour.",
+    sub: "Envoyez votre prochain document avec ReadProspects et lisez le lecteur en retour.",
     start: "Commencer",
   },
   footer: {
@@ -795,20 +795,20 @@ const fr: Dict = {
     ctaSub: "Gratuit pour vos 5 premiers documents. Sans carte bancaire.",
     ctaBtn: "Commencer",
     tiers: [
-      { name: "Gratuit", price: "0 $", cadence: "pour toujours", tagline: "Pour essayer BackRead sur un envoi réel.", cta: "Commencer", highlight: false, features: ["Jusqu'à 5 documents", "Suivi des lecteurs et traces de lecture", "Chronologies par lecteur", "1 espace de travail"] },
-      { name: "Pro", price: "29 $", cadence: "par mois", tagline: "Pour les fondateurs et vendeurs qui envoient souvent.", cta: "Choisir Pro", highlight: true, features: ["Documents illimités", "Compagnon Ask BackRead", "Le moteur de verdict", "Signaux de questions et d'intention", "Alertes e-mail à chaque ouverture", "Support prioritaire"] },
+      { name: "Gratuit", price: "0 $", cadence: "pour toujours", tagline: "Pour essayer ReadProspects sur un envoi réel.", cta: "Commencer", highlight: false, features: ["Jusqu'à 5 documents", "Suivi des lecteurs et traces de lecture", "Chronologies par lecteur", "1 espace de travail"] },
+      { name: "Pro", price: "29 $", cadence: "par mois", tagline: "Pour les fondateurs et vendeurs qui envoient souvent.", cta: "Choisir Pro", highlight: true, features: ["Documents illimités", "Compagnon Ask ReadProspects", "Le moteur de verdict", "Signaux de questions et d'intention", "Alertes e-mail à chaque ouverture", "Support prioritaire"] },
       { name: "Business", price: "99 $", cadence: "par mois", tagline: "Pour les équipes qui lisent leur pipeline ensemble.", cta: "Choisir Business", highlight: false, features: ["Tout de Pro", "Jusqu'à 10 sièges d'équipe", "Espace de travail partagé", "Fil d'activité d'équipe", "Historique de verdicts avancé", "Session d'intégration"] },
       { name: "Enterprise", price: "Sur mesure", cadence: "nous contacter", tagline: "Pour les organisations aux besoins de sécurité et d'échelle.", cta: "Nous contacter", highlight: false, features: ["Tout de Business", "Sièges d'équipe illimités", "SSO et sécurité avancée", "Rétention des données personnalisée", "Support dédié", "Intégration et formation"] },
     ],
     faq: [
-      { q: "Mes lecteurs ont-ils besoin d'un compte ?", a: "Non. Ils ouvrent un lien et lisent. BackRead capte l'intention sans rien leur demander." },
+      { q: "Mes lecteurs ont-ils besoin d'un compte ?", a: "Non. Ils ouvrent un lien et lisent. ReadProspects capte l'intention sans rien leur demander." },
       { q: "Puis-je changer de forfait plus tard ?", a: "Oui. Montez ou descendez de forfait à tout moment, et le changement s'applique dès votre prochain cycle." },
       { q: "Les données de mes documents sont-elles privées ?", a: "Les documents sont stockés de façon privée et visibles uniquement par les personnes avec qui vous partagez un lien. Vous pouvez tout supprimer à tout moment." },
       { q: "Qu'est-ce qui compte comme document ?", a: "Tout PDF ou présentation que vous téléversez et partagez. Les lectures, questions et verdicts sont tous inclus dans votre forfait." },
     ],
   },
   auth: {
-    brand: "BackRead",
+    brand: "ReadProspects",
     heroTitleA: "Chaque document parvient.",
     heroTitleB: "Chaque lecteur, compris.",
     heroSub: "Envoyez un document qui répond aux questions, observe comment il est lu, et vous dit quoi faire ensuite.",
@@ -1144,7 +1144,7 @@ const fr: Dict = {
     shareAsLink: "Partager par lien",
     shareAsLinkSub: "Obtenez un lien suivi à envoyer vous-même",
     sendAsEmail: "Envoyer par e-mail",
-    sendAsEmailSub: "BackRead envoie le lien par e-mail pour vous",
+    sendAsEmailSub: "ReadProspects envoie le lien par e-mail pour vous",
     cancel: "Annuler",
     back: "Retour",
     emailIntro: "Nous enverrons le lien suivi par e-mail et enregistrerons ce lecteur.",
@@ -1252,7 +1252,7 @@ const fr: Dict = {
     introA: "Donnez à vos coéquipiers l'accès à ce ",
     introBDoc: "document",
     introBProject: "projet",
-    introC: " dans BackRead. C'est distinct des liens de lecture que vous envoyez aux destinataires externes.",
+    introC: " dans ReadProspects. C'est distinct des liens de lecture que vous envoyez aux destinataires externes.",
     aMember: "Un membre",
     aRole: "Un rôle",
     chooseMember: "Choisir un membre...",

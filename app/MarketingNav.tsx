@@ -13,7 +13,7 @@ const CircleMark = () => (
 type NavLabels = { how: string; why: string; pricing: string; signin: string; start: string; openApp: string };
 
 export default function MarketingNav({ activePricing = false, locale = "en", labels }: { activePricing?: boolean; locale?: Locale; labels?: NavLabels }) {
-  const t: NavLabels = labels ?? { how: "How it works", why: "Why BackRead", pricing: "Pricing", signin: "Sign in", start: "Start here", openApp: "Open app" };
+  const t: NavLabels = labels ?? { how: "How it works", why: "Why ReadProspects", pricing: "Pricing", signin: "Sign in", start: "Start here", openApp: "Open app" };
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,7 +57,7 @@ export default function MarketingNav({ activePricing = false, locale = "en", lab
         }
       `}</style>
       <nav className="mn-nav" style={{ maxWidth: 1080, margin: "0 auto", padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-        <a href="/" className="mn-logo" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0 }}><span style={{ color: BRAND }}><CircleMark /></span>BackRead</a>
+        <a href="/" className="mn-logo" style={{ color: "#fff", fontSize: 21, fontWeight: 700, letterSpacing: "-0.02em", display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0 }}><span style={{ color: BRAND }}><CircleMark /></span>ReadProspects</a>
 
         <div className="mn-links" style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <a href="/#how" style={link}>{t.how}</a>

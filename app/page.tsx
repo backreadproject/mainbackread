@@ -1,316 +1,542 @@
-import MarketingNav from "./MarketingNav";
-import { getLocale } from "@/lib/locale-server";
-import { getDict } from "@/lib/i18n";
+import { cookies } from "next/headers";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import type { Locale } from "@/lib/i18n";
 
-// BackRead landing. Uses the shared MarketingNav (sticky, transparent over hero,
-// auth-aware, blurs on scroll). DM Sans throughout. Existing brand palette.
-// "Reader's trail" signature threads the how-it-works section. Dash-free copy.
+// ReadProspects marketing landing. Dark skin. Bilingual via the locale cookie
+// (same mechanism as the rest of the marketing site). All copy in COPY below.
+// French accents are \uXXXX escapes so the file can never mojibake.
+const LINKEDIN = "https://www.linkedin.com/company/readprospects";
 
-const NIGHT = "#082019";       // deep night green (matches pricing GRADIENT top)
-const INK = "#0F1729";         // near-black ink for body headings on light
-const GREEN = "#0B7A4B";       // primary green
-const GREEN_SOFT = "#E7F6EF";
-const GREEN_TEXT = "#067647";
-const BRAND = "#1FA971";       // brand accent
-const CANVAS = "#F8F9FA";
-const CARD = "#FFFFFF";
-const BODY = "#475467";
-const MUTE = "#98A2B3";
-const LINE = "#EAECEF";
-const CLOUD = "rgba(255,255,255,0.72)";
-const CLOUDDIM = "rgba(255,255,255,0.45)";
-const LEMON = "#D8E84A";      // lemon accent (buttons use dark-green text on this)
-const DM = "var(--font-dm-sans), system-ui, sans-serif";
-const GRADIENT = "linear-gradient(180deg, #061711 0%, #0B2E22 45%, #15503A 80%, #2E6B4A 100%)";
+type Plan = { name: string; price: string; per?: string; desc: string; hot?: boolean };
+type Faq = { q: string; a: string };
+type Copy = {
+  nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string };
+  hero: { eyebrow: string; t1: string; t2: string; sub: string; ctaOut: string; ctaLg: string; or: string; sample: string; nocard: string };
+  panel: { questions: string; verdict: string; ready: string; sig1: string; sig2: string; sig3: string;
+           visits: string; time: string; q: string; intent: string };
+  trusted: string;
+  problem: { eyebrow: string; t1: string; t2: string; lead: string; cards: { h: string; p: string; s: string }[] };
+  how: { eyebrow: string; t1: string; t2: string; lead: string; steps: { h: string; p: string }[] };
+  platform: { eyebrow: string; t1: string; t2: string; lead: string; readers: string;
+              cReader: string; cDoc: string; cReads: string; cDwell: string; cQ: string; cVerdict: string;
+              vReady: string; vWarming: string; vGlance: string };
+  caps: { eyebrow: string; title: string; lead: string;
+          c1e: string; c1h: string; c1p: string; c1q1: string; c1a: string; c1q2: string; c1view: string;
+          c2e: string; c2h: string; c2p: string; c2title: string; c2visits: string;
+          c3e: string; c3h: string; c3p: string; c3read: string;
+          c4e: string; c4h: string; c4p: string; c4visits: string; c4time: string; c4q: string; c4ready: string; c4glance: string };
+  stats: { eyebrow: string; title: string; s1: string; s2: string; s3: string };
+  pricing: { eyebrow: string; t1: string; t2: string; lead: string; plans: Plan[]; seeFull: string };
+  faq: { eyebrow: string; title: string; items: Faq[] };
+  cta: { title: string; sub: string; btn: string };
+  footer: { pricing: string; privacy: string; terms: string; signin: string; tag: string };
+};
+
+const COPY: Record<Locale, Copy> = {
+  en: {
+    nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start free" },
+    hero: { eyebrow: "Document intelligence", t1: "Every reader leaves a trail.", t2: "Now you can follow it.",
+      sub: "Monitor and understand how people move through the documents you send. Every open, every question, every hesitation, before your follow-up goes cold.",
+      ctaOut: "See how it works", ctaLg: "Start 7-day trial", or: "or", sample: "get a sample verdict", nocard: "No card to start \u00b7 your document stays yours, no watermark" },
+    panel: { questions: "Questions asked", verdict: "Verdict", ready: "Ready to move",
+      sig1: "Reread the pricing three times", sig2: "Asked about the annual commit", sig3: "Forwarded to one colleague",
+      visits: "Visits", time: "Time on doc", q: "Questions", intent: "Intent score" },
+    trusted: "The document intelligence layer for teams who send to close",
+    problem: { eyebrow: "The problem", t1: "The moment you hit send,", t2: "you go blind.",
+      lead: "A read receipt tells you a file was opened. It can't tell you what mattered, what stalled, or whether to follow up. So you chase blind, or you wait, and lose the moment.",
+      cards: [
+        { h: "Read receipts", p: "A green dot says it opened. It says nothing about who is serious.", s: "Opens are not answers" },
+        { h: "Attention vs intent", p: "Clicks count eyeballs. They can't tell a skim from a deal-deciding read.", s: "Intent is what closes" },
+        { h: "Timing", p: "By the time you act on a hunch, the reader has already moved on.", s: "The window is short" },
+        { h: "Lost lessons", p: "Every send teaches what lands. Without capture, it evaporates.", s: "Nothing compounds" },
+      ] },
+    how: { eyebrow: "How it works", t1: "From every signal", t2: "to one clear read.",
+      lead: "Share a link and ReadProspects does the reading of the reader for you. No setup, no reader friction.",
+      steps: [
+        { h: "Share a link", p: "Upload a document and send a tracked link by email, or copy it yourself. Your reader clicks and reads. No account, no app." },
+        { h: "Watch the read", p: "Every open, dwell time per page, the questions they ask the document, and exactly where they hesitate, in real time." },
+        { h: "Get the verdict", p: "ReadProspects reads the trail and calls the deal: what they wanted, what they doubted, and whether they are ready to move." },
+      ] },
+    platform: { eyebrow: "The platform", t1: "Your readers,", t2: "at a glance.",
+      lead: "Reads, questions, dwell, and a verdict on every recipient. Updated the moment they open the document.",
+      readers: "Readers", cReader: "Reader", cDoc: "Document", cReads: "Reads", cDwell: "Dwell", cQ: "Questions", cVerdict: "Verdict",
+      vReady: "Ready", vWarming: "Warming", vGlance: "Glance" },
+    caps: { eyebrow: "Core capabilities", title: "Everything the document saw.", lead: "Four ways ReadProspects turns a quiet PDF into a read on the person holding it.",
+      c1e: "Ask the document", c1h: "Readers ask. The document answers.", c1p: "Your reader asks in the margin and gets an answer from the document itself. You see every question, the clearest signal of intent there is.",
+      c1q1: "Is the annual commit negotiable?", c1a: "The proposal lists a 12-month term at the quoted rate. For changes to commitment length, the sender is the right person to confirm.", c1q2: "What's included in onboarding?", c1view: "Reader view",
+      c2e: "The reading trail", c2h: "Opens, dwell, and a page-by-page timeline.", c2p: "Follow how they actually moved: which page held them, which they skipped, when they came back for a second look.",
+      c2title: "Dwell by page", c2visits: "two visits",
+      c3e: "The verdict", c3h: "A read on the deal, not the document.", c3p: "ReadProspects reads the whole trail and calls it: what they wanted, where they hesitated, how ready they are. Plain language, not a dashboard to decode.",
+      c3read: "Read Q3 Proposal.pdf twice",
+      c4e: "Compare readers", c4h: "See who's serious, side by side.", c4p: "Put two readers of the same document next to each other and let the behaviour speak. One read once and left. One keeps coming back.",
+      c4visits: "Visits", c4time: "Time on doc", c4q: "Questions", c4ready: "Ready to move", c4glance: "Just a glance" },
+    stats: { eyebrow: "At scale", title: "Built to read every reader.", s1: "Reads followed", s2: "Senders on ReadProspects", s3: "Countries" },
+    pricing: { eyebrow: "Pricing", t1: "Start free.", t2: "Grow when it earns it.",
+      lead: "Four plans, from a first look to a locked-down company workspace. No watermark on any of them, ever.",
+      plans: [
+        { name: "Free", price: "$0", desc: "A taste of the real thing." },
+        { name: "Personal", price: "$20", per: "/mo", desc: "Everything, for one person who closes.", hot: true },
+        { name: "Team", price: "$59", per: "/mo", desc: "Your whole team, reading together." },
+        { name: "Business", price: "$99", per: "/mo", desc: "Unlimited seats, fully locked down." },
+      ], seeFull: "See full pricing" },
+    faq: { eyebrow: "Before you decide", title: "Common questions", items: [
+      { q: "Is this just a read receipt?", a: "A receipt is a green dot. ReadProspects is a verdict: what they wanted, where they hesitated, and whether they are ready to move. Attention is cheap. Intent is what closes." },
+      { q: "Will my reader feel watched?", a: "They open a clean document on a neutral domain, with no ReadProspects branding anywhere. What they do stays yours alone. They get the document, you get the read." },
+      { q: "Does my reader need an account or an app?", a: "No. They click a link and read. Nothing to install, nothing to sign up for." },
+      { q: "Is there a watermark on my document?", a: "Never, on any plan. Your document goes out as your document." },
+    ] },
+    cta: { title: "Your readers are telling you everything.", sub: "Read receipts were never enough. Start free, then pick the plan that keeps you a step ahead.", btn: "Start free" },
+    footer: { pricing: "Pricing", privacy: "Privacy", terms: "Terms", signin: "Sign in", tag: "The document reads the reader." },
+  },
+  fr: {
+    nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer" },
+    hero: { eyebrow: "Intelligence documentaire", t1: "Chaque lecteur laisse une trace.", t2: "Suivez-la enfin.",
+      sub: "Surveillez et comprenez comment vos lecteurs parcourent les documents que vous envoyez. Chaque ouverture, chaque question, chaque h\u00e9sitation, avant que votre relance ne refroidisse.",
+      ctaOut: "Voir le fonctionnement", ctaLg: "Essai gratuit de 7 jours", or: "ou", sample: "obtenir un verdict d'exemple", nocard: "Sans carte pour commencer \u00b7 votre document reste le v\u00f4tre, sans filigrane" },
+    panel: { questions: "Questions pos\u00e9es", verdict: "Verdict", ready: "Pr\u00eat \u00e0 avancer",
+      sig1: "A relu les tarifs trois fois", sig2: "A pos\u00e9 une question sur l'engagement annuel", sig3: "A transf\u00e9r\u00e9 \u00e0 un coll\u00e8gue",
+      visits: "Visites", time: "Temps sur le doc", q: "Questions", intent: "Score d'intention" },
+    trusted: "La couche d'intelligence documentaire pour les \u00e9quipes qui envoient pour conclure",
+    problem: { eyebrow: "Le probl\u00e8me", t1: "D\u00e8s que vous cliquez sur envoyer,", t2: "vous \u00eates aveugle.",
+      lead: "Un accus\u00e9 de lecture indique qu'un fichier a \u00e9t\u00e9 ouvert. Il ne dit pas ce qui a compt\u00e9, ce qui a bloqu\u00e9, ni s'il faut relancer. Alors vous relancez \u00e0 l'aveugle, ou vous attendez et perdez le moment.",
+      cards: [
+        { h: "Accus\u00e9s de lecture", p: "Un point vert dit que c'est ouvert. Il ne dit pas qui est s\u00e9rieux.", s: "Ouvrir n'est pas r\u00e9pondre" },
+        { h: "Attention contre intention", p: "Les clics comptent les regards. Ils ne distinguent pas un survol d'une lecture d\u00e9cisive.", s: "L'intention conclut" },
+        { h: "Le moment", p: "Le temps d'agir sur une intuition, le lecteur est d\u00e9j\u00e0 pass\u00e9 \u00e0 autre chose.", s: "La fen\u00eatre est courte" },
+        { h: "Le\u00e7ons perdues", p: "Chaque envoi enseigne ce qui marche. Sans capture, cela s'\u00e9vapore.", s: "Rien ne se cumule" },
+      ] },
+    how: { eyebrow: "Fonctionnement", t1: "De chaque signal", t2: "\u00e0 une lecture claire.",
+      lead: "Partagez un lien et ReadProspects lit le lecteur pour vous. Aucune configuration, aucune friction pour le lecteur.",
+      steps: [
+        { h: "Partagez un lien", p: "T\u00e9l\u00e9versez un document et envoyez un lien suivi par courriel, ou copiez-le vous-m\u00eame. Votre lecteur clique et lit. Aucun compte, aucune application." },
+        { h: "Observez la lecture", p: "Chaque ouverture, le temps pass\u00e9 par page, les questions pos\u00e9es au document, et exactement o\u00f9 ils h\u00e9sitent, en temps r\u00e9el." },
+        { h: "Obtenez le verdict", p: "ReadProspects lit la trace et tranche : ce qu'ils voulaient, ce qui les faisait douter, et s'ils sont pr\u00eats \u00e0 avancer." },
+      ] },
+    platform: { eyebrow: "La plateforme", t1: "Vos lecteurs,", t2: "en un coup d'\u0153il.",
+      lead: "Lectures, questions, temps de lecture et un verdict pour chaque destinataire. Mis \u00e0 jour d\u00e8s qu'ils ouvrent le document.",
+      readers: "Lecteurs", cReader: "Lecteur", cDoc: "Document", cReads: "Lectures", cDwell: "Temps", cQ: "Questions", cVerdict: "Verdict",
+      vReady: "Pr\u00eat", vWarming: "Ti\u00e8de", vGlance: "Survol" },
+    caps: { eyebrow: "Capacit\u00e9s cl\u00e9s", title: "Tout ce que le document a vu.", lead: "Quatre fa\u00e7ons dont ReadProspects transforme un PDF silencieux en lecture de la personne qui le tient.",
+      c1e: "Interroger le document", c1h: "Le lecteur demande. Le document r\u00e9pond.", c1p: "Votre lecteur pose une question dans la marge et re\u00e7oit une r\u00e9ponse tir\u00e9e du document lui-m\u00eame. Vous voyez chaque question, le signal d'intention le plus clair qui soit.",
+      c1q1: "L'engagement annuel est-il n\u00e9gociable ?", c1a: "La proposition indique une dur\u00e9e de 12 mois au tarif indiqu\u00e9. Pour modifier la dur\u00e9e d'engagement, l'exp\u00e9diteur est la bonne personne \u00e0 confirmer.", c1q2: "Qu'est-ce qui est inclus dans l'int\u00e9gration ?", c1view: "Vue du lecteur",
+      c2e: "La trace de lecture", c2h: "Ouvertures, temps et chronologie page par page.", c2p: "Suivez comment ils ont r\u00e9ellement progress\u00e9 : quelle page les a retenus, laquelle ils ont saut\u00e9e, quand ils sont revenus pour un second regard.",
+      c2title: "Temps par page", c2visits: "deux visites",
+      c3e: "Le verdict", c3h: "Une lecture de l'affaire, pas du document.", c3p: "ReadProspects lit toute la trace et tranche : ce qu'ils voulaient, o\u00f9 ils ont h\u00e9sit\u00e9, \u00e0 quel point ils sont pr\u00eats. En langage clair, pas un tableau de bord \u00e0 d\u00e9chiffrer.",
+      c3read: "A lu Q3 Proposal.pdf deux fois",
+      c4e: "Comparer les lecteurs", c4h: "Voyez qui est s\u00e9rieux, c\u00f4te \u00e0 c\u00f4te.", c4p: "Placez deux lecteurs d'un m\u00eame document c\u00f4te \u00e0 c\u00f4te et laissez le comportement parler. L'un a lu une fois et est parti. L'autre revient sans cesse.",
+      c4visits: "Visites", c4time: "Temps sur le doc", c4q: "Questions", c4ready: "Pr\u00eat \u00e0 avancer", c4glance: "Un simple survol" },
+    stats: { eyebrow: "\u00c0 grande \u00e9chelle", title: "Con\u00e7u pour lire chaque lecteur.", s1: "Lectures suivies", s2: "Exp\u00e9diteurs sur ReadProspects", s3: "Pays" },
+    pricing: { eyebrow: "Tarifs", t1: "Commencez gratuitement.", t2: "\u00c9voluez quand \u00e7a le m\u00e9rite.",
+      lead: "Quatre forfaits, d'un premier aper\u00e7u \u00e0 un espace d'entreprise verrouill\u00e9. Aucun filigrane, jamais.",
+      plans: [
+        { name: "Gratuit", price: "0 $", desc: "Un aper\u00e7u du produit r\u00e9el." },
+        { name: "Personnel", price: "20 $", per: "/mois", desc: "Tout, pour une personne qui conclut.", hot: true },
+        { name: "\u00c9quipe", price: "59 $", per: "/mois", desc: "Toute votre \u00e9quipe, qui lit ensemble." },
+        { name: "Entreprise", price: "99 $", per: "/mois", desc: "Si\u00e8ges illimit\u00e9s, parfaitement verrouill\u00e9." },
+      ], seeFull: "Voir tous les tarifs" },
+    faq: { eyebrow: "Avant de d\u00e9cider", title: "Questions fr\u00e9quentes", items: [
+      { q: "Est-ce juste un accus\u00e9 de lecture ?", a: "Un accus\u00e9 est un point vert. ReadProspects est un verdict : ce qu'ils voulaient, o\u00f9 ils ont h\u00e9sit\u00e9, et s'ils sont pr\u00eats \u00e0 avancer. L'attention est bon march\u00e9. L'intention conclut." },
+      { q: "Mon lecteur se sentira-t-il surveill\u00e9 ?", a: "Il ouvre un document \u00e9pur\u00e9 sur un domaine neutre, sans aucune marque ReadProspects. Ce qu'il fait reste \u00e0 vous seul. Il re\u00e7oit le document, vous recevez la lecture." },
+      { q: "Mon lecteur a-t-il besoin d'un compte ou d'une application ?", a: "Non. Il clique sur un lien et lit. Rien \u00e0 installer, aucune inscription." },
+      { q: "Y a-t-il un filigrane sur mon document ?", a: "Jamais, quel que soit le forfait. Votre document part tel qu'il est, le v\u00f4tre." },
+    ] },
+    cta: { title: "Vos lecteurs vous disent tout.", sub: "Les accus\u00e9s de lecture n'ont jamais suffi. Commencez gratuitement, puis choisissez le forfait qui vous garde une longueur d'avance.", btn: "Commencer gratuitement" },
+    footer: { pricing: "Tarifs", privacy: "Confidentialit\u00e9", terms: "Conditions", signin: "Connexion", tag: "Le document lit le lecteur." },
+  },
+};
+
+const READERS = [
+  { n: "Dana Whitfield", d: "Q3 Proposal.pdf", r: "2", dw: "6m 40s", q: "3", v: "ready" },
+  { n: "Marcus Cole", d: "Pricing.pdf", r: "1", dw: "1m 12s", q: "1", v: "warm" },
+  { n: "Sam Rivera", d: "Q3 Proposal.pdf", r: "1", dw: "0m 22s", q: "0", v: "glance" },
+  { n: "Aisha Bello", d: "SOW draft.pdf", r: "3", dw: "9m 05s", q: "2", v: "ready" },
+  { n: "Elena Ross", d: "Q3 Proposal.pdf", r: "2", dw: "4m 30s", q: "1", v: "warm" },
+];
+
+const CSS = `
+  .rp-page{min-height:100vh;background:#050F0A;color:#F2F7F4;font-family:'DM Sans',system-ui,sans-serif;letter-spacing:-0.011em}
+  .rp-page *{box-sizing:border-box}
+  .rp-page a{color:inherit;text-decoration:none}
+  .rp-wrap{max-width:1160px;margin:0 auto;padding:0 28px}
+  .rp-eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#33E6A2;padding:6px 12px;border:1px solid rgba(51,230,162,0.25);border-radius:20px;background:rgba(51,230,162,0.06)}
+  .rp-h2{font-size:40px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#F2F7F4;margin:18px 0 0}
+  .rp-h2 .g{color:#33E6A2}
+  .rp-lead{font-size:17px;line-height:1.62;color:#93A79C;margin:16px 0 0;max-width:600px}
+  .rp-sec{padding:96px 0;position:relative}
+  .rp-center{text-align:center}.rp-center .rp-lead{margin-left:auto;margin-right:auto}
+  .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
+  .rp-glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+  .rp-btn{background:#1FA971;color:#04120C;font-weight:600;font-size:14px;padding:9px 18px;border-radius:10px;display:inline-block}
+  .rp-btnlg{background:#1FA971;color:#04120C;font-weight:700;font-size:15px;padding:14px 26px;border-radius:12px;display:inline-block;box-shadow:0 8px 30px rgba(31,169,113,0.35)}
+  .rp-btnout{background:rgba(255,255,255,0.03);color:#F2F7F4;font-weight:600;font-size:15px;padding:14px 24px;border-radius:12px;border:1px solid rgba(255,255,255,0.09);display:inline-block}
+  .rp-k{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5F7168}
+  .rp-head{position:sticky;top:0;z-index:50;background:rgba(5,15,10,0.72);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06)}
+  .rp-nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
+  .rp-brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:19px}
+  .rp-ring{width:19px;height:19px;border:2.4px solid #33E6A2;border-radius:50%;position:relative;box-shadow:0 0 14px rgba(51,230,162,0.6)}
+  .rp-ring::after{content:"";position:absolute;inset:5px;background:#33E6A2;border-radius:50%}
+  .rp-links{display:flex;gap:28px;font-size:14px}.rp-links a{color:#93A79C}
+  .rp-navr{display:flex;align-items:center;gap:16px;font-size:14px}.rp-navr a.sign{color:#93A79C}
+  .rp-hero{position:relative;z-index:1;text-align:center;padding:76px 0 40px}
+  .rp-h1{font-size:60px;line-height:1.03;font-weight:700;letter-spacing:-0.035em;margin:22px auto 0;max-width:820px}
+  .rp-h1 .g{color:#33E6A2}
+  .rp-hero .rp-lead{margin:22px auto 0;max-width:600px;font-size:18px}
+  .rp-ctarow{display:flex;gap:12px;margin:30px 0 0;justify-content:center;flex-wrap:wrap}
+  .rp-or{margin-top:16px;font-size:13.5px;color:#93A79C}.rp-or a{color:#33E6A2;font-weight:600}
+  .rp-nocard{margin-top:12px;font-size:12.5px;color:#5F7168}
+  .rp-stage{position:relative;z-index:1;max-width:1000px;margin:56px auto 0;padding:0 28px}
+  .rp-panel{background:linear-gradient(180deg,#0C1B14,#081410);border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.5)}
+  .rp-ptop{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)}
+  .rp-dot3{display:flex;gap:6px}.rp-dot3 i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.14)}
+  .rp-ptop .u{font-size:12px;color:#5F7168}
+  .rp-dash{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;padding:18px}
+  .rp-m4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;grid-column:1 / -1}
+  .rp-mtile{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px 14px}
+  .rp-mtile .mv{font-size:22px;font-weight:700}.rp-mtile .mv.g{color:#33E6A2}.rp-mtile .ml{font-size:11px;color:#5F7168;margin-top:2px}
+  .rp-box{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px}
+  .rp-qrow{font-size:13px;color:#93A79C;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+  .rp-qrow.last{border-bottom:none}
+  .rp-verdk{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#33E6A2}
+  .rp-verdv{font-size:20px;font-weight:700;margin-top:4px}
+  .rp-bar{height:7px;border-radius:5px;background:rgba(255,255,255,0.08);margin-top:12px;overflow:hidden}
+  .rp-bar i{display:block;height:100%;background:linear-gradient(90deg,#33E6A2,#1FA971)}
+  .rp-sig{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .rp-sigrow{display:flex;align-items:center;gap:9px;font-size:13px;color:#93A79C}
+  .rp-tick{width:15px;height:15px;flex:none;color:#33E6A2}
+  .rp-strip{border-top:1px solid rgba(255,255,255,0.06);border-bottom:1px solid rgba(255,255,255,0.06)}
+  .rp-stripin{padding:26px 0;text-align:center}.rp-stripin .label{font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#5F7168}
+  .rp-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:44px}
+  .rp-fcard{padding:22px}
+  .rp-ic{width:36px;height:36px;border-radius:10px;background:rgba(51,230,162,0.10);border:1px solid rgba(51,230,162,0.22);display:flex;align-items:center;justify-content:center;color:#33E6A2;margin-bottom:14px}
+  .rp-fcard h3{font-size:16px;font-weight:700;margin:0 0 7px}.rp-fcard p{font-size:14px;line-height:1.55;color:#93A79C;margin:0 0 12px}
+  .rp-stat{font-size:12.5px;color:#33E6A2;font-weight:600}
+  .rp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:44px}
+  .rp-step{padding:24px}.rp-step .num{font-size:13px;font-weight:700;color:#33E6A2;letter-spacing:0.08em}
+  .rp-step h3{font-size:18px;font-weight:700;margin:12px 0 8px}.rp-step p{font-size:14px;line-height:1.58;color:#93A79C;margin:0}
+  .rp-cap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;margin-top:60px}
+  .rp-cap.rev .txt{order:2}
+  .rp-cap h3{font-size:26px;font-weight:700;letter-spacing:-0.02em;margin:14px 0 0}
+  .rp-cap p{font-size:15px;line-height:1.62;color:#93A79C;margin:14px 0 0;max-width:440px}
+  .rp-mock{padding:18px}
+  .rp-mhead{display:flex;justify-content:space-between;font-size:12px;color:#5F7168;margin-bottom:14px}
+  .rp-bubble{border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.5;margin-bottom:10px;max-width:88%}
+  .rp-bubble.q{background:rgba(51,230,162,0.10);border:1px solid rgba(51,230,162,0.22);margin-left:auto}
+  .rp-bubble.a{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);color:#93A79C}
+  .rp-pgrow{display:flex;align-items:center;gap:12px;margin:10px 0}
+  .rp-pg{font-size:12px;color:#5F7168;width:46px;flex:none}
+  .rp-pgbar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,0.06);overflow:hidden}
+  .rp-pgbar i{display:block;height:100%;background:linear-gradient(90deg,#33E6A2,#0B7A4B)}
+  .rp-pgt{font-size:12px;color:#93A79C;width:34px;text-align:right;flex:none}
+  .rp-cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .rp-cmp .col{border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;background:rgba(255,255,255,0.02)}
+  .rp-cmp .nm{font-size:13px;font-weight:700;margin-bottom:8px}
+  .rp-cmp .kv{display:flex;justify-content:space-between;font-size:12px;color:#93A79C;margin:5px 0}.rp-cmp .kv b{color:#F2F7F4}
+  .rp-pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+  .rp-pill.hot{background:rgba(51,230,162,0.14);color:#33E6A2}.rp-pill.cold{background:rgba(255,255,255,0.06);color:#5F7168}
+  .rp-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+  .rp-tbl th{text-align:left;color:#5F7168;font-weight:600;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px}
+  .rp-tbl td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,0.06);color:#93A79C}.rp-tbl td b{color:#F2F7F4}
+  .rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
+  .rp-statb{padding:34px 24px;text-align:center}
+  .rp-statb .big{font-size:44px;font-weight:700;letter-spacing:-0.03em;background:linear-gradient(180deg,#fff,#33E6A2);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rp-statb .cap2{font-size:14px;color:#93A79C;margin-top:6px}
+  .rp-plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
+  .rp-plan{padding:22px}.rp-plan .pn{font-size:15px;font-weight:700}
+  .rp-plan .pp{font-size:28px;font-weight:700;margin:8px 0 2px}.rp-plan .pp small{font-size:12px;color:#5F7168;font-weight:500}
+  .rp-plan .pl{font-size:12.5px;color:#93A79C;margin-top:8px;line-height:1.5}
+  .rp-plan.hot{border-color:rgba(51,230,162,0.4);box-shadow:0 0 40px rgba(31,169,113,0.18)}
+  .rp-faq{max-width:820px;margin:40px auto 0}
+  .rp-faq details{border-top:1px solid rgba(255,255,255,0.06);padding:18px 4px}
+  .rp-faq summary{list-style:none;cursor:pointer;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  .rp-faq summary::-webkit-details-marker{display:none}
+  .rp-faq summary .c{color:#33E6A2;font-size:20px;line-height:1;transition:transform .2s}
+  .rp-faq details[open] summary .c{transform:rotate(45deg)}
+  .rp-faq p{font-size:14.5px;line-height:1.6;color:#93A79C;margin:12px 0 0}
+  .rp-ctaband{position:relative;overflow:hidden;border:1px solid rgba(51,230,162,0.25);background:radial-gradient(600px 240px at 50% 0%,rgba(31,169,113,0.22),transparent 70%),#0A1712;border-radius:22px;padding:56px 32px;text-align:center}
+  .rp-ctaband h2{font-size:34px;font-weight:700;letter-spacing:-0.03em;margin:0 0 12px}
+  .rp-ctaband p{font-size:16px;color:#93A79C;margin:0 0 26px}
+  .rp-foot{display:flex;justify-content:space-between;align-items:center;padding:30px 0;flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,0.06)}
+  .rp-foot .flinks{display:flex;gap:20px;font-size:13px}.rp-foot a{color:#93A79C}.rp-foot .tag{font-size:13px;color:#5F7168}
+  @media (max-width:900px){
+    .rp-hero{padding:52px 0 30px}.rp-h1{font-size:40px}.rp-h2{font-size:30px}
+    .rp-links{display:none}
+    .rp-grid4,.rp-steps,.rp-plans,.rp-dash,.rp-stats{grid-template-columns:1fr}
+    .rp-cap{grid-template-columns:1fr}.rp-cap.rev .txt{order:0}
+  }
+`;
+
+const Tick = () => (<svg className="rp-tick" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>);
+const vLabel = (c: Copy, v: string) => v === "ready" ? c.platform.vReady : v === "warm" ? c.platform.vWarming : c.platform.vGlance;
 
 export default async function LandingPage() {
-  const locale = await getLocale();
-  const d = getDict(locale);
-  const nav = { how: d.nav.how, why: d.nav.why, pricing: d.nav.pricing, signin: d.nav.signin, start: d.nav.start, openApp: d.nav.openApp };
-  const wrap = { maxWidth: 1080, margin: "0 auto", padding: "0 32px" } as const;
-  const eyebrow = { fontSize: 13, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: GREEN_TEXT };
+  const jar = await cookies();
+  const locale: Locale = jar.get("locale")?.value === "fr" ? "fr" : "en";
+  const c = COPY[locale];
 
   return (
-    <div style={{ fontFamily: DM, letterSpacing: "-0.011em", color: INK, background: CANVAS, fontWeight: 400, overflowX: "hidden" }}>
-      <style>{`
-        .lp-a{text-decoration:none}
-        .lp-cta{transition:transform .12s, box-shadow .15s}.lp-cta:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(216,232,74,0.35)}.lp-cta:active{transform:translateY(0)}
-        .lp-ghost{transition:background .15s,border-color .15s}.lp-ghost:hover{background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.30)}
-        .lp-swipe-hint{display:none;align-items:center;gap:7px;font-size:13px;font-weight:600;color:#067647;margin-bottom:12px}
-        .lp-compare-fade{display:none;position:absolute;top:0;right:0;bottom:0;width:44px;pointer-events:none;border-radius:0 16px 16px 0;background:linear-gradient(90deg, rgba(248,249,250,0), rgba(248,249,250,0.9))}
-        .lp-card{transition:transform .16s, box-shadow .16s, border-color .16s;box-shadow:0 0 0 1px rgba(31,169,113,0.08), 0 8px 30px rgba(11,122,75,0.10), 0 2px 10px rgba(15,23,41,0.04)}.lp-card:hover{transform:translateY(-3px);box-shadow:0 0 0 1px rgba(31,169,113,0.18), 0 18px 48px rgba(11,122,75,0.18);border-color:${BRAND}}
-        .lp-step:hover .lp-node{background:${BRAND};box-shadow:0 0 0 6px rgba(31,169,113,0.14)}
-        @media(max-width:860px){
-          .lp-two{grid-template-columns:1fr!important;gap:36px!important}
-          .lp-three{grid-template-columns:1fr!important}
-          .lp-four{grid-template-columns:1fr 1fr!important}
-          .lp-trail-line{display:none!important}
-          .lp-hero-h1{font-size:44px!important;white-space:normal!important}
-          .lp-h1-a{font-size:49px!important;display:inline-block}
-          .lp-h1-b{font-size:39px!important;display:inline-block}
-          .lp-hero-sub{font-size:18px!important}
-          .lp-hero-pad{padding:168px 32px 76px!important}
-        }
-        @media(max-width:520px){
-          .lp-hero-h1{font-size:33px!important;margin-bottom:18px!important;white-space:normal!important}
-          .lp-h1-a{font-size:38px!important;line-height:1.04!important;display:inline-block}
-          .lp-h1-b{font-size:28px!important;line-height:1.04!important;display:inline-block}
-          .lp-hero-sub{font-size:16px!important;margin-bottom:26px!important}
-          .lp-hero-badge{margin-bottom:20px!important}
-          .lp-pad{padding-left:20px!important;padding-right:20px!important}
-          .lp-hero-pad{padding:154px 20px 56px!important}
-          .lp-sec{padding-top:56px!important;padding-bottom:56px!important}
-          .lp-four{grid-template-columns:1fr!important}
-          .lp-cta-h2{font-size:30px!important}
-          .lp-hero-fine{font-size:11px!important;margin-top:20px!important}
-          .lp-hero-ctas a{flex:1 1 0!important;text-align:center!important;padding-left:12px!important;padding-right:12px!important;font-size:15px!important;white-space:nowrap!important}
-          h2{font-size:30px!important}
-          .lp-longgame{font-size:21px!important;line-height:1.4!important}
-          .lp-compare-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
-          .lp-compare{min-width:560px!important;font-size:13px!important}
-          .lp-compare > div{padding-left:12px!important;padding-right:12px!important}
-          .lp-swipe-hint{display:flex!important}
-          .lp-compare-fade{display:block!important}
-        }
-      `}</style>
+    <div className="rp-page">
+      <style>{CSS}</style>
 
-      {/* HERO wrapper carries the dark bg; MarketingNav sits transparent on top of it */}
-      <section style={{ background: GRADIENT, color: "#fff", position: "relative", overflow: "hidden" }}>
-        <svg aria-hidden="true" style={{ position: "absolute", top: 0, right: -80, height: "100%", opacity: 0.5, pointerEvents: "none" }} width="620" height="600" viewBox="0 0 620 600" fill="none">
-          <path d="M40 540 C 200 480, 160 340, 300 300 S 500 220, 560 60" stroke={GREEN} strokeWidth="1.5" strokeDasharray="4 8" fill="none" />
-          <circle cx="300" cy="300" r="4" fill={BRAND} />
-          <circle cx="560" cy="60" r="4" fill={BRAND} />
-          <circle cx="40" cy="540" r="4" fill={BRAND} />
-        </svg>
-
-        <MarketingNav locale={locale} labels={nav} />
-
-        <div className="lp-hero-pad" style={{ ...wrap, padding: "158px 32px 104px", position: "relative", zIndex: 2 }}>
-          <div className="lp-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 9, background: "rgba(216,232,74,0.12)", border: "1px solid rgba(216,232,74,0.40)", color: LEMON, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 28, textTransform: "uppercase" }}>
-            <span style={{ width: 6, height: 6, borderRadius: 9, background: LEMON }} />
-            {d.hero.badge}
-          </div>
-          <h1 className="lp-hero-h1" style={{ fontSize: locale === "fr" ? 53 : 62, fontWeight: 700, lineHeight: locale === "fr" ? 1.12 : 1.05, letterSpacing: "-0.035em", margin: "0 0 24px", maxWidth: locale === "fr" ? 960 : 760, whiteSpace: locale === "fr" ? "nowrap" : "normal" }}>
-            <span className="lp-h1-a">{d.hero.titleA}</span><br /><span className="lp-h1-b" style={{ color: BRAND }}>{d.hero.titleB}</span>
-          </h1>
-          <p className="lp-hero-sub" style={{ fontSize: 20, lineHeight: 1.5, margin: "0 0 36px", color: CLOUD, maxWidth: 560 }}>
-            {d.hero.sub}
-          </p>
-          <div className="lp-hero-ctas" style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
-            <a href="/login" className="lp-a lp-cta" style={{ background: LEMON, color: "#08301F", fontSize: 16, fontWeight: 700, padding: "14px 28px", borderRadius: 12 }}>{d.hero.start}</a>
-            <a href="#how" className="lp-a lp-ghost" style={{ color: "#fff", fontSize: 16, fontWeight: 500, padding: "14px 24px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.20)" }}>{d.hero.seeHow}</a>
-          </div>
-          <p className="lp-hero-fine" style={{ fontSize: 12, letterSpacing: "0.04em", color: "#FFFFFF", margin: "26px 0 0", textTransform: "uppercase" }}>{d.hero.fine}</p>
+      <header className="rp-head">
+        <div className="rp-wrap">
+          <nav className="rp-nav">
+            <div className="rp-brand"><span className="rp-ring" /> ReadProspects</div>
+            <div className="rp-links">
+              <a href="#why">{c.nav.why}</a><a href="#how">{c.nav.how}</a><a href="#platform">{c.nav.platform}</a><a href="/pricing">{c.nav.pricing}</a>
+            </div>
+            <div className="rp-navr">
+              <LanguageSwitcher current={locale} dark />
+              <a className="sign" href="/login">{c.nav.signin}</a>
+              <a className="rp-btn" href="/login">{c.nav.start}</a>
+            </div>
+          </nav>
         </div>
-      </section>
+      </header>
 
-      {/* THE PROBLEM */}
-      <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 92, paddingBottom: 92 }}>
-        <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "0.85fr 1.15fr", gap: 64, alignItems: "start" }}>
-          <div>
-            <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.problem.eyebrow}</p>
-            <h2 style={{ fontSize: 38, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>{d.problem.title}</h2>
+      {/* HERO */}
+      <section className="rp-hero">
+        <div className="rp-glow" style={{ width: 760, height: 420, top: -120, left: "50%", transform: "translateX(-50%)", background: "rgba(31,169,113,0.20)" }} />
+        <div className="rp-wrap">
+          <span className="rp-eyebrow">{c.hero.eyebrow}</span>
+          <h1 className="rp-h1">{c.hero.t1}<br /><span className="g">{c.hero.t2}</span></h1>
+          <p className="rp-lead">{c.hero.sub}</p>
+          <div className="rp-ctarow">
+            <a className="rp-btnout" href="#how">{c.hero.ctaOut}</a>
+            <a className="rp-btnlg" href="/login">{c.hero.ctaLg}</a>
           </div>
-          <div style={{ paddingTop: 8 }}>
-            <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: "0 0 20px" }}>
-              {d.problem.p1}
-            </p>
-            <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: 0 }}>
-              {d.problem.p2}
-            </p>
-          </div>
+          <div className="rp-or">{c.hero.or} <a href="/login">{c.hero.sample} &rarr;</a></div>
+          <div className="rp-nocard">{c.hero.nocard}</div>
         </div>
-      </section>
 
-      {/* HOW IT WORKS (the trail) */}
-      <section id="how" style={{ background: GRADIENT, color: "#fff" }}>
-        <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 100 }}>
-          <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>{d.how.eyebrow}</p>
-          <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 60px", maxWidth: 620 }}>
-            {d.how.title}
-          </h2>
-          <div className="lp-trail" style={{ position: "relative" }}>
-            {[
-              [d.how.s1t, d.how.s1b],
-              [d.how.s2t, d.how.s2b],
-              [d.how.s3t, d.how.s3b],
-            ].map(([title, body], i) => { const n = String(i + 1).padStart(2, "0"); return (
-              <div className="lp-step" key={i} style={{ display: "flex", gap: 26, alignItems: "flex-start", paddingBottom: i < 2 ? 44 : 0, position: "relative" }}>
-                {/* connector: from the bottom of this circle to the top of the next one */}
-                {i < 2 && <div className="lp-trail-line" aria-hidden="true" style={{ position: "absolute", left: 19.25, top: 44, bottom: 0, width: 1.5, background: "rgba(31,169,113,0.35)" }} />}
-                <div className="lp-node" style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(31,169,113,0.14)", border: "1.5px solid " + BRAND, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 14, fontWeight: 700, color: BRAND, transition: "background .16s, box-shadow .16s", position: "relative", zIndex: 2 }}>{n}</div>
-                <div style={{ paddingTop: 4 }}>
-                  <h3 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.01em", margin: "0 0 8px" }}>{title}</h3>
-                  <p style={{ fontSize: 17, lineHeight: 1.6, color: CLOUD, margin: 0, maxWidth: 620 }}>{body}</p>
+        <div className="rp-stage">
+          <div className="rp-panel">
+            <div className="rp-ptop"><span className="rp-dot3"><i /><i /><i /></span><span className="u">Q3 Proposal.pdf &middot; Dana Whitfield</span></div>
+            <div className="rp-dash">
+              <div className="rp-m4">
+                <div className="rp-mtile"><div className="mv">2</div><div className="ml">{c.panel.visits}</div></div>
+                <div className="rp-mtile"><div className="mv">6m 40s</div><div className="ml">{c.panel.time}</div></div>
+                <div className="rp-mtile"><div className="mv">3</div><div className="ml">{c.panel.q}</div></div>
+                <div className="rp-mtile"><div className="mv g">82</div><div className="ml">{c.panel.intent}</div></div>
+              </div>
+              <div className="rp-box">
+                <div className="rp-k" style={{ marginBottom: 12 }}>{c.panel.questions}</div>
+                <div className="rp-qrow">{c.caps.c1q1}</div>
+                <div className="rp-qrow">{c.caps.c1q2}</div>
+                <div className="rp-qrow last">{locale === "fr" ? "Peut-on commencer avant le prochain trimestre ?" : "Can we start before the new quarter?"}</div>
+              </div>
+              <div className="rp-box">
+                <div className="rp-verdk">{c.panel.verdict}</div>
+                <div className="rp-verdv">{c.panel.ready}</div>
+                <div className="rp-bar"><i style={{ width: "82%" }} /></div>
+                <div className="rp-sig">
+                  <div className="rp-sigrow"><Tick /> {c.panel.sig1}</div>
+                  <div className="rp-sigrow"><Tick /> {c.panel.sig2}</div>
+                  <div className="rp-sigrow"><Tick /> {c.panel.sig3}</div>
                 </div>
               </div>
-            ); })}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* WHY BACKREAD */}
-      <section id="why" className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
-        <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.why.eyebrow}</p>
-        <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 14px", maxWidth: 640, color: INK }}>
-          {d.why.title}
-        </h2>
-        <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 52px", maxWidth: 620 }}>
-          {d.why.sub}
-        </p>
-        <div className="lp-three" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 22 }}>
-          {[
-            [d.why.c1t, d.why.c1b],
-            [d.why.c2t, d.why.c2b],
-            [d.why.c3t, d.why.c3b],
-          ].map(([title, body], i) => (
-            <div className="lp-card" key={i} style={{ background: CARD, border: "1px solid " + LINE, borderRadius: 16, padding: 28 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, background: GREEN_SOFT, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 9, background: GREEN }} />
-              </div>
-              <h3 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.01em", margin: "0 0 10px", color: INK }}>{title}</h3>
-              <p style={{ fontSize: 15.5, lineHeight: 1.6, color: BODY, margin: 0 }}>{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* TRUSTED */}
+      <div className="rp-strip"><div className="rp-wrap rp-stripin"><div className="label">{c.trusted}</div></div></div>
 
-      {/* USE CASES */}
-      <section id="uses" style={{ background: CANVAS, borderTop: "1px solid " + LINE, borderBottom: "1px solid " + LINE }}>
-        <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 88, paddingBottom: 88 }}>
-          <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "0.9fr 1.1fr", gap: 56, alignItems: "center", marginBottom: 48 }}>
-            <div>
-              <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.uses.eyebrow}</p>
-              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: 0, color: INK }}>{d.uses.title}</h2>
-            </div>
-            <p style={{ fontSize: 18, lineHeight: 1.6, color: BODY, margin: 0, paddingTop: 4 }}>
-              {d.uses.sub}
-            </p>
-          </div>
-          <div className="lp-four" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
-            {[
-              [d.uses.u1t, d.uses.u1b],
-              [d.uses.u2t, d.uses.u2b],
-              [d.uses.u3t, d.uses.u3b],
-              [d.uses.u4t, d.uses.u4b],
-            ].map(([title, body], i) => (
-              <div className="lp-card" key={i} style={{ background: CARD, border: "1px solid " + LINE, borderRadius: 14, padding: 22 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, letterSpacing: "-0.01em", margin: "0 0 8px", color: INK }}>{title}</h3>
-                <p style={{ fontSize: 14.5, lineHeight: 1.55, color: BODY, margin: 0 }}>{body}</p>
+      {/* PROBLEM */}
+      <section className="rp-sec" id="why">
+        <div className="rp-glow" style={{ width: 520, height: 320, top: 40, right: -120, background: "rgba(31,169,113,0.10)" }} />
+        <div className="rp-wrap" style={{ position: "relative", zIndex: 1 }}>
+          <span className="rp-eyebrow">{c.problem.eyebrow}</span>
+          <h2 className="rp-h2">{c.problem.t1} <span className="g">{c.problem.t2}</span></h2>
+          <p className="rp-lead">{c.problem.lead}</p>
+          <div className="rp-grid4">
+            {c.problem.cards.map((card, i) => (
+              <div key={i} className="rp-card rp-fcard">
+                <div className="rp-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></div>
+                <h3>{card.h}</h3><p>{card.p}</p><div className="rp-stat">{card.s}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* HOW BACKREAD COMPARES */}
-      <section id="compare" className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
-        <p style={{ ...eyebrow, margin: "0 0 16px" }}>{d.compare.eyebrow}</p>
-        <h2 style={{ fontSize: 40, fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.03em", margin: "0 0 14px", maxWidth: 640, color: INK }}>
-          {d.compare.title}
-        </h2>
-        <p style={{ fontSize: 19, lineHeight: 1.55, color: BODY, margin: "0 0 48px", maxWidth: 620 }}>
-          {d.compare.sub}
-        </p>
-        <div className="lp-swipe-hint" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7l-4 5 4 5M16 7l4 5-4 5" /></svg><span>{d.compare.swipe}</span></div>
-        <div className="lp-compare-outer" style={{ position: "relative" }}>
-        <div className="lp-compare-wrap"><div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.1fr 1.2fr", gap: 0, border: "1px solid " + LINE, borderRadius: 16, overflow: "hidden", background: CARD }} className="lp-compare">
-          {/* header row */}
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>{d.compare.colWhat}</div>
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, borderLeft: "1px solid " + LINE, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: MUTE }}>{d.compare.colThem}</div>
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid " + LINE, background: GREEN_SOFT, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT }}>{d.compare.colUs}</div>
-          {[
-            ...d.compare.rows,
-          ].map(([label, them, us], i, arr) => (
-            <div key={i} style={{ display: "contents" }}>
-              <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 15, fontWeight: 600, color: INK }}>{label}</div>
-              <div style={{ padding: "16px 22px", borderLeft: "1px solid " + LINE, borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 14.5, color: BODY }}>{them}</div>
-              <div style={{ padding: "16px 22px", borderBottom: i < arr.length - 1 ? "1px solid " + LINE : "none", fontSize: 14.5, color: INK, fontWeight: 600, background: "rgba(31,169,113,0.05)" }}>{us}</div>
-            </div>
-          ))}
+      {/* HOW */}
+      <section className="rp-sec" id="how" style={{ background: "linear-gradient(180deg,transparent,rgba(255,255,255,0.015),transparent)" }}>
+        <div className="rp-wrap rp-center">
+          <span className="rp-eyebrow">{c.how.eyebrow}</span>
+          <h2 className="rp-h2">{c.how.t1} <span className="g">{c.how.t2}</span></h2>
+          <p className="rp-lead">{c.how.lead}</p>
         </div>
+        <div className="rp-wrap">
+          <div className="rp-steps">
+            {c.how.steps.map((st, i) => (
+              <div key={i} className="rp-card rp-step"><div className="num">{"0" + (i + 1)}</div><h3>{st.h}</h3><p>{st.p}</p></div>
+            ))}
+          </div>
         </div>
-        {/* right-edge fade cue (mobile only) */}
-        <div className="lp-compare-fade" aria-hidden="true" />
-        </div>
-
       </section>
 
-      {/* PRODUCT PREVIEW */}
-      <section style={{ background: GRADIENT, color: "#fff" }}>
-        <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 96, paddingBottom: 96 }}>
-          <div className="lp-two" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
-            <div>
-              <p style={{ ...eyebrow, color: BRAND, margin: "0 0 16px" }}>{d.preview.eyebrow}</p>
-              <h2 style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.12, letterSpacing: "-0.025em", margin: "0 0 18px" }}>{d.preview.title}</h2>
-              <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: "0 0 16px" }}>
-                {d.preview.p1}
-              </p>
-              <p style={{ fontSize: 18, lineHeight: 1.6, color: CLOUD, margin: 0 }}>
-                {d.preview.p2}
-              </p>
-            </div>
-            {/* mock verdict card */}
-            <div style={{ background: "#fff", borderRadius: 18, padding: 26, boxShadow: "0 24px 60px rgba(0,0,0,0.28)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 9, background: BRAND }} />
-                <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: GREEN_TEXT }}>{d.preview.verdictLabel}</span>
-              </div>
-              <p style={{ fontSize: 18, fontWeight: 600, color: INK, lineHeight: 1.4, margin: "0 0 18px" }}>{d.preview.verdict}</p>
-              <div style={{ borderTop: "1px solid " + LINE, paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-                {[[d.preview.row1a, d.preview.row1b], [d.preview.row2a, d.preview.row2b], [d.preview.row3a, d.preview.row3b]].map(([a, b], i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 14, color: INK, fontWeight: 600 }}>{a}</span>
-                    <span style={{ fontSize: 13, color: BODY }}>{b}</span>
-                  </div>
-                ))}
+      {/* PLATFORM */}
+      <section className="rp-sec" id="platform">
+        <div className="rp-glow" style={{ width: 640, height: 360, top: 60, left: -160, background: "rgba(31,169,113,0.10)" }} />
+        <div className="rp-wrap rp-center" style={{ position: "relative", zIndex: 1 }}>
+          <span className="rp-eyebrow">{c.platform.eyebrow}</span>
+          <h2 className="rp-h2">{c.platform.t1} <span className="g">{c.platform.t2}</span></h2>
+          <p className="rp-lead">{c.platform.lead}</p>
+        </div>
+        <div className="rp-wrap" style={{ position: "relative", zIndex: 1, marginTop: 44 }}>
+          <div className="rp-panel">
+            <div className="rp-ptop"><span className="rp-dot3"><i /><i /><i /></span><span className="u">ReadProspects &middot; {c.platform.readers}</span></div>
+            <div style={{ padding: 18 }}>
+              <div className="rp-box">
+                <div className="rp-k" style={{ marginBottom: 12 }}>{c.platform.readers}</div>
+                <table className="rp-tbl">
+                  <thead><tr><th>{c.platform.cReader}</th><th>{c.platform.cDoc}</th><th>{c.platform.cReads}</th><th>{c.platform.cDwell}</th><th>{c.platform.cQ}</th><th>{c.platform.cVerdict}</th></tr></thead>
+                  <tbody>
+                    {READERS.map((r, i) => (
+                      <tr key={i}><td><b>{r.n}</b></td><td>{r.d}</td><td>{r.r}</td><td>{r.dw}</td><td>{r.q}</td>
+                        <td style={r.v === "ready" ? { color: "#33E6A2" } : undefined}>{vLabel(c, r.v)}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* COMPOUNDING BAND */}
-      <section className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 84, paddingBottom: 84 }}>
-        <div style={{ maxWidth: 760 }}>
-          <p style={{ ...eyebrow, margin: "0 0 18px" }}>{d.longGame.eyebrow}</p>
-          <p className="lp-longgame" style={{ fontSize: 30, fontWeight: 500, lineHeight: 1.34, letterSpacing: "-0.02em", color: INK, margin: 0 }}>
-            {d.longGame.body}
-          </p>
+      {/* CAPABILITIES */}
+      <section className="rp-sec">
+        <div className="rp-wrap rp-center">
+          <span className="rp-eyebrow">{c.caps.eyebrow}</span>
+          <h2 className="rp-h2">{c.caps.title}</h2>
+          <p className="rp-lead">{c.caps.lead}</p>
+        </div>
+        <div className="rp-wrap">
+          <div className="rp-cap">
+            <div className="txt"><span className="rp-eyebrow">{c.caps.c1e}</span><h3>{c.caps.c1h}</h3><p>{c.caps.c1p}</p></div>
+            <div className="rp-card rp-mock">
+              <div className="rp-mhead"><span>Q3 Proposal.pdf</span><span>{c.caps.c1view}</span></div>
+              <div className="rp-bubble q">{c.caps.c1q1}</div>
+              <div className="rp-bubble a">{c.caps.c1a}</div>
+              <div className="rp-bubble q">{c.caps.c1q2}</div>
+            </div>
+          </div>
+
+          <div className="rp-cap rev">
+            <div className="txt"><span className="rp-eyebrow">{c.caps.c2e}</span><h3>{c.caps.c2h}</h3><p>{c.caps.c2p}</p></div>
+            <div className="rp-card rp-mock">
+              <div className="rp-mhead"><span>{c.caps.c2title}</span><span>{c.caps.c2visits}</span></div>
+              {[["Page 1", "18%", "8s"], ["Page 2", "100%", "44s"], ["Page 3", "28%", "12s"], ["Page 4", "46%", "20s"], ["Page 5", "12%", "5s"]].map((p, i) => (
+                <div key={i} className="rp-pgrow"><span className="rp-pg">{p[0]}</span><span className="rp-pgbar"><i style={{ width: p[1] }} /></span><span className="rp-pgt">{p[2]}</span></div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rp-cap">
+            <div className="txt"><span className="rp-eyebrow">{c.caps.c3e}</span><h3>{c.caps.c3h}</h3><p>{c.caps.c3p}</p></div>
+            <div className="rp-card rp-mock">
+              <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 14 }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#33E6A2,#0B7A4B)", color: "#04120C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>DW</div>
+                <div><div style={{ fontSize: 14, fontWeight: 700 }}>Dana Whitfield</div><div style={{ fontSize: 12, color: "#5F7168" }}>{c.caps.c3read}</div></div>
+              </div>
+              <div style={{ background: "rgba(51,230,162,0.08)", border: "1px solid rgba(51,230,162,0.2)", borderRadius: 12, padding: "14px 16px" }}>
+                <div className="rp-verdk">{c.panel.verdict}</div><div className="rp-verdv">{c.panel.ready}</div><div className="rp-bar"><i style={{ width: "82%" }} /></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rp-cap rev">
+            <div className="txt"><span className="rp-eyebrow">{c.caps.c4e}</span><h3>{c.caps.c4h}</h3><p>{c.caps.c4p}</p></div>
+            <div className="rp-card rp-mock">
+              <div className="rp-cmp">
+                <div className="col">
+                  <div className="nm">Dana Whitfield</div>
+                  <div className="kv"><span>{c.caps.c4visits}</span><b>2</b></div>
+                  <div className="kv"><span>{c.caps.c4time}</span><b>6m 40s</b></div>
+                  <div className="kv"><span>{c.caps.c4q}</span><b>3</b></div>
+                  <div style={{ marginTop: 10 }}><span className="rp-pill hot">{c.caps.c4ready}</span></div>
+                </div>
+                <div className="col">
+                  <div className="nm">Sam Rivera</div>
+                  <div className="kv"><span>{c.caps.c4visits}</span><b>1</b></div>
+                  <div className="kv"><span>{c.caps.c4time}</span><b>0m 22s</b></div>
+                  <div className="kv"><span>{c.caps.c4q}</span><b>0</b></div>
+                  <div style={{ marginTop: 10 }}><span className="rp-pill cold">{c.caps.c4glance}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* CLOSING CTA */}
-      <section style={{ background: GRADIENT, color: "#fff", position: "relative", overflow: "hidden" }}>
-        <svg aria-hidden="true" style={{ position: "absolute", bottom: -60, left: -40, opacity: 0.45, pointerEvents: "none" }} width="500" height="360" viewBox="0 0 500 360" fill="none">
-          <path d="M20 340 C 160 300, 140 180, 260 150 S 440 90, 480 20" stroke={GREEN} strokeWidth="1.5" strokeDasharray="4 8" />
-          <circle cx="260" cy="150" r="4" fill={BRAND} />
-        </svg>
-        <div className="lp-sec lp-pad" style={{ ...wrap, paddingTop: 100, paddingBottom: 104, position: "relative", zIndex: 2, textAlign: "center" }}>
-          <h2 className="lp-cta-h2" style={{ fontSize: 46, fontWeight: 700, lineHeight: 1.08, letterSpacing: "-0.03em", margin: "0 auto 20px", maxWidth: 640 }}>
-            {d.closing.title}
-          </h2>
-          <p style={{ fontSize: 19, lineHeight: 1.55, color: CLOUD, margin: "0 auto 34px", maxWidth: 520 }}>
-            {d.closing.sub}
-          </p>
-          <a href="/login" className="lp-a lp-cta" style={{ display: "inline-block", background: LEMON, color: "#08301F", fontSize: 17, fontWeight: 700, padding: "15px 34px", borderRadius: 12 }}>{d.closing.start}</a>
+      {/* STATS */}
+      <section className="rp-sec" style={{ background: "linear-gradient(180deg,transparent,rgba(255,255,255,0.015),transparent)" }}>
+        <div className="rp-wrap rp-center"><span className="rp-eyebrow">{c.stats.eyebrow}</span><h2 className="rp-h2">{c.stats.title}</h2></div>
+        <div className="rp-wrap">
+          <div className="rp-stats">
+            <div className="rp-card rp-statb"><div className="big">1.2M</div><div className="cap2">{c.stats.s1}</div></div>
+            <div className="rp-card rp-statb"><div className="big">5,000+</div><div className="cap2">{c.stats.s2}</div></div>
+            <div className="rp-card rp-statb"><div className="big">40+</div><div className="cap2">{c.stats.s3}</div></div>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        <div className="lp-pad" style={{ ...wrap, padding: "30px 32px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
-          <span style={{ display: "flex", alignItems: "center", gap: 9, color: "#fff", fontSize: 16, fontWeight: 700 }}>
-            <span style={{ color: BRAND }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span>
-            BackRead
-          </span>
-          <span style={{ fontSize: 13, letterSpacing: "0.02em", color: "#fff" }}>{d.footer.tagline}</span>
-          <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
-            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" className="lp-a" style={{ color: "#fff", display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
-            <a href="/pricing" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.pricing}</a>
-            <a href="/privacy" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.privacy}</a>
-            <a href="/terms" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.terms}</a>
-            <a href="/login" className="lp-a" style={{ color: "#fff", fontSize: 14 }}>{d.footer.signin}</a>
+      {/* PRICING */}
+      <section className="rp-sec" id="pricing">
+        <div className="rp-wrap rp-center">
+          <span className="rp-eyebrow">{c.pricing.eyebrow}</span>
+          <h2 className="rp-h2">{c.pricing.t1} <span className="g">{c.pricing.t2}</span></h2>
+          <p className="rp-lead">{c.pricing.lead}</p>
+        </div>
+        <div className="rp-wrap">
+          <div className="rp-plans">
+            {c.pricing.plans.map((p, i) => (
+              <div key={i} className={"rp-card rp-plan" + (p.hot ? " hot" : "")}>
+                <div className="pn">{p.name}</div>
+                <div className="pp">{p.price} {p.per ? <small>{p.per}</small> : null}</div>
+                <div className="pl">{p.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="rp-center" style={{ marginTop: 26 }}><a className="rp-btnout" href="/pricing">{c.pricing.seeFull}</a></div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="rp-sec">
+        <div className="rp-wrap rp-center"><span className="rp-eyebrow">{c.faq.eyebrow}</span><h2 className="rp-h2">{c.faq.title}</h2></div>
+        <div className="rp-wrap">
+          <div className="rp-faq">
+            {c.faq.items.map((f, i) => (
+              <details key={i} open={i === 0}><summary>{f.q}<span className="c">+</span></summary><p>{f.a}</p></details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="rp-sec">
+        <div className="rp-wrap">
+          <div className="rp-ctaband">
+            <h2>{c.cta.title}</h2><p>{c.cta.sub}</p>
+            <a className="rp-btnlg" href="/login">{c.cta.btn}</a>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div className="rp-wrap">
+          <div className="rp-foot">
+            <div className="rp-brand"><span className="rp-ring" /> ReadProspects</div>
+            <div className="flinks">
+              <a href="/pricing">{c.footer.pricing}</a>
+              <a href="/privacy">{c.footer.privacy}</a>
+              <a href="/terms">{c.footer.terms}</a>
+              <a href="/login">{c.footer.signin}</a>
+              <a href={LINKEDIN} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </div>
+            <div className="tag">{c.footer.tag}</div>
           </div>
         </div>
       </footer>

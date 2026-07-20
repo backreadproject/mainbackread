@@ -7,7 +7,7 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 export const metadata: Metadata = {
-  title: "BackRead, the document reads the reader",
+  title: "ReadProspects, the document reads the reader",
   description: "The document reads the reader.",
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   if (listErr) return NextResponse.json({ error: "Lookup failed." }, { status: 500 });
   const target = list.users.find((u) => (u.email ?? "").toLowerCase() === email.toLowerCase());
   if (!target) {
-    return NextResponse.json({ error: "No BackRead account with that email. In Stage 4, invites will let you add people who haven't signed up yet." }, { status: 404 });
+    return NextResponse.json({ error: "No ReadProspects account with that email. In Stage 4, invites will let you add people who haven't signed up yet." }, { status: 404 });
   }
 
   // Already a member?

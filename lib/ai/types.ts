@@ -2,7 +2,7 @@ import { z } from "zod";
 /**
  * The AI core is defined by TASKS, not by prompts scattered across the app.
  * A task owns: its schema, its model tier, its system prompt, and its fixture.
- * Adding an AI capability to BackRead means adding a task here -- nothing else.
+ * Adding an AI capability to ReadProspects means adding a task here -- nothing else.
  */
 export type ModelTier = "fast" | "reason";
 export type ProviderName = "mock" | "anthropic";

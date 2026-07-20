@@ -30,7 +30,7 @@ const COPY: Record<"en" | "fr", Copy> = {
   en: {
     eyebrow: "Pricing",
     h1: "Stop guessing where your deals stand.",
-    sub: "A read receipt says they opened it. BackRead tells you what they wanted, where they hesitated, and whether they are ready to move. Pick the plan that keeps you ahead of the room.",
+    sub: "A read receipt says they opened it. ReadProspects tells you what they wanted, where they hesitated, and whether they are ready to move. Pick the plan that keeps you ahead of the room.",
     tiers: [
       { id: "free", name: "Free", price: "$0", period: "to try it", audience: "For a first look", tagline: "A taste of the real thing. Not enough to run on.", cta: "Start free", href: "/login",
         features: ["2 documents a month", "2 verdicts per document a month", "1 recipient per document, 5 sends a month", "Ask-the-document companion", "Reader tracking: opens, dwell, timeline"] },
@@ -45,11 +45,11 @@ const COPY: Record<"en" | "fr", Copy> = {
     faqHeading: "Before you decide",
     faqSub: "The honest answers, so the choice is easy.",
     faq: [
-      { q: "How is this different from analytics tools I already have?", a: "Those count opens and clicks. BackRead reads the reader: it turns raw behaviour into a call on where the deal actually stands." },
+      { q: "How is this different from analytics tools I already have?", a: "Those count opens and clicks. ReadProspects reads the reader: it turns raw behaviour into a call on where the deal actually stands." },
       { q: "Is it worth paying for?", a: "One deal you almost let go cold, saved because you knew the exact moment to follow up, pays for a year. The real question is how many reads you have already missed." },
       { q: "Can I try the team features before paying?", a: "Yes. Team and Business both start with a 7-day free trial, no card to begin." },
       { q: "Can I switch plans later?", a: "Any time, in a click, with everything intact. Move up for seats and control, and your documents and history come with you." },
-      { q: "Will my reader feel watched?", a: "They open a clean document on a neutral domain, with no BackRead branding anywhere. What they do stays yours alone. They get the document, you get the read." },
+      { q: "Will my reader feel watched?", a: "They open a clean document on a neutral domain, with no ReadProspects branding anywhere. What they do stays yours alone. They get the document, you get the read." },
       { q: "Does my reader need an account or an app?", a: "No. They click a link and read. Nothing to install, nothing to sign up for." },
       { q: "Is there a watermark on my document?", a: "Never, on any plan. Your document goes out as your document." },
       { q: "Can my team see the same reads?", a: "On Team and Business, yes. Shared workspace, roles, and a team activity feed, so the whole deal team sees what the document saw." },
@@ -63,7 +63,7 @@ const COPY: Record<"en" | "fr", Copy> = {
   fr: {
     eyebrow: "Tarifs",
     h1: "Ne devinez plus o\u00f9 en sont vos affaires.",
-    sub: "Un accus\u00e9 de lecture indique qu'ils ont ouvert le document. BackRead vous dit ce qu'ils cherchaient, o\u00f9 ils ont h\u00e9sit\u00e9, et s'ils sont pr\u00eats \u00e0 avancer. Choisissez le forfait qui vous garde une longueur d'avance.",
+    sub: "Un accus\u00e9 de lecture indique qu'ils ont ouvert le document. ReadProspects vous dit ce qu'ils cherchaient, o\u00f9 ils ont h\u00e9sit\u00e9, et s'ils sont pr\u00eats \u00e0 avancer. Choisissez le forfait qui vous garde une longueur d'avance.",
     tiers: [
       { id: "free", name: "Gratuit", price: "0 $", period: "pour essayer", audience: "Pour un premier aper\u00e7u", tagline: "Un aper\u00e7u du produit r\u00e9el. Pas assez pour travailler.", cta: "Commencer gratuitement", href: "/login",
         features: ["2 documents par mois", "2 verdicts par document par mois", "1 destinataire par document, 5 envois par mois", "Compagnon Interroger le document", "Suivi du lecteur : ouvertures, temps de lecture, chronologie"] },
@@ -78,11 +78,11 @@ const COPY: Record<"en" | "fr", Copy> = {
     faqHeading: "Avant de d\u00e9cider",
     faqSub: "Des r\u00e9ponses franches, pour que le choix soit simple.",
     faq: [
-      { q: "En quoi est-ce diff\u00e9rent des outils d'analyse que j'ai d\u00e9j\u00e0 ?", a: "Ceux-l\u00e0 comptent les ouvertures et les clics. BackRead lit le lecteur : il transforme le comportement brut en un verdict sur l'\u00e9tat r\u00e9el de l'affaire." },
+      { q: "En quoi est-ce diff\u00e9rent des outils d'analyse que j'ai d\u00e9j\u00e0 ?", a: "Ceux-l\u00e0 comptent les ouvertures et les clics. ReadProspects lit le lecteur : il transforme le comportement brut en un verdict sur l'\u00e9tat r\u00e9el de l'affaire." },
       { q: "Est-ce que \u00e7a vaut la peine de payer ?", a: "Une seule affaire que vous avez failli laisser refroidir, sauv\u00e9e parce que vous saviez le moment exact pour relancer, paie une ann\u00e9e enti\u00e8re. La vraie question, c'est combien de lectures vous avez d\u00e9j\u00e0 manqu\u00e9es." },
       { q: "Puis-je essayer les fonctions d'\u00e9quipe avant de payer ?", a: "Oui. \u00c9quipe et Entreprise commencent par un essai gratuit de 7 jours, sans carte pour d\u00e9buter." },
       { q: "Puis-je changer de forfait plus tard ?", a: "\u00c0 tout moment, en un clic, sans rien perdre. Montez en gamme pour les si\u00e8ges et le contr\u00f4le, et vos documents et votre historique vous suivent." },
-      { q: "Mon lecteur se sentira-t-il surveill\u00e9 ?", a: "Il ouvre un document \u00e9pur\u00e9 sur un domaine neutre, sans aucune marque BackRead. Ce qu'il fait reste \u00e0 vous seul. Il re\u00e7oit le document, vous recevez la lecture." },
+      { q: "Mon lecteur se sentira-t-il surveill\u00e9 ?", a: "Il ouvre un document \u00e9pur\u00e9 sur un domaine neutre, sans aucune marque ReadProspects. Ce qu'il fait reste \u00e0 vous seul. Il re\u00e7oit le document, vous recevez la lecture." },
       { q: "Mon lecteur a-t-il besoin d'un compte ou d'une application ?", a: "Non. Il clique sur un lien et lit. Rien \u00e0 installer, aucune inscription." },
       { q: "Y a-t-il un filigrane sur mon document ?", a: "Jamais, quel que soit le forfait. Votre document part tel qu'il est, le v\u00f4tre." },
       { q: "Mon \u00e9quipe peut-elle voir les m\u00eames lectures ?", a: "Sur \u00c9quipe et Entreprise, oui. Espace partag\u00e9, r\u00f4les et fil d'activit\u00e9, pour que toute l'\u00e9quipe voie ce que le document a vu." },

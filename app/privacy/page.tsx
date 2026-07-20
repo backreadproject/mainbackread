@@ -14,9 +14,9 @@ const SECTIONS: Section[] = [
     id: "intro",
     h: "1. Who we are",
     body: [
-      "BackRead is a document intelligence service that lets you share documents and understand how they are read. This Privacy Policy explains what personal data we collect, why we collect it, how we protect it, and the rights you have over it.",
-      "For the purposes of the Nigeria Data Protection Regulation (NDPR), the Nigeria Data Protection Act 2023, and, where it applies, the EU and UK General Data Protection Regulation (GDPR), BackRead is the data controller for the account and marketing data we hold about our users, and a data processor for the document and reader data our users choose to process through the service.",
-      "We designed BackRead so that understanding your readers never comes at the cost of their privacy or yours. Reading this policy should leave you reassured, not uneasy.",
+      "ReadProspects is a document intelligence service that lets you share documents and understand how they are read. This Privacy Policy explains what personal data we collect, why we collect it, how we protect it, and the rights you have over it.",
+      "For the purposes of the Nigeria Data Protection Regulation (NDPR), the Nigeria Data Protection Act 2023, and, where it applies, the EU and UK General Data Protection Regulation (GDPR), ReadProspects is the data controller for the account and marketing data we hold about our users, and a data processor for the document and reader data our users choose to process through the service.",
+      "We designed ReadProspects so that understanding your readers never comes at the cost of their privacy or yours. Reading this policy should leave you reassured, not uneasy.",
     ],
   },
   {
@@ -30,7 +30,7 @@ const SECTIONS: Section[] = [
         "Reader data: when someone opens a document you shared, we record activity such as pages viewed, time on page, questions typed into the document, and the resulting signals used to produce a verdict. This is captured to give you the insight the product exists to provide.",
         "Technical data: IP address, browser type, device information, and similar diagnostic data collected automatically to keep the service secure and working.",
       ],
-      "We do not collect special categories of personal data (such as health, religion, or biometric data) and we ask that you do not upload documents whose primary purpose is to process such data through BackRead.",
+      "We do not collect special categories of personal data (such as health, religion, or biometric data) and we ask that you do not upload documents whose primary purpose is to process such data through ReadProspects.",
     ],
   },
   {
@@ -44,7 +44,7 @@ const SECTIONS: Section[] = [
         "Consent: where we rely on consent, for example non-essential cookies or marketing email, you may withdraw it at any time without affecting your use of the product.",
         "Legal obligation: we may process data where the law of the Federal Republic of Nigeria requires it.",
       ],
-      "Readers whose activity is captured are informed that the document is a BackRead document. As the person sharing a document, you are responsible for having a lawful basis to share it and to observe how it is read.",
+      "Readers whose activity is captured are informed that the document is a ReadProspects document. As the person sharing a document, you are responsible for having a lawful basis to share it and to observe how it is read.",
     ],
   },
   {
@@ -63,9 +63,9 @@ const SECTIONS: Section[] = [
         "Service providers: vetted infrastructure partners (such as hosting and email delivery) who process data strictly on our instructions under written agreements that meet NDPR and GDPR standards.",
         "Your own instructions: when you share a document, its intended recipients can see it. That is the point of the product, and it happens only when you choose it.",
         "Legal requirements: where we are compelled by a valid order under Nigerian law, disclosed only to the extent required.",
-        "Business transfers: if BackRead is ever involved in a merger or acquisition, data would transfer under the same protections described here, and you would be notified.",
+        "Business transfers: if ReadProspects is ever involved in a merger or acquisition, data would transfer under the same protections described here, and you would be notified.",
       ],
-      "Beyond these, your data stays within BackRead.",
+      "Beyond these, your data stays within ReadProspects.",
     ],
   },
   {
@@ -125,14 +125,14 @@ const SECTIONS: Section[] = [
     id: "children",
     h: "11. Children",
     body: [
-      "BackRead is a business tool and is not directed at children. We do not knowingly collect personal data from anyone under the age of 18. If you believe a child has provided us data, contact us and we will remove it.",
+      "ReadProspects is a business tool and is not directed at children. We do not knowingly collect personal data from anyone under the age of 18. If you believe a child has provided us data, contact us and we will remove it.",
     ],
   },
   {
     id: "changes",
     h: "12. Changes to this policy",
     body: [
-      "We may update this policy as the service or the law evolves. When we make a material change, we will update the date at the top and, where appropriate, notify you directly. Continued use of BackRead after a change means you accept the updated policy.",
+      "We may update this policy as the service or the law evolves. When we make a material change, we will update the date at the top and, where appropriate, notify you directly. Continued use of ReadProspects after a change means you accept the updated policy.",
     ],
   },
   {
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
             <h2 style={{ fontSize: 15, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT, margin: "0 0 14px" }}>Summary</h2>
             <ul style={{ margin: 0, padding: "0 0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                "We collect only what we need to run BackRead well.",
+                "We collect only what we need to run ReadProspects well.",
                 "We never sell your data, and we never train outside models on your documents.",
                 "Your documents are visible only to you and the readers you choose.",
                 "You can access, correct, or delete your data at any time.",
@@ -199,9 +199,9 @@ export default function PrivacyPage() {
 
       <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: MUTE, padding: "36px 0" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" style={{ fontSize: 14, color: MUTE, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span> BackRead, the document reads the reader.</a>
+          <a href="/" style={{ fontSize: 14, color: MUTE, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span> ReadProspects, the document reads the reader.</a>
           <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
-            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" style={{ color: MUTE, display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
+            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="ReadProspects on LinkedIn" style={{ color: MUTE, display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
             <a href="/pricing" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Pricing</a>
             <a href="/privacy" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Privacy</a>
             <a href="/terms" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Terms</a>

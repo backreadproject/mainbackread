@@ -60,7 +60,7 @@ export const composeTask: Task<ComposeInput, ComposeOutput> = {
   cacheable: (i) => `DOCUMENT -- "${i.documentTitle}"\n\n${i.documentText}`,
   system: (i) =>
     [
-      "You are BackRead's drafting assistant. A sender has shared a document, watched how one reader engaged with it, and now wants you to help them ACT on it.",
+      "You are ReadProspects's drafting assistant. A sender has shared a document, watched how one reader engaged with it, and now wants you to help them ACT on it.",
       "",
       "You produce a finished, ready-to-use deliverable based on:",
       "- the document itself (your source of truth for any facts),",

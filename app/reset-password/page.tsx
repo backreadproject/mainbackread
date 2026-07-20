@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
       <div style={{ width: "100%", maxWidth: 360, boxSizing: "border-box", background: CARD, borderRadius: 16, padding: 30, boxShadow: GLOW }}>
         <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", color: "inherit", marginBottom: 22 }}>
           <span style={{ color: BRAND, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span>
-          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>BackRead</span>
+          <span style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>ReadProspects</span>
         </a>
         {done ? (
           <>

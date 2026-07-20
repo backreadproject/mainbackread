@@ -99,7 +99,7 @@ export async function POST(req: Request) {
       title: `${sharer} shared a ${resourceType} with you`,
       body: `You now have ${permission} access.`,
       link: resourceType === "document" ? `/documents/${resourceId}` : `/projects/${resourceId}`,
-      email: targetMember?.email ? { to: targetMember.email, subject: `${sharer} shared a ${resourceType} with you on BackRead`, html: notifyEmail(`${sharer} shared a ${resourceType} with you`, `You now have ${permission} access. Open BackRead to view it.`, link, "Open in BackRead") } : null,
+      email: targetMember?.email ? { to: targetMember.email, subject: `${sharer} shared a ${resourceType} with you on ReadProspects`, html: notifyEmail(`${sharer} shared a ${resourceType} with you`, `You now have ${permission} access. Open ReadProspects to view it.`, link, "Open in ReadProspects") } : null,
     });
   }
 

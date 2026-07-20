@@ -1,4 +1,4 @@
-// BackRead design system — Termii-inspired. Single source of truth.
+// ReadProspects design system — Termii-inspired. Single source of truth.
 // Every screen imports from here so the look stays consistent by construction.
 
 export const T = {

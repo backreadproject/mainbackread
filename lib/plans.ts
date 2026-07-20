@@ -1,4 +1,4 @@
-// Single source of truth for BackRead's plans: limits + feature gates.
+// Single source of truth for ReadProspects's plans: limits + feature gates.
 // Everything that enforces a tier (caps on create actions, Company-only features)
 // reads from here. Billing later just sets which plan an account is on; it does
 // not change this file. Compiled from the approved plan structure.

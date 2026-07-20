@@ -64,7 +64,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
         </button>
         <span style={{ color: "#fff", fontSize: 17, fontWeight: 700, display: "flex", alignItems: "center", gap: 7 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1FA971" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="#1FA971" /></svg>
-          BackRead
+          ReadProspects
         </span>
       </div>
 

@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       title: `You were added to ${ctx.org.name}`,
       body: `You now have access as ${role}.`,
       link: "/overview",
-      email: { to: cleanEmail, subject: `You've been added to ${ctx.org.name} on BackRead`, html: notifyEmail(`You've joined ${ctx.org.name}`, `You now have access as ${role}. Open BackRead to get started.`, `${origin0}/overview`, "Open BackRead") },
+      email: { to: cleanEmail, subject: `You've been added to ${ctx.org.name} on ReadProspects`, html: notifyEmail(`You've joined ${ctx.org.name}`, `You now have access as ${role}. Open ReadProspects to get started.`, `${origin0}/overview`, "Open ReadProspects") },
     });
     return NextResponse.json({ ok: true, addedDirectly: true });
   }
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     .single();
   if (error || !invite) return NextResponse.json({ error: error?.message ?? "Could not create invitation." }, { status: 400 });
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  const FROM = process.env.PROSPECT_FROM_EMAIL || "BackRead <onboarding@resend.dev>";
+  const FROM = process.env.PROSPECT_FROM_EMAIL || "ReadProspects <onboarding@resend.dev>";
   const origin = new URL(req.url).origin;
   const acceptUrl = `${origin}/invite/${invite.token}`;
   if (!RESEND_API_KEY) {
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [cleanEmail], subject: `${inviterName} invited you to join ${ctx.org.name} on BackRead`, html }),
+      body: JSON.stringify({ from: FROM, to: [cleanEmail], subject: `${inviterName} invited you to join ${ctx.org.name} on ReadProspects`, html }),
     });
     if (!resp.ok) {
       const txt = await resp.text();
@@ -82,15 +82,15 @@ function inviteEmail({ firstName, inviterName, orgName, acceptUrl }: { firstName
   <div style="max-width:520px;margin:0 auto;padding:32px 24px;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:28px;">
       <span style="display:inline-block;width:20px;height:20px;border:2px solid #1FA971;border-radius:50%;position:relative;"><span style="position:absolute;inset:5px;background:#1FA971;border-radius:50%;"></span></span>
-      <span style="font-size:19px;font-weight:700;color:#0F1729;">BackRead</span>
+      <span style="font-size:19px;font-weight:700;color:#0F1729;">ReadProspects</span>
     </div>
     <div style="background:#fff;border:1px solid #EAECEF;border-radius:14px;padding:28px;">
       <p style="font-size:16px;color:#0F1729;margin:0 0 14px;">Hi ${firstName},</p>
-      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 20px;">${inviterName} has invited you to join <strong style="color:#0F1729;">${orgName}</strong> on BackRead. Accept the invitation and set your password to get started.</p>
+      <p style="font-size:15px;color:#475467;line-height:1.55;margin:0 0 20px;">${inviterName} has invited you to join <strong style="color:#0F1729;">${orgName}</strong> on ReadProspects. Accept the invitation and set your password to get started.</p>
       <a href="${acceptUrl}" style="display:inline-block;background:#0B7A4B;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:10px;">Accept invitation</a>
       <p style="font-size:13px;color:#98A2B3;line-height:1.5;margin:22px 0 0;">This invitation expires in 14 days. If you weren't expecting it, you can ignore this email.</p>
     </div>
-    <p style="font-size:12px;color:#98A2B3;text-align:center;margin:24px 0 0;">Sent via BackRead. The document reads the reader.</p>
+    <p style="font-size:12px;color:#98A2B3;text-align:center;margin:24px 0 0;">Sent via ReadProspects. The document reads the reader.</p>
   </div>
   </body></html>`;
 }

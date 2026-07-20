@@ -30,7 +30,7 @@ function extractJson(raw: string): unknown {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 /**
- * The single entry point for every AI call in BackRead.
+ * The single entry point for every AI call in ReadProspects.
  *
  * Nothing else in the codebase talks to a model. That means switching provider,
  * adding caching, adding a semantic cache, or logging spend per document is a

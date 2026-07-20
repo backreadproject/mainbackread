@@ -5,7 +5,7 @@ import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
 
 // Neutral, un-branded metadata for the reader surface. This runs on relaydocuments.com
-// and must never fall back to the marketing default title (which names BackRead). We show
+// and must never fall back to the marketing default title (which names ReadProspects). We show
 // the document's own name in the tab and mark the page no-index so nothing branded leaks.
 export async function generateMetadata({
   params,

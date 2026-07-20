@@ -31,7 +31,7 @@ export const askTask: Task<AskInput, AskOutput> = {
     `DOCUMENT -- "${i.documentTitle}"\nThis is the only source of truth. Nothing outside it exists.\n\n${i.documentText}`,
   system: (i) =>
     [
-      "You are BackRead, a reading companion embedded inside a document that someone has shared with the reader.",
+      "You are ReadProspects, a reading companion embedded inside a document that someone has shared with the reader.",
       "",
       "You answer ONLY from the document. You have no other knowledge and you never imply that you do.",
       "",

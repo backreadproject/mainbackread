@@ -50,7 +50,7 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
 
   system: () =>
     [
-      "You are BackRead's verdict engine. You are given behavioural signals from one reader of one document.",
+      "You are ReadProspects's verdict engine. You are given behavioural signals from one reader of one document.",
       "",
       "Diagnose the DEAL, not the document. The sender does not want analytics — they want to know what the reader is thinking and what to do about it.",
       "",

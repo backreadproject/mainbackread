@@ -14,22 +14,22 @@ const SECTIONS: Section[] = [
     id: "agreement",
     h: "1. Agreement to these terms",
     body: [
-      "These Terms of Service govern your use of BackRead. By creating an account or using the service, you agree to these terms. If you are using BackRead on behalf of an organization, you confirm that you have the authority to bind that organization to these terms.",
+      "These Terms of Service govern your use of ReadProspects. By creating an account or using the service, you agree to these terms. If you are using ReadProspects on behalf of an organization, you confirm that you have the authority to bind that organization to these terms.",
       "These terms are governed by the laws of the Federal Republic of Nigeria, and we have written them to sit alongside our Privacy Policy, which forms part of your agreement with us.",
     ],
   },
   {
     id: "service",
-    h: "2. What BackRead provides",
+    h: "2. What ReadProspects provides",
     body: [
-      "BackRead is a document intelligence service. It lets you share documents, allows your readers to ask questions inside those documents, captures how documents are read, and returns insight about that reading. We may improve, change, or add features over time, and we will not degrade the core service you rely on without reasonable notice.",
+      "ReadProspects is a document intelligence service. It lets you share documents, allows your readers to ask questions inside those documents, captures how documents are read, and returns insight about that reading. We may improve, change, or add features over time, and we will not degrade the core service you rely on without reasonable notice.",
     ],
   },
   {
     id: "accounts",
     h: "3. Your account",
     body: [
-      "You are responsible for keeping your login credentials secure and for all activity under your account. You agree to provide accurate account information and to keep it current. You must be at least 18 years old to use BackRead. If you believe your account has been accessed without authorization, tell us promptly.",
+      "You are responsible for keeping your login credentials secure and for all activity under your account. You agree to provide accurate account information and to keep it current. You must be at least 18 years old to use ReadProspects. If you believe your account has been accessed without authorization, tell us promptly.",
     ],
   },
   {
@@ -45,13 +45,13 @@ const SECTIONS: Section[] = [
     id: "acceptable",
     h: "5. Acceptable use",
     body: [
-      "BackRead exists for legitimate professional use. You agree not to:",
+      "ReadProspects exists for legitimate professional use. You agree not to:",
       [
         "Upload or share content that is unlawful, infringing, or that you do not have the right to share.",
         "Use the service to deceive, harass, defraud, or harm others.",
         "Attempt to breach the security of the service, access data that is not yours, or interfere with other users.",
         "Reverse engineer, resell, or misuse the service outside these terms.",
-        "Use BackRead to process sensitive personal data in ways that are unlawful or that its recipients have not been made aware of.",
+        "Use ReadProspects to process sensitive personal data in ways that are unlawful or that its recipients have not been made aware of.",
       ],
       "We may suspend or terminate accounts that violate these rules, and we will act proportionately.",
     ],
@@ -60,35 +60,35 @@ const SECTIONS: Section[] = [
     id: "privacy",
     h: "6. Privacy and data protection",
     body: [
-      "Our handling of personal data is governed by our Privacy Policy, which is built to comply with the NDPR, the Nigeria Data Protection Act 2023, and the GDPR where it applies. Where you use BackRead to process the personal data of your readers, you act as the controller of that data and we act as your processor, handling it only on your instructions and with strong safeguards against data leaks.",
+      "Our handling of personal data is governed by our Privacy Policy, which is built to comply with the NDPR, the Nigeria Data Protection Act 2023, and the GDPR where it applies. Where you use ReadProspects to process the personal data of your readers, you act as the controller of that data and we act as your processor, handling it only on your instructions and with strong safeguards against data leaks.",
     ],
   },
   {
     id: "billing",
     h: "7. Plans and billing",
     body: [
-      "BackRead offers a free plan and paid plans. Paid plans are billed in advance for the period you choose. You may upgrade or downgrade at any time, and changes take effect from your next billing cycle. Fees are non-refundable except where required by law. We will always tell you clearly before you are charged.",
+      "ReadProspects offers a free plan and paid plans. Paid plans are billed in advance for the period you choose. You may upgrade or downgrade at any time, and changes take effect from your next billing cycle. Fees are non-refundable except where required by law. We will always tell you clearly before you are charged.",
     ],
   },
   {
     id: "availability",
     h: "8. Availability",
     body: [
-      "We work hard to keep BackRead available and reliable, but we do not promise uninterrupted service. We may occasionally need to perform maintenance or suspend the service to protect it, and we will minimize disruption where we can.",
+      "We work hard to keep ReadProspects available and reliable, but we do not promise uninterrupted service. We may occasionally need to perform maintenance or suspend the service to protect it, and we will minimize disruption where we can.",
     ],
   },
   {
     id: "termination",
     h: "9. Suspension and termination",
     body: [
-      "You may stop using BackRead and close your account at any time. We may suspend or terminate your access if you breach these terms, if required by law, or to protect the service and its users. On termination, you can request an export of your data within a reasonable window, after which it may be deleted in line with our Privacy Policy.",
+      "You may stop using ReadProspects and close your account at any time. We may suspend or terminate your access if you breach these terms, if required by law, or to protect the service and its users. On termination, you can request an export of your data within a reasonable window, after which it may be deleted in line with our Privacy Policy.",
     ],
   },
   {
     id: "liability",
     h: "10. Liability",
     body: [
-      "BackRead is provided on a reasonable-efforts basis. To the fullest extent permitted by Nigerian law, we are not liable for indirect or consequential losses, and our total liability arising from the service is limited to the amount you paid us in the twelve months before the claim. Nothing in these terms excludes liability that cannot lawfully be excluded.",
+      "ReadProspects is provided on a reasonable-efforts basis. To the fullest extent permitted by Nigerian law, we are not liable for indirect or consequential losses, and our total liability arising from the service is limited to the amount you paid us in the twelve months before the claim. Nothing in these terms excludes liability that cannot lawfully be excluded.",
     ],
   },
   {
@@ -132,7 +132,7 @@ export default function TermsPage() {
         <div style={wrap}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(216,232,74,0.14)", border: "1px solid rgba(216,232,74,0.40)", color: LEMON, fontSize: 12, fontWeight: 600, letterSpacing: "0.06em", padding: "6px 14px", borderRadius: 20, marginBottom: 22, textTransform: "uppercase" }}>Governed by the laws of Nigeria</div>
           <h1 className="lg-h1" style={{ fontSize: 46, fontWeight: 700, letterSpacing: "-0.03em", margin: "0 0 14px" }}>Terms of Service</h1>
-          <p style={{ fontSize: 18, color: CLOUD, margin: "0 auto", maxWidth: 560, lineHeight: 1.55 }}>Clear terms, written in plain language, so you always know where you stand with BackRead.</p>
+          <p style={{ fontSize: 18, color: CLOUD, margin: "0 auto", maxWidth: 560, lineHeight: 1.55 }}>Clear terms, written in plain language, so you always know where you stand with ReadProspects.</p>
           <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: "18px 0 0" }}>Last updated: {UPDATED}</p>
         </div>
       </section>
@@ -144,7 +144,7 @@ export default function TermsPage() {
             <ul style={{ margin: 0, padding: "0 0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 "You own your documents. We only host and process them to serve you.",
-                "Use BackRead lawfully and for legitimate professional purposes.",
+                "Use ReadProspects lawfully and for legitimate professional purposes.",
                 "Free and paid plans, billed in advance, cancel any time.",
                 "We keep the service secure and comply with the NDPR and GDPR.",
                 "These terms are governed by the laws of Nigeria.",
@@ -175,9 +175,9 @@ export default function TermsPage() {
 
       <footer style={{ background: NIGHT, borderTop: "1px solid rgba(255,255,255,0.08)", color: MUTE, padding: "36px 0" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto", padding: "0 32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-          <a href="/" style={{ fontSize: 14, color: MUTE, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span> BackRead, the document reads the reader.</a>
+          <a href="/" style={{ fontSize: 14, color: MUTE, textDecoration: "none", display: "flex", alignItems: "center", gap: 7 }}><span style={{ color: BRAND }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span> ReadProspects, the document reads the reader.</a>
           <div style={{ display: "flex", gap: 22, alignItems: "center" }}>
-            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="BackRead on LinkedIn" style={{ color: MUTE, display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
+            <a href="https://www.linkedin.com/company/backread/" target="_blank" rel="noopener noreferrer" aria-label="ReadProspects on LinkedIn" style={{ color: MUTE, display: "flex", alignItems: "center" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zM8.34 9.5H5.67V18.5h2.67V9.5zM7 5.9a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1zM18.34 18.5v-4.94c0-2.64-1.41-3.87-3.29-3.87-1.52 0-2.2.84-2.58 1.43V9.5h-2.67V18.5h2.67v-4.77c0-1.26.24-2.48 1.8-2.48 1.54 0 1.56 1.44 1.56 2.56v4.69h2.78z"/></svg></a>
             <a href="/pricing" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Pricing</a>
             <a href="/privacy" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Privacy</a>
             <a href="/terms" style={{ color: MUTE, fontSize: 13, textDecoration: "none" }}>Terms</a>

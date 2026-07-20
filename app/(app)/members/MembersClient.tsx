@@ -44,7 +44,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
   async function lookupName() {
     const email = iEmail.trim().toLowerCase();
     if (!email || iFirst || iLast) return;
-    // Auto-fill name if this email already has a BackRead account.
+    // Auto-fill name if this email already has a ReadProspects account.
     try {
       const res = await fetch(`/api/lookup-user?email=${encodeURIComponent(email)}`);
       const d = await res.json();
