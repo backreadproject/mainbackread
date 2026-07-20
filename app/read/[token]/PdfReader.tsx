@@ -9,12 +9,12 @@ const AEON = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 2px rgba(9,30,22,0.05), 0 8px 20px rgba(9,30,22,0.05)";
 const SHADOW_PANEL = "0 1px 2px rgba(9,30,22,0.04), 0 12px 34px rgba(9,30,22,0.06)";
 
-// Older mobile browsers do not have Uint8Array.prototype.toHex (and the sibling base64
-// helpers), which pdf.js v6 calls while parsing a PDF. Without them the reader crashes
-// with "a.toHex is not a function". This installs a compatible fallback only when the
-// native method is missing. It must be fully self-contained: its source is also stringified
-// and run inside the PDF worker (a separate JS scope) below, so it may not reference
-// anything outside itself.
+// pdf.js v6 calls Uint8Array.prototype.toHex() inside the PDF worker (to compute the
+// document fingerprint). That method is missing on older mobile browsers, which crashes
+// the reader with "a.toHex is not a function". This installs a compatible fallback only
+// when the native method is absent. It must stay fully self-contained: its source is also
+// stringified and run inside the worker (a separate JS scope) below, so it may not
+// reference anything outside itself.
 function installUint8Polyfill() {
   const proto = Uint8Array.prototype as unknown as Record<string, unknown>;
   const ctor = Uint8Array as unknown as Record<string, unknown>;
@@ -111,17 +111,20 @@ export default function PdfReader({ title, fileUrl, token, greeting }: { title: 
       try {
         const pdfjs = await import("pdfjs-dist");
         const cdnWorker = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-        // Install the fallback on the main thread, then hand pdf.js a worker that installs
-        // the same fallback in the worker scope before loading the real pdf.js worker.
+        // toHex runs inside the worker, so install the fallback there by wrapping the real
+        // worker. We give pdf.js a worker SOURCE (not a port): it treats this same-origin
+        // blob as its worker, keeps its own readiness handshake, and if the worker ever
+        // errors it falls back to a main-thread worker, where the line below has already
+        // installed the same fallback.
         installUint8Polyfill();
         try {
           const workerBody =
             "(" + installUint8Polyfill.toString() + ")();\n" +
             "await import(" + JSON.stringify(cdnWorker) + ");";
-          const workerUrl = URL.createObjectURL(new Blob([workerBody], { type: "text/javascript" }));
-          pdfjs.GlobalWorkerOptions.workerPort = new Worker(workerUrl, { type: "module" });
+          pdfjs.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
+            new Blob([workerBody], { type: "text/javascript" })
+          );
         } catch {
-          // If building the wrapped worker fails for any reason, use the CDN worker directly.
           pdfjs.GlobalWorkerOptions.workerSrc = cdnWorker;
         }
         const pdf = await pdfjs.getDocument({ url: fileUrl }).promise;
