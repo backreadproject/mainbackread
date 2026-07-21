@@ -1,45 +1,52 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-// The reader-delivery domain. Reader links live here and nothing else does, so a
-// recipient who trims the URL never lands on the marketing/app surface and never
-// learns their reading is analysed. Configurable via env; falls back to the host.
+// --- Hosts -------------------------------------------------------------------
+// Reader-delivery domain: reader links live here and nothing else does, so a
+// recipient who trims the URL never lands on the marketing/app surface.
 const READER_HOST = (process.env.NEXT_PUBLIC_READER_HOST || "relaydocuments.com").toLowerCase();
+// App subdomain: the logged-in product lives here.
+const APP_HOST = (process.env.NEXT_PUBLIC_APP_HOST || "app.readprospects.com").toLowerCase();
+// Marketing apex: the public landing, pricing, privacy, terms.
+const MARKETING_HOST = (process.env.NEXT_PUBLIC_MARKETING_HOST || "readprospects.com").toLowerCase();
 
-// The ONLY paths allowed to render on the reader domain. Everything else there is
-// rewritten to the neutral relay landing page.
+// Paths that belong to the app (redirected from the marketing host to the app host).
+const APP_PREFIXES = ["/overview", "/documents", "/projects", "/activity", "/recipients", "/members", "/settings", "/account", "/login", "/signup", "/forgot-password", "/reset-password", "/check-email", "/onboarding"];
+// Public marketing paths (kept on the marketing host; redirected off the app host).
+const MARKETING_PREFIXES = ["/pricing", "/privacy", "/terms"];
+
+const hasPrefix = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
+const isAppPath = (p: string) => hasPrefix(p, APP_PREFIXES);
+const isMarketingPath = (p: string) => hasPrefix(p, MARKETING_PREFIXES);
+
+// Only these render on the reader domain; everything else there -> neutral /relay.
 function isAllowedOnReaderDomain(pathname: string): boolean {
   return pathname.startsWith("/read/") || pathname === "/relay";
 }
-
 function hostOf(req: NextRequest): string {
   const h = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
   return h.split(":")[0].toLowerCase();
 }
-
 function applyLocale(req: NextRequest, res: NextResponse): NextResponse {
   const existing = req.cookies.get("locale")?.value;
   if (existing === "en" || existing === "fr") return res;
   const accept = req.headers.get("accept-language") || "";
   const prefersFrench = /(^|,)\s*fr\b/i.test(accept) &&
     (accept.toLowerCase().indexOf("fr") < accept.toLowerCase().indexOf("en") || !/\ben\b/i.test(accept));
-  res.cookies.set("locale", prefersFrench ? "fr" : "en", {
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-    sameSite: "lax",
-  });
+  res.cookies.set("locale", prefersFrench ? "fr" : "en", { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   return res;
 }
 
 export function middleware(req: NextRequest) {
   const host = hostOf(req);
   const { pathname } = req.nextUrl;
-  const onReaderDomain = host === READER_HOST || host === `www.${READER_HOST}`;
 
+  const onReaderDomain = host === READER_HOST || host === `www.${READER_HOST}`;
+  const onAppDomain = host === APP_HOST;
+  const onMarketingDomain = host === MARKETING_HOST || host === `www.${MARKETING_HOST}`;
+
+  // 1) Reader domain: only /read/* and /relay may render; everything else there is
+  //    rewritten (URL bar unchanged) to the neutral relay page.
   if (onReaderDomain) {
-    // Reader domain: only /read/* and the neutral /relay page may render.
-    // Anything else -- the root, /login, /documents, a guessed path -- is REWRITTEN
-    // (URL bar unchanged) to the neutral page. No marketing surface, no hint that a
-    // larger app exists. Trimming a /read/ link back to the root lands here.
     if (!isAllowedOnReaderDomain(pathname)) {
       const url = req.nextUrl.clone();
       url.pathname = "/relay";
@@ -48,21 +55,51 @@ export function middleware(req: NextRequest) {
     return applyLocale(req, NextResponse.next());
   }
 
-  // App/marketing domain (readprospects.com): if a /read/ link is hit here -- an old
-  // link, or a pasted one -- redirect it to the reader domain so reader traffic is
-  // always private. The neutral /relay page is not meant to be reached here.
+  // Reader links pasted on any non-reader host always go to the reader domain.
   if (pathname.startsWith("/read/")) {
-    const readerUrl = new URL(pathname + req.nextUrl.search, `https://${READER_HOST}`);
-    return NextResponse.redirect(readerUrl, 308);
+    return NextResponse.redirect(new URL(pathname + req.nextUrl.search, `https://${READER_HOST}`), 308);
   }
+
+  // 2) App subdomain (app.readprospects.com): serve the app; keep marketing pages on
+  //    the marketing host; send the root to the dashboard.
+  if (onAppDomain) {
+    if (pathname === "/") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/overview";
+      return NextResponse.redirect(url);
+    }
+    if (isMarketingPath(pathname)) {
+      return NextResponse.redirect(new URL(pathname + req.nextUrl.search, `https://${MARKETING_HOST}`), 307);
+    }
+    if (pathname === "/relay") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/overview";
+      return NextResponse.redirect(url);
+    }
+    return applyLocale(req, NextResponse.next());
+  }
+
+  // 3) Marketing host (readprospects.com): serve marketing; send app routes to the
+  //    app subdomain.
+  if (onMarketingDomain) {
+    if (isAppPath(pathname)) {
+      return NextResponse.redirect(new URL(pathname + req.nextUrl.search, `https://${APP_HOST}`), 307);
+    }
+    if (pathname === "/relay") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    return applyLocale(req, NextResponse.next());
+  }
+
+  // 4) Localhost, *.vercel.app previews, or any other host: keep the app and marketing
+  //    baked together (single origin) so local dev and previews keep working.
   if (pathname === "/relay") {
-    // /relay only belongs on the reader domain; on the app domain send to home.
     const url = req.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
   }
-
-  // Normal app/marketing behaviour, plus locale.
   return applyLocale(req, NextResponse.next());
 }
 
