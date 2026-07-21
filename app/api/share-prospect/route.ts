@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { readerLink } from "@/lib/reader-origin";
+import { sendEmail, emailConfigured } from "@/lib/email";
 import { resolvePlanForUser, isLocked, checkRecipientLimit, checkSendQuota, logUsage } from "@/lib/plan-context";
 import { NextResponse } from "next/server";
 export async function POST(req: Request) {
@@ -53,10 +54,8 @@ export async function POST(req: Request) {
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
   const readUrl = readerLink(rec.share_token, new URL(req.url).origin);
   if (mode === "email") {
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const FROM = process.env.PROSPECT_FROM_EMAIL || "Documents <documents@relaydocuments.com>";
-    if (!RESEND_API_KEY) {
-      return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but email is not configured yet (RESEND_API_KEY missing). Copy the link to send manually." });
+    if (!emailConfigured("relay")) {
+      return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but email is not configured yet. Copy the link to send manually." });
     }
     const ctx = await getOrgContext();
     const { data: prof } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single();
@@ -70,18 +69,9 @@ export async function POST(req: Request) {
     else if (orgName) senderName = orgName;
     else senderName = "A colleague";
     const html = brandedEmail({ firstName: firstName.trim(), senderName, docTitle, readUrl, note: noteClean });
-    try {
-      const resp = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: FROM, to: [email.trim()], subject: `${senderName} shared "${docTitle}" with you`, html }),
-      });
-      if (!resp.ok) {
-        const txt = await resp.text();
-        return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: `Recipient created, but the email failed to send: ${txt.slice(0, 200)}` });
-      }
-    } catch {
-      return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: "Recipient created, but the email service could not be reached." });
+    const emailResult = await sendEmail("relay", { to: email.trim(), subject: `${senderName} shared "${docTitle}" with you`, html });
+    if (!emailResult.ok) {
+      return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: `Recipient created, but the email failed to send: ${emailResult.error ?? ""}` });
     }
     // Count this send against the monthly quota.
     await logUsage(admin, "send", { userId: user.id, orgId: plan.orgId, documentId });

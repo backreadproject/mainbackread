@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email";
 
 type NotifyInput = {
   userId: string;
@@ -26,18 +27,8 @@ export async function notify(input: NotifyInput): Promise<void> {
   }
 
   if (input.email) {
-    const RESEND_API_KEY = process.env.RESEND_API_KEY;
-    const FROM = process.env.PROSPECT_FROM_EMAIL || "ReadProspects <onboarding@resend.dev>";
-    if (!RESEND_API_KEY) return;
-    try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: FROM, to: [input.email.to], subject: input.email.subject, html: input.email.html }),
-      });
-    } catch {
-      // Non-fatal.
-    }
+    // ReadProspects app email (notifications, invites). Non-fatal.
+    await sendEmail("readprospects", { to: input.email.to, subject: input.email.subject, html: input.email.html });
   }
 }
 

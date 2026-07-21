@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { resolvePlanForUser, isLocked, checkSeatLimit } from "@/lib/plan-context";
 import { notify, notifyEmail } from "@/lib/notify";
+import { sendEmail, emailConfigured } from "@/lib/email";
 import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -52,28 +53,17 @@ export async function POST(req: Request) {
     .select("id, token, first_name")
     .single();
   if (error || !invite) return NextResponse.json({ error: error?.message ?? "Could not create invitation." }, { status: 400 });
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  const FROM = process.env.PROSPECT_FROM_EMAIL || "ReadProspects <onboarding@resend.dev>";
   const origin = new URL(req.url).origin;
   const acceptUrl = `${origin}/invite/${invite.token}`;
-  if (!RESEND_API_KEY) {
+  if (!emailConfigured("readprospects")) {
     return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: "Invitation created, but email isn't configured. Share this link manually: " + acceptUrl });
   }
   const { data: prof } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single();
   const inviterName = `${(prof?.first_name as string) || ""} ${(prof?.last_name as string) || ""}`.trim() || (user.email ?? "A teammate");
   const html = inviteEmail({ firstName: firstName.trim(), inviterName, orgName: ctx.org.name, acceptUrl });
-  try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: FROM, to: [cleanEmail], subject: `${inviterName} invited you to join ${ctx.org.name} on ReadProspects`, html }),
-    });
-    if (!resp.ok) {
-      const txt = await resp.text();
-      return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: `Invitation created, but the email failed: ${txt.slice(0, 160)}. Share this link: ${acceptUrl}` });
-    }
-  } catch {
-    return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: "Invitation created, but email couldn't send. Share this link: " + acceptUrl });
+  const emailResult = await sendEmail("readprospects", { to: cleanEmail, subject: `${inviterName} invited you to join ${ctx.org.name} on ReadProspects`, html });
+  if (!emailResult.ok) {
+    return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: `Invitation created, but the email failed: ${emailResult.error ?? ""}. Share this link: ${acceptUrl}` });
   }
   return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: true });
 }
