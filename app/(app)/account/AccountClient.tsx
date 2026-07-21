@@ -49,7 +49,7 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
   async function changePassword() { if (pw.length < 6) { setMsgOk(false); setMsg(ac.passwordTooShort); return; } setBusy(true); setMsg(""); const supabase = createClient(); const { error } = await supabase.auth.updateUser({ password: pw }); setMsgOk(!error); setMsg(error ? error.message : ac.passwordUpdated); setPw(""); setBusy(false); }
   async function deleteAccount() { if (!canDelete) return; setDelBusy(true); setDelMsg(""); const res = await fetch("/api/delete-account", { method: "POST" }); const json = await res.json(); if (!res.ok) { setDelMsg(json.error ?? ac.couldntDelete); setDelBusy(false); return; } const supabase = createClient(); await supabase.auth.signOut(); window.location.href = "/login"; }
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" };
-  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 22, marginBottom: 16 };
+  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -98,3 +98,5 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
     </div>
   );
 }
+
+

@@ -15,7 +15,7 @@ const ICONS = {
 };
 function StatCard({ icon, label, value, sub }: { icon: string; label: string; value: number; sub: string }) {
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
       <div style={{ width: 30, height: 30, borderRadius: 8, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
       </div>
@@ -144,7 +144,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             </div>
           </>
         )}
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "visible" }}>
+        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "visible" }}>
           <div className="tab-bar" style={{ display: "flex", alignItems: "center", gap: 16, padding: "14px 18px", borderBottom: `1px solid ${T.border}` }}>
             {view === "active" ? (
               <div style={{ display: "inline-flex", gap: 4 }}>{[["all", dp.filterAll], ["opened", dp.filterOpened], ["unopened", dp.filterUnopened]].map(([k, l]) => seg(k as typeof filter, l))}</div>
@@ -215,3 +215,5 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
+

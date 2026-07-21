@@ -101,7 +101,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
           <main style={{ maxWidth: 560, padding: "26px 30px" }}>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.orgTitle}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mp.orgPartOfCompany}</p>
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 32, textAlign: "center" }}>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 32, textAlign: "center" }}>
               <p style={{ fontSize: 15, color: T.body, margin: "0 0 8px" }}>{mp.onPersonal}</p>
               <p style={{ fontSize: 14, color: T.muted, margin: 0, lineHeight: 1.5 }}>{mp.personalUnlock}</p>
             </div>
@@ -115,7 +115,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.setupTitle}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 16px" }}>{mp.setupSub}</p>
           {trial.started && trial.active && <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: T.greenText }}>{mp.trialActivePrefix} {trial.daysLeft} {trial.daysLeft === 1 ? mp.trialDay : mp.trialDays} {mp.trialLeft}</div>}
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 24 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>{mp.orgName}</span>
             <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder={mp.orgNamePlaceholder} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>{mp.companyDomain} <span style={{ fontWeight: 400, color: T.muted }}>{mp.optional}</span></span>
@@ -139,11 +139,11 @@ export default function MembersClient({ org, role, members: initial, invites: in
   const roleBadge = (r: string) => {
     const map: Record<string, [string, string]> = { owner: [T.greenSoft, T.greenText], admin: ["#EEF4FF", "#3538CD"], member: [T.pillNeutralBg, T.body] };
     const [bg, fg] = map[r] ?? map.member;
-    const roleLabel: Record<string, string> = { owner: locale === "fr" ? "propriétaire" : "owner", admin: locale === "fr" ? "admin" : "admin", member: locale === "fr" ? "membre" : "member" };
+    const roleLabel: Record<string, string> = { owner: locale === "fr" ? "propriÃ©taire" : "owner", admin: locale === "fr" ? "admin" : "admin", member: locale === "fr" ? "membre" : "member" };
     return <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: bg, color: fg, textTransform: "uppercase", letterSpacing: "0.04em" }}>{roleLabel[r] ?? r}</span>;
   };
   const stat = (label: string, value: number) => (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 18 }}>
+    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18 }}>
       <div style={{ ...microLabel, marginBottom: 8 }}>{label}</div>
       <div style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight }}>{value}</div>
     </div>
@@ -164,7 +164,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
         {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
 
         {showAdd && canManage && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 18, marginBottom: 18 }}>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 18 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: T.heading, marginBottom: 12 }}>{mp.inviteTeammate}</div>
             <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
               <input className="t-in" value={iFirst} onChange={(e) => setIFirst(e.target.value)} placeholder={mp.firstName} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
@@ -183,7 +183,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
         )}
 
         {invites.length > 0 && (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden", marginBottom: 18 }}>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden", marginBottom: 18 }}>
             <div style={{ padding: "12px 18px", borderBottom: `1px solid ${T.border}`, fontSize: 13, fontWeight: 600, color: T.heading }}>{mp.pendingInvitations}</div>
             {invites.map((inv, i) => (
               <div key={inv.id} className="data-row" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 40px", gap: 12, padding: "12px 18px", borderBottom: i < invites.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
@@ -204,7 +204,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
           {stat(mp.statPendingInvites, invites.length)}
         </div>
 
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
+        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
           <div className="row-head" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 40px", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
             <span>{mp.colMember}</span><span>{mp.colRole}</span><span>{mp.colJoined}</span><span></span>
           </div>
@@ -240,3 +240,5 @@ export default function MembersClient({ org, role, members: initial, invites: in
     </div>
   );
 }
+
+

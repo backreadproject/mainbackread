@@ -7,7 +7,7 @@ type Row = { id: string; label: string | null; documentTitle: string; createdAt:
 type Stats = { total: number; opened: number; unopened: number; questions: number; escalated: number };
 const ICONS = { users: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6", eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z M12 15a3 3 0 100-6 3 3 0 000 6z", msg: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z", alert: "M12 9v4 M12 17h.01 M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L14 3.9a2 2 0 00-3.4 0z" };
 function StatCard({ icon, label, value, sub }: { icon: string; label: string; value: number; sub: string }) {
-  return (<div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
+  return (<div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
     <div style={{ width: 30, height: 30, borderRadius: 8, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg></div>
     <div style={{ ...microLabel, marginBottom: 6 }}>{label}</div>
     <div style={{ fontSize: 22, fontWeight: 700, color: T.heading, marginBottom: 4, letterSpacing: T.trackingTight }}>{value}</div>
@@ -43,7 +43,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
           <StatCard icon={ICONS.msg} label={rp.statQuestions} value={stats.questions} sub={rp.statAskedTotal} />
           <StatCard icon={ICONS.alert} label={rp.statEscalated} value={stats.escalated} sub={rp.statNeedReply} />
         </div>
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
+        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, color: T.muted }}>{filtered.length} {filtered.length === 1 ? rp.readerCountOne : rp.readerCountMany}</span>
             <input className="t-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={rp.searchReaders} style={{ marginLeft: "auto", width: 220, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "7px 11px", fontSize: 13, fontFamily: T.font, background: "#fff" }} />
@@ -69,3 +69,5 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
     </div>
   );
 }
+
+

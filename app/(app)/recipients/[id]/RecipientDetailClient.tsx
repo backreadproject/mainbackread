@@ -13,7 +13,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
   const summary = useMemo(() => { const dwell: Record<number, number> = {}; const questions: { text: string; escalated?: boolean }[] = []; let opens = 0; for (const s of signals) { if (s.kind === "opened") opens++; if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) dwell[s.page] = Number((s.value as { ms: number }).ms) || 0; if (s.kind === "question" && s.value && typeof s.value === "object" && "text" in s.value) questions.push({ text: String((s.value as { text: string }).text), escalated: (s.value as { escalated?: boolean }).escalated }); } return { dwell, questions, opens }; }, [signals]);
   const maxDwell = Math.max(1, ...Object.values(summary.dwell));
   async function readTheReader() { setBusy(true); setError(""); const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: recipient.id }) }); const json = await res.json(); if (!res.ok) { setError(json.error ?? rd.couldntRead); setBusy(false); return; } setVerdict(json.verdict); setBusy(false); }
-  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 22, marginBottom: 16 };
+  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-b{cursor:pointer}`}</style>
@@ -46,7 +46,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
           <div style={card}>
             <div style={{ ...microLabel, marginBottom: 14 }}>{rd.verdict}</div>
             {verdict ? (
-              <div style={{ background: T.canvas, borderRadius: T.rCard, padding: 20 }}>
+              <div style={{ background: T.canvas, borderRadius: T.rCard, boxShadow: T.shadow, padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{rd.reading}</span><span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: verdict.confidence === "high" ? T.pillPosBg : T.pillNeutralBg, color: verdict.confidence === "high" ? T.pillPosText : T.pillNeutralText }}>{verdict.confidence}{rd.confidenceSuffix}</span></div>
                 <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdict.headline}</p>
                 <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdict.reasoning}</p>
@@ -59,3 +59,5 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
     </div>
   );
 }
+
+

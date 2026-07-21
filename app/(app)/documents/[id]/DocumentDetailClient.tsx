@@ -72,7 +72,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
       </div>
       {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
       <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: 18, padding: "22px 30px 40px", alignItems: "start" }}>
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 16 }}>
+        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={microLabel}>{dd.recipients}</span>
             <ShareButton documentId={doc.id} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
@@ -89,9 +89,9 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
         </div>
         <div>
           {!sel ? (
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 28 }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.selectRecipient}</p></div>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 28 }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.selectRecipient}</p></div>
           ) : (
-            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 24 }}>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 24 }}>
               <div style={{ marginBottom: 20 }}>
                 {editing === sel.id ? (
                   <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
@@ -133,7 +133,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
                   <div style={{ ...microLabel, marginBottom: 12 }}>{dd.verdict}</div>
                   {verdicts[sel.id] ? (
                     <>
-                      <div style={{ background: T.canvas, borderRadius: T.rCard, padding: 20 }}>
+                      <div style={{ background: T.canvas, borderRadius: T.rCard, boxShadow: T.shadow, padding: 20 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                           <span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{dd.reading}</span>
                           {pill(verdicts[sel.id].confidence === "high", verdicts[sel.id].confidence + dd.confidenceSuffix)}
@@ -198,3 +198,5 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
     </>
   );
 }
+
+

@@ -101,7 +101,7 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
       </div>
 
       {output && (
-        <div style={{ marginTop: 18, background: T.canvas, borderRadius: T.rCard, padding: 18 }}>
+        <div style={{ marginTop: 18, background: T.canvas, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18 }}>
           {output.note && <div style={{ fontSize: 12, color: T.greenText, fontWeight: 600, marginBottom: 10 }}>{output.note}</div>}
           <div style={{ fontSize: 14, color: T.heading, lineHeight: 1.6, whiteSpace: "pre-wrap", background: "#fff", borderRadius: T.rInput, padding: "14px 16px", border: `1px solid ${T.border}` }}>{output.output}</div>
           <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
@@ -113,3 +113,5 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
     </div>
   );
 }
+
+

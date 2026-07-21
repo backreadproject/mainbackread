@@ -26,11 +26,11 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
       </div>
       <main style={{ maxWidth: 900, padding: "22px 30px 40px" }}>
         {documents.length === 0 ? (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 40, textAlign: "center" }}>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 40, textAlign: "center" }}>
             <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{pd.empty}</p>
           </div>
         ) : (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, overflow: "hidden" }}>
+          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
             <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
               <span>{pd.colDocument}</span><span>{pd.colAdded}</span>
             </div>
@@ -47,3 +47,5 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
     </div>
   );
 }
+
+

@@ -31,7 +31,7 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
   }
 
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" };
-  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 22, marginBottom: 16 };
+  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
 
   return (
@@ -77,3 +77,5 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
     </div>
   );
 }
+
+
