@@ -140,7 +140,11 @@ export default async function RelayLanding() {
             <span style={{ fontSize: 15, fontWeight: 700 }}>{r.brand}</span>
             <span style={{ fontSize: 13, color: MUTE, marginLeft: 6 }}>{r.footerTagline}</span>
           </div>
-          <div style={{ fontSize: 13, color: MUTE }}>&copy; {year} {r.brand}. {r.footerRights}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+            <a href="/privacy" style={{ fontSize: 13, color: MUTE, textDecoration: "none" }}>{locale === "fr" ? "Confidentialit\u00e9" : "Privacy"}</a>
+            <a href="/terms" style={{ fontSize: 13, color: MUTE, textDecoration: "none" }}>{locale === "fr" ? "Conditions" : "Terms"}</a>
+            <span style={{ fontSize: 13, color: MUTE }}>&copy; {year} {r.brand}. {r.footerRights}</span>
+          </div>
         </div>
       </footer>
     </div>
