@@ -2,7 +2,8 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
-import { ADMIN_SLUG } from "@/lib/admin";
+
+const ADMIN_SLUG = "console-7f3ab9c2";
 
 type Item = { href: string; label: string; d: string };
 
