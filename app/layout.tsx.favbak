@@ -13,14 +13,12 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: "Relay",
       description: "A secure, private link to view a document shared with you. No account needed.",
-      icons: { icon: [{ url: "/relay-icon.svg", type: "image/svg+xml" }], shortcut: "/relay-icon.ico" },
     };
   }
   return {
-    title: "ReadProspects, the document reads the reader",
-    description: "The document reads the reader.",
-    icons: { icon: [{ url: "/rp-icon.svg", type: "image/svg+xml" }], shortcut: "/rp-icon.ico" },
-  };
+  title: "ReadProspects, the document reads the reader",
+  description: "The document reads the reader.",
+};
 }
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
