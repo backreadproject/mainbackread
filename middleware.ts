@@ -47,6 +47,14 @@ export function middleware(req: NextRequest) {
   // 1) Reader domain: only /read/* and /relay may render; everything else there is
   //    rewritten (URL bar unchanged) to the neutral relay page.
   if (onReaderDomain) {
+    // Relay-branded legal pages: served at /privacy and /terms (URL bar unchanged),
+    // rendered from the neutral /relay/* pages. Marketing pages on readprospects.com
+    // are untouched.
+    if (pathname === "/privacy" || pathname === "/terms") {
+      const url = req.nextUrl.clone();
+      url.pathname = `/relay${pathname}`;
+      return applyLocale(req, NextResponse.rewrite(url));
+    }
     if (!isAllowedOnReaderDomain(pathname)) {
       const url = req.nextUrl.clone();
       url.pathname = "/relay";

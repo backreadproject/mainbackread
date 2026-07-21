@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
-const INK = "#0F1729", CANVAS = "#F4F6F3", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_HOVER = "#0A6A41", BRAND = "#1FA971", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", ANSWER_INK = "#0B3D2A", NEUTRAL_BUBBLE = "#F1F3F0", SLATE = "#8A9299", BODY = "#475467", LINE = "#EEF0EC", HEAT_MID = "#3FB587", HEAT_OFF = "#DBE0DC";
+const INK = "#0F1729", CANVAS = "#EEF4F0", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_HOVER = "#0A6A41", BRAND = "#1FA971", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", ANSWER_INK = "#0B3D2A", NEUTRAL_BUBBLE = "#F1F3F0", SLATE = "#8A9299", BODY = "#475467", LINE = "#EEF0EC", HEAT_MID = "#3FB587", HEAT_OFF = "#DBE0DC";
 const AEON = "var(--font-dm-sans), system-ui, sans-serif";
 const SHADOW = "0 1px 2px rgba(9,30,22,0.05), 0 8px 20px rgba(9,30,22,0.05)";
 const SHADOW_PANEL = "0 1px 2px rgba(9,30,22,0.04), 0 12px 34px rgba(9,30,22,0.06)";
@@ -271,10 +271,22 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
 
   return (
     <div style={{ minHeight: "100vh", background: CANVAS, fontFamily: AEON, color: INK }}>
+      <div className="rdr-aurora" aria-hidden="true"><span className="a" /><span className="b" /></div>
       <style>{`
         .fx-ask{transition:background .15s}.fx-ask:hover{background:${GREEN_HOVER}}
         .fx-in:focus{border-color:${BRAND};box-shadow:0 0 0 3px rgba(31,169,113,0.14)}
         .rdr-handle{display:none}
+        .rdr-aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .rdr-aurora span{position:absolute;border-radius:50%;filter:blur(90px)}
+        .rdr-aurora .a{width:520px;height:440px;left:20%;top:-180px;background:radial-gradient(closest-side,rgba(51,230,162,0.20),transparent);animation:rdrAurA 30s ease-in-out infinite}
+        .rdr-aurora .b{width:460px;height:460px;right:-140px;top:38%;background:radial-gradient(closest-side,rgba(31,169,113,0.14),transparent);animation:rdrAurB 34s ease-in-out infinite}
+        @keyframes rdrAurA{0%,100%{transform:translate(0,0)}50%{transform:translate(-26px,28px)}}
+        @keyframes rdrAurB{0%,100%{transform:translate(0,0)}50%{transform:translate(22px,-22px)}}
+        .rdr-grid{position:relative;z-index:1}
+        .fx-fwd-glow{box-shadow:0 0 0 0 rgba(31,169,113,0.5),0 6px 18px rgba(31,169,113,0.42);animation:fwdGlow 2.4s ease-in-out infinite}
+        .fx-fwd-glow:hover{background:${GREEN_HOVER} !important;animation:none;box-shadow:0 6px 22px rgba(31,169,113,0.6)}
+        @keyframes fwdGlow{0%,100%{box-shadow:0 0 0 0 rgba(31,169,113,0.5),0 6px 18px rgba(31,169,113,0.42)}50%{box-shadow:0 0 0 8px rgba(31,169,113,0),0 8px 26px rgba(31,169,113,0.62)}}
+        @media (prefers-reduced-motion: reduce){.rdr-aurora span{animation:none}.fx-fwd-glow{animation:none}}
         .fwd-short{display:none}
         .rdr-chev{display:none}
         @media ${MOBILE}{
@@ -301,7 +313,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           </span>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
           <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "38%" }}>{title}</h1>
-          <button onClick={() => { setForwardOpen(true); setFwdDone(null); setFwdErr(""); }} className="fx-fwd" style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: GREEN_SOFT, color: GREEN, border: "1px solid #CDE7D8", borderRadius: 9, padding: "8px 13px", fontSize: 13, fontWeight: 600, fontFamily: AEON, cursor: "pointer" }}>
+          <button onClick={() => { setForwardOpen(true); setFwdDone(null); setFwdErr(""); }} className="fx-fwd fx-fwd-glow" style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "9px 15px", fontSize: 13, fontWeight: 600, fontFamily: AEON, cursor: "pointer" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h13M11 6l6 6-6 6" /><path d="M17 5h3v3" /></svg>
             <span className="fwd-full">{F.btn}</span><span className="fwd-short">{F.btnShort}</span>
           </button>
@@ -407,7 +419,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: BODY, lineHeight: 1.5, cursor: "pointer" }}>
                     <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2, width: 15, height: 15, accentColor: GREEN, flexShrink: 0 }} /> <span>{F.consent}</span>
                   </label>
-                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/relay" style={{ color: GREEN, fontWeight: 600, textDecoration: "none" }}>{F.privacy}</a></div>
+                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/privacy" style={{ color: GREEN, fontWeight: 600, textDecoration: "none" }}>{F.privacy}</a></div>
                 </div>
                 {fwdErr && <p style={{ fontSize: 13, color: "#B42318", margin: "0 20px" }}>{fwdErr}</p>}
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px 18px" }}>

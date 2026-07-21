@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { readerLink } from "@/lib/reader-origin";
+import { readerLink, readerOrigin } from "@/lib/reader-origin";
 import { sendEmail, emailConfigured } from "@/lib/email";
 import { NextResponse } from "next/server";
 
@@ -43,6 +43,7 @@ export async function POST(req: Request) {
   const docTitle = (doc?.title && doc.title.trim()) || "a document";
   const forwarder = (origin.label as string) || `${origin.first_name ?? ""} ${origin.last_name ?? ""}`.trim() || "A colleague";
 
+  const privacyUrl = `${readerOrigin(new URL(req.url).origin)}/privacy`;
   const sent: { email: string; ok: boolean }[] = [];
   for (const c of clean) {
     const parts = c.name.split(/\s+/);
@@ -55,7 +56,7 @@ export async function POST(req: Request) {
       .single();
     if (error || !rec) { sent.push({ email: c.email, ok: false }); continue; }
     const readUrl = readerLink(rec.share_token as string, new URL(req.url).origin);
-    const emailResult = await sendEmail("relay", { to: c.email, subject: `${forwarder} shared "${docTitle}" with you`, html: forwardEmail({ toName: firstName, forwarder, docTitle, readUrl, note }) });
+    const emailResult = await sendEmail("relay", { to: c.email, subject: `${forwarder} shared "${docTitle}" with you`, html: forwardEmail({ toName: firstName, forwarder, docTitle, readUrl, note, privacyUrl }) });
     sent.push({ email: c.email, ok: emailResult.ok });
   }
 
@@ -67,8 +68,8 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, count: clean.length, sent, emailConfigured: emailConfigured("relay") });
 }
 
-function forwardEmail({ toName, forwarder, docTitle, readUrl, note }: { toName: string; forwarder: string; docTitle: string; readUrl: string; note: string }) {
-  const tn = esc(toName), fw = esc(forwarder), dt = esc(docTitle), url = esc(readUrl);
+function forwardEmail({ toName, forwarder, docTitle, readUrl, note, privacyUrl }: { toName: string; forwarder: string; docTitle: string; readUrl: string; note: string; privacyUrl: string }) {
+  const tn = esc(toName), fw = esc(forwarder), dt = esc(docTitle), url = esc(readUrl), pv = esc(privacyUrl);
   const noteBlock = note
     ? `<div style="border-left:3px solid #d7ebe0;padding:2px 0 2px 14px;margin:16px 0;color:#475467;font-size:14px;font-style:italic;line-height:1.5;">${esc(note)}</div>`
     : "";
@@ -88,9 +89,7 @@ function forwardEmail({ toName, forwarder, docTitle, readUrl, note }: { toName: 
     <div style="background:#F6F8F7;border-radius:10px;padding:12px 14px;margin:14px 0 12px;font-size:11.5px;color:#586760;line-height:1.6;">
       <strong style="color:#111A16;">Why you got this:</strong> ${fw} forwarded this document to you using RelayDocuments, a service for sharing documents by link. If this was not meant for you, you can ignore it, nothing opens until you choose to.
     </div>
-    <p style="font-size:11.5px;color:#98A2B3;text-align:center;margin:0;">
-      <a href="${url}" style="color:#159A56;font-weight:600;text-decoration:none;">Privacy notice</a> &middot; RelayDocuments Inc
-    </p>
+    <p style="font-size:11.5px;color:#98A2B3;text-align:center;margin:0;"><a href="${pv}" style="color:#159A56;font-weight:600;text-decoration:none;">Privacy notice</a> &middot; RelayDocuments Inc</p>
   </div>
   </body></html>`;
 }
