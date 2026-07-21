@@ -1,4 +1,4 @@
-// ReadProspects design system — Termii-inspired. Single source of truth.
+// ReadProspects design system â€” Termii-inspired. Single source of truth.
 // Every screen imports from here so the look stays consistent by construction.
 
 export const T = {
@@ -15,10 +15,10 @@ export const T = {
   brandGreen: "#1FA971",
 
   // Content surfaces
-  canvas: "#F8F9FA",
+  canvas: "#EEF4F0",
   card: "#FFFFFF",
-  border: "#EAECEF",
-  borderSoft: "#F2F4F7",
+  border: "#E7ECEA",
+  borderSoft: "#EDF2EF",
 
   // Text
   heading: "#0F1729",
@@ -44,10 +44,14 @@ export const T = {
   trackingTight: "-0.02em",
 
   // Radius
-  rCard: 12,
+  rCard: 14,
   rBtn: 8,
   rPill: 16,
   rInput: 8,
+
+  // Elevation (soft, layered)
+  shadow: "0 1px 2px rgba(11,40,28,0.05), 0 10px 28px rgba(13,60,40,0.06)",
+  shadowSm: "0 1px 2px rgba(11,40,28,0.05), 0 4px 14px rgba(13,60,40,0.05)",
 };
 
 // Reusable style fragments
@@ -71,6 +75,7 @@ export const cardStyle = {
   background: T.card,
   border: `1px solid ${T.border}`,
   borderRadius: T.rCard,
+  boxShadow: T.shadow,
 };
 
 export const primaryBtn = {
@@ -83,6 +88,7 @@ export const primaryBtn = {
   fontFamily: T.font,
   cursor: "pointer",
   padding: "10px 16px",
+  boxShadow: "0 4px 14px rgba(11,122,75,0.22)",
 };
 
 // ---- Termii structural component styles ----
@@ -91,6 +97,7 @@ export const statCard = {
   border: `1px solid ${T.border}`,
   borderRadius: T.rCard,
   padding: 16,
+  boxShadow: T.shadowSm,
 };
 
 export const tableHeader = {

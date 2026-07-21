@@ -26,6 +26,16 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
         .app-scrim { display: none; }
         .drawer-close { display: none; }
 
+        .app-content { position: relative; }
+        .app-content > *:not(.app-aurora) { position: relative; z-index: 1; }
+        .app-aurora { position: fixed; top: 0; left: 232px; right: 0; bottom: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .app-aurora span { position: absolute; border-radius: 50%; filter: blur(90px); }
+        .app-aurora .a { width: 560px; height: 460px; left: 24%; top: -200px; background: radial-gradient(closest-side, rgba(51,230,162,0.22), transparent); animation: rpAuroraA 30s ease-in-out infinite; }
+        .app-aurora .b { width: 480px; height: 480px; right: -160px; top: 34%; background: radial-gradient(closest-side, rgba(31,169,113,0.15), transparent); animation: rpAuroraB 34s ease-in-out infinite; }
+        @keyframes rpAuroraA { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-28px,30px)} }
+        @keyframes rpAuroraB { 0%,100%{transform:translate(0,0)} 50%{transform:translate(24px,-24px)} }
+        @media (prefers-reduced-motion: reduce){ .app-aurora span{ animation:none; } }
+
         @media (max-width: 1024px) {
           .app-topbar {
             display: flex; align-items: center; gap: 12px;
@@ -55,6 +65,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
             transform: translateX(-100%); opacity: 0; transition: transform .25s ease, opacity .25s ease;
           }
           .app-shell.drawer-open .drawer-close { transform: translateX(0); opacity: 1; }
+          .app-aurora { left: 0; top: 54px; }
         }
       `}</style>
 
@@ -76,7 +87,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
           </button>
           <div onClick={() => setOpen(false)} style={{ height: "100%" }}>{sidebar}</div>
         </div>
-        <div className="app-content">{children}</div>
+        <div className="app-content"><div className="app-aurora" aria-hidden="true"><span className="a" /><span className="b" /></div>{children}</div>
       </div>
     </div>
   );
