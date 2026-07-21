@@ -106,6 +106,13 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   const [draft, setDraft] = useState("");
   const [asking, setAsking] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [forwardOpen, setForwardOpen] = useState(false);
+  const [cols, setCols] = useState<{ name: string; email: string }[]>([{ name: "", email: "" }]);
+  const [fwdMsg, setFwdMsg] = useState("");
+  const [consent, setConsent] = useState(true);
+  const [fwdBusy, setFwdBusy] = useState(false);
+  const [fwdErr, setFwdErr] = useState("");
+  const [fwdDone, setFwdDone] = useState<string | null>(null);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -218,17 +225,63 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
 
   const maxDwell = Math.max(1, ...Object.values(dwellView));
 
+  const fr = locale === "fr";
+  const F = {
+    btn: fr ? "Transf\u00e9rer \u00e0 un coll\u00e8gue" : "Forward to a colleague",
+    btnShort: fr ? "Transf\u00e9rer" : "Forward",
+    title: fr ? "Transf\u00e9rer ce document" : "Forward this document",
+    sub: fr ? "Envoyez-le \u00e0 un coll\u00e8gue. Chaque personne re\u00e7oit son propre lien s\u00e9curis\u00e9." : "Send it on to a colleague. Each person gets their own secure link.",
+    colleague: fr ? "Coll\u00e8gue" : "Colleague",
+    name: fr ? "Nom" : "Name",
+    email: fr ? "E-mail" : "Email",
+    namePh: fr ? "Nom complet" : "Full name",
+    emailPh: "name@company.com",
+    addAnother: fr ? "Ajouter un autre coll\u00e8gue" : "Add another colleague",
+    message: fr ? "Message (facultatif)" : "Message (optional)",
+    messagePh: fr ? "Ajoutez une note pour eux" : "Add a note for them",
+    consent: fr ? "J\u2019ai une raison l\u00e9gitime de partager ce document avec les personnes ci-dessus." : "I have a legitimate reason to share this document with the people above.",
+    disclosure: fr ? "RelayDocuments enverra \u00e0 chaque personne un lien, et elle verra que vous avez partag\u00e9 le document. Elle peut se d\u00e9sinscrire \u00e0 tout moment." : "RelayDocuments will email each person a link, and they will see that you shared it. They can opt out anytime.",
+    privacy: fr ? "Avis de confidentialit\u00e9" : "Privacy notice",
+    cancel: fr ? "Annuler" : "Cancel",
+    send: fr ? "Envoyer le document" : "Send document",
+    sending: fr ? "Envoi\u2026" : "Sending\u2026",
+    needOne: fr ? "Ajoutez au moins un coll\u00e8gue." : "Add at least one colleague.",
+    needConsent: fr ? "Veuillez confirmer que vous avez une raison l\u00e9gitime." : "Please confirm you have a legitimate reason.",
+    badEmail: fr ? "Une des adresses e-mail semble invalide." : "One of the email addresses looks invalid.",
+    failed: fr ? "L\u2019envoi a \u00e9chou\u00e9. R\u00e9essayez." : "That didn\u2019t send. Please try again.",
+    doneTitle: fr ? "Document transf\u00e9r\u00e9" : "Document forwarded",
+    done: fr ? "Termin\u00e9" : "Done",
+    sentMsg: (n: number) => fr ? `${n} coll\u00e8gue(s) recevront leur propre lien par e-mail.` : `${n} colleague${n === 1 ? "" : "s"} will get their own link by email.`,
+  };
+  const fwdInput = { width: "100%", border: `1px solid ${LINE}`, borderRadius: 9, padding: "9px 11px", fontFamily: AEON, fontSize: 13, color: INK, background: "#fff", outline: "none" } as const;
+  async function submitForward() {
+    setFwdErr("");
+    const clean = cols.map((c) => ({ name: c.name.trim(), email: c.email.trim() })).filter((c) => c.name && c.email);
+    if (!clean.length) { setFwdErr(F.needOne); return; }
+    if (!consent) { setFwdErr(F.needConsent); return; }
+    if (clean.some((c) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c.email))) { setFwdErr(F.badEmail); return; }
+    setFwdBusy(true);
+    try {
+      const res = await fetch("/api/forward", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, colleagues: clean, message: fwdMsg.trim() }) });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) { setFwdErr(json.error || F.failed); setFwdBusy(false); return; }
+      setFwdDone(F.sentMsg(clean.length)); setFwdBusy(false);
+    } catch { setFwdErr(F.failed); setFwdBusy(false); }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: CANVAS, fontFamily: AEON, color: INK }}>
       <style>{`
         .fx-ask{transition:background .15s}.fx-ask:hover{background:${GREEN_HOVER}}
         .fx-in:focus{border-color:${BRAND};box-shadow:0 0 0 3px rgba(31,169,113,0.14)}
         .rdr-handle{display:none}
+        .fwd-short{display:none}
         .rdr-chev{display:none}
         @media ${MOBILE}{
           .rdr-grid{grid-template-columns:1fr !important;gap:0 !important;padding:10px !important;}
           .rdr-rail{display:none !important;}
           .rdr-title{display:none !important;}
+          .fwd-full{display:none !important;}.fwd-short{display:inline !important;}.fx-fwd{margin-left:auto !important;}
           .rdr-main{padding-bottom:132px !important;}
           .rdr-aside{position:fixed !important;top:auto !important;bottom:0 !important;left:0 !important;right:0 !important;height:auto !important;max-height:86vh !important;border-radius:18px 18px 0 0 !important;z-index:40 !important;box-shadow:0 -6px 28px rgba(9,30,22,0.14) !important;}
           .rdr-handle{display:block;width:40px;height:4px;border-radius:4px;background:#D7DED8;margin:8px auto 0;}
@@ -247,7 +300,11 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={BRAND} strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill={BRAND} /></svg>
           </span>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
-          <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "50%" }}>{title}</h1>
+          <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "38%" }}>{title}</h1>
+          <button onClick={() => { setForwardOpen(true); setFwdDone(null); setFwdErr(""); }} className="fx-fwd" style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: GREEN_SOFT, color: GREEN, border: "1px solid #CDE7D8", borderRadius: 9, padding: "8px 13px", fontSize: 13, fontWeight: 600, fontFamily: AEON, cursor: "pointer" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h13M11 6l6 6-6 6" /><path d="M17 5h3v3" /></svg>
+            <span className="fwd-full">{F.btn}</span><span className="fwd-short">{F.btnShort}</span>
+          </button>
         </div>
       </header>
 
@@ -301,6 +358,67 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           </div>
         </aside>
       </div>
+      {forwardOpen && (
+        <div onClick={() => setForwardOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(17,26,22,0.34)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "26px 16px", overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, background: "#fff", borderRadius: 16, boxShadow: "0 24px 60px rgba(15,40,28,0.28)", fontFamily: AEON, overflow: "hidden" }}>
+            {fwdDone ? (
+              <div style={{ padding: 28, textAlign: "center" }}>
+                <div style={{ width: 46, height: 46, borderRadius: 12, background: GREEN_SOFT, color: GREEN, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: INK, margin: "0 0 4px" }}>{F.doneTitle}</h3>
+                <p style={{ fontSize: 13.5, color: BODY, margin: "0 0 18px" }}>{fwdDone}</p>
+                <button onClick={() => setForwardOpen(false)} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 14, fontWeight: 600, fontFamily: AEON, cursor: "pointer" }}>{F.done}</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ padding: "18px 20px 4px" }}>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: INK }}>{F.title}</h3>
+                  <p style={{ margin: "5px 0 0", fontSize: 12.5, color: BODY, lineHeight: 1.5 }}>{F.sub}</p>
+                </div>
+                <div style={{ padding: "14px 20px 4px", maxHeight: "46vh", overflowY: "auto" }}>
+                  {cols.map((c, i) => (
+                    <div key={i} style={{ border: `1px solid ${LINE}`, borderRadius: 12, padding: "12px 12px 2px", marginBottom: 10, position: "relative", background: "#FCFDFC" }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: SLATE, letterSpacing: "0.05em", marginBottom: 8 }}>{F.colleague} {i + 1}</div>
+                      {i > 0 && <span onClick={() => setCols(cols.filter((_, k) => k !== i))} style={{ position: "absolute", top: 9, right: 10, fontSize: 16, color: SLATE, cursor: "pointer", lineHeight: 1 }}>&times;</span>}
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <div style={{ flex: 1, marginBottom: 10 }}>
+                          <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.name}</label>
+                          <input className="fx-in" value={c.name} onChange={(e) => setCols(cols.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)))} placeholder={F.namePh} style={fwdInput} />
+                        </div>
+                        <div style={{ flex: 1, marginBottom: 10 }}>
+                          <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.email}</label>
+                          <input className="fx-in" value={c.email} onChange={(e) => setCols(cols.map((x, k) => (k === i ? { ...x, email: e.target.value } : x)))} placeholder={F.emailPh} style={fwdInput} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {cols.length < 10 && (
+                    <span onClick={() => setCols([...cols, { name: "", email: "" }])} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: GREEN, cursor: "pointer", padding: "6px 2px", marginBottom: 12 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg> {F.addAnother}
+                    </span>
+                  )}
+                  <div style={{ marginBottom: 6 }}>
+                    <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.message}</label>
+                    <textarea value={fwdMsg} onChange={(e) => setFwdMsg(e.target.value)} rows={2} placeholder={F.messagePh} style={{ ...fwdInput, resize: "vertical" }} />
+                  </div>
+                </div>
+                <div style={{ borderTop: `1px solid ${LINE}`, padding: "14px 20px" }}>
+                  <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: BODY, lineHeight: 1.5, cursor: "pointer" }}>
+                    <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2, width: 15, height: 15, accentColor: GREEN, flexShrink: 0 }} /> <span>{F.consent}</span>
+                  </label>
+                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/relay" style={{ color: GREEN, fontWeight: 600, textDecoration: "none" }}>{F.privacy}</a></div>
+                </div>
+                {fwdErr && <p style={{ fontSize: 13, color: "#B42318", margin: "0 20px" }}>{fwdErr}</p>}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px 18px" }}>
+                  <button onClick={() => setForwardOpen(false)} style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 16px", fontSize: 13.5, fontWeight: 600, color: BODY, fontFamily: AEON, cursor: "pointer" }}>{F.cancel}</button>
+                  <button onClick={submitForward} disabled={fwdBusy} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 16px", fontSize: 13.5, fontWeight: 600, fontFamily: AEON, cursor: "pointer", opacity: fwdBusy ? 0.6 : 1 }}>{fwdBusy ? F.sending : F.send}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
