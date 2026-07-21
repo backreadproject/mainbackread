@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
+import { createClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
 
 // ReadProspects marketing landing. Dark skin. Bilingual via the locale cookie
@@ -10,7 +11,7 @@ const LINKEDIN = "https://www.linkedin.com/company/readprospects";
 type Plan = { name: string; price: string; per?: string; desc: string; hot?: boolean };
 type Faq = { q: string; a: string };
 type Copy = {
-  nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string; startShort: string };
+  nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string; startShort: string; openApp: string };
   hero: { eyebrow: string; t1: string; t2: string; sub: string; ctaOut: string; ctaLg: string; nocard: string };
   panel: { questions: string; verdict: string; ready: string; sig1: string; sig2: string; sig3: string;
            visits: string; time: string; q: string; intent: string };
@@ -34,7 +35,7 @@ type Copy = {
 
 const COPY: Record<Locale, Copy> = {
   en: {
-    nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start here", startShort: "Start" },
+    nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start here", startShort: "Start", openApp: "Open app" },
     hero: { eyebrow: "Document intelligence", t1: "Every reader leaves a trail.", t2: "Now you can follow it.",
       sub: "Monitor and understand how people move through the documents you send. Every open, every question, every hesitation, before your follow-up goes cold.",
       ctaOut: "See how it works", ctaLg: "Start 7-day trial", nocard: "Your document stays yours, no watermark" },
@@ -89,7 +90,7 @@ const COPY: Record<Locale, Copy> = {
     footer: { pricing: "Pricing", privacy: "Privacy", terms: "Terms", signin: "Sign in", tag: "The document reads the reader." },
   },
   fr: {
-    nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer", startShort: "Commencer" },
+    nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer", startShort: "Commencer", openApp: "Ouvrir l'app" },
     hero: { eyebrow: "Intelligence documentaire", t1: "Chaque lecteur laisse une trace.", t2: "Suivez-la enfin.",
       sub: "Surveillez et comprenez comment vos lecteurs parcourent les documents que vous envoyez. Chaque ouverture, chaque question, chaque h\u00e9sitation, avant que votre relance ne refroidisse.",
       ctaOut: "Voir le fonctionnement", ctaLg: "Essai gratuit de 7 jours", nocard: "Votre document reste le v\u00f4tre, sans filigrane" },
@@ -292,6 +293,9 @@ export default async function LandingPage() {
   const jar = await cookies();
   const locale: Locale = jar.get("locale")?.value === "fr" ? "fr" : "en";
   const c = COPY[locale];
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const loggedIn = !!user;
 
   return (
     <div className="rp-page">
@@ -306,7 +310,9 @@ export default async function LandingPage() {
             </div>
             <div className="rp-navr">
               <LanguageSwitcher current={locale} dark />
-              <a className="sign" href="/login">{c.nav.signin}</a>
+              {loggedIn
+                ? <a className={"rp-btn" + (locale === "fr" ? " rp-btn-fr" : "")} href="/overview">{c.nav.openApp}</a>
+                : <a className="sign" href="/login">{c.nav.signin}</a>}
             </div>
           </nav>
         </div>
