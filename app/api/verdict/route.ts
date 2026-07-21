@@ -1,43 +1,49 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
+import { buildVerdictInput, type SignalRow, type RecipientLite } from "@/lib/verdict-signals";
 
 export const runtime = "nodejs";
 
 /**
  * POST /api/verdict
- * Sender-only. This reads behavioural data about a named third party, so it
- * must sit behind auth and an ownership check — never behind a share token.
+ * Sender-only. Reads behavioural data about a named third party, so it is behind
+ * auth and an ownership check (the document must belong to the signed-in user).
  */
 export async function POST(req: NextRequest) {
-  const { documentId, recipientId } = await req.json();
+  const { recipientId } = await req.json();
+  if (!recipientId) return NextResponse.json({ error: "Missing recipient." }, { status: 400 });
 
-  // TODO(auth): const user = await requireUser(req);
-  // TODO(authz): assert this user owns documentId. Without this you have an
-  // IDOR that leaks one customer's reader behaviour to another. Do it before launch.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  const signals = await loadSignals(documentId, recipientId);
-  if (!signals) return NextResponse.json({ error: "No reads yet." }, { status: 404 });
+  const { data: recipient } = await supabase
+    .from("recipients")
+    .select("id, label, email, documents ( id, title, owner_id, extracted_text )")
+    .eq("id", recipientId)
+    .single();
+  const doc = recipient?.documents as unknown as { id: string; title: string; owner_id: string; extracted_text: string | null } | undefined;
+  if (!recipient || !doc || doc.owner_id !== user.id) {
+    return NextResponse.json({ error: "Not found." }, { status: 404 });
+  }
 
+  const admin = createAdminClient();
+  const { data: signals } = await admin
+    .from("signals")
+    .select("kind, page, value, created_at")
+    .eq("recipient_id", recipientId)
+    .order("created_at", { ascending: true });
+  const rows = (signals ?? []) as SignalRow[];
+  if (rows.length === 0) return NextResponse.json({ error: "No reads yet." }, { status: 404 });
+
+  const input = buildVerdictInput(recipient as RecipientLite, doc, rows);
   try {
-    const { data, cost } = await runAI(verdictTask, signals, { documentId });
-    return NextResponse.json({ verdict: data, costUsd: cost.usd });
+    const { data, cost } = await runAI(verdictTask, input, { documentId: doc.title });
+    return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
   } catch (err) {
     console.error("[verdict]", err);
     return NextResponse.json({ error: "Couldn't generate a verdict. Try again." }, { status: 502 });
   }
-}
-
-async function loadSignals(_documentId: string, _recipientId: string) {
-  // TODO(persistence): read from the signals table.
-  return {
-    documentText: "[stub]",
-    documentTitle: "Meridian — Series A",
-    readerName: "Sarah Lindqvist",
-    readerOrg: "Meridian Capital",
-    pages: [{ page: 7, title: "Pricing", seconds: 94, visits: 3 }],
-    backtracks: ["returned from page 8 to page 7"],
-    questionsAsked: ["Is the annual commit negotiable?"],
-    forwardedTo: ["finance@meridian.vc"],
-    openCount: 3,
-  };
 }
