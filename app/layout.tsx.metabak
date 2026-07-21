@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 const dmSans = DM_Sans({
@@ -7,19 +6,10 @@ const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
-export async function generateMetadata(): Promise<Metadata> {
-  const host = (await headers()).get("host") || "";
-  if (host.includes("relaydocuments")) {
-    return {
-      title: "Relay",
-      description: "A secure, private link to view a document shared with you. No account needed.",
-    };
-  }
-  return {
+export const metadata: Metadata = {
   title: "ReadProspects, the document reads the reader",
   description: "The document reads the reader.",
 };
-}
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${dmSans.variable} h-full`}>
