@@ -307,7 +307,6 @@ export default async function LandingPage() {
             <div className="rp-navr">
               <LanguageSwitcher current={locale} dark />
               <a className="sign" href="/login">{c.nav.signin}</a>
-              <a className={"rp-btn" + (locale === "fr" ? " rp-btn-fr" : "")} href="/login"><span className="rp-full">{c.nav.start}</span><span className="rp-short">{c.nav.startShort}</span></a>
             </div>
           </nav>
         </div>
