@@ -35,7 +35,7 @@ export default function AcceptInviteClient({ token }: { token: string }) {
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.canvas, fontFamily: T.font, letterSpacing: T.tracking, padding: 20 }}>
       <div style={{ width: 400, maxWidth: "100%", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-          <span style={{ color: T.brandGreen, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg></span>
+          <span style={{ color: T.brandGreen, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em", filter: "drop-shadow(0 0 3px rgba(51,230,162,0.55))" }}><circle cx="12" cy="12" r="9" stroke="#33E6A2" strokeWidth="2.4" /><circle cx="12" cy="12" r="3.5" fill="#33E6A2" /></svg></span>
           <span style={{ fontSize: 20, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight }}>ReadProspects</span>
         </div>
         {children}

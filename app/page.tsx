@@ -157,7 +157,7 @@ const READERS = [
 const CSS = `
   .rp-page{min-height:100vh;background:#050F0A;color:#F2F7F4;font-family:'DM Sans',system-ui,sans-serif;letter-spacing:-0.011em}
   .rp-page *{box-sizing:border-box}
-  .rp-page a{color:inherit;text-decoration:none}
+  .rp-page a{text-decoration:none}
   .rp-wrap{max-width:1160px;margin:0 auto;padding:0 28px}
   .rp-eyebrow{display:inline-block;font-size:12px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#33E6A2;padding:6px 12px;border:1px solid rgba(51,230,162,0.25);border-radius:20px;background:rgba(51,230,162,0.06)}
   .rp-h2{font-size:40px;line-height:1.08;font-weight:700;letter-spacing:-0.03em;color:#F2F7F4;margin:18px 0 0}

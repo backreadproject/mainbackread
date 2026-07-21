@@ -7,7 +7,7 @@ import type { Locale } from "@/lib/i18n";
 const BRAND = "#1FA971", GREEN = "#0B7A4B", NIGHT = "#082019", LEMON = "#D8E84A", CLOUD = "rgba(255,255,255,0.72)";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";
 const CircleMark = () => (
-  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em" }}><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill="currentColor" /></svg>
+  <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em", filter: "drop-shadow(0 0 3px rgba(51,230,162,0.55))" }}><circle cx="12" cy="12" r="9" stroke="#33E6A2" strokeWidth="2.4" /><circle cx="12" cy="12" r="3.5" fill="#33E6A2" /></svg>
 );
 
 type NavLabels = { how: string; why: string; pricing: string; signin: string; start: string; openApp: string };
