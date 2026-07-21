@@ -1,5 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdminPage } from "@/lib/admin";
+import { ADMIN_SLUG } from "@/lib/admin";
+import { T, pageHeading } from "@/lib/theme";
 import PlanForm from "./PlanForm";
 
 export const runtime = "nodejs";
@@ -46,34 +48,40 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
     per.set(d, a);
   }
 
-  const name = [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || "—";
-  const box = { border: "1px solid #1E2A24", borderRadius: 10, padding: 16, marginBottom: 16 } as const;
+  const name = [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || "\u2014";
+  const box = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 16 } as const;
+  const mono = "'DM Mono', ui-monospace, monospace";
 
   return (
-    <div>
-      <h1 style={{ fontSize: 20, marginBottom: 4 }}>{name}</h1>
-      <p style={{ color: "#93A79C", fontSize: 13, marginBottom: 16 }}>
-        {authUser?.user?.email ?? "—"} · {p.account_type ?? "personal"} · joined {authUser?.user?.created_at ? new Date(authUser.user.created_at).toLocaleDateString() : "—"}
-      </p>
+    <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
+      <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
+        <a href={`/${ADMIN_SLUG}/accounts`} style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none", display: "inline-block", marginBottom: 14 }}>&larr; All accounts</a>
+        <div style={{ marginBottom: 18 }}>
+          <h1 style={pageHeading}>{name}</h1>
+          <p style={{ fontSize: 13, color: T.muted, margin: "4px 0 0", fontFamily: mono }}>
+            {authUser?.user?.email ?? "\u2014"} {"\u00b7"} {p.account_type ?? "personal"} {"\u00b7"} joined {authUser?.user?.created_at ? new Date(authUser.user.created_at).toLocaleDateString() : "\u2014"}
+          </p>
+        </div>
 
-      <div style={box}>
-        <h2 style={{ fontSize: 14, marginBottom: 10 }}>Plan</h2>
-        <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "company_1") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
-      </div>
+        <div style={box}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Plan</h2>
+          <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "company_1") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
+        </div>
 
-      <div style={box}>
-        <h2 style={{ fontSize: 14, marginBottom: 10 }}>Documents ({documents.length})</h2>
-        {documents.length === 0 && <p style={{ color: "#93A79C", fontSize: 13 }}>None.</p>}
-        {documents.map((d) => {
-          const a = per.get(d.id) ?? { opens: 0, questions: 0, forwards: 0 };
-          return (
-            <div key={d.id} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #1E2A24", fontSize: 13 }}>
-              <span>{d.title}{d.archived_at ? " (archived)" : ""}</span>
-              <span style={{ color: "#93A79C" }}>{recByDoc.get(d.id) ?? 0} recipients · {a.opens} opens · {a.questions} Q · {a.forwards} fwd</span>
-            </div>
-          );
-        })}
-      </div>
+        <div style={box}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Documents ({documents.length})</h2>
+          {documents.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>None.</p>}
+          {documents.map((d, i) => {
+            const a = per.get(d.id) ?? { opens: 0, questions: 0, forwards: 0 };
+            return (
+              <div key={d.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5 }}>
+                <span style={{ color: T.heading, fontWeight: 600 }}>{d.title}{d.archived_at ? <span style={{ color: T.muted, fontWeight: 400 }}> (archived)</span> : ""}</span>
+                <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{recByDoc.get(d.id) ?? 0} rec {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} Q {"\u00b7"} {a.forwards} fwd</span>
+              </div>
+            );
+          })}
+        </div>
+      </main>
     </div>
   );
 }
