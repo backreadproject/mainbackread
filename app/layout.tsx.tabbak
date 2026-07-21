@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { DM_Sans } from "next/font/google";
+import "./globals.css";
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get("host") || "";
+  if (host.includes("relaydocuments")) {
+    return {
+      title: "Relay",
+      description: "A secure, private link to view a document shared with you. No account needed.",
+      icons: { icon: [{ url: "/relay-icon.svg", type: "image/svg+xml" }], shortcut: "/relay-icon.ico" },
+    };
+  }
+  return {
+    title: "ReadProspects, the document reads the reader",
+    description: "The document reads the reader.",
+    icons: { icon: [{ url: "/rp-icon.svg", type: "image/svg+xml" }], shortcut: "/rp-icon.ico" },
+  };
+}
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={`${dmSans.variable} h-full`}>
+      <body className="min-h-full flex flex-col" style={{ fontFamily: "var(--font-dm-sans), system-ui, sans-serif" }}>
+        {children}
+      </body>
+    </html>
+  );
+}
