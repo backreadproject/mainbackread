@@ -11,7 +11,7 @@ type Plan = { name: string; price: string; per?: string; desc: string; hot?: boo
 type Faq = { q: string; a: string };
 type Copy = {
   nav: { why: string; how: string; platform: string; pricing: string; signin: string; start: string; startShort: string };
-  hero: { eyebrow: string; t1: string; t2: string; sub: string; ctaOut: string; ctaLg: string; or: string; sample: string; nocard: string };
+  hero: { eyebrow: string; t1: string; t2: string; sub: string; ctaOut: string; ctaLg: string; nocard: string };
   panel: { questions: string; verdict: string; ready: string; sig1: string; sig2: string; sig3: string;
            visits: string; time: string; q: string; intent: string };
   trusted: string;
@@ -37,7 +37,7 @@ const COPY: Record<Locale, Copy> = {
     nav: { why: "Why ReadProspects", how: "How it works", platform: "Platform", pricing: "Pricing", signin: "Sign in", start: "Start here", startShort: "Start" },
     hero: { eyebrow: "Document intelligence", t1: "Every reader leaves a trail.", t2: "Now you can follow it.",
       sub: "Monitor and understand how people move through the documents you send. Every open, every question, every hesitation, before your follow-up goes cold.",
-      ctaOut: "See how it works", ctaLg: "Start 7-day trial", or: "or", sample: "get a sample verdict", nocard: "No card to start \u00b7 your document stays yours, no watermark" },
+      ctaOut: "See how it works", ctaLg: "Start 7-day trial", nocard: "Your document stays yours, no watermark" },
     panel: { questions: "Questions asked", verdict: "Verdict", ready: "Ready to move",
       sig1: "Reread the pricing three times", sig2: "Asked about the annual commit", sig3: "Forwarded to one colleague",
       visits: "Visits", time: "Time on doc", q: "Questions", intent: "Intent score" },
@@ -92,7 +92,7 @@ const COPY: Record<Locale, Copy> = {
     nav: { why: "Pourquoi ReadProspects", how: "Fonctionnement", platform: "Plateforme", pricing: "Tarifs", signin: "Connexion", start: "Commencer", startShort: "Commencer" },
     hero: { eyebrow: "Intelligence documentaire", t1: "Chaque lecteur laisse une trace.", t2: "Suivez-la enfin.",
       sub: "Surveillez et comprenez comment vos lecteurs parcourent les documents que vous envoyez. Chaque ouverture, chaque question, chaque h\u00e9sitation, avant que votre relance ne refroidisse.",
-      ctaOut: "Voir le fonctionnement", ctaLg: "Essai gratuit de 7 jours", or: "ou", sample: "obtenir un verdict d'exemple", nocard: "Sans carte pour commencer \u00b7 votre document reste le v\u00f4tre, sans filigrane" },
+      ctaOut: "Voir le fonctionnement", ctaLg: "Essai gratuit de 7 jours", nocard: "Votre document reste le v\u00f4tre, sans filigrane" },
     panel: { questions: "Questions pos\u00e9es", verdict: "Verdict", ready: "Pr\u00eat \u00e0 avancer",
       sig1: "A relu les tarifs trois fois", sig2: "A pos\u00e9 une question sur l'engagement annuel", sig3: "A transf\u00e9r\u00e9 \u00e0 un coll\u00e8gue",
       visits: "Visites", time: "Temps sur le doc", q: "Questions", intent: "Score d'intention" },
@@ -324,7 +324,6 @@ export default async function LandingPage() {
             <a className="rp-btnout" href="#how">{c.hero.ctaOut}</a>
             <a className="rp-btnlg" href="/login">{c.hero.ctaLg}</a>
           </div>
-          <div className="rp-or">{c.hero.or} <a href="/login">{c.hero.sample} &rarr;</a></div>
           <div className="rp-nocard">{c.hero.nocard}</div>
         </div>
 
