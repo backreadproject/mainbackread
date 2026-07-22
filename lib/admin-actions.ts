@@ -132,3 +132,70 @@ export async function deleteUserAction(targetUserId: string, confirmText: string
   return { ok: true };
 }
 
+
+/* ---------------- organizations ---------------- */
+
+export async function removeMemberAction(memberId: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const admin = createAdminClient();
+
+  const { data: m } = await admin.from("organization_members").select("id, organization_id, user_id, email, role").eq("id", memberId).single();
+  if (!m) return fail("Member not found.", 404);
+  const row = m as { id: string; organization_id: string; user_id: string; email: string | null; role: string | null };
+
+  const { error } = await admin.from("organization_members").delete().eq("id", row.id);
+  if (error) return fail(error.message, 500);
+
+  // Don't leave the profile pointing at an org it is no longer in.
+  await admin.from("profiles").update({ active_org_id: null }).eq("id", row.user_id).eq("active_org_id", row.organization_id);
+
+  await writeAudit({ actorId: me.id, actorEmail: me.email, action: "remove_org_member",
+    targetUserId: row.user_id, targetOrgId: row.organization_id, detail: { email: row.email, role: row.role } });
+  return { ok: true };
+}
+
+export async function revokeInviteAction(inviteId: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const admin = createAdminClient();
+
+  const { data: inv } = await admin.from("invitations").select("id, organization_id, email").eq("id", inviteId).single();
+  if (!inv) return fail("Invitation not found.", 404);
+  const row = inv as { id: string; organization_id: string; email: string | null };
+
+  const { error } = await admin.from("invitations").delete().eq("id", row.id);
+  if (error) return fail(error.message, 500);
+
+  await writeAudit({ actorId: me.id, actorEmail: me.email, action: "revoke_invitation",
+    targetOrgId: row.organization_id, detail: { email: row.email } });
+  return { ok: true };
+}
+
+export async function deleteOrgAction(orgId: string, confirmText: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const admin = createAdminClient();
+
+  const { data: org } = await admin.from("organizations").select("id, name").eq("id", orgId).single();
+  if (!org) return fail("Organization not found.", 404);
+  const o = org as { id: string; name: string | null };
+  if ((confirmText ?? "").trim() !== (o.name ?? "").trim()) return fail("The name you typed does not match.");
+
+  // Storage does not cascade: clear org document files first.
+  const { data: docs } = await admin.from("documents").select("id, storage_path").eq("organization_id", o.id);
+  const documents = docs ?? [];
+  const paths = documents.map((d) => d.storage_path).filter(Boolean) as string[];
+  if (paths.length) { try { await admin.storage.from("documents").remove(paths); } catch { /* ignore */ } }
+
+  const { count: memberCount } = await admin.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", o.id);
+  const { count: projectCount } = await admin.from("projects").select("id", { count: "exact", head: true }).eq("organization_id", o.id);
+
+  // projects, members, invitations, access_grants and documents cascade from this row.
+  const { error } = await admin.from("organizations").delete().eq("id", o.id);
+  if (error) return fail(error.message, 500);
+
+  await writeAudit({ actorId: me.id, actorEmail: me.email, action: "delete_organization", targetOrgId: o.id,
+    detail: { name: o.name, documentsRemoved: documents.length, membersRemoved: memberCount ?? 0, projectsRemoved: projectCount ?? 0 } });
+  return { ok: true };
+}
