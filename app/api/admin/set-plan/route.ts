@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminUser, writeAudit } from "@/lib/admin";
+import { isValidPlan } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,7 @@ export async function POST(req: NextRequest) {
 
   const { targetUserId, scope, plan, subscriptionActive } = await req.json();
   if (!targetUserId || !plan) return NextResponse.json({ error: "Missing fields." }, { status: 400 });
+  if (!isValidPlan(plan)) return NextResponse.json({ error: `Unknown plan "${plan}".` }, { status: 400 });
 
   const admin = createAdminClient();
 
