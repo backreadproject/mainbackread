@@ -12,6 +12,7 @@ export default function AdminSidebar({ email }: { email: string }) {
   const base = `/${ADMIN_SLUG}`;
   const NAV: Item[] = [
     { href: base, label: "Dashboard", d: "M4 4h7v7H4z M13 4h7v4h-7z M13 11h7v9h-7z M4 14h7v6H4z" },
+    { href: `${base}/documents`, label: "Documents", d: "M5 3h8l4 4v14H5z M13 3v4h4" },
     { href: `${base}/accounts`, label: "Accounts", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6" },
     { href: `${base}/audit`, label: "Audit log", d: "M3 12h4l3 8 4-16 3 8h4" },
   ];
@@ -63,3 +64,4 @@ export default function AdminSidebar({ email }: { email: string }) {
     </aside>
   );
 }
+
