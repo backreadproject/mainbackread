@@ -1,5 +1,8 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { getOrgContext } from "@/lib/org-context";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resolvePlanForUser } from "@/lib/plan-context";
+import { hasFeature } from "@/lib/plans";
 import DocumentsClient from "./DocumentsClient";
 
 export default async function DocumentsPage() {
@@ -73,5 +76,12 @@ export default async function DocumentsPage() {
     activeReaders: recipients.length,
   };
 
-  return <DocumentsClient rows={rows} stats={stats} isOrg={isOrg} orgId={ctx.org?.id ?? null} projects={projects} />;
+  // A/B variants are a Company II feature and an organization one.
+  const { data: { user } } = await supabase.auth.getUser();
+  const admin = createAdminClient();
+  const planCtx = user ? await resolvePlanForUser(admin, user.id) : null;
+  const abEnabled = isOrg && !!planCtx && hasFeature(planCtx.plan.id, "abVersions");
+
+  return <DocumentsClient rows={rows} stats={stats} isOrg={isOrg} orgId={ctx.org?.id ?? null} projects={projects} abEnabled={abEnabled} />;
 }
+

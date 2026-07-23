@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import VariantUpload from "./VariantUpload";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
@@ -25,7 +26,7 @@ function StatCard({ icon, label, value, sub }: { icon: string; label: string; va
     </div>
   );
 }
-export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [] }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[] }) {
+export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [], abEnabled = false }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[]; abEnabled?: boolean }) {
   const locale = useLocale();
   const dp = getDict(locale).documentsPage;
   const [rows, setRows] = useState(initialRows);
@@ -122,6 +123,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                   {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               )}
+              {abEnabled && <VariantUpload isOrg={isOrg} orgId={orgId} projects={projects} />}
               <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
                 <input type="file" accept="application/pdf,.docx,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
                 {uploading ? dp.uploading : dp.addDocument}
@@ -215,5 +217,6 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
