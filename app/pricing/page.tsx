@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+﻿import { cookies } from "next/headers";
 import MarketingNav from "../MarketingNav";
 
 // Locale-aware. Reads the same "locale" cookie the MarketingNav toggle writes, so
@@ -39,7 +39,7 @@ const COPY: Record<"en" | "fr", Copy> = {
       { id: "team", name: "Team", price: "$59", period: "per month", audience: "Sales and deal teams", tagline: "Your whole team, reading together.", cta: "Start 7-day trial", href: "/login", includes: "Everything in Personal, plus",
         features: ["Run an organization with roles", "Up to 20 seats", "Shared workspace and access grants", "Team activity feed", "Compare readers across a document", "Account-level analytics"] },
       { id: "business", name: "Business", price: "$99", period: "per month", audience: "Companies that need control", tagline: "Unlimited seats, fully locked down.", cta: "Start 7-day trial", href: "/login", includes: "Everything in Team, plus",
-        features: ["Unlimited seats", "SSO and SAML", "Granular, custom permissions", "Audit log and custom data retention", "A/B document versions", "Slack and webhook alerts", "Zapier and Make integration"] },
+        features: ["Unlimited seats", "Granular, custom permissions", "Audit log and custom data retention", "A/B document versions", "Slack and webhook alerts", "Zapier and Make integration"] },
     ],
     baseline: "Every plan runs on a private reader domain, works on mobile, speaks English and French, and never puts a watermark on your document.",
     faqHeading: "Before you decide",
@@ -72,7 +72,7 @@ const COPY: Record<"en" | "fr", Copy> = {
       { id: "team", name: "\u00c9quipe", price: "59 $", period: "par mois", audience: "\u00c9quipes de vente", tagline: "Toute votre \u00e9quipe, qui lit ensemble.", cta: "Essai gratuit de 7 jours", href: "/login", includes: "Tout ce qu'il y a dans Personnel, plus",
         features: ["Une organisation avec des r\u00f4les", "Jusqu'\u00e0 20 si\u00e8ges", "Espace partag\u00e9 et acc\u00e8s accord\u00e9s", "Fil d'activit\u00e9 de l'\u00e9quipe", "Comparer les lecteurs d'un m\u00eame document", "Analyses au niveau du compte"] },
       { id: "business", name: "Entreprise", price: "99 $", period: "par mois", audience: "Entreprises qui exigent le contr\u00f4le", tagline: "Si\u00e8ges illimit\u00e9s, parfaitement verrouill\u00e9.", cta: "Essai gratuit de 7 jours", href: "/login", includes: "Tout ce qu'il y a dans \u00c9quipe, plus",
-        features: ["Si\u00e8ges illimit\u00e9s", "SSO et SAML", "Permissions personnalis\u00e9es et granulaires", "Journal d'audit et r\u00e9tention des donn\u00e9es personnalis\u00e9e", "Versions A/B des documents", "Alertes Slack et webhooks", "Int\u00e9gration Zapier et Make"] },
+        features: ["Si\u00e8ges illimit\u00e9s", "Permissions personnalis\u00e9es et granulaires", "Journal d'audit et r\u00e9tention des donn\u00e9es personnalis\u00e9e", "Versions A/B des documents", "Alertes Slack et webhooks", "Int\u00e9gration Zapier et Make"] },
     ],
     baseline: "Chaque forfait fonctionne sur un domaine de lecture priv\u00e9, s'adapte au mobile, parle fran\u00e7ais et anglais, et n'appose jamais de filigrane sur votre document.",
     faqHeading: "Avant de d\u00e9cider",
@@ -197,3 +197,4 @@ export default async function PricingPage() {
     </div>
   );
 }
+
