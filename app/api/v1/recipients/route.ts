@@ -5,6 +5,7 @@ import { ok, bad, page } from "@/lib/api-json";
 import { getPlan } from "@/lib/plans";
 import { checkRecipientLimit } from "@/lib/plan-context";
 import { readerLink } from "@/lib/reader-origin";
+import { pickVariantForDocument } from "@/lib/variants";
 
 export const runtime = "nodejs";
 
@@ -57,10 +58,13 @@ export async function POST(req: Request) {
   const email = typeof body.email === "string" && body.email.includes("@") ? body.email.trim() : null;
   if (!label && !first && !email) return bad("Provide at least a label, first_name or email.");
 
+  const explicitVariant = typeof body.variant_id === "string" && body.variant_id.trim() ? body.variant_id.trim() : null;
+  const assignedVariant = explicitVariant ?? (await pickVariantForDocument(admin, documentId));
+
   const shareToken = crypto.randomBytes(16).toString("hex");
   const { data, error } = await admin.from("recipients")
     .insert({
-      document_id: documentId, share_token: shareToken,
+      document_id: documentId, share_token: shareToken, variant_id: assignedVariant,
       label: label ?? ([first, last].filter(Boolean).join(" ").trim() || null),
       first_name: first, last_name: last, email, delivery: "link",
     })
@@ -69,5 +73,6 @@ export async function POST(req: Request) {
 
   return ok({ ...data, share_url: readerLink(shareToken) }, 201);
 }
+
 
 

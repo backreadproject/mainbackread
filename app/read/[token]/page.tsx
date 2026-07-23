@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import PdfReader from "./PdfReader";
 import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
+import { sourceForRecipient } from "@/lib/variants";
 
 // Neutral, un-branded metadata for the reader surface. This runs on relaydocuments.com
 // and must never fall back to the marketing default title (which names ReadProspects). We show
@@ -45,13 +46,11 @@ export default async function ReadPage({
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, first_name, documents ( title, storage_path )")
+    .select("id, first_name")
     .eq("share_token", token)
     .single();
-  const doc = recipient?.documents as unknown as
-    | { title: string; storage_path: string }
-    | undefined;
-  if (!recipient || !doc) {
+  const doc = recipient ? await sourceForRecipient(admin, recipient.id as string) : null;
+  if (!recipient || !doc || !doc.storagePath) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#E9EAEC", fontFamily: "system-ui, sans-serif" }}>
         <p style={{ color: "#6E7480" }}>{r.invalidLink}</p>
@@ -62,7 +61,7 @@ export default async function ReadPage({
   const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
   const { data: signed } = await admin.storage
     .from("documents")
-    .createSignedUrl(doc.storage_path, 3600);
+    .createSignedUrl(doc.storagePath, 3600);
 
   // Load the saved conversation (server-side, service-role only) so it restores on any
   // device that opens this link. reader_messages is invisible to account holders.
@@ -78,3 +77,4 @@ export default async function ReadPage({
 
   return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} greeting={greeting} initialThread={initialThread} />;
 }
+

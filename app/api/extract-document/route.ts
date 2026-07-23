@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractText } from "@/lib/extract";
@@ -13,7 +13,7 @@ export const maxDuration = 60;
  * (RLS-checked via the session client), then we do the heavy work with admin.
  */
 export async function POST(req: NextRequest) {
-  const { documentId } = await req.json();
+  const { documentId, variantId } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
 
   const supabase = await createClient();
@@ -30,15 +30,25 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
+  // A/B: when a variantId is given, extract THAT file and store the text on the
+  // variant row. A variant with no file of its own shares the base document text.
+  let targetPath = doc.storage_path as string;
+  if (typeof variantId === "string" && variantId.trim()) {
+    const { data: v } = await admin.from("document_variants").select("id, document_id, storage_path").eq("id", variantId.trim()).single();
+    if (!v || v.document_id !== documentId) return NextResponse.json({ error: "Variant not found." }, { status: 404 });
+    if (!v.storage_path) return NextResponse.json({ ok: true, method: "shared-base", chars: 0, needsPageOcr: false });
+    targetPath = v.storage_path as string;
+  }
+
   // Download the raw file from storage.
-  const { data: blob, error: dlErr } = await admin.storage.from("documents").download(doc.storage_path);
+  const { data: blob, error: dlErr } = await admin.storage.from("documents").download(targetPath);
   if (dlErr || !blob) {
     return NextResponse.json({ error: `Could not read the file: ${dlErr?.message ?? "unknown"}` }, { status: 500 });
   }
 
   const bytes = new Uint8Array(await blob.arrayBuffer());
   const mime = blob.type || "";
-  const name = doc.storage_path.split("/").pop() || doc.title || "";
+  const name = targetPath.split("/").pop() || doc.title || "";
 
   let result;
   try {
@@ -51,10 +61,12 @@ export async function POST(req: NextRequest) {
   }
 
   // Store whatever we got. Empty text is valid (scanned PDF awaiting Phase 2).
+  const targetTable = (typeof variantId === "string" && variantId.trim()) ? "document_variants" : "documents";
+  const targetId = (typeof variantId === "string" && variantId.trim()) ? variantId.trim() : documentId;
   await admin
-    .from("documents")
+    .from(targetTable)
     .update({ extracted_text: result.text || null, extract_method: result.method, needs_page_ocr: result.needsPageOcr })
-    .eq("id", documentId);
+    .eq("id", targetId);
 
   return NextResponse.json({
     ok: true,
@@ -63,3 +75,4 @@ export async function POST(req: NextRequest) {
     needsPageOcr: result.needsPageOcr,
   });
 }
+
