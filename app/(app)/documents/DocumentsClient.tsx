@@ -171,7 +171,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                 <span className="data-cell" data-label={dp.colQuestions} style={{ fontSize: 14, color: r.questions > 0 ? T.heading : T.muted, fontWeight: r.questions > 0 ? 600 : 400 }}>{r.questions}</span>
                 <span className="data-cell" data-label={dp.colProject} style={{ fontSize: 13, color: r.projectName ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "\u2014"}</span>
                 <span className="data-cell" data-label={dp.colAdded} style={{ fontSize: 14, color: T.body }}>{new Date(r.createdAt).toLocaleDateString(locale === "fr" ? "fr-FR" : undefined, { day: "numeric", month: "short" })}</span>
-                <span className="data-cell" data-label={dp.colStatus}><span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? dp.statusArchived : r.reads > 0 ? dp.statusActive : dp.statusAwaiting}</span></span>
+                <span className="data-cell" data-label={dp.colStatus}><span title={r.archived ? "Archived. Hidden from your active list; readers with the link can still open it." : r.recipients === 0 ? "Not shared yet. Nobody has been sent this document." : r.reads > 0 ? "Active. At least one recipient has opened it." : "Awaiting. Sent, but nobody has opened it yet."} style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, cursor: "help", background: r.archived ? T.pillNeutralBg : r.reads > 0 ? T.pillPosBg : T.pillNeutralBg, color: r.archived ? T.body : r.reads > 0 ? T.pillPosText : T.body }}>{r.archived ? dp.statusArchived : r.recipients === 0 ? "Not shared" : r.reads > 0 ? dp.statusActive : dp.statusAwaiting}</span></span>
                 <div style={{ position: "relative", justifySelf: "end" }}>
                   <button onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === r.id ? null : r.id); }} aria-label={dp.actions} style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, borderRadius: 6, lineHeight: 0 }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
@@ -217,6 +217,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 
