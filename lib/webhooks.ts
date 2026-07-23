@@ -60,7 +60,8 @@ async function postOnce(url: string, body: string, headers: Record<string, strin
 }
 
 /** Resolves the recipient's document and organization, then fires every matching
- *  hook. Personal accounts have no organization, so nothing fires for them.
+ *  Settings webhook AND every Zapier/Make REST Hook subscription. Personal
+ *  accounts have no organization, so nothing fires for them.
  *  Never throws: a webhook problem must never break a reader's action. */
 export async function deliverForRecipient(recipientId: string, event: WebhookEvent, data: Record<string, unknown>): Promise<void> {
   try {
@@ -79,7 +80,6 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
       .eq("organization_id", doc.organization_id)
       .eq("active", true);
     const targets = (hooks ?? []).filter((h) => (h.events as string[]).includes(event));
-    if (targets.length === 0) return;
 
     const readerName = (rec.label as string | null)
       || [rec.first_name, rec.last_name].filter(Boolean).join(" ").trim()
@@ -92,6 +92,21 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
       data,
     };
 
+    // Zapier / Make REST Hook subscribers. Plain JSON, no signature: the
+    // subscription URL is itself the secret, which is how REST Hooks work.
+    const { data: subs } = await admin
+      .from("api_subscriptions")
+      .select("id, target_url")
+      .eq("organization_id", doc.organization_id)
+      .eq("event", event);
+    await Promise.all((subs ?? []).map(async (s) => {
+      const b = JSON.stringify(payload);
+      let r = await postOnce(s.target_url as string, b, { "content-type": "application/json" });
+      if (!r.ok) r = await postOnce(s.target_url as string, b, { "content-type": "application/json" });
+      // Zapier returns 410 Gone when a Zap is deleted: clean the subscription up.
+      if (r.status === 410) await admin.from("api_subscriptions").delete().eq("id", s.id);
+    }));
+
     await Promise.all(targets.map(async (h) => {
       const isSlack = /hooks\.slack\.com/i.test(h.url as string);
       const body = isSlack ? JSON.stringify({ text: slackBlurb(payload) }) : JSON.stringify(payload);
@@ -102,7 +117,7 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
       }
 
       let res = await postOnce(h.url as string, body, headers);
-      if (!res.ok) res = await postOnce(h.url as string, body, headers); // one retry
+      if (!res.ok) res = await postOnce(h.url as string, body, headers);
 
       await admin.from("webhook_deliveries").insert({
         webhook_id: h.id, event, ok: res.ok, status_code: res.status ?? null, error: res.error ?? null,
@@ -143,4 +158,3 @@ export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean
   });
   return res;
 }
-

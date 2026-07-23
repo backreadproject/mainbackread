@@ -30,6 +30,11 @@ export default async function SettingsPage() {
     ? await admin.from("webhooks").select("id, url, events, active, last_status, last_delivery_at").eq("organization_id", ctx.org.id).order("created_at")
     : { data: [] };
 
+  const { data: apiKeys } = ctx.org
+    ? await admin.from("api_keys").select("id, name, key_prefix, scopes, last_used_at, revoked_at, created_at").eq("organization_id", ctx.org.id).order("created_at")
+    : { data: [] };
+  const apiEnabled = isOrg && hasFeature(planCtx.plan.id, "zapier");
+
   return (
     <SettingsClient
       email={user.email ?? ""}
@@ -41,6 +46,9 @@ export default async function SettingsPage() {
       webhooksEnabled={webhooksEnabled}
       webhooks={(hooks ?? []) as { id: string; url: string; events: string[]; active: boolean; last_status: number | null; last_delivery_at: string | null }[]}
       planName={planCtx.plan.name}
+      apiEnabled={apiEnabled}
+      apiKeys={(apiKeys ?? []) as { id: string; name: string; key_prefix: string; scopes: string[]; last_used_at: string | null; revoked_at: string | null; created_at: string }[]}
     />
   );
 }
+
