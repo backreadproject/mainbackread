@@ -1,6 +1,9 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { getOrgContext } from "@/lib/org-context";
+import { resolvePlanForUser } from "@/lib/plan-context";
+import { hasFeature } from "@/lib/plans";
 import SettingsClient from "./SettingsClient";
 
 export default async function SettingsPage() {
@@ -20,6 +23,13 @@ export default async function SettingsPage() {
     orgDomain = (org?.domain as string) ?? "";
   }
 
+  const admin = createAdminClient();
+  const planCtx = await resolvePlanForUser(admin, user.id);
+  const webhooksEnabled = isOrg && hasFeature(planCtx.plan.id, "webhookAlerts");
+  const { data: hooks } = ctx.org
+    ? await admin.from("webhooks").select("id, url, events, active, last_status, last_delivery_at").eq("organization_id", ctx.org.id).order("created_at")
+    : { data: [] };
+
   return (
     <SettingsClient
       email={user.email ?? ""}
@@ -28,6 +38,9 @@ export default async function SettingsPage() {
       orgId={ctx.org?.id ?? null}
       orgName={orgName}
       orgDomain={orgDomain}
+      webhooksEnabled={webhooksEnabled}
+      webhooks={(hooks ?? []) as { id: string; url: string; events: string[]; active: boolean; last_status: number | null; last_delivery_at: string | null }[]}
+      planName={planCtx.plan.name}
     />
   );
 }

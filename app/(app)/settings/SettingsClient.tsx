@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, pageHeading } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import WebhooksCard from "./WebhooksCard";
 
 type Props = {
   email: string;
@@ -12,9 +13,12 @@ type Props = {
   orgId: string | null;
   orgName: string;
   orgDomain: string;
+  webhooksEnabled: boolean;
+  webhooks: { id: string; url: string; events: string[]; active: boolean; last_status: number | null; last_delivery_at: string | null }[];
+  planName: string;
 };
 
-export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgName: initialName, orgDomain: initialDomain }: Props) {
+export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgName: initialName, orgDomain: initialDomain, webhooksEnabled, webhooks, planName }: Props) {
   const locale = useLocale();
   const st = getDict(locale).settingsPage;
   const [name, setName] = useState(initialName);
@@ -77,5 +81,6 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
     </div>
   );
 }
+
 
 

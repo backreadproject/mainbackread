@@ -87,5 +87,7 @@ export async function POST(req: NextRequest) {
     console.error("[ask-live] transcript write threw:", err instanceof Error ? err.message : String(err));
   }
 
-  return NextResponse.json(data);
+  await deliverForRecipient(recipient.id, "reader.question", { question: question.trim(), page: pageNum, escalated: !!data.escalate });
 }
+
+

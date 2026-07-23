@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { readerLink, readerOrigin } from "@/lib/reader-origin";
 import { sendEmail, emailConfigured } from "@/lib/email";
 import { NextResponse } from "next/server";
@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-const MAX_COLLEAGUES = 10;
+import { deliverForRecipient } from "@/lib/webhooks";
 
 function esc(s: string) {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -93,3 +93,5 @@ function forwardEmail({ toName, forwarder, docTitle, readUrl, note, privacyUrl }
   </div>
   </body></html>`;
 }
+
+
