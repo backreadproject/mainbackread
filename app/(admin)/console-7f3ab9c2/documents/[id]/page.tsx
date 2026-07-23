@@ -2,6 +2,7 @@
 import { requireAdminPage, ADMIN_SLUG } from "@/lib/admin";
 import { T, pageHeading, microLabel } from "@/lib/theme";
 import DocumentActions from "./DocumentActions";
+import EraseReader from "./EraseReader";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -97,6 +98,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
                     <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nameOf(r)}</div>
                     <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono, marginTop: 2 }}>{r.email || "no email"} {"\u00b7"} {r.delivery || "link"}</div>
                   </div>
+                  <EraseReader recipientId={r.id} expected={(r.email || nameOf(r)) as string} />
                   <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
                     {a.opens} opens {"\u00b7"} {a.questions} Q {"\u00b7"} {a.forwards} fwd {"\u00b7"} {secs(a.dwellMs)} on {a.pages.size} pages
                     {a.last ? ` \u00b7 last ${new Date(a.last).toLocaleDateString()}` : ""}
@@ -142,3 +144,4 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
     </div>
   );
 }
+

@@ -199,3 +199,50 @@ export async function deleteOrgAction(orgId: string, confirmText: string): Promi
     detail: { name: o.name, documentsRemoved: documents.length, membersRemoved: memberCount ?? 0, projectsRemoved: projectCount ?? 0 } });
   return { ok: true };
 }
+
+/* ---------------- reader erasure (data subject requests) ---------------- */
+
+export async function eraseReaderAction(recipientId: string, confirmText: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!recipientId) return fail("Missing reader.");
+
+  const admin = createAdminClient();
+  const { data: rec } = await admin
+    .from("recipients")
+    .select("id, label, first_name, last_name, email, document_id, documents ( title, owner_id )")
+    .eq("id", recipientId)
+    .single();
+  if (!rec) return fail("Reader not found.", 404);
+
+  const r = rec as unknown as {
+    id: string; label: string | null; first_name: string | null; last_name: string | null;
+    email: string | null; document_id: string; documents?: { title: string; owner_id: string };
+  };
+
+  // Confirm against whatever identifies them: email first, else their name.
+  const expected = (r.email || r.label || [r.first_name, r.last_name].filter(Boolean).join(" ") || "").trim();
+  if (!expected) return fail("That reader has no name or email to confirm against.");
+  if ((confirmText ?? "").trim().toLowerCase() !== expected.toLowerCase()) {
+    return fail("What you typed does not match this reader.");
+  }
+
+  // Count what goes, for the audit record.
+  const { count: sigCount } = await admin.from("signals").select("id", { count: "exact", head: true }).eq("recipient_id", r.id);
+  const { count: msgCount } = await admin.from("reader_messages").select("id", { count: "exact", head: true }).eq("recipient_id", r.id);
+
+  // signals and reader_messages both cascade from recipients.
+  const { error } = await admin.from("recipients").delete().eq("id", r.id);
+  if (error) return fail(error.message, 500);
+
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email, action: "erase_reader",
+    targetUserId: r.documents?.owner_id ?? null,
+    detail: {
+      recipientId: r.id, email: r.email, name: expected,
+      documentId: r.document_id, documentTitle: r.documents?.title ?? null,
+      signalsRemoved: sigCount ?? 0, messagesRemoved: msgCount ?? 0,
+    },
+  });
+  return { ok: true };
+}
