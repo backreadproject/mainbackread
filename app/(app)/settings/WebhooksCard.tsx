@@ -6,6 +6,19 @@ import { useLocale } from "@/lib/useLocale";
 
 type Hook = { id: string; url: string; events: string[]; active: boolean; last_status: number | null; last_delivery_at: string | null };
 
+function CopyButton({ value }: { value: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1800); } catch { /* ignore */ }
+      }}
+      title="Copy"
+      style={{ flex: "none", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600, fontFamily: T.font, color: done ? T.greenText : T.heading, cursor: "pointer", lineHeight: 1.6 }}>
+      {done ? "Copied" : "Copy"}
+    </button>
+  );
+}
 export default function WebhooksCard({ enabled, canManage, hooks, planName }: { enabled: boolean; canManage: boolean; hooks: Hook[]; planName: string }) {
   const router = useRouter();
   const fr = useLocale() === "fr";
@@ -95,10 +108,14 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
       {secret && (
         <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
           <div style={{ fontSize: 11.5, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>{L.secretNote}</div>
-          <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace" }}>{secret}</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{secret}</div>
+            <CopyButton value={secret} />
+          </div>
         </div>
       )}
     </div>
   );
 }
+
 

@@ -5,6 +5,19 @@ import { T } from "@/lib/theme";
 
 type Key = { id: string; name: string; key_prefix: string; scopes: string[]; last_used_at: string | null; revoked_at: string | null; created_at: string };
 
+function CopyButton({ value }: { value: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        try { await navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1800); } catch { /* ignore */ }
+      }}
+      title="Copy"
+      style={{ flex: "none", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600, fontFamily: T.font, color: done ? T.greenText : T.heading, cursor: "pointer", lineHeight: 1.6 }}>
+      {done ? "Copied" : "Copy"}
+    </button>
+  );
+}
 export default function ApiKeysCard({ enabled, canManage, keys, planName }: { enabled: boolean; canManage: boolean; keys: Key[]; planName: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -88,9 +101,14 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
       {fresh && (
         <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
           <div style={{ fontSize: 11.5, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>Copy this key now, it will not be shown again:</div>
-          <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace" }}>{fresh}</div>
+          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+            <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{fresh}</div>
+            <CopyButton value={fresh} />
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+
