@@ -36,7 +36,12 @@ type Payload = {
 
 function slackBlurb(p: Payload): string {
   const who = p.reader.name;
-  if (p.event === "reader.question") return `*${who}* asked a question on _${p.document.title}_: "${String(p.data.question ?? "")}"`;
+  if (p.event === "reader.question") {
+    const q = String(p.data.question ?? "");
+    const a = String(p.data.answer ?? "").trim();
+    const short = a.length > 320 ? a.slice(0, 320) + "\u2026" : a;
+    return `*${who}* asked a question on _${p.document.title}_: "${q}"` + (short ? `\n> ${short}` : "");
+  }
   if (p.event === "reader.forwarded") return `*${who}* forwarded _${p.document.title}_ to ${Number(p.data.colleagueCount ?? 0)} colleague(s).`;
   return `*${who}* opened _${p.document.title}_.`;
 }
@@ -138,3 +143,4 @@ export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean
   });
   return res;
 }
+

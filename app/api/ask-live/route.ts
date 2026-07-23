@@ -88,9 +88,10 @@ export async function POST(req: NextRequest) {
     console.error("[ask-live] transcript write threw:", err instanceof Error ? err.message : String(err));
   }
 
-  await deliverForRecipient(recipient.id, "reader.question", { question: question.trim(), page: pageNum, escalated: !!data.escalate });
+  await deliverForRecipient(recipient.id, "reader.question", { question: question.trim(), answer: data.answer, page: pageNum, escalated: !!data.escalate, outOfScope: !!data.outOfScope });
   return NextResponse.json(data);
 }
+
 
 
 

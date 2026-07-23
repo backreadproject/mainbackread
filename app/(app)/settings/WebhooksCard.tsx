@@ -24,6 +24,8 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
     del: fr ? "Supprimer" : "Delete",
     on: fr ? "Actif" : "Active",
     off: fr ? "En pause" : "Paused",
+    pause: fr ? "Mettre en pause" : "Pause",
+    resume: fr ? "Reprendre" : "Resume",
     none: fr ? "Aucun endpoint pour l\u2019instant." : "No endpoints yet.",
     saved: fr ? "Endpoint ajout\u00e9." : "Endpoint added.",
     sent: fr ? "Test envoy\u00e9." : "Test delivered.",
@@ -69,7 +71,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
           {canManage && (
             <div style={{ display: "flex", gap: 6, flex: "none" }}>
               <button onClick={async () => { const r = await call({ action: "test", webhookId: h.id }); if (r) { setOk(true); setMsg(L.sent); } }} disabled={busy} style={small}>{L.test}</button>
-              <button onClick={async () => { if (await call({ action: "toggle", webhookId: h.id })) router.refresh(); }} disabled={busy} style={small}>{h.active ? L.off : L.on}</button>
+              <button onClick={async () => { if (await call({ action: "toggle", webhookId: h.id })) router.refresh(); }} disabled={busy} style={small}>{h.active ? L.pause : L.resume}</button>
               <button onClick={async () => { if (await call({ action: "delete", webhookId: h.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: "#B42318", borderColor: "#FDA29B" }}>{L.del}</button>
             </div>
           )}
@@ -99,3 +101,4 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
     </div>
   );
 }
+
