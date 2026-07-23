@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { notify, notifyEmail } from "@/lib/notify";
@@ -13,10 +13,9 @@ async function callerCanManage(resourceType: string, resourceId: string): Promis
     return data === "manage";
   }
   if (resourceType === "project") {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
-    const { data: proj } = await supabase.from("projects").select("created_by").eq("id", resourceId).single();
-    return proj?.created_by === user.id;
+    // my_project_permission returns 'manage'|'edit'|'view'|null
+    const { data } = await supabase.rpc("my_project_permission", { proj: resourceId });
+    return data === "manage";
   }
   return false;
 }
@@ -124,3 +123,4 @@ export async function DELETE(req: Request) {
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ ok: true });
 }
+
