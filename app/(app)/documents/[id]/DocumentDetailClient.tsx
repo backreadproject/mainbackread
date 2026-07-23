@@ -8,6 +8,7 @@ import ComposeWorkspace from "@/app/(app)/documents/[id]/ComposeWorkspace";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
+import CsvImportModal from "./CsvImportModal";
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
@@ -25,6 +26,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   const [nameDraft, setNameDraft] = useState("");
   const [error, setError] = useState("");
   const [sharing, setSharing] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [shareInfo, setShareInfo] = useState<{ isOrg: boolean; canManage: boolean; members: { userId: string; email: string | null }[] }>({ isOrg: false, canManage: false, members: [] });
   useEffect(() => {
     fetch(`/api/org-members?docId=${doc.id}`).then((r) => r.json()).then((d) => setShareInfo({ isOrg: !!d.isOrg, canManage: !!d.canManage, members: d.members ?? [] })).catch(() => {});
@@ -78,6 +80,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={microLabel}>{dd.recipients}</span>
+            <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer", marginRight: 6 }}>Import CSV</button>
             <ShareButton documentId={doc.id} variants={variants} counts={recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>)} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
           </div>
           {recs.length === 0 ? <p style={{ fontSize: 14, color: T.body, padding: "6px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
@@ -166,6 +169,15 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           )}
         </div>
       </div>
+    {importing && (
+      <CsvImportModal
+        documentId={doc.id}
+        variants={variants}
+        counts={recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>)}
+        onClose={() => setImporting(false)}
+        onImported={(created) => { setRecs((p) => [...created, ...p]); if (created[0]) setSelected(created[0].id); }}
+      />
+    )}
     {sharing && <ShareDialog resourceType="document" resourceId={doc.id} resourceName={doc.title} members={shareInfo.members} onClose={() => setSharing(false)} />}
     </div>
   );
@@ -210,6 +222,7 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { do
     </>
   );
 }
+
 
 
 
