@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       email: mode === "email" ? email.trim() : null,
       delivery: mode === "email" ? "email" : "link",
     })
-    .select("id, label, share_token, created_at, first_name, last_name, email, delivery")
+    .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id")
     .single();
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
   const readUrl = readerLink(rec.share_token, new URL(req.url).origin);
@@ -117,4 +117,5 @@ function brandedEmail({ firstName, senderName, docTitle, readUrl, note }: { firs
   </div>
   </body></html>`;
 }
+
 

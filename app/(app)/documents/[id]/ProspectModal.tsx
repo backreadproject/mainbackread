@@ -1,13 +1,16 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 type NewRec = { id: string; label: string | null; share_token: string; created_at: string };
-export default function ProspectModal({ documentId, onClose, onCreated }: {
+type Variant = { id: string; label: string; note: string | null; active: boolean };
+export default function ProspectModal({ documentId, onClose, onCreated, variants = [], counts = {} }: {
   documentId: string;
   onClose: () => void;
   onCreated: (rec: NewRec, readUrl: string, emailInfo: { sent: boolean; warning?: string } | null) => void;
+  variants?: Variant[];
+  counts?: Record<string, number>;
 }) {
   const locale = useLocale();
   const pm = getDict(locale).prospectModal;
@@ -23,6 +26,11 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // Auto-balance suggestion: the active variant with the fewest readers so far.
+  const live = variants.filter((v) => v.active);
+  const suggested = live.length ? live.reduce((best, v) => ((counts[v.id] ?? 0) < (counts[best.id] ?? 0) ? v : best), live[0]) : null;
+  const [variantId, setVariantId] = useState<string>("");
+  const chosen = variantId || suggested?.id || "";
   async function submit(mode: "link" | "email") {
     setError("");
     if (!firstName.trim() || !lastName.trim()) { setError(pm.nameRequired); return; }
@@ -30,7 +38,7 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
     setBusy(true);
     const res = await fetch("/api/share-prospect", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ documentId, mode, firstName, lastName, email: mode === "email" ? email : undefined, note: mode === "email" ? note.trim() : undefined }),
+      body: JSON.stringify({ documentId, mode, firstName, lastName, email: mode === "email" ? email : undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined }),
     });
     const json = await res.json();
     if (!res.ok) { setError(json.error ?? pm.somethingWrong); setBusy(false); return; }
@@ -89,6 +97,21 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
                 <p style={{ fontSize: 12, color: T.muted, margin: "0 0 12px", lineHeight: 1.4 }}>{noteHint}</p>
               </>
             )}
+            {live.length > 0 && (
+              <>
+                <span style={label}>{fr ? "Version" : "Version"}</span>
+                <select className="t-in" value={chosen} onChange={(e) => setVariantId(e.target.value)} style={input}>
+                  {live.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.label}{v.note ? ` \u2014 ${v.note}` : ""}{v.id === suggested?.id ? (fr ? " (suggested)" : " (suggested)") : ""}
+                    </option>
+                  ))}
+                </select>
+                <p style={{ fontSize: 12, color: T.muted, margin: "-6px 0 12px", lineHeight: 1.4 }}>
+                  {fr ? "La suggestion \u00e9quilibre le test. Changez-la si vous voulez." : "The suggestion keeps the split even. Change it if you want."}
+                </p>
+              </>
+            )}
             {error && <p style={{ fontSize: 13, color: "#B42318", margin: "2px 0 12px" }}>{error}</p>}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
               <button onClick={onClose} style={ghostBtn}>{pm.cancel}</button>
@@ -103,3 +126,4 @@ export default function ProspectModal({ documentId, onClose, onCreated }: {
 const choiceBtn = { display: "block", width: "100%", background: "#fff", border: "1px solid #EAECEF", borderRadius: 12, padding: 16, cursor: "pointer", fontFamily: "inherit" };
 const iconWrap = { width: 36, height: 36, borderRadius: 9, background: "#E7F6EF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const ghostBtn = { background: "#fff", border: "1px solid #EAECEF", borderRadius: 8, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", color: "#0F1729", cursor: "pointer" };
+

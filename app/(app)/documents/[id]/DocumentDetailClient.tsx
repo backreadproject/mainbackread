@@ -78,7 +78,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={microLabel}>{dd.recipients}</span>
-            <ShareButton documentId={doc.id} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
+            <ShareButton documentId={doc.id} variants={variants} counts={recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>)} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
           </div>
           {recs.length === 0 ? <p style={{ fontSize: 14, color: T.body, padding: "6px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
             const s = summary[r.id]; const active = r.id === selected; const opened = s && s.opens > 0;
@@ -170,7 +170,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
     </div>
   );
 }
-function ShareButton({ documentId, onCreated }: { documentId: string; onCreated: (r: Rec) => void }) {
+function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { documentId: string; onCreated: (r: Rec) => void; variants?: Variant[]; counts?: Record<string, number> }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
@@ -192,6 +192,8 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
       )}
       {open && (
         <ProspectModal
+          variants={variants}
+          counts={counts}
           documentId={documentId}
           onClose={() => setOpen(false)}
           onCreated={(rec, readUrl, emailInfo) => {
@@ -208,6 +210,7 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
     </>
   );
 }
+
 
 
 
