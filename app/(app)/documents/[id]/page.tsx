@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import DocumentDetailClient from "./DocumentDetailClient";
 
@@ -21,7 +22,7 @@ export default async function DocumentDetailPage({
 
   const { data: recipients } = await supabase
     .from("recipients")
-    .select("id, label, share_token, created_at")
+    .select("id, label, share_token, created_at, variant_id")
     .eq("document_id", id)
     .order("created_at", { ascending: false });
 
@@ -37,11 +38,21 @@ export default async function DocumentDetailPage({
         .order("created_at", { ascending: true })
     : { data: [] };
 
+  // A/B variants. document_variants is service-role only (RLS with no policies),
+  // so it is read with the admin client AFTER RLS above has proven ownership.
+  const admin = createAdminClient();
+  const { data: variants } = await admin
+    .from("document_variants")
+    .select("id, label, note, active, storage_path")
+    .eq("document_id", id)
+    .order("label", { ascending: true });
+
   return (
     <DocumentDetailClient
       doc={doc}
       recipients={recs}
       signals={signals ?? []}
+      variants={variants ?? []}
     />
   );
 }

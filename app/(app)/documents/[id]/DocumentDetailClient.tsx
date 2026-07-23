@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
@@ -7,11 +7,13 @@ import ProspectModal from "@/app/(app)/documents/[id]/ProspectModal";
 import ComposeWorkspace from "@/app/(app)/documents/[id]/ComposeWorkspace";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import VariantsPanel from "./VariantsPanel";
 type Doc = { id: string; title: string; created_at: string };
-type Rec = { id: string; label: string | null; share_token: string; created_at: string };
+type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null };
+type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
-export default function DocumentDetailClient({ doc, recipients, signals }: { doc: Doc; recipients: Rec[]; signals: Sig[] }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [] }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[] }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
   const [recs, setRecs] = useState(recipients);
@@ -71,6 +73,7 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
         </div>
       </div>
       {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
+      <VariantsPanel documentId={doc.id} variants={variants} recipients={recs} signals={signals} />
       <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: 18, padding: "22px 30px 40px", alignItems: "start" }}>
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
@@ -82,7 +85,14 @@ export default function DocumentDetailClient({ doc, recipients, signals }: { doc
             return (
               <div key={r.id} className="t-rec" onClick={() => setSelected(r.id)} style={{ padding: "10px 11px", borderRadius: 8, marginBottom: 3, background: active ? T.greenSoft : "transparent", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 14, fontWeight: active ? 600 : 500, color: active ? T.greenText : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || dd.unnamedReader}</span>
-                {pill(!!opened, opened ? dd.opened : dd.isNew)}
+                <span style={{ display: "flex", gap: 5, alignItems: "center", flex: "none" }}>
+                  {r.variant_id && variants.find((v) => v.id === r.variant_id) && (
+                    <span title={`Variant ${variants.find((v) => v.id === r.variant_id)!.label}`} style={{ fontSize: 10, fontWeight: 700, width: 18, height: 18, borderRadius: 5, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {variants.find((v) => v.id === r.variant_id)!.label}
+                    </span>
+                  )}
+                  {pill(!!opened, opened ? dd.opened : dd.isNew)}
+                </span>
               </div>
             );
           })}
@@ -198,5 +208,6 @@ function ShareButton({ documentId, onCreated }: { documentId: string; onCreated:
     </>
   );
 }
+
 
 
