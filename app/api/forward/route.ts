@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 import { deliverForRecipient } from "@/lib/webhooks";
+const MAX_COLLEAGUES = 10;
 
 function esc(s: string) {
   return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -63,6 +64,7 @@ export async function POST(req: Request) {
   // Record the forward against the original reader (non-fatal). Feeds the verdict's forwardedTo.
   try {
     await admin.from("signals").insert({ recipient_id: origin.id, kind: "forwarded", value: { colleagues: clean } });
+      await deliverForRecipient(origin.id, "reader.forwarded", { colleagueCount: clean.length });
   } catch { /* non-fatal */ }
 
   return NextResponse.json({ ok: true, count: clean.length, sent, emailConfigured: emailConfigured("relay") });
@@ -93,5 +95,7 @@ function forwardEmail({ toName, forwarder, docTitle, readUrl, note, privacyUrl }
   </div>
   </body></html>`;
 }
+
+
 
 

@@ -72,6 +72,8 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
           </div>
         )}
 
+        {isOrg && <WebhooksCard enabled={webhooksEnabled} canManage={canManageOrg} hooks={webhooks} planName={planName} />}
+
         <div style={card}>
           <span style={label}>{st.signedInAs}</span>
           <p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{email}</p>
@@ -81,6 +83,9 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
     </div>
   );
 }
+
+
+
 
 
 

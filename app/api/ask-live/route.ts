@@ -2,6 +2,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, askTask } from "@/lib/ai";
 import { checkAskLimits } from "@/lib/rate-limit";
+import { deliverForRecipient } from "@/lib/webhooks";
 import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
@@ -88,6 +89,9 @@ export async function POST(req: NextRequest) {
   }
 
   await deliverForRecipient(recipient.id, "reader.question", { question: question.trim(), page: pageNum, escalated: !!data.escalate });
+  return NextResponse.json(data);
 }
+
+
 
 

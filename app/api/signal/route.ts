@@ -1,6 +1,7 @@
 ﻿import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notify } from "@/lib/notify";
+import { deliverForRecipient } from "@/lib/webhooks";
 export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   const { token, kind, page, value } = await req.json();
@@ -30,6 +31,9 @@ export async function POST(req: NextRequest) {
     }
   }
   if (kind === "opened") await deliverForRecipient(recipient.id, "reader.opened", { page: page ?? null });
+  return NextResponse.json({ ok: true });
 }
+
+
 
 
