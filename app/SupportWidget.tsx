@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { T } from "@/lib/theme";
+import { MessageCircle, X, ArrowRight, House, MessageSquare, CircleQuestionMark, ChevronRight, type LucideIcon } from "lucide-react";
 import { FAQ_ITEMS } from "@/lib/support-kb";
 
 type Msg = { role: string; content: string; created_at?: string };
@@ -133,7 +134,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <span style={{ color: "rgba(255,255,255,0.85)", fontSize: 14, fontWeight: 600 }}>ReadProspects</span>
                   <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 7, width: 26, height: 26, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    <X size={14} strokeWidth={2.2} />
                   </button>
                 </div>
                 <div style={{ marginTop: 22, color: "#fff", fontSize: 23, fontWeight: 700, letterSpacing: T.trackingTight, lineHeight: 1.3 }}>
@@ -164,7 +165,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                     <div style={{ fontSize: 12, color: T.muted, marginTop: 2 }}>Answers now, a person when you need one</div>
                   </div>
                   <span style={{ color: T.green, flex: "none" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                    <ArrowRight size={18} strokeWidth={2.2} />
                   </span>
                 </div>
 
@@ -175,7 +176,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                       style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", padding: "8px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13, color: T.heading }}>
                       <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.q}</span>
                       <span style={{ color: T.muted, flex: "none" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                        <ChevronRight size={14} strokeWidth={2.2} />
                       </span>
                     </div>
                   ))}
@@ -191,7 +192,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>Messages</span>
                   <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 7, width: 26, height: 26, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    <X size={14} strokeWidth={2.2} />
                   </button>
                 </div>
                 <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 12.5, margin: "3px 0 0" }}>
@@ -238,7 +239,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                   style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 20, padding: "9px 14px", fontSize: 13.5, fontFamily: T.font, background: T.canvas }} />
                 <button onClick={() => send()} disabled={busy || !draft.trim()} aria-label="Send"
                   style={{ background: T.green, color: "#fff", border: "none", borderRadius: 20, width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, opacity: busy || !draft.trim() ? 0.5 : 1 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  <ArrowRight size={16} strokeWidth={2.2} />
                 </button>
               </div>
             </>
@@ -251,7 +252,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                   <span style={{ color: "#fff", fontSize: 15, fontWeight: 700 }}>Help</span>
                   <button onClick={() => setOpen(false)} aria-label="Close" style={{ background: "rgba(255,255,255,0.12)", border: "none", borderRadius: 7, width: 26, height: 26, color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    <X size={14} strokeWidth={2.2} />
                   </button>
                 </div>
                 <input className="rp-sw-in" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search for help"
@@ -274,7 +275,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                         style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", padding: "12px 13px", fontSize: 13, fontWeight: 600, color: T.heading }}>
                         <span style={{ minWidth: 0 }}>{f.q}</span>
                         <span style={{ color: T.muted, flex: "none", transform: isOpen ? "rotate(90deg)" : "none", transition: "transform .15s" }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                          <ChevronRight size={14} strokeWidth={2.2} />
                         </span>
                       </div>
                       {isOpen && <div style={{ padding: "0 13px 13px", fontSize: 13, color: T.body, lineHeight: 1.6 }}>{f.a}</div>}
@@ -288,14 +289,14 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
           {/* TABS */}
           <div style={{ display: "flex", borderTop: `1px solid ${T.border}`, background: "#fff", flexShrink: 0 }}>
             {([
-              ["home", "Home", "M3 11l9-8 9 8 M5 10v10h14V10"],
-              ["messages", "Messages", "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"],
-              ["help", "Help", "M12 22a10 10 0 100-20 10 10 0 000 20z M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3 M12 17h.01"],
-            ] as [Tab, string, string][]).map(([id, label, d]) => (
+              ["home", "Home", House],
+              ["messages", "Messages", MessageSquare],
+              ["help", "Help", CircleQuestionMark],
+            ] as [Tab, string, LucideIcon][]).map(([id, label, Icon]) => (
               <button key={id} onClick={() => setTab(id)} className="rp-sw-tab"
                 style={{ flex: 1, background: "none", border: "none", padding: "10px 0 11px", cursor: "pointer", fontFamily: T.font, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: tab === id ? T.green : T.muted }}>
                 <span style={{ position: "relative", display: "flex" }}>
-                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+                  <Icon size={19} strokeWidth={1.8} />
                   {id === "messages" && waiting && <span style={{ position: "absolute", top: -2, right: -4, width: 7, height: 7, borderRadius: 4, background: "#F04438" }} />}
                 </span>
                 <span style={{ fontSize: 10.5, fontWeight: 600 }}>{label}</span>
@@ -308,12 +309,14 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
       <button onClick={() => setOpen((v) => !v)} className="rp-sw-launch" aria-label="Support"
         style={{ position: "fixed", right: 22, bottom: 22, width: 54, height: 54, borderRadius: 27, background: T.green, border: "none", cursor: "pointer", boxShadow: "0 8px 24px rgba(11,122,75,0.3)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
         {open ? (
-          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          <X size={21} color="#fff" strokeWidth={2.2} />
         ) : (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+          <MessageCircle size={22} color="#fff" strokeWidth={1.9} />
         )}
       </button>
     </>
   );
 }
+
+
 
