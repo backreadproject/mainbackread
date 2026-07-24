@@ -296,7 +296,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
               <button key={id} onClick={() => setTab(id)} className="rp-sw-tab"
                 style={{ flex: 1, background: "none", border: "none", padding: "10px 0 11px", cursor: "pointer", fontFamily: T.font, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: tab === id ? T.green : T.muted }}>
                 <span style={{ position: "relative", display: "flex" }}>
-                  <Icon size={19} strokeWidth={1.8} fill={tab === id ? "currentColor" : "none"} />
+                  <Icon size={20} strokeWidth={tab === id ? 2.4 : 2} />
                   {id === "messages" && waiting && <span style={{ position: "absolute", top: -2, right: -4, width: 7, height: 7, borderRadius: 4, background: "#F04438" }} />}
                 </span>
                 <span style={{ fontSize: 10.5, fontWeight: 600 }}>{label}</span>
@@ -317,6 +317,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     </>
   );
 }
+
 
 
 
