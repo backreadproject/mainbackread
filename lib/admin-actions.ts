@@ -246,3 +246,90 @@ export async function eraseReaderAction(recipientId: string, confirmText: string
   });
   return { ok: true };
 }
+
+/* ---------------- forwarded colleagues (erasure for third parties) ---------------- */
+
+export type ForwardMention = { signalId: string; recipientId: string; readerName: string; documentTitle: string; colleagueName: string; at: string };
+
+/** Finds every forwarded-signal that names this email. These people never opened
+ *  anything and have no recipient row, so they cannot be erased any other way. */
+export async function findForwardMentions(email: string): Promise<ForwardMention[]> {
+  const me = await getAdminUser();
+  if (!me) return [];
+  const needle = (email ?? "").trim().toLowerCase();
+  if (!needle) return [];
+
+  const admin = createAdminClient();
+  const { data: sigs } = await admin
+    .from("signals")
+    .select("id, recipient_id, value, created_at")
+    .eq("kind", "forwarded")
+    .order("created_at", { ascending: false })
+    .limit(2000);
+
+  const hits = (sigs ?? []).filter((s) => {
+    const v = (s.value ?? {}) as Record<string, unknown>;
+    const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
+    return cols.some((c) => c && typeof c === "object" && String((c as { email?: unknown }).email ?? "").trim().toLowerCase() === needle);
+  });
+  if (hits.length === 0) return [];
+
+  const recIds = [...new Set(hits.map((h) => h.recipient_id))];
+  const { data: recs } = await admin.from("recipients").select("id, label, first_name, last_name, document_id").in("id", recIds);
+  const recMap = new Map((recs ?? []).map((r) => [r.id, r]));
+  const docIds = [...new Set((recs ?? []).map((r) => r.document_id))];
+  const { data: docs } = docIds.length ? await admin.from("documents").select("id, title").in("id", docIds) : { data: [] };
+  const docMap = new Map((docs ?? []).map((d) => [d.id, d.title as string]));
+
+  return hits.map((h) => {
+    const r = recMap.get(h.recipient_id) as { label: string | null; first_name: string | null; last_name: string | null; document_id: string } | undefined;
+    const v = (h.value ?? {}) as Record<string, unknown>;
+    const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
+    const match = cols.find((c) => c && typeof c === "object" && String((c as { email?: unknown }).email ?? "").trim().toLowerCase() === needle) as { name?: string } | undefined;
+    return {
+      signalId: h.id as string,
+      recipientId: h.recipient_id as string,
+      readerName: r?.label || [r?.first_name, r?.last_name].filter(Boolean).join(" ").trim() || "A reader",
+      documentTitle: r ? (docMap.get(r.document_id) ?? "a document") : "a document",
+      colleagueName: match?.name || "unnamed",
+      at: h.created_at as string,
+    };
+  });
+}
+
+/** Removes this person from every forwarded signal that names them. The forward
+ *  event itself survives (the count stays honest); only their identity goes. */
+export async function eraseForwardMentionsAction(email: string, confirmText: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const needle = (email ?? "").trim().toLowerCase();
+  if (!needle) return fail("An email address is required.");
+  if ((confirmText ?? "").trim().toLowerCase() !== needle) return fail("The email you typed does not match.");
+
+  const admin = createAdminClient();
+  const { data: sigs } = await admin
+    .from("signals")
+    .select("id, value")
+    .eq("kind", "forwarded")
+    .limit(2000);
+
+  let changed = 0;
+  for (const s of sigs ?? []) {
+    const v = (s.value ?? {}) as Record<string, unknown>;
+    const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
+    const kept = cols.filter((c) => !(c && typeof c === "object" && String((c as { email?: unknown }).email ?? "").trim().toLowerCase() === needle));
+    if (kept.length === cols.length) continue;
+
+    // Keep the event, record that someone was removed, drop their details.
+    const next = { ...v, colleagues: kept, erasedCount: Number(v.erasedCount ?? 0) + (cols.length - kept.length) };
+    const { error } = await admin.from("signals").update({ value: next }).eq("id", s.id);
+    if (error) return fail(error.message, 500);
+    changed++;
+  }
+
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email, action: "erase_forward_mentions",
+    detail: { email: needle, signalsUpdated: changed },
+  });
+  return { ok: true };
+}

@@ -1,6 +1,7 @@
 ﻿import { createAdminClient } from "@/lib/supabase/admin";
 import { ADMIN_SLUG } from "@/lib/admin";
 import { T, pageHeading, microLabel } from "@/lib/theme";
+import ForwardMentions from "./ForwardMentions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -100,8 +101,10 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             ))}
           </div>
         )}
+        <ForwardMentions />
       </main>
       <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
     </div>
   );
 }
+
