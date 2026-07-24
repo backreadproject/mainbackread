@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
+import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
@@ -19,14 +19,15 @@ type Tone = "green" | "amber" | "indigo" | "neutral";
 // amber attention, indigo spread, neutral inert.
 function StatCard({ icon, label, value, sub, tone = "neutral" }: { icon: string; label: string; value: number; sub: string; tone?: Tone }) {
   const ink = statTileInk(tone);
+  const sub2 = statTileSub(tone);
   return (
     <div style={statTile(tone)}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: ink, opacity: 0.75 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: sub2 }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
         <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
       </div>
       <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
-      <div style={{ fontSize: 12.5, color: tone === "neutral" ? T.muted : ink, opacity: tone === "neutral" ? 1 : 0.75, marginTop: 4 }}>{sub}</div>
+      <div style={{ fontSize: 12.5, color: sub2, marginTop: 4 }}>{sub}</div>
     </div>
   );
 }
@@ -232,6 +233,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

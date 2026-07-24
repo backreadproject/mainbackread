@@ -107,6 +107,10 @@ export const statTile = (tone: "green" | "amber" | "indigo" | "neutral" = "neutr
 });
 export const statTileInk = (tone: "green" | "amber" | "indigo" | "neutral" = "neutral") =>
   tone === "green" ? T.greenText : tone === "amber" ? T.amberText : tone === "indigo" ? T.indigoText : T.heading;
+// Secondary text on a tinted tile. A real colour, never the ink at reduced opacity:
+// faded text reads as out of focus on a coloured surface.
+export const statTileSub = (tone: "green" | "amber" | "indigo" | "neutral" = "neutral") =>
+  tone === "green" ? "#3D7A5C" : tone === "amber" ? "#96682B" : tone === "indigo" ? "#5C5B96" : T.muted;
 export const tableHeader = {
   ...microLabel,
 };
@@ -119,3 +123,4 @@ export const infoBanner = {
   alignItems: "center",
   gap: 8,
 };
+

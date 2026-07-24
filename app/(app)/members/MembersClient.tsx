@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
+import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
@@ -147,7 +147,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
     const ink = statTileInk(tone);
     return (
       <div style={statTile(tone)}>
-        <div style={{ ...microLabel, color: ink, opacity: 0.75, marginBottom: 8 }}>{label}</div>
+        <div style={{ ...microLabel, color: statTileSub(tone), marginBottom: 8 }}>{label}</div>
         <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
       </div>
     );
@@ -244,6 +244,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
     </div>
   );
 }
+
 
 
 
