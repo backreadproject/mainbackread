@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
@@ -36,7 +36,13 @@ export default function LoginPage() {
       window.location.href = accountType === "company" ? "/members" : "/documents";
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMsg(error.message); else window.location.href = "/documents";
+      if (error) { setMsg(error.message); }
+      else {
+        // Overview is the Intent Field and reads as empty with nothing to show,
+        // so a user with no documents yet lands somewhere actionable instead.
+        const { count } = await supabase.from("documents").select("id", { count: "exact", head: true });
+        window.location.href = (count ?? 0) > 0 ? "/overview" : "/documents";
+      }
     }
     setBusy(false);
   }
@@ -103,3 +109,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
