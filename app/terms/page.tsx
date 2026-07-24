@@ -1,4 +1,4 @@
-import MarketingNav from "../MarketingNav";
+﻿import MarketingNav from "../MarketingNav";
 
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", GREEN = "#0B7A4B", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
 const LEMON = "#D8E84A";
@@ -7,116 +7,198 @@ const GRADIENT = "linear-gradient(180deg, #061711 0%, #0B2E22 60%, #0E3A2C 100%)
 
 type Section = { id: string; h: string; body: (string | string[])[] };
 
-const UPDATED = "1st July 2026";
+const UPDATED = "24th July 2026";
 
 const SECTIONS: Section[] = [
   {
     id: "agreement",
-    h: "1. Agreement to these terms",
+    h: "1. Agreement",
     body: [
-      "These Terms of Service govern your use of ReadProspects. By creating an account or using the service, you agree to these terms. If you are using ReadProspects on behalf of an organization, you confirm that you have the authority to bind that organization to these terms.",
-      "These terms are governed by the laws of the Federal Republic of Nigeria, and we have written them to sit alongside our Privacy Policy, which forms part of your agreement with us.",
+      "These Terms are a contract between you and ReadProspects Technologies Nigeria (RC 9702396), 325 Enugu Road, FCDA, Bwari, Abuja, Nigeria.",
+      "By creating an account or using the service you accept these Terms. If you accept them on behalf of a company, you confirm you are authorised to bind it, and \"you\" means that company.",
+      "If you do not accept these Terms, do not use the service.",
     ],
   },
   {
     id: "service",
-    h: "2. What ReadProspects provides",
+    h: "2. What the service does",
     body: [
-      "ReadProspects is a document intelligence service. It lets you share documents, allows your readers to ask questions inside those documents, captures how documents are read, and returns insight about that reading. We may improve, change, or add features over time, and we will not degrade the core service you rely on without reasonable notice.",
+      "ReadProspects lets you share a document with a named recipient through a private link, records how that person reads it, lets them ask questions of an AI companion attached to the document, and produces an AI assessment, which we call a verdict, of what their reading behaviour suggests.",
+      "You must be 18 or older and legally able to enter a contract.",
     ],
   },
   {
-    id: "accounts",
+    id: "account",
     h: "3. Your account",
     body: [
-      "You are responsible for keeping your login credentials secure and for all activity under your account. You agree to provide accurate account information and to keep it current. You must be at least 18 years old to use ReadProspects. If you believe your account has been accessed without authorization, tell us promptly.",
+      "You are responsible for your account credentials and for everything done through your account. Tell us promptly at privacy@readprospects.com if you believe it has been compromised.",
+      "You must give accurate registration details. We may suspend accounts registered with false information.",
+      "If you create an organization, you are responsible for the people you invite, and organization owners and administrators can see and manage content belonging to members.",
     ],
   },
   {
-    id: "content",
-    h: "4. Your content and ownership",
+    id: "billing",
+    h: "4. Plans, trials and payment",
     body: [
-      "You retain full ownership of every document you upload and all content within it. We claim no ownership over your documents.",
-      "You grant us only the limited permission necessary to host, display, and process your documents so we can provide the service to you and to the readers you share with. This permission ends when you delete the content or close your account.",
-      "You are responsible for ensuring you have the right to upload and share each document, and that doing so, along with observing how it is read, is lawful in your circumstances.",
+      "We offer Free, Personal, Team and Business plans, with limits described on our pricing page. Company plans include a 7-day trial. When a trial ends without a subscription, actions that create new content are blocked while existing data remains accessible.",
+      "Paid plans are billed in advance for the period chosen. Fees exclude taxes, which you are responsible for where applicable. Fees are non-refundable except where the law requires otherwise. You may cancel at any time, effective from the end of your current period.",
+      "We may change prices on notice. Changes take effect at your next renewal.",
     ],
   },
   {
     id: "acceptable",
     h: "5. Acceptable use",
     body: [
-      "ReadProspects exists for legitimate professional use. You agree not to:",
+      "You must not:",
       [
-        "Upload or share content that is unlawful, infringing, or that you do not have the right to share.",
-        "Use the service to deceive, harass, defraud, or harm others.",
-        "Attempt to breach the security of the service, access data that is not yours, or interfere with other users.",
-        "Reverse engineer, resell, or misuse the service outside these terms.",
-        "Use ReadProspects to process sensitive personal data in ways that are unlawful or that its recipients have not been made aware of.",
+        "Upload a document you do not have the right to share, or that infringes anyone's rights.",
+        "Upload unlawful, defamatory, or malicious content, or malware.",
+        "Share documents with people whose personal data you have no lawful basis to process.",
+        "Use the service to harass, stalk, deceive or covertly surveil any individual.",
+        "Attempt to bypass plan limits, rate limits, or access another customer's data.",
+        "Reverse engineer the service, or use it to build a competing product.",
+        "Resell or sublicense access without our written agreement.",
+        "Use automated means to access the service other than through our documented API.",
       ],
-      "We may suspend or terminate accounts that violate these rules, and we will act proportionately.",
+      "We may suspend or terminate access for breach of this section, and may do so immediately where there is risk of harm.",
     ],
   },
   {
-    id: "privacy",
-    h: "6. Privacy and data protection",
+    id: "content",
+    h: "6. Your content",
     body: [
-      "Our handling of personal data is governed by our Privacy Policy, which is built to comply with the NDPR, the Nigeria Data Protection Act 2023, and the GDPR where it applies. Where you use ReadProspects to process the personal data of your readers, you act as the controller of that data and we act as your processor, handling it only on your instructions and with strong safeguards against data leaks.",
+      "You keep all rights in the documents you upload. You grant us a limited, worldwide, royalty-free licence to host, store, transmit, extract text from, display and process them solely to provide the service to you, including sending content to our AI provider as described in our Privacy Policy. This licence ends when you delete the content or close your account.",
+      "You are responsible for the accuracy and legality of what you upload, and for anything the AI companion says in response to questions about your document, since its answers are derived from your content.",
     ],
   },
   {
-    id: "billing",
-    h: "7. Plans and billing",
+    id: "recipients",
+    h: "7. Recipients and reader data, your responsibilities",
     body: [
-      "ReadProspects offers a free plan and paid plans. Paid plans are billed in advance for the period you choose. You may upgrade or downgrade at any time, and changes take effect from your next billing cycle. Fees are non-refundable except where required by law. We will always tell you clearly before you are charged.",
+      "This section is important. Read it.",
+      "The service records the behaviour of people who did not sign up with us and who have no relationship with us. You choose those people. That places specific obligations on you.",
+      "You represent and warrant that, for every recipient whose details you provide:",
+      [
+        "You have a lawful basis under applicable data protection law to provide their personal data to us and to have it processed as described in our Privacy Policy.",
+        "You have given them any notice, and obtained any consent, that the law requires, including notice that their engagement with the document is recorded and analysed.",
+        "You will not use the service where doing so would breach a duty you owe them, or any law applicable to you or to them.",
+      ],
+      "You are the controller of recipient personal data. We act as your processor, on your instructions, except where we determine the purposes of processing ourselves.",
+      "Verdicts must not be used for consequential decisions about individuals. You must not use a verdict, or any behavioural data from the service, as a basis for a decision about a person's employment, credit, insurance, housing, education, immigration status, or any other decision producing legal or similarly significant effects for them. Verdicts are commercial inferences, not assessments of a person's character, competence or intentions.",
+      "You will indemnify us against all claims, losses, fines and reasonable costs arising from your breach of this section, including claims brought by recipients or by a data protection authority.",
+    ],
+  },
+  {
+    id: "ai",
+    h: "8. Artificial intelligence",
+    body: [
+      "The AI companion and the verdict engine produce generated text. They can be inaccurate, incomplete, or wrong in ways that appear confident.",
+      "A verdict is an inference from a small amount of behavioural evidence. Time spent on a page does not reliably indicate interest, and a question does not reliably indicate intent. You must apply your own judgement before acting, and you accept the risk of relying on AI output.",
+      "We do not warrant that AI output will be accurate, suitable for any purpose, or free from bias. Our AI provider may change its models, which may change output over time.",
     ],
   },
   {
     id: "availability",
-    h: "8. Availability",
+    h: "9. Availability and changes",
     body: [
-      "We work hard to keep ReadProspects available and reliable, but we do not promise uninterrupted service. We may occasionally need to perform maintenance or suspend the service to protect it, and we will minimize disruption where we can.",
+      "We aim to keep the service available but do not guarantee uninterrupted access. We do not offer a service level agreement unless separately agreed in writing.",
+      "We may modify, add or remove features. Where a change materially reduces a paid feature you rely on, we will give reasonable notice and, at your option, a pro-rated refund for the unused portion of your current period.",
+      "We may impose rate limits and reasonable usage limits to protect the service.",
+    ],
+  },
+  {
+    id: "third-party",
+    h: "10. Third-party services",
+    body: [
+      "The service depends on third-party providers listed in our Privacy Policy. Their failures may affect availability. If you connect Slack, webhooks, our API or any other integration, your use of that third-party service is governed by its own terms, and you are responsible for the endpoints you configure and the data sent to them.",
+    ],
+  },
+  {
+    id: "ip",
+    h: "11. Our intellectual property",
+    body: [
+      "We own the service, its software, design, and all associated intellectual property. These Terms grant you a limited, non-exclusive, non-transferable right to use it during your subscription. Feedback you give us may be used freely without obligation to you.",
+    ],
+  },
+  {
+    id: "confidentiality",
+    h: "12. Confidentiality",
+    body: [
+      "Each party will protect the other's confidential information with reasonable care and use it only for the purposes of these Terms. This does not apply to information that is public, independently developed, or lawfully received from a third party, or where disclosure is legally required.",
     ],
   },
   {
     id: "termination",
-    h: "9. Suspension and termination",
+    h: "13. Suspension and termination",
     body: [
-      "You may stop using ReadProspects and close your account at any time. We may suspend or terminate your access if you breach these terms, if required by law, or to protect the service and its users. On termination, you can request an export of your data within a reasonable window, after which it may be deleted in line with our Privacy Policy.",
+      "You may close your account at any time. Closing it deletes your documents, their files, and associated reader data as described in our Privacy Policy.",
+      "We may suspend or terminate your access if you materially breach these Terms, if payment fails, if your use creates legal risk or risk of harm to others, or if we are required to by law. Where practical we will give notice and an opportunity to fix the problem.",
+      "On termination your right to use the service ends. Sections 6, 7, 8, 11, 12, 14, 15, 16 and 18 survive.",
+    ],
+  },
+  {
+    id: "disclaimers",
+    h: "14. Disclaimers",
+    body: [
+      "To the fullest extent permitted by law, the service is provided \"as is\" and \"as available\". We disclaim all implied warranties, including merchantability, fitness for a particular purpose, non-infringement, and any warranty that the service will be uninterrupted, secure, error-free, or that AI output will be accurate.",
+      "We do not warrant that recipients will be unaware the document is tracked, or that tracking will function in every email client, browser or device.",
     ],
   },
   {
     id: "liability",
-    h: "10. Liability",
+    h: "15. Limitation of liability",
     body: [
-      "ReadProspects is provided on a reasonable-efforts basis. To the fullest extent permitted by Nigerian law, we are not liable for indirect or consequential losses, and our total liability arising from the service is limited to the amount you paid us in the twelve months before the claim. Nothing in these terms excludes liability that cannot lawfully be excluded.",
+      "To the fullest extent permitted by law:",
+      "We are not liable for indirect, incidental, special, consequential or punitive damages; loss of profits, revenue, business, goodwill, anticipated savings, or opportunity; loss or corruption of data; or losses arising from decisions you made in reliance on AI output, whether or not we were advised such losses were possible.",
+      "Our total aggregate liability arising out of or relating to these Terms or the service is limited to the greater of the fees you paid us in the twelve months before the event giving rise to the claim, or USD 100.",
+      "Nothing in these Terms excludes or limits liability that cannot lawfully be excluded, including liability for fraud, fraudulent misrepresentation, death or personal injury caused by negligence, or any liability under applicable consumer protection or data protection law that cannot be limited by contract.",
+      "You acknowledge these limits reflect a reasonable allocation of risk, and that our pricing depends on them.",
     ],
   },
   {
     id: "indemnity",
-    h: "11. Your responsibilities to us",
+    h: "16. Indemnity",
     body: [
-      "You agree to indemnify us against claims arising from your unlawful use of the service or from content you had no right to share. This reflects that you control what you upload and who you share it with.",
+      "You will defend and indemnify us against claims, damages, fines and reasonable legal costs arising from your content, your use of the service, your breach of these Terms, your breach of section 7, or your infringement of a third party's rights.",
+    ],
+  },
+  {
+    id: "data",
+    h: "17. Data protection",
+    body: [
+      "Our Privacy Policy describes how we handle personal data and forms part of these Terms. Where we process recipient personal data as your processor, we do so on your documented instructions, apply appropriate security measures, use the sub-processors listed in our Privacy Policy, assist you with data subject requests so far as reasonable, and delete or return data as described there. If you require a separate data processing agreement, contact us.",
     ],
   },
   {
     id: "law",
-    h: "12. Governing law and disputes",
+    h: "18. Governing law and disputes",
     body: [
-      "These terms are governed by the laws of the Federal Republic of Nigeria. We will try to resolve any dispute with you amicably and in good faith first. Where that is not possible, the dispute will be subject to the jurisdiction of the courts of Nigeria.",
+      "These Terms are governed by the laws of the Federal Republic of Nigeria.",
+      "We will each try in good faith to resolve any dispute informally first. Write to us at privacy@readprospects.com. If we cannot resolve it within 30 days, the courts of the Federal Capital Territory, Abuja have exclusive jurisdiction, except that either party may seek injunctive relief in any competent court to protect intellectual property or confidential information.",
+      "Nothing here deprives a consumer of protections available under the mandatory law of their country of residence.",
     ],
   },
   {
-    id: "changes",
-    h: "13. Changes to these terms",
+    id: "general",
+    h: "19. General",
     body: [
-      "We may update these terms as the service or the law evolves. When we make a material change we will update the date above and, where appropriate, notify you. Continued use after a change means you accept the updated terms.",
+      [
+        "Changes. We may update these Terms. Material changes take effect 30 days after we notify you, or immediately if required by law or if they benefit you. Continuing to use the service after that means you accept them.",
+        "Assignment. You may not assign these Terms without our consent. We may assign them to an affiliate or in connection with a merger or sale of assets.",
+        "Severability. If a provision is unenforceable, the rest remains in force.",
+        "No waiver. Failure to enforce a provision is not a waiver of it.",
+        "Force majeure. Neither party is liable for failure caused by events beyond reasonable control.",
+        "Entire agreement. These Terms and the Privacy Policy are the whole agreement between us regarding the service.",
+        "Notices. We will contact you at your account email. You may contact us at privacy@readprospects.com or the registered address above.",
+      ],
     ],
   },
   {
     id: "contact",
-    h: "14. Contact us",
+    h: "20. Contact",
     body: [
-      "If you have a question about these terms, the fastest way to reach us is the live chat on our website. Our team is happy to help.",
+      "ReadProspects Technologies Nigeria (RC 9702396), 325 Enugu Road, FCDA, Bwari, Abuja, Nigeria.",
+      "Email privacy@readprospects.com with any question about these Terms.",
     ],
   },
 ];
@@ -144,9 +226,9 @@ export default function TermsPage() {
             <ul style={{ margin: 0, padding: "0 0 0 20px", display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 "You own your documents. We only host and process them to serve you.",
-                "Use ReadProspects lawfully and for legitimate professional purposes.",
+                "You are responsible for having a lawful basis to share a recipient with us.",
+                "Verdicts are AI inferences. Never use them for employment, credit or similar decisions.",
                 "Free and paid plans, billed in advance, cancel any time.",
-                "We keep the service secure and comply with the NDPR and GDPR.",
                 "These terms are governed by the laws of Nigeria.",
               ].map((t, i) => (
                 <li key={i} style={{ fontSize: 15.5, lineHeight: 1.5, color: BODY }}>{t}</li>
@@ -188,3 +270,5 @@ export default function TermsPage() {
     </div>
   );
 }
+
+
