@@ -143,11 +143,11 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
       ctx!.clearRect(0, 0, W, H);
       const wash = ctx!.createRadialGradient(cx, cy, 0, cx, cy, R * 0.55); wash.addColorStop(0, "rgba(51,230,162,.08)"); wash.addColorStop(1, "rgba(51,230,162,0)"); ctx!.fillStyle = wash; ctx!.beginPath(); ctx!.arc(cx, cy, R * 0.55, 0, 7); ctx!.fill();
       ctx!.save();
-      for (const rr of [0.34, 0.62, 0.92]) { ctx!.beginPath(); ctx!.arc(cx, cy, R * rr, 0, 7); ctx!.strokeStyle = "rgba(9,92,60,0.34)"; ctx!.setLineDash([2, 6]); ctx!.lineWidth = 1; ctx!.stroke(); }
-      ctx!.setLineDash([]); ctx!.strokeStyle = "rgba(9,92,60,0.16)";
+      for (const rr of [0.34, 0.62, 0.92]) { ctx!.beginPath(); ctx!.arc(cx, cy, R * rr, 0, 7); ctx!.strokeStyle = "rgba(11,90,60,0.5)"; ctx!.setLineDash([3, 5]); ctx!.lineWidth = 1.3; ctx!.stroke(); }
+      ctx!.setLineDash([]); ctx!.strokeStyle = "rgba(11,90,60,0.28)"; ctx!.lineWidth = 1.1;
       for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
       ctx!.restore();
-      ctx!.fillStyle = "#3d5a4c"; ctx!.font = "600 9px 'DM Mono', monospace"; ctx!.textAlign = "center";
+      ctx!.fillStyle = "#1F4536"; ctx!.font = "600 10px 'DM Mono', monospace"; ctx!.textAlign = "center";
       ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy - R * 0.34 + 13); ctx!.fillText(fr ? "INT\u00c9R\u00caT" : "WARMING", cx, cy - R * 0.62 + 13); ctx!.fillText(fr ? "COUP D\u2019\u0152IL" : "GLANCED", cx, cy - R * 0.92 + 13);
       const pulse = reduce ? 1 : 1 + Math.sin(t * 2.1) * 0.06;
       const g = ctx!.createRadialGradient(cx, cy, 0, cx, cy, R * 0.24 * pulse); g.addColorStop(0, "rgba(51,230,162,0.55)"); g.addColorStop(0.45, "rgba(31,169,113,0.22)"); g.addColorStop(1, "rgba(31,169,113,0)"); ctx!.fillStyle = g; ctx!.beginPath(); ctx!.arc(cx, cy, R * 0.24 * pulse, 0, 7); ctx!.fill();
@@ -163,13 +163,13 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         const wob = reduce ? 0 : Math.sin(n.wob) * (n.wobA / Math.max(n.r, 40)) * 0.5;
         const a = n.ang + wob; n.x = cx + Math.cos(a) * n.r; n.y = cy + Math.sin(a) * n.r;
         const ready = n.intent >= READY, warm = n.intent >= WARM && !ready;
-        const col = ready ? "#0B7A4B" : warm ? "#1FA971" : "#9DB3A8"; const size = ready ? 6.5 : warm ? 5 : 3;
+        const col = ready ? "#0A6B42" : warm ? "#1B8F5F" : "#6E8C7E"; const size = ready ? 7 : warm ? 5.5 : 4.5;
         if (ready || warm) { const gg = ctx!.createRadialGradient(n.x, n.y, 0, n.x, n.y, ready ? 20 : 11); gg.addColorStop(0, ready ? "rgba(31,169,113,.4)" : "rgba(31,169,113,.22)"); gg.addColorStop(1, "rgba(31,169,113,0)"); ctx!.fillStyle = gg; ctx!.beginPath(); ctx!.arc(n.x, n.y, ready ? 20 : 11, 0, 7); ctx!.fill(); }
-        if (ready) { const pr = reduce ? 0 : Math.sin(t * 2 + n.wob) * 0.5 + 0.5; ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 4 + pr * 6, 0, 7); ctx!.strokeStyle = `rgba(11,122,75,${0.3 * (1 - pr)})`; ctx!.lineWidth = 1.2; ctx!.stroke(); ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(n.x, n.y); ctx!.strokeStyle = "rgba(11,122,75,.16)"; ctx!.setLineDash([1, 4]); ctx!.lineWidth = 1; ctx!.stroke(); ctx!.setLineDash([]); }
+        if (ready) { const pr = reduce ? 0 : Math.sin(t * 2 + n.wob) * 0.5 + 0.5; ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 4 + pr * 6, 0, 7); ctx!.strokeStyle = `rgba(11,122,75,${0.3 * (1 - pr)})`; ctx!.lineWidth = 1.2; ctx!.stroke(); ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(n.x, n.y); ctx!.strokeStyle = "rgba(11,122,75,.32)"; ctx!.setLineDash([2, 4]); ctx!.lineWidth = 1; ctx!.stroke(); ctx!.setLineDash([]); }
         ctx!.beginPath(); ctx!.arc(n.x, n.y, size, 0, 7); ctx!.fillStyle = col; ctx!.fill();
         if (sel) { ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 7, 0, 7); ctx!.strokeStyle = "rgba(11,122,75,.85)"; ctx!.lineWidth = 2; ctx!.stroke(); }
         const d = Math.hypot(mx - n.x, my - n.y); n._h = d < 14;
-        if (ready || n._h) { const p = n.name.split(" "); const lab = p[0] + (p[1] ? " " + p[1][0] + "." : ""); ctx!.fillStyle = n._h ? "#0E1A16" : "#0a3b26"; ctx!.font = `600 ${n._h ? 11 : 10}px 'DM Sans'`; ctx!.textAlign = "center"; ctx!.fillText(lab, n.x, n.y - size - 6); }
+        if (ready || n._h) { const p = n.name.split(" "); const lab = p[0] + (p[1] ? " " + p[1][0] + "." : ""); ctx!.fillStyle = n._h ? "#0E1A16" : "#123D2A"; ctx!.font = `600 ${n._h ? 11 : 10}px 'DM Sans'`; ctx!.textAlign = "center"; ctx!.fillText(lab, n.x, n.y - size - 6); }
       });
       ripples.forEach((rp) => { rp.r += 1.6; rp.a *= 0.955; ctx!.beginPath(); ctx!.arc(rp.x, rp.y, rp.r, 0, 7); ctx!.strokeStyle = `rgba(11,122,75,${rp.a})`; ctx!.lineWidth = 1.4; ctx!.stroke(); });
       ripples = ripples.filter((rp) => rp.a > 0.02);
@@ -327,6 +327,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     </div>
   );
 }
+
 
 
 
