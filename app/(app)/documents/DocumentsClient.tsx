@@ -66,7 +66,11 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     const insertRow: Record<string, unknown> = { owner_id: user.id, title: cleanTitle, storage_path: path };
     if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
     const { data: inserted, error: dbErr } = await supabase.from("documents").insert(insertRow).select("id").single();
-    if (dbErr || !inserted) { setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); return; }
+    if (dbErr || !inserted) {
+      // The file is already in storage. Remove it so a failed insert does not orphan it.
+      try { await supabase.storage.from("documents").remove([path]); } catch { /* best effort */ }
+      setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); return;
+    }
     try {
       await fetch("/api/extract-document", {
         method: "POST",
@@ -217,6 +221,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

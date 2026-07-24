@@ -45,7 +45,10 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
     const row: Record<string, unknown> = { owner_id: user.id, title: title.trim(), storage_path: paths[0] };
     if (isOrg && orgId) { row.organization_id = orgId; if (projectId) row.project_id = projectId; }
     const { data: doc, error: dbErr } = await supabase.from("documents").insert(row).select("id").single();
-    if (dbErr || !doc) { setErr(`Could not create the document: ${dbErr?.message ?? ""}`); setBusy(false); setStep(""); return; }
+    if (dbErr || !doc) {
+      try { await supabase.storage.from("documents").remove(paths); } catch { /* best effort */ }
+      setErr(`Could not create the document: ${dbErr?.message ?? ""}`); setBusy(false); setStep(""); return;
+    }
 
     fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: doc.id }) }).catch(() => {});
 
@@ -57,7 +60,12 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
         body: JSON.stringify({ documentId: doc.id, action: "create", label, storagePath: i === 0 ? null : paths[i], note: notes[i] || null }),
       });
       const j = await res.json().catch(() => ({}));
-      if (!res.ok) { setErr(j.error || `Variant ${label} failed.`); setBusy(false); setStep(""); return; }
+      if (!res.ok) {
+        // Variant creation failed after the document exists. Remove the unused files;
+        // the document itself keeps paths[0] and stays valid.
+        try { await supabase.storage.from("documents").remove(paths.slice(1)); } catch { /* best effort */ }
+        setErr(j.error || `Variant ${label} failed.`); setBusy(false); setStep(""); return;
+      }
       if (i > 0 && j.variant?.id) {
         fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: doc.id, variantId: j.variant.id }) }).catch(() => {});
       }
@@ -130,3 +138,4 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
     </>
   );
 }
+
