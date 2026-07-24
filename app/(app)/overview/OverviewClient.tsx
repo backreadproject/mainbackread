@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { T, microLabel } from "@/lib/theme";
+import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
@@ -189,7 +189,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow } as const;
   const ch = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px", borderBottom: `1px solid ${T.border}` } as const;
   const mono = "'DM Mono', ui-monospace, monospace";
-  const chipBg = (cls: string) => (cls === "ready" ? { background: T.greenSoft, color: T.green } : cls === "warm" ? { background: "#FFF4E5", color: "#B75A0B" } : { background: "#F2F4F7", color: "#6b7d73" });
+  const chipBg = (cls: string) => (cls === "ready" ? { background: T.greenSoft, color: T.greenText } : cls === "warm" ? { background: T.amberSoft, color: T.amberText } : { background: T.soft, color: T.body });
 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -260,35 +260,33 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
               {/* Ready to move */}
               <section style={card}>
                 <div style={ch}><h2 style={{ fontSize: 15, fontWeight: 700, color: T.heading, margin: 0 }}>{L.ready}</h2><a href="/recipients" style={{ fontSize: 12.5, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.seeAll} &rarr;</a></div>
-                <div style={{ padding: "4px 8px 10px" }}>
+                <div>
                   {readyList.length === 0 && <div style={{ padding: 22, fontSize: 13, color: T.muted, textAlign: "center" }}>{L.none}</div>}
                   {readyList.map((r, i) => (
-                    <div key={r.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "13px 12px", borderTop: i > 0 ? `1px solid ${T.border}` : "none" }}>
-                      <span style={{ width: 38, height: 38, borderRadius: 11, flex: "none", background: "linear-gradient(135deg,#33E6A2,#0B7A4B)", color: "#04120c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>{initials(r.name)}</span>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{r.name}</div>
-                        <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono, margin: "2px 0 8px" }}>{r.doc} {"\u00b7"} {r.opens} {L.readsWord}</div>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 20, background: T.greenSoft, color: T.green }}>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg> {L.vReady}
-                        </span>
-                        <div style={{ fontSize: 12.5, color: T.body, lineHeight: 1.5, marginTop: 8 }}>{whyOf(r.opens, r.questions)}</div>
-                        <a href={`/recipients/${r.id}`} style={{ fontSize: 12.5, fontWeight: 600, color: T.green, marginTop: 10, display: "inline-block", textDecoration: "none" }}>{L.follow} &rarr;</a>
-                      </div>
-                    </div>
+                    <a key={r.id} href={`/recipients/${r.id}`} className="ov-r" style={{ display: "flex", gap: 11, alignItems: "center", padding: "12px 18px", borderTop: i > 0 ? `1px solid ${T.borderSoft}` : "none", textDecoration: "none" }}>
+                      <span style={{ width: 26, height: 26, borderRadius: 7, flex: "none", background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 10.5 }}>{initials(r.name)}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                        <span style={{ display: "block", fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.doc}</span>
+                      </span>
+                      <span style={{ flex: "none", fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: T.rPill, background: T.greenSoft, color: T.greenText }}>{L.vReady}</span>
+                      <span style={{ flex: "none", fontSize: 12.5, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
+                    </a>
                   ))}
                 </div>
               </section>
             </div>
 
-            {/* stats strip */}
-            <section style={{ ...card, display: "flex", padding: 4, marginBottom: 16 }}>
-              {[[stats.documents, L.sDocuments], [stats.recipients, L.sRecipients], [readsN, L.sReads], [questionsN, L.sQuestions]].map(([v, l], i) => (
-                <div key={i} style={{ flex: 1, padding: "14px 20px", position: "relative", borderLeft: i > 0 ? `1px solid ${T.border}` : "none" }}>
-                  <div style={{ fontSize: 23, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, fontVariantNumeric: "tabular-nums" }}>{v}</div>
-                  <div style={{ fontSize: 12, color: T.body, marginTop: 1 }}>{l}</div>
+            {/* stat tiles. Colour carries meaning: green healthy, amber attention,
+                indigo spread, neutral inert. */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }} className="ov-tiles">
+              {([[readsN, L.sReads, "green"], [questionsN, L.sQuestions, "amber"], [stats.recipients, L.sRecipients, "indigo"], [stats.documents, L.sDocuments, "neutral"]] as [number, string, "green" | "amber" | "indigo" | "neutral"][]).map(([v, l, tone], i) => (
+                <div key={i} style={statTile(tone)}>
+                  <div style={{ fontSize: 27, fontWeight: 600, color: statTileInk(tone), letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{v}</div>
+                  <div style={{ fontSize: 12.5, color: tone === "neutral" ? T.muted : statTileInk(tone), marginTop: 4, fontWeight: 500, opacity: tone === "neutral" ? 1 : 0.85 }}>{l}</div>
                 </div>
               ))}
-            </section>
+            </div>
 
             {/* recent reads + documents */}
             <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16 }} className="ov-row">
@@ -324,8 +322,10 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
           </>
         )}
       </main>
-      <style>{`@media (max-width: 900px){ .ov-row{ grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`@media (max-width: 900px){ .ov-row{ grid-template-columns: 1fr !important; } .ov-tiles{ grid-template-columns: 1fr 1fr !important; } } .ov-r{ transition: background .12s } .ov-r:hover{ background: #FAF8F4 }`}</style>
     </div>
   );
 }
+
+
 
