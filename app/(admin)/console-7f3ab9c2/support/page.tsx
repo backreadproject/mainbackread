@@ -2,6 +2,7 @@
 import { ADMIN_SLUG } from "@/lib/admin";
 import { T, pageHeading, microLabel } from "@/lib/theme";
 import ForwardMentions from "./ForwardMentions";
+import SupportConversations from "./SupportConversations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -43,6 +44,27 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
       email: (r.email as string | null) ?? "no email", docId: r.document_id, docTitle: titleById.get(r.document_id) ?? "document",
     }));
   }
+
+  // Support chat: open conversations first, newest activity first.
+  const { data: convRows } = await admin
+    .from("support_conversations")
+    .select("id, email, name, surface, status, last_message_at, escalated_at")
+    .order("last_message_at", { ascending: false })
+    .limit(40);
+  const convIds = (convRows ?? []).map((c) => c.id);
+  const { data: msgRows } = convIds.length
+    ? await admin.from("support_messages").select("id, conversation_id, role, content, created_at").in("conversation_id", convIds).order("created_at", { ascending: true })
+    : { data: [] };
+  const byConv = new Map<string, { id: string; role: string; content: string; created_at: string }[]>();
+  for (const m of msgRows ?? []) {
+    const arr = byConv.get(m.conversation_id as string) ?? [];
+    arr.push({ id: m.id as string, role: m.role as string, content: m.content as string, created_at: m.created_at as string });
+    byConv.set(m.conversation_id as string, arr);
+  }
+  const rank: Record<string, number> = { escalated: 0, answered: 1, bot: 2, closed: 3 };
+  const conversations = (convRows ?? [])
+    .map((c) => ({ ...c, messages: byConv.get(c.id as string) ?? [] }))
+    .sort((a, b) => (rank[a.status as string] ?? 9) - (rank[b.status as string] ?? 9)) as never[];
 
   const box = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 16, overflow: "hidden" } as const;
   const head = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 18px", borderBottom: `1px solid ${T.border}` } as const;
@@ -101,10 +123,12 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             ))}
           </div>
         )}
+        <SupportConversations conversations={conversations} />
         <ForwardMentions />
       </main>
       <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
     </div>
   );
 }
+
 

@@ -333,3 +333,63 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
   });
   return { ok: true };
 }
+
+/* ---------------- support conversations ---------------- */
+
+export async function replyToSupportAction(conversationId: string, message: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const text = (message ?? "").trim();
+  if (!text) return fail("Write something first.");
+  if (text.length > 4000) return fail("That is too long for a chat reply.");
+
+  const admin = createAdminClient();
+  const { data: conv } = await admin
+    .from("support_conversations")
+    .select("id, email, name, user_id, status")
+    .eq("id", conversationId)
+    .single();
+  if (!conv) return fail("Conversation not found.", 404);
+  const c = conv as { id: string; email: string | null; name: string | null; user_id: string | null; status: string };
+
+  const { error } = await admin.from("support_messages").insert({
+    conversation_id: c.id, role: "human", content: text,
+  });
+  if (error) return fail(error.message, 500);
+
+  await admin.from("support_conversations")
+    .update({ status: "answered", last_message_at: new Date().toISOString() })
+    .eq("id", c.id);
+
+  // Email it too: they may have closed the tab. Best effort, never fatal.
+  if (c.email) {
+    try {
+      const { sendEmail } = await import("@/lib/email");
+      const html = `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#F8F9FA;padding:24px;">
+        <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #EAECEF;border-radius:12px;padding:24px;">
+          <p style="font-size:16px;color:#0F1729;margin:0 0 14px;">${c.name ? `Hi ${c.name.split(" ")[0]},` : "Hi,"}</p>
+          <p style="font-size:15px;color:#475467;line-height:1.6;margin:0 0 18px;white-space:pre-wrap;">${text.replace(/</g, "&lt;")}</p>
+          <p style="font-size:13px;color:#98A2B3;line-height:1.5;margin:0;">Reply to this email and it reaches us directly, or continue in the chat on ReadProspects.</p>
+        </div></body></html>`;
+      await sendEmail("readprospects", { to: c.email, subject: "Re: your question about ReadProspects", html });
+    } catch (err) {
+      console.error("[support reply] email failed:", err instanceof Error ? err.message : String(err));
+    }
+  }
+
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email, action: "support_reply",
+    targetUserId: c.user_id, detail: { conversationId: c.id, emailed: !!c.email },
+  });
+  return { ok: true };
+}
+
+export async function closeSupportAction(conversationId: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  const admin = createAdminClient();
+  const { error } = await admin.from("support_conversations").update({ status: "closed" }).eq("id", conversationId);
+  if (error) return fail(error.message, 500);
+  await writeAudit({ actorId: me.id, actorEmail: me.email, action: "support_close", detail: { conversationId } });
+  return { ok: true };
+}
