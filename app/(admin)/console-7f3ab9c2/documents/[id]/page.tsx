@@ -67,7 +67,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
           <div>
             <h1 style={pageHeading}>{doc.title}</h1>
-            <p style={{ fontSize: 12.5, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
+            <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
               {owner?.user?.email ?? "unknown owner"} {"\u00b7"} {doc.page_count ?? "?"} pages {"\u00b7"} added {new Date(doc.created_at).toLocaleDateString()}
               {doc.archived_at ? " \u00b7 archived" : ""}
             </p>
@@ -96,7 +96,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nameOf(r)}</div>
-                    <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono, marginTop: 2 }}>{r.email || "no email"} {"\u00b7"} {r.delivery || "link"}</div>
+                    <div style={{ fontSize: 12, color: T.muted, fontFamily: mono, marginTop: 2 }}>{r.email || "no email"} {"\u00b7"} {r.delivery || "link"}</div>
                   </div>
                   <EraseReader recipientId={r.id} expected={(r.email || nameOf(r)) as string} />
                   <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
@@ -132,7 +132,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
           {signals.slice(0, 60).map((s, i) => {
             const r = recipients.find((x) => x.id === s.recipient_id);
             return (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 12.5 }}>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13 }}>
                 <span style={{ color: T.heading }}>{r ? nameOf(r) : "unknown"} <span style={{ color: T.green, fontWeight: 600 }}>{s.kind}</span>{s.page != null ? <span style={{ color: T.muted }}> p{s.page}</span> : null}</span>
                 <span style={{ color: T.muted, fontFamily: mono, fontSize: 11 }}>{new Date(s.created_at).toLocaleString()}</span>
               </div>
@@ -144,4 +144,5 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
     </div>
   );
 }
+
 

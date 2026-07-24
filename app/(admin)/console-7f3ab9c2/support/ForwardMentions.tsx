@@ -59,7 +59,7 @@ export default function ForwardMentions() {
             {mentions.map((m, i) => (
               <div key={m.signalId} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13 }}>
                 <span style={{ color: T.heading }}>{m.readerName} forwarded <em>{m.documentTitle}</em>{m.colleagueName !== "unnamed" ? ` to ${m.colleagueName}` : ""}</span>
-                <span style={{ color: T.muted, fontFamily: mono, fontSize: 11.5, flex: "none" }}>{new Date(m.at).toLocaleDateString()}</span>
+                <span style={{ color: T.muted, fontFamily: mono, fontSize: 12, flex: "none" }}>{new Date(m.at).toLocaleDateString()}</span>
               </div>
             ))}
           </div>
@@ -86,3 +86,4 @@ export default function ForwardMentions() {
     </div>
   );
 }
+

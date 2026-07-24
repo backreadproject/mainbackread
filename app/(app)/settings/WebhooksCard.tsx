@@ -57,7 +57,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" as const };
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
+  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 
   if (!enabled) {
     return (
@@ -77,7 +77,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
         <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.border}` }}>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 13, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.url}</div>
-            <div style={{ fontSize: 11.5, color: h.active ? T.greenText : T.muted }}>
+            <div style={{ fontSize: 12, color: h.active ? T.greenText : T.muted }}>
               {h.active ? L.on : L.off}{h.last_status ? ` \u00b7 ${h.last_status}` : ""}{h.last_delivery_at ? ` \u00b7 ${new Date(h.last_delivery_at).toLocaleDateString()}` : ""}
             </div>
           </div>
@@ -107,9 +107,9 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
       {msg && <p style={{ fontSize: 13, color: ok ? T.greenText : "#B42318", marginTop: 12 }}>{msg}</p>}
       {secret && (
         <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
-          <div style={{ fontSize: 11.5, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>{L.secretNote}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>{L.secretNote}</div>
           <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{secret}</div>
+            <div style={{ fontSize: 12, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{secret}</div>
             <CopyButton value={secret} />
           </div>
         </div>
@@ -117,5 +117,6 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
     </div>
   );
 }
+
 
 

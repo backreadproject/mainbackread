@@ -107,7 +107,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     ? FAQ_ITEMS.filter((f) => (f.q + " " + f.a).toLowerCase().includes(search.trim().toLowerCase()))
     : FAQ_ITEMS;
 
-  const bubble = { maxWidth: "84%", padding: "9px 12px", borderRadius: 13, fontSize: 13.5, lineHeight: 1.5, whiteSpace: "pre-wrap" as const, wordBreak: "break-word" as const };
+  const bubble = { maxWidth: "84%", padding: "9px 12px", borderRadius: 13, fontSize: 14, lineHeight: 1.5, whiteSpace: "pre-wrap" as const, wordBreak: "break-word" as const };
   const card = { background: "#fff", borderRadius: 13, boxShadow: "0 2px 10px rgba(9,30,22,0.07)", padding: 14 };
 
   return (
@@ -146,7 +146,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
               <div style={{ padding: "0 14px 14px", marginTop: -18 }}>
                 {last && (
                   <div className="rp-sw-row" onClick={() => setTab("messages")} style={{ ...card, marginBottom: 10 }}>
-                    <div style={{ fontSize: 11.5, color: T.muted, marginBottom: 6 }}>Recent message</div>
+                    <div style={{ fontSize: 12, color: T.muted, marginBottom: 6 }}>Recent message</div>
                     <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
                       <span style={{ width: 26, height: 26, borderRadius: 13, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flex: "none" }}>
                         {last.role === "user" ? "You" : "RP"}
@@ -170,7 +170,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                 </div>
 
                 <div style={{ ...card, padding: "12px 14px" }}>
-                  <div style={{ fontSize: 11.5, color: T.muted, marginBottom: 8 }}>Common questions</div>
+                  <div style={{ fontSize: 12, color: T.muted, marginBottom: 8 }}>Common questions</div>
                   {FAQ_ITEMS.slice(0, 3).map((f, i) => (
                     <div key={i} className="rp-sw-row" onClick={() => { setTab("help"); setOpenFaq(i); }}
                       style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", padding: "8px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13, color: T.heading }}>
@@ -195,48 +195,48 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                     <X size={14} strokeWidth={2.2} />
                   </button>
                 </div>
-                <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 12.5, margin: "3px 0 0" }}>
+                <p style={{ color: "rgba(255,255,255,0.72)", fontSize: 13, margin: "3px 0 0" }}>
                   {waiting ? "With the team. They will reply here or by email." : "Ask anything about ReadProspects."}
                 </p>
               </div>
 
               <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 6px" }}>
                 {visible.length === 0 && !busy && (
-                  <div style={{ fontSize: 13.5, color: T.body, lineHeight: 1.6, padding: "6px 2px" }}>
+                  <div style={{ fontSize: 14, color: T.body, lineHeight: 1.6, padding: "6px 2px" }}>
                     Ask about plans, how sharing works, what a verdict is, or anything else. If I cannot answer it, I will pass it to a person.
                   </div>
                 )}
                 {visible.map((m, i) =>
                   m.role === "note" ? (
-                    <div key={i} style={{ textAlign: "center", fontSize: 11.5, color: T.muted, margin: "2px 0 9px" }}>{m.content}</div>
+                    <div key={i} style={{ textAlign: "center", fontSize: 12, color: T.muted, margin: "2px 0 9px" }}>{m.content}</div>
                   ) : (
                     <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 9 }}>
                       <div style={{ ...bubble, background: m.role === "user" ? T.green : "#fff", color: m.role === "user" ? "#fff" : T.heading, border: m.role === "user" ? "none" : `1px solid ${T.border}` }}>
-                        {m.role === "human" && <div style={{ fontSize: 10.5, fontWeight: 700, color: T.greenText, marginBottom: 3 }}>ReadProspects team</div>}
+                        {m.role === "human" && <div style={{ fontSize: 11, fontWeight: 700, color: T.greenText, marginBottom: 3 }}>ReadProspects team</div>}
                         {m.content}
                       </div>
                     </div>
                   )
                 )}
-                {busy && <div style={{ fontSize: 12.5, color: T.muted, padding: "2px 4px" }}>Thinking...</div>}
+                {busy && <div style={{ fontSize: 13, color: T.muted, padding: "2px 4px" }}>Thinking...</div>}
                 {waiting && !hasEmail && surface === "marketing" && (
                   <div style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, padding: 12, marginTop: 6 }}>
-                    <div style={{ fontSize: 12.5, color: T.heading, fontWeight: 600, marginBottom: 6 }}>Where should we reply?</div>
+                    <div style={{ fontSize: 13, color: T.heading, fontWeight: 600, marginBottom: 6 }}>Where should we reply?</div>
                     <div style={{ display: "flex", gap: 6 }}>
                       <input className="rp-sw-in" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com"
                         style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 8, padding: "8px 10px", fontSize: 13, fontFamily: T.font }} />
-                      <button onClick={saveEmail} style={{ background: T.green, color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontSize: 12.5, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Save</button>
+                      <button onClick={saveEmail} style={{ background: T.green, color: "#fff", border: "none", borderRadius: 8, padding: "8px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Save</button>
                     </div>
                   </div>
                 )}
-                {err && <div style={{ fontSize: 12.5, color: "#B42318", padding: "4px 2px" }}>{err}</div>}
+                {err && <div style={{ fontSize: 13, color: "#B42318", padding: "4px 2px" }}>{err}</div>}
                 <div ref={endRef} />
               </div>
 
               <div style={{ borderTop: `1px solid ${T.border}`, padding: 11, display: "flex", gap: 8, background: "#fff", flexShrink: 0 }}>
                 <input className="rp-sw-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
                   placeholder={waiting ? "Add anything else..." : "Ask a question..."} maxLength={600}
-                  style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 20, padding: "9px 14px", fontSize: 13.5, fontFamily: T.font, background: T.canvas }} />
+                  style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 20, padding: "9px 14px", fontSize: 14, fontFamily: T.font, background: T.canvas }} />
                 <button onClick={() => send()} disabled={busy || !draft.trim()} aria-label="Send"
                   style={{ background: T.green, color: "#fff", border: "none", borderRadius: 20, width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, opacity: busy || !draft.trim() ? 0.5 : 1 }}>
                   <ArrowRight size={16} strokeWidth={2.2} />
@@ -299,7 +299,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                   <Icon size={22} strokeWidth={3} />
                   {id === "messages" && waiting && <span style={{ position: "absolute", top: -2, right: -4, width: 7, height: 7, borderRadius: 4, background: "#F04438" }} />}
                 </span>
-                <span style={{ fontSize: 10.5, fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: 11, fontWeight: 600 }}>{label}</span>
               </button>
             ))}
           </div>
@@ -317,6 +317,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     </>
   );
 }
+
 
 
 

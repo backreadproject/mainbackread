@@ -93,8 +93,8 @@ export default async function AdminDocuments() {
                   {d.title}
                   {d.needs_page_ocr && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708" }}>OCR</span>}
                 </span>
-                <span className="data-cell" data-label="Owner" style={{ fontSize: 12.5, color: T.body, fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emailById.get(d.owner_id) || "unknown"}</span>
-                <span className="data-cell" data-label="Org / Project" style={{ fontSize: 12.5, color: org || proj ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[org, proj].filter(Boolean).join(" / ") || "personal"}</span>
+                <span className="data-cell" data-label="Owner" style={{ fontSize: 13, color: T.body, fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emailById.get(d.owner_id) || "unknown"}</span>
+                <span className="data-cell" data-label="Org / Project" style={{ fontSize: 13, color: org || proj ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[org, proj].filter(Boolean).join(" / ") || "personal"}</span>
                 <span className="data-cell" data-label="Recipients" style={{ fontSize: 14, color: T.body }}>{recByDoc.get(d.id) ?? 0}</span>
                 <span className="data-cell" data-label="Opens" style={{ fontSize: 14, color: T.body }}>{a.opens}</span>
                 <span className="data-cell" data-label="Questions" style={{ fontSize: 14, color: a.questions ? T.heading : T.muted, fontWeight: a.questions ? 600 : 400 }}>{a.questions}</span>
@@ -113,3 +113,4 @@ export default async function AdminDocuments() {
     </div>
   );
 }
+

@@ -136,7 +136,7 @@ export default async function PricingPage() {
                 <span style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: GREEN, color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", padding: "4px 13px", borderRadius: 20, whiteSpace: "nowrap" }}>{locale === "fr" ? "Le plus populaire" : "Most popular"}</span>
               )}
               <div style={{ fontSize: 18, fontWeight: 700, color: INK }}>{t.name}</div>
-              <div style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: "0.03em", textTransform: "uppercase", color: BRAND, margin: "7px 0 11px" }}>{t.audience}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.03em", textTransform: "uppercase", color: BRAND, margin: "7px 0 11px" }}>{t.audience}</div>
               <div style={{ fontSize: 13, color: BODY, marginBottom: 18, minHeight: 38, lineHeight: 1.45 }}>{t.tagline}</div>
               <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
                 <span style={{ fontSize: 34, fontWeight: 700, color: INK, letterSpacing: "-0.02em" }}>{t.price}</span>
@@ -149,7 +149,7 @@ export default async function PricingPage() {
               {t.includes && <div style={{ fontSize: 12, fontWeight: 600, color: GREEN, marginBottom: 12 }}>{t.includes}</div>}
               <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 11 }}>
                 {t.features.map((f, i) => (
-                  <li key={i} style={{ display: "flex", gap: 9, fontSize: 13.5, color: BODY, lineHeight: 1.45 }}>
+                  <li key={i} style={{ display: "flex", gap: 9, fontSize: 14, color: BODY, lineHeight: 1.45 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={GREEN} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}><path d="M20 6L9 17l-5-5" /></svg>
                     <span>{f}</span>
                   </li>
@@ -161,7 +161,7 @@ export default async function PricingPage() {
       </section>
 
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "12px 20px" }}>
-        <div style={{ background: SOFT, border: "1px solid #CDEBD8", borderRadius: 14, padding: "16px 20px", textAlign: "center", fontSize: 13.5, color: "#1B4332", lineHeight: 1.6 }}>{c.baseline}</div>
+        <div style={{ background: SOFT, border: "1px solid #CDEBD8", borderRadius: 14, padding: "16px 20px", textAlign: "center", fontSize: 14, color: "#1B4332", lineHeight: 1.6 }}>{c.baseline}</div>
       </section>
 
       <section style={{ maxWidth: 940, margin: "0 auto", padding: "80px 20px 24px" }}>
@@ -171,7 +171,7 @@ export default async function PricingPage() {
           {c.faq.map((f, i) => (
             <div key={i} className="faq-row">
               <div style={{ fontSize: 18, fontWeight: 700, color: INK, lineHeight: 1.35 }}>{f.q}</div>
-              <div style={{ fontSize: 15.5, color: BODY, lineHeight: 1.7 }}>{f.a}</div>
+              <div style={{ fontSize: 16, color: BODY, lineHeight: 1.7 }}>{f.a}</div>
             </div>
           ))}
         </div>
@@ -180,7 +180,7 @@ export default async function PricingPage() {
       <section style={{ padding: "64px 20px 80px", textAlign: "center" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", background: `linear-gradient(160deg, ${NIGHT}, #0a2b20)`, borderRadius: 20, padding: "52px 30px", color: "#fff" }}>
           <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 14px", letterSpacing: "-0.02em" }}>{c.closeH}</h2>
-          <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.78)", margin: "0 0 28px", lineHeight: 1.65 }}>{c.closeSub}</p>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.78)", margin: "0 0 28px", lineHeight: 1.65 }}>{c.closeSub}</p>
           <a href="/login" className="hero-cta" style={{ display: "inline-block", background: BRAND, color: NIGHT, textDecoration: "none", fontSize: 15, fontWeight: 700, padding: "14px 32px", borderRadius: 11 }}>{c.closeCta}</a>
         </div>
       </section>
@@ -197,4 +197,5 @@ export default async function PricingPage() {
     </div>
   );
 }
+
 

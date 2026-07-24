@@ -216,7 +216,7 @@ export default function PrivacyPage() {
                 "Our verdict feature profiles individual readers. We say so plainly in section 9.",
                 "Readers, and people named in a forward, can ask us to erase them at any time.",
               ].map((t, i) => (
-                <li key={i} style={{ fontSize: 15.5, lineHeight: 1.5, color: BODY }}>{t}</li>
+                <li key={i} style={{ fontSize: 16, lineHeight: 1.5, color: BODY }}>{t}</li>
               ))}
             </ul>
           </div>
@@ -231,7 +231,7 @@ export default function PrivacyPage() {
                       <thead>
                         <tr>
                           {b.head.map((h, k) => (
-                            <th key={k} style={{ textAlign: "left", padding: "10px 12px 10px 0", borderBottom: `2px solid ${LINE}`, fontSize: 12.5, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT, whiteSpace: "nowrap" }}>{h}</th>
+                            <th key={k} style={{ textAlign: "left", padding: "10px 12px 10px 0", borderBottom: `2px solid ${LINE}`, fontSize: 13, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: GREEN_TEXT, whiteSpace: "nowrap" }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
@@ -276,6 +276,7 @@ export default function PrivacyPage() {
     </div>
   );
 }
+
 
 
 

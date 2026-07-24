@@ -71,7 +71,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
           <div>
             <h1 style={pageHeading}>{name}{banned && <span style={{ marginLeft: 10, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318", verticalAlign: "middle" }}>suspended</span>}</h1>
-            <p style={{ fontSize: 12.5, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
+            <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
               {u?.email ?? "\u2014"} {"\u00b7"} {p.account_type ?? "personal"} {"\u00b7"} joined {u?.created_at ? new Date(u.created_at).toLocaleDateString() : "\u2014"}
               {u?.last_sign_in_at ? ` \u00b7 last seen ${new Date(u.last_sign_in_at).toLocaleDateString()}` : " \u00b7 never signed in"}
             </p>
@@ -108,7 +108,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
           {documents.map((d, i) => {
             const a = per.get(d.id) ?? { opens: 0, questions: 0, forwards: 0 };
             return (
-              <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5, textDecoration: "none" }}>
+              <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{d.title}{d.archived_at ? <span style={{ color: T.muted, fontWeight: 400 }}> (archived)</span> : ""}</span>
                 <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{recByDoc.get(d.id) ?? 0} rec {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} Q {"\u00b7"} {a.forwards} fwd</span>
               </a>
@@ -119,3 +119,4 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
     </div>
   );
 }
+

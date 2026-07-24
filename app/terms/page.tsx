@@ -231,7 +231,7 @@ export default function TermsPage() {
                 "Free and paid plans, billed in advance, cancel any time.",
                 "These terms are governed by the laws of Nigeria.",
               ].map((t, i) => (
-                <li key={i} style={{ fontSize: 15.5, lineHeight: 1.5, color: BODY }}>{t}</li>
+                <li key={i} style={{ fontSize: 16, lineHeight: 1.5, color: BODY }}>{t}</li>
               ))}
             </ul>
           </div>
@@ -270,5 +270,6 @@ export default function TermsPage() {
     </div>
   );
 }
+
 
 

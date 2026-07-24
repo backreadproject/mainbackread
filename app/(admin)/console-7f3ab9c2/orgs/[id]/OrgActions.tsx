@@ -23,7 +23,7 @@ export default function OrgActions({
     return { ok: res.ok, error: j.error as string | undefined };
   }
 
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
 
   if (mode === "member") {
     return (
@@ -64,3 +64,4 @@ export default function OrgActions({
     />
   );
 }
+

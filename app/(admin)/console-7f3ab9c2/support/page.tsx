@@ -85,16 +85,16 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <button type="submit" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 22px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Search</button>
         </form>
 
-        {!term && <p style={{ color: T.muted, fontSize: 13.5 }}>Type anything above: a customer email, a document title, or a reader&apos;s address.</p>}
-        {term && total === 0 && <p style={{ color: T.muted, fontSize: 13.5 }}>Nothing matches &ldquo;{term}&rdquo;.</p>}
+        {!term && <p style={{ color: T.muted, fontSize: 14 }}>Type anything above: a customer email, a document title, or a reader&apos;s address.</p>}
+        {term && total === 0 && <p style={{ color: T.muted, fontSize: 14 }}>Nothing matches &ldquo;{term}&rdquo;.</p>}
 
         {accounts.length > 0 && (
           <div style={box}>
             <div style={head}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>Accounts</h2><span style={{ ...microLabel }}>{accounts.length}</span></div>
             {accounts.map((a, i) => (
-              <a key={a.id} href={`/${ADMIN_SLUG}/accounts/${a.id}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 13.5 }}>
-                <span style={{ color: T.heading, fontWeight: 600 }}>{a.email}{a.banned && <span style={{ marginLeft: 8, fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>suspended</span>}</span>
-                <span style={{ color: T.muted, fontSize: 12.5 }}>{a.name}</span>
+              <a key={a.id} href={`/${ADMIN_SLUG}/accounts/${a.id}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 14 }}>
+                <span style={{ color: T.heading, fontWeight: 600 }}>{a.email}{a.banned && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>suspended</span>}</span>
+                <span style={{ color: T.muted, fontSize: 13 }}>{a.name}</span>
               </a>
             ))}
           </div>
@@ -104,9 +104,9 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <div style={box}>
             <div style={head}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>Documents</h2><span style={{ ...microLabel }}>{documents.length}</span></div>
             {documents.map((d, i) => (
-              <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 13.5 }}>
+              <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 14 }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{d.title}</span>
-                <span style={{ color: T.muted, fontFamily: mono, fontSize: 11.5 }}>{d.owner} {"\u00b7"} {new Date(d.created_at).toLocaleDateString()}</span>
+                <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{d.owner} {"\u00b7"} {new Date(d.created_at).toLocaleDateString()}</span>
               </a>
             ))}
           </div>
@@ -116,9 +116,9 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <div style={box}>
             <div style={head}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>Readers</h2><span style={{ ...microLabel }}>{readers.length}</span></div>
             {readers.map((r, i) => (
-              <a key={r.id} href={`/${ADMIN_SLUG}/documents/${r.docId}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 13.5 }}>
-                <span style={{ color: T.heading, fontWeight: 600 }}>{r.name} <span style={{ color: T.muted, fontWeight: 400, fontFamily: mono, fontSize: 11.5 }}>{r.email}</span></span>
-                <span style={{ color: T.muted, fontSize: 12.5 }}>{r.docTitle}</span>
+              <a key={r.id} href={`/${ADMIN_SLUG}/documents/${r.docId}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 14 }}>
+                <span style={{ color: T.heading, fontWeight: 600 }}>{r.name} <span style={{ color: T.muted, fontWeight: 400, fontFamily: mono, fontSize: 12 }}>{r.email}</span></span>
+                <span style={{ color: T.muted, fontSize: 13 }}>{r.docTitle}</span>
               </a>
             ))}
           </div>
@@ -130,5 +130,6 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
     </div>
   );
 }
+
 
 

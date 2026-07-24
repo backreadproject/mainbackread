@@ -52,11 +52,11 @@ export default async function AdminDashboard() {
         <section style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "15px 18px", borderBottom: `1px solid ${T.border}` }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: T.heading, margin: 0 }}>Recent signals</h2>
-            <Link href={`/${ADMIN_SLUG}/accounts`} style={{ fontSize: 12.5, color: T.green, fontWeight: 600, textDecoration: "none" }}>Manage accounts &rarr;</Link>
+            <Link href={`/${ADMIN_SLUG}/accounts`} style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none" }}>Manage accounts &rarr;</Link>
           </div>
           <div style={{ padding: "6px 8px" }}>
             {(recent ?? []).map((s, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5 }}>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14 }}>
                 <span style={{ color: T.heading }}>{label.get(s.recipient_id) || "Reader"}<span style={{ color: T.muted }}> {"\u00b7"} </span><span style={{ color: T.green, fontWeight: 600 }}>{s.kind}</span></span>
                 <span style={{ fontSize: 11, color: T.muted, fontFamily: mono }}>{new Date(s.created_at).toLocaleString()}</span>
               </div>
@@ -68,3 +68,4 @@ export default async function AdminDashboard() {
     </div>
   );
 }
+

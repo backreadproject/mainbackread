@@ -236,13 +236,13 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                         <span style={{ width: 34, height: 34, borderRadius: 10, flex: "none", background: "linear-gradient(135deg,#33E6A2,#0B7A4B)", color: "#04120c", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 13 }}>{selected.ini}</span>
                         <div><div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{selected.name}</div><div style={{ fontSize: 11, color: T.muted, fontFamily: mono, marginTop: 1 }}>{selected.doc}</div></div>
-                        <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 600, padding: "3px 8px", borderRadius: 20, whiteSpace: "nowrap", ...chipBg(selected.verdict.cls) }}>{selected.verdict.label}</span>
+                        <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 20, whiteSpace: "nowrap", ...chipBg(selected.verdict.cls) }}>{selected.verdict.label}</span>
                       </div>
                       <div style={{ display: "flex", gap: 6, margin: "12px 0 10px" }}>
                         {[[selected.reads, L.bReads], [selected.questions, L.bQ], [selected.last, L.bLast]].map(([v, l], k) => (
                           <div key={k} style={{ flex: 1, background: "rgba(11,80,52,.05)", borderRadius: 9, padding: "8px 6px", textAlign: "center" }}>
                             <b style={{ display: "block", fontSize: 14, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{v}</b>
-                            <span style={{ fontSize: 9.5, color: T.muted }}>{l}</span>
+                            <span style={{ fontSize: 10, color: T.muted }}>{l}</span>
                           </div>
                         ))}
                       </div>
@@ -260,18 +260,18 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
 
               {/* Ready to move */}
               <section style={card}>
-                <div style={ch}><h2 style={{ fontSize: 15, fontWeight: 700, color: T.heading, margin: 0 }}>{L.ready}</h2><a href="/recipients" style={{ fontSize: 12.5, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.seeAll} &rarr;</a></div>
+                <div style={ch}><h2 style={{ fontSize: 15, fontWeight: 700, color: T.heading, margin: 0 }}>{L.ready}</h2><a href="/recipients" style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.seeAll} &rarr;</a></div>
                 <div>
                   {readyList.length === 0 && <div style={{ padding: 22, fontSize: 13, color: T.muted, textAlign: "center" }}>{L.none}</div>}
                   {readyList.map((r, i) => (
                     <a key={r.id} href={`/recipients/${r.id}`} className="ov-r" style={{ display: "flex", gap: 11, alignItems: "center", padding: "12px 18px", borderTop: i > 0 ? `1px solid ${T.borderSoft}` : "none", textDecoration: "none" }}>
-                      <span style={{ width: 26, height: 26, borderRadius: 7, flex: "none", background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 10.5 }}>{initials(r.name)}</span>
+                      <span style={{ width: 26, height: 26, borderRadius: 7, flex: "none", background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 11 }}>{initials(r.name)}</span>
                       <span style={{ flex: 1, minWidth: 0 }}>
                         <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
                         <span style={{ display: "block", fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.doc}</span>
                       </span>
                       <span style={{ flex: "none", fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: T.rPill, background: T.greenSoft, color: T.greenText }}>{L.vReady}</span>
-                      <span style={{ flex: "none", fontSize: 12.5, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
+                      <span style={{ flex: "none", fontSize: 13, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
                     </a>
                   ))}
                 </div>
@@ -284,7 +284,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
               {([[readsN, L.sReads, "green"], [questionsN, L.sQuestions, "amber"], [stats.recipients, L.sRecipients, "indigo"], [stats.documents, L.sDocuments, "neutral"]] as [number, string, "green" | "amber" | "indigo" | "neutral"][]).map(([v, l, tone], i) => (
                 <div key={i} style={statTile(tone)}>
                   <div style={{ fontSize: 27, fontWeight: 600, color: statTileInk(tone), letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{v}</div>
-                  <div style={{ fontSize: 12.5, color: tone === "neutral" ? T.muted : statTileInk(tone), marginTop: 4, fontWeight: 500, opacity: tone === "neutral" ? 1 : 0.85 }}>{l}</div>
+                  <div style={{ fontSize: 13, color: tone === "neutral" ? T.muted : statTileInk(tone), marginTop: 4, fontWeight: 500, opacity: tone === "neutral" ? 1 : 0.85 }}>{l}</div>
                 </div>
               ))}
             </div>
@@ -292,7 +292,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
             {/* recent reads + documents */}
             <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16 }} className="ov-row">
               <section style={card}>
-                <div style={ch}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>{L.recent}</h2><a href="/activity" style={{ fontSize: 12.5, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.allActivity}</a></div>
+                <div style={ch}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>{L.recent}</h2><a href="/activity" style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.allActivity}</a></div>
                 <div style={{ padding: "6px 8px" }}>
                   {events.length === 0 && <div style={{ padding: 22, fontSize: 13, color: T.muted, textAlign: "center" }}>{L.none}</div>}
                   {events.map((e, i) => (
@@ -300,19 +300,19 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                       <span style={{ width: 30, height: 30, borderRadius: 9, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", background: e.kind === "question" ? "#E6EEFB" : T.greenSoft, color: e.kind === "question" ? "#2563EB" : T.green }}>
                         {e.kind === "question" ? <MessageSquare size={15} strokeWidth={1.9} /> : <Eye size={15} strokeWidth={1.9} />}
                       </span>
-                      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13.5, color: T.heading, lineHeight: 1.45 }}>{e.text}</div></div>
+                      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, color: T.heading, lineHeight: 1.45 }}>{e.text}</div></div>
                       <span style={{ fontSize: 11, color: T.muted, fontFamily: mono }}>{ago(e.at)}</span>
                     </div>
                   ))}
                 </div>
               </section>
               <section style={card}>
-                <div style={ch}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>{L.yourDocs}</h2><a href="/documents" style={{ fontSize: 12.5, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.allDocs}</a></div>
+                <div style={ch}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>{L.yourDocs}</h2><a href="/documents" style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none" }}>{L.allDocs}</a></div>
                 <div style={{ padding: "6px 8px" }}>
                   {documents.map((d, i) => (
                     <a key={d.id} href={`/documents/${d.id}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 12px", textDecoration: "none", borderTop: i > 0 ? `1px solid ${T.border}` : "none" }}>
                       <span style={{ width: 30, height: 30, borderRadius: 8, flex: "none", background: "rgba(11,122,75,.08)", color: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={15} strokeWidth={1.9} /></span>
-                      <span style={{ fontSize: 13.5, fontWeight: 600, color: T.heading, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
                       <span style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 22 }}>{d.spark.map((h, k) => <i key={k} style={{ width: 4, height: `${h}%`, borderRadius: 2, background: "linear-gradient(180deg,#1FA971,rgba(51,230,162,.4))" }} />)}</span>
                       <span style={{ fontSize: 12, color: T.muted, fontFamily: mono, width: 62, textAlign: "right" }}>{d.reads} {L.readsWord}</span>
                     </a>
@@ -327,6 +327,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     </div>
   );
 }
+
 
 
 

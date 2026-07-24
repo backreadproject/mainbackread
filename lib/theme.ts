@@ -60,7 +60,7 @@ export const T = {
 };
 // Reusable style fragments
 export const microLabel = {
-  fontSize: 11.5,
+  fontSize: 12,
   fontWeight: 600,
   color: T.muted,
   textTransform: "uppercase" as const,
@@ -84,7 +84,7 @@ export const primaryBtn = {
   color: "#fff",
   border: "none",
   borderRadius: T.rBtn,
-  fontSize: 13.5,
+  fontSize: 14,
   fontWeight: 500,
   fontFamily: T.font,
   cursor: "pointer",
@@ -123,4 +123,5 @@ export const infoBanner = {
   alignItems: "center",
   gap: 8,
 };
+
 

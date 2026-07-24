@@ -93,7 +93,7 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
         <div onClick={() => !busy && setOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 520, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", fontFamily: T.font }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 6px", letterSpacing: T.trackingTight }}>Upload A/B variants</h3>
-            <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
+            <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
               Pick two to four files. Each becomes a variant (A, B, C, D) of the same document. Readers are split between them automatically, and you compare how each one performs.
             </p>
 
@@ -145,5 +145,6 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
     </>
   );
 }
+
 
 

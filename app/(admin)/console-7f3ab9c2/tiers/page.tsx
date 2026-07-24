@@ -56,7 +56,7 @@ export default async function TiersPage() {
             <div key={id} style={statCard}>
               <div style={{ ...microLabel, marginBottom: 6 }}>{PLANS[id].name}</div>
               <div style={{ fontSize: 24, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, fontVariantNumeric: "tabular-nums" }}>{(byPlan.get(id) ?? []).length}</div>
-              <div style={{ fontSize: 11.5, color: T.muted, marginTop: 4 }}>accounts</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>accounts</div>
             </div>
           ))}
         </div>
@@ -65,13 +65,13 @@ export default async function TiersPage() {
           <div style={box}>
             <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Needs attention</h2>
             {expiring.map((r, i) => (
-              <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5, textDecoration: "none" }}>
+              <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{r.email}</span>
                 <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708" }}>trial ends in {r.daysLeft}d</span>
               </a>
             ))}
             {locked.map((r, i) => (
-              <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: (i || expiring.length) ? `1px solid ${T.border}` : "none", fontSize: 13.5, textDecoration: "none" }}>
+              <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: (i || expiring.length) ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{r.email}</span>
                 <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>trial lapsed \u2014 locked</span>
               </a>
@@ -88,7 +88,7 @@ export default async function TiersPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
                 <div>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: T.heading, margin: 0 }}>{plan.name}</h2>
-                  <p style={{ fontSize: 12.5, color: T.muted, margin: "3px 0 0" }}>{plan.tagline}</p>
+                  <p style={{ fontSize: 13, color: T.muted, margin: "3px 0 0" }}>{plan.tagline}</p>
                 </div>
                 <span style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>{members.length} account{members.length === 1 ? "" : "s"}</span>
               </div>
@@ -105,7 +105,7 @@ export default async function TiersPage() {
                   {members.slice(0, 12).map((r) => (
                     <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", fontSize: 13, textDecoration: "none" }}>
                       <span style={{ color: T.heading }}>{r.email}{r.orgName ? <span style={{ color: T.muted }}> {"\u00b7"} {r.orgName}</span> : null}</span>
-                      <span style={{ color: r.access === "locked" ? "#B42318" : r.access === "trial" ? "#B54708" : T.muted, fontFamily: mono, fontSize: 11.5 }}>
+                      <span style={{ color: r.access === "locked" ? "#B42318" : r.access === "trial" ? "#B54708" : T.muted, fontFamily: mono, fontSize: 12 }}>
                         {r.access === "trial" ? `trial ${r.daysLeft}d` : r.access}
                       </span>
                     </a>
@@ -120,3 +120,4 @@ export default async function TiersPage() {
     </div>
   );
 }
+

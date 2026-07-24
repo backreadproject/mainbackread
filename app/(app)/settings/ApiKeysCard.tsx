@@ -38,7 +38,7 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" as const };
   const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 10 };
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
+  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 
   if (!enabled) {
     return (
@@ -63,12 +63,12 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 13, color: T.heading, fontWeight: 600 }}>
               {k.name}
-              <span style={{ marginLeft: 8, fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: k.scopes.includes("write") ? "#FEF0C7" : T.pillNeutralBg, color: k.scopes.includes("write") ? "#B54708" : T.body }}>
+              <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: k.scopes.includes("write") ? "#FEF0C7" : T.pillNeutralBg, color: k.scopes.includes("write") ? "#B54708" : T.body }}>
                 {k.scopes.includes("write") ? "read + write" : "read only"}
               </span>
-              {k.revoked_at && <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>revoked</span>}
+              {k.revoked_at && <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>revoked</span>}
             </div>
-            <div style={{ fontSize: 11.5, color: T.muted, fontFamily: "ui-monospace, monospace" }}>
+            <div style={{ fontSize: 12, color: T.muted, fontFamily: "ui-monospace, monospace" }}>
               {k.key_prefix}... {k.last_used_at ? `\u00b7 last used ${new Date(k.last_used_at).toLocaleDateString()}` : "\u00b7 never used"}
             </div>
           </div>
@@ -100,9 +100,9 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
       {msg && <p style={{ fontSize: 13, color: "#B42318", marginTop: 12 }}>{msg}</p>}
       {fresh && (
         <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
-          <div style={{ fontSize: 11.5, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>Copy this key now, it will not be shown again:</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>Copy this key now, it will not be shown again:</div>
           <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <div style={{ fontSize: 11.5, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{fresh}</div>
+            <div style={{ fontSize: 12, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{fresh}</div>
             <CopyButton value={fresh} />
           </div>
         </div>
@@ -110,5 +110,6 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
     </div>
   );
 }
+
 
 

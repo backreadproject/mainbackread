@@ -25,7 +25,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section style={{ marginTop: 26 }}>
       <h2 style={{ fontSize: 17, fontWeight: 700, color: INK, margin: "0 0 8px" }}>{title}</h2>
-      <div style={{ fontSize: 14.5, color: BODY, lineHeight: 1.65 }}>{children}</div>
+      <div style={{ fontSize: 15, color: BODY, lineHeight: 1.65 }}>{children}</div>
     </section>
   );
 }
@@ -116,7 +116,7 @@ export default function RelayTerms() {
             <a href="mailto:privacy@readprospects.com" style={mail}>privacy@readprospects.com</a>.
           </Section>
 
-          <p style={{ fontSize: 12.5, color: MUTE, lineHeight: 1.6, margin: "28px 0 0", paddingTop: 18, borderTop: `1px solid ${LINE}` }}>
+          <p style={{ fontSize: 13, color: MUTE, lineHeight: 1.6, margin: "28px 0 0", paddingTop: 18, borderTop: `1px solid ${LINE}` }}>
             These terms are provided for transparency and are not legal advice.
           </p>
         </div>
@@ -130,3 +130,4 @@ export default function RelayTerms() {
     </div>
   );
 }
+

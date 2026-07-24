@@ -40,7 +40,7 @@ export default function SupportConversations({ conversations }: { conversations:
       closed: [T.pillNeutralBg, T.muted, "closed"],
     };
     const [bg, fg, label] = map[status] ?? map.bot;
-    return <span style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: bg, color: fg, flex: "none" }}>{label}</span>;
+    return <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: bg, color: fg, flex: "none" }}>{label}</span>;
   };
 
   if (conversations.length === 0) {
@@ -82,12 +82,12 @@ export default function SupportConversations({ conversations }: { conversations:
               <div style={{ padding: "13px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{conv.name || "Anonymous visitor"}</div>
-                  <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono }}>
+                  <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
                     {conv.email || "no email on file"} {"\u00b7"} {conv.surface} site
                   </div>
                 </div>
                 {conv.status !== "closed" && (
-                  <button onClick={() => call("close")} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 12.5, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
+                  <button onClick={() => call("close")} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
                 )}
               </div>
 
@@ -106,14 +106,14 @@ export default function SupportConversations({ conversations }: { conversations:
                 ))}
               </div>
 
-              {err && <p style={{ fontSize: 12.5, color: "#B42318", margin: 0, padding: "8px 16px 0" }}>{err}</p>}
+              {err && <p style={{ fontSize: 13, color: "#B42318", margin: 0, padding: "8px 16px 0" }}>{err}</p>}
 
               <div style={{ borderTop: `1px solid ${T.border}`, padding: 12, display: "flex", gap: 8 }}>
                 <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2}
                   placeholder={conv.email ? "Your reply. Sent here and by email." : "Your reply. No email on file, so they will only see it in the chat."}
                   style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 10, padding: "9px 11px", fontSize: 13, fontFamily: T.font, resize: "vertical", background: "#fff" }} />
                 <button onClick={() => call("reply", draft)} disabled={busy || !draft.trim()}
-                  style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 13.5, fontWeight: 600, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
+                  style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
                   {busy ? "Sending..." : "Reply"}
                 </button>
               </div>
@@ -124,3 +124,4 @@ export default function SupportConversations({ conversations }: { conversations:
     </div>
   );
 }
+

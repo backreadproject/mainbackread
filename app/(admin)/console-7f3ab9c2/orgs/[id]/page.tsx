@@ -53,7 +53,7 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
           <div>
             <h1 style={pageHeading}>{org.name || "Unnamed organization"}</h1>
-            <p style={{ fontSize: 12.5, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
+            <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
               {org.domain || "no domain"} {"\u00b7"} {plan.name} {"\u00b7"} {org.subscription_active ? "subscribed" : "unpaid"} {"\u00b7"} created {new Date(org.created_at).toLocaleDateString()}
             </p>
           </div>
@@ -69,7 +69,7 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Pending invites</div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading }}>{invites.filter((i) => i.status === "pending").length}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Created by</div><div style={{ fontSize: 13, color: T.heading, paddingTop: 4 }}>{creator?.user?.email ?? "unknown"}</div></div>
           </div>
-          {overSeats && <p style={{ fontSize: 12.5, color: "#B42318", margin: "12px 0 0" }}>This organization is over its seat limit for the {plan.name} plan.</p>}
+          {overSeats && <p style={{ fontSize: 13, color: "#B42318", margin: "12px 0 0" }}>This organization is over its seat limit for the {plan.name} plan.</p>}
         </div>
 
         <div style={box}>
@@ -78,8 +78,8 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
           {members.map((m, i) => (
             <div key={m.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
               <a href={`/${ADMIN_SLUG}/accounts/${m.user_id}`} style={{ textDecoration: "none", minWidth: 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 600, color: T.heading }}>{nameOfMember(m)}</div>
-                <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono }}>{m.email || "no email"} {"\u00b7"} {m.role || "member"}{m.user_id === org.created_by ? " \u00b7 creator" : ""}</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{nameOfMember(m)}</div>
+                <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>{m.email || "no email"} {"\u00b7"} {m.role || "member"}{m.user_id === org.created_by ? " \u00b7 creator" : ""}</div>
               </a>
               {m.user_id !== org.created_by && <OrgActions orgId={org.id} orgName={org.name || ""} memberId={m.id} memberLabel={m.email || nameOfMember(m)} mode="member" />}
             </div>
@@ -92,8 +92,8 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
             {invites.map((v, i) => (
               <div key={v.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none" }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 600, color: T.heading }}>{v.email}</div>
-                  <div style={{ fontSize: 11.5, color: T.muted, fontFamily: mono }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{v.email}</div>
+                  <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
                     {v.role || "member"} {"\u00b7"} {v.status || "pending"} {"\u00b7"} sent {new Date(v.created_at).toLocaleDateString()}
                     {v.expires_at ? ` \u00b7 expires ${new Date(v.expires_at).toLocaleDateString()}` : ""}
                   </div>
@@ -108,7 +108,7 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
           <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Projects ({projects.length})</h2>
           {projects.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>No projects.</p>}
           {projects.map((p, i) => (
-            <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5 }}>
+            <div key={p.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14 }}>
               <span style={{ color: T.heading, fontWeight: 600 }}>{p.name}</span>
               <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{documents.filter((d) => d.project_id === p.id).length} docs {"\u00b7"} {new Date(p.created_at).toLocaleDateString()}</span>
             </div>
@@ -119,7 +119,7 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
           <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Documents ({documents.length})</h2>
           {documents.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>None.</p>}
           {documents.map((d, i) => (
-            <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 13.5, textDecoration: "none" }}>
+            <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
               <span style={{ color: T.heading, fontWeight: 600 }}>{d.title}{d.archived_at ? <span style={{ color: T.muted, fontWeight: 400 }}> (archived)</span> : ""}</span>
               <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{d.project_id ? projName.get(d.project_id) ?? "project" : "no project"}</span>
             </a>
@@ -129,3 +129,4 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
     </div>
   );
 }
+

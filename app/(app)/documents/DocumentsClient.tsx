@@ -25,10 +25,10 @@ function StatCard({ Icon, label, value, sub, tone = "neutral" }: { Icon: LucideI
     <div style={statTile(tone)}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: sub2 }}>
         <Icon size={15} strokeWidth={1.9} />
-        <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
       </div>
       <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
-      <div style={{ fontSize: 12.5, color: sub2, marginTop: 4 }}>{sub}</div>
+      <div style={{ fontSize: 13, color: sub2, marginTop: 4 }}>{sub}</div>
     </div>
   );
 }
@@ -234,6 +234,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

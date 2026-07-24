@@ -64,16 +64,16 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
               <div key={v.id} style={{ border: `1px solid ${v.active ? T.border : T.borderSoft}`, borderRadius: 12, padding: 14, opacity: v.active ? 1 : 0.6 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <span style={{ width: 26, height: 26, borderRadius: 8, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>{v.label}</span>
-                  {!v.active && <span style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: T.pillNeutralBg, color: T.body }}>paused</span>}
-                  {!v.storage_path && <span title="Uses the base document file" style={{ fontSize: 10.5, color: T.muted, cursor: "help" }}>shared file</span>}
+                  {!v.active && <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: T.pillNeutralBg, color: T.body }}>paused</span>}
+                  {!v.storage_path && <span title="Uses the base document file" style={{ fontSize: 11, color: T.muted, cursor: "help" }}>shared file</span>}
                 </div>
-                {v.note && <p style={{ fontSize: 12.5, color: T.body, lineHeight: 1.45, margin: "0 0 10px" }}>{v.note}</p>}
+                {v.note && <p style={{ fontSize: 13, color: T.body, lineHeight: 1.45, margin: "0 0 10px" }}>{v.note}</p>}
 
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{a.readers}</div><div style={{ fontSize: 10.5, color: T.muted }}>readers</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{openRate}%</div><div style={{ fontSize: 10.5, color: T.muted }}>opened</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.questions ? T.heading : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.questions}</div><div style={{ fontSize: 10.5, color: T.muted }}>questions</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.forwards ? T.greenText : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.forwards}</div><div style={{ fontSize: 10.5, color: T.muted }}>forwards</div></div>
+                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{a.readers}</div><div style={{ fontSize: 11, color: T.muted }}>readers</div></div>
+                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{openRate}%</div><div style={{ fontSize: 11, color: T.muted }}>opened</div></div>
+                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.questions ? T.heading : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.questions}</div><div style={{ fontSize: 11, color: T.muted }}>questions</div></div>
+                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.forwards ? T.greenText : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.forwards}</div><div style={{ fontSize: 11, color: T.muted }}>forwards</div></div>
                 </div>
 
                 <div style={{ display: "flex", gap: 6 }}>
@@ -91,7 +91,7 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
 
         {err && <p style={{ color: "#B42318", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
         {thin && (
-          <p style={{ fontSize: 12.5, color: T.muted, margin: "14px 0 0", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.5 }}>
             Too few readers to call a winner yet. Differences at this size are noise, not signal.
           </p>
         )}
@@ -99,3 +99,4 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
     </div>
   );
 }
+

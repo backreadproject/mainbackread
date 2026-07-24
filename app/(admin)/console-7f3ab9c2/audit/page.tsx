@@ -20,7 +20,7 @@ export default async function AuditPage() {
           {rows.length === 0 && <div style={{ padding: 22, color: T.muted, fontSize: 13, textAlign: "center" }}>No admin actions recorded yet.</div>}
           {rows.map((r, i) => (
             <div key={i} style={{ padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none" }}>
-              <div style={{ fontSize: 13.5, color: T.heading }}><span style={{ color: T.green, fontWeight: 600 }}>{r.action}</span> by {r.actor_email || "\u2014"}</div>
+              <div style={{ fontSize: 14, color: T.heading }}><span style={{ color: T.green, fontWeight: 600 }}>{r.action}</span> by {r.actor_email || "\u2014"}</div>
               <div style={{ color: T.muted, fontSize: 12, fontFamily: mono, marginTop: 3 }}>{r.target_user_id ? `user ${r.target_user_id}` : ""}{r.detail ? " \u00b7 " + JSON.stringify(r.detail) : ""} {"\u00b7"} {new Date(r.created_at).toLocaleString()}</div>
             </div>
           ))}
@@ -29,3 +29,4 @@ export default async function AuditPage() {
     </div>
   );
 }
+

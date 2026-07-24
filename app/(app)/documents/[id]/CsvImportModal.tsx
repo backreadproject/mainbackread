@@ -162,7 +162,7 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
         <style>{`.csv-in:focus{border-color:${T.green} !important;outline:none;background:#fff !important}.csv-in:hover{background:#FAFBFB}`}</style>
 
         <h3 style={{ fontSize: 19, fontWeight: 700, color: T.heading, margin: "0 0 4px", letterSpacing: T.trackingTight }}>Import recipients from CSV</h3>
-        <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
+        <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
           Nothing is created until you choose to send. Fix anything flagged below by typing straight into the row.
         </p>
 
@@ -170,7 +170,7 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
           <>
             <div style={{ background: T.canvas, borderRadius: 12, padding: 16, marginBottom: 16 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 6 }}>Columns</div>
-              <p style={{ fontSize: 12.5, color: T.body, lineHeight: 1.55, margin: 0 }}>
+              <p style={{ fontSize: 13, color: T.body, lineHeight: 1.55, margin: 0 }}>
                 <strong>first_name</strong> and <strong>last_name</strong> are required. <strong>email</strong> is needed only to send emails.
                 <strong> label</strong> is an optional display name. <strong>variant</strong> is optional (A, B, C, D) and wins over the automatic split.
               </p>
@@ -268,3 +268,4 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
     </div>
   );
 }
+

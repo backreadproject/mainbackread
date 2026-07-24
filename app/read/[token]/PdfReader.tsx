@@ -350,11 +350,11 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
             {thread.length === 0 && <p style={{ fontSize: 14, lineHeight: 1.5, color: BODY, margin: 0 }}>{r.askEmpty}</p>}
             {thread.map((m, i) => (
               m.role === "user" ? (
-                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", background: NEUTRAL_BUBBLE, borderRadius: "14px 14px 4px 14px", padding: "10px 13px", fontSize: 13.5, color: INK, lineHeight: 1.45 }}>{m.text}</div>
+                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", background: NEUTRAL_BUBBLE, borderRadius: "14px 14px 4px 14px", padding: "10px 13px", fontSize: 14, color: INK, lineHeight: 1.45 }}>{m.text}</div>
               ) : (
                 <div key={i} style={{ maxWidth: "90%" }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 600, color: GREEN_TEXT, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{r.theDocument}</div>
-                  <div style={{ background: GREEN_SOFT, borderRadius: "4px 14px 14px 14px", padding: "11px 13px", fontSize: 13.5, color: ANSWER_INK, lineHeight: 1.5 }}>{m.text}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: GREEN_TEXT, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{r.theDocument}</div>
+                  <div style={{ background: GREEN_SOFT, borderRadius: "4px 14px 14px 14px", padding: "11px 13px", fontSize: 14, color: ANSWER_INK, lineHeight: 1.5 }}>{m.text}</div>
                 </div>
               )
             ))}
@@ -363,8 +363,8 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           </div>
           <div className="rdr-inputrow" style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 9, alignItems: "center" }}>
             <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder={r.askPlaceholder}
-              style={{ flex: 1, minWidth: 0, border: `1px solid #E3E7E3`, borderRadius: 22, padding: "10px 15px", fontSize: 13.5, fontFamily: AEON, background: "#FAFBFA", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
-            <button onClick={ask} className="fx-ask" style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 22, padding: "10px 20px", fontSize: 13.5, fontWeight: 600, fontFamily: AEON, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              style={{ flex: 1, minWidth: 0, border: `1px solid #E3E7E3`, borderRadius: 22, padding: "10px 15px", fontSize: 14, fontFamily: AEON, background: "#FAFBFA", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
+            <button onClick={ask} className="fx-ask" style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 22, padding: "10px 20px", fontSize: 14, fontWeight: 600, fontFamily: AEON, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
               {r.ask} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
           </div>
@@ -382,14 +382,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
                 </div>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: INK, margin: "0 0 4px" }}>{F.doneTitle}</h3>
-                <p style={{ fontSize: 13.5, color: BODY, margin: "0 0 18px" }}>{fwdDone}</p>
+                <p style={{ fontSize: 14, color: BODY, margin: "0 0 18px" }}>{fwdDone}</p>
                 <button onClick={() => setForwardOpen(false)} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 20px", fontSize: 14, fontWeight: 600, fontFamily: AEON, cursor: "pointer" }}>{F.done}</button>
               </div>
             ) : (
               <>
                 <div style={{ padding: "18px 20px 4px" }}>
                   <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: INK }}>{F.title}</h3>
-                  <p style={{ margin: "5px 0 0", fontSize: 12.5, color: BODY, lineHeight: 1.5 }}>{F.sub}</p>
+                  <p style={{ margin: "5px 0 0", fontSize: 13, color: BODY, lineHeight: 1.5 }}>{F.sub}</p>
                 </div>
                 <div style={{ padding: "14px 20px 4px", maxHeight: "46vh", overflowY: "auto" }}>
                   {cols.map((c, i) => (
@@ -398,11 +398,11 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                       {i > 0 && <span onClick={() => setCols(cols.filter((_, k) => k !== i))} style={{ position: "absolute", top: 9, right: 10, fontSize: 16, color: SLATE, cursor: "pointer", lineHeight: 1 }}>&times;</span>}
                       <div style={{ display: "flex", gap: 10 }}>
                         <div style={{ flex: 1, marginBottom: 10 }}>
-                          <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.name}</label>
+                          <label style={{ display: "block", fontSize: 12, color: BODY, marginBottom: 5 }}>{F.name}</label>
                           <input className="fx-in" value={c.name} onChange={(e) => setCols(cols.map((x, k) => (k === i ? { ...x, name: e.target.value } : x)))} placeholder={F.namePh} style={fwdInput} />
                         </div>
                         <div style={{ flex: 1, marginBottom: 10 }}>
-                          <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.email}</label>
+                          <label style={{ display: "block", fontSize: 12, color: BODY, marginBottom: 5 }}>{F.email}</label>
                           <input className="fx-in" value={c.email} onChange={(e) => setCols(cols.map((x, k) => (k === i ? { ...x, email: e.target.value } : x)))} placeholder={F.emailPh} style={fwdInput} />
                         </div>
                       </div>
@@ -414,20 +414,20 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                     </span>
                   )}
                   <div style={{ marginBottom: 6 }}>
-                    <label style={{ display: "block", fontSize: 11.5, color: BODY, marginBottom: 5 }}>{F.message}</label>
+                    <label style={{ display: "block", fontSize: 12, color: BODY, marginBottom: 5 }}>{F.message}</label>
                     <textarea value={fwdMsg} onChange={(e) => setFwdMsg(e.target.value)} rows={2} placeholder={F.messagePh} style={{ ...fwdInput, resize: "vertical" }} />
                   </div>
                 </div>
                 <div style={{ borderTop: `1px solid ${LINE}`, padding: "14px 20px" }}>
-                  <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: BODY, lineHeight: 1.5, cursor: "pointer" }}>
+                  <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13, color: BODY, lineHeight: 1.5, cursor: "pointer" }}>
                     <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2, width: 15, height: 15, accentColor: GREEN, flexShrink: 0 }} /> <span>{F.consent}</span>
                   </label>
-                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/privacy" className="rdr-fine" style={{ color: SLATE, textDecoration: "none" }}>{F.privacy}</a></div>
+                  <div style={{ fontSize: 12, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/privacy" className="rdr-fine" style={{ color: SLATE, textDecoration: "none" }}>{F.privacy}</a></div>
                 </div>
                 {fwdErr && <p style={{ fontSize: 13, color: "#B42318", margin: "0 20px" }}>{fwdErr}</p>}
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px 18px" }}>
-                  <button onClick={() => setForwardOpen(false)} style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 16px", fontSize: 13.5, fontWeight: 600, color: BODY, fontFamily: AEON, cursor: "pointer" }}>{F.cancel}</button>
-                  <button onClick={submitForward} disabled={fwdBusy} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 16px", fontSize: 13.5, fontWeight: 600, fontFamily: AEON, cursor: "pointer", opacity: fwdBusy ? 0.6 : 1 }}>{fwdBusy ? F.sending : F.send}</button>
+                  <button onClick={() => setForwardOpen(false)} style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 10, padding: "10px 16px", fontSize: 14, fontWeight: 600, color: BODY, fontFamily: AEON, cursor: "pointer" }}>{F.cancel}</button>
+                  <button onClick={submitForward} disabled={fwdBusy} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 10, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: AEON, cursor: "pointer", opacity: fwdBusy ? 0.6 : 1 }}>{fwdBusy ? F.sending : F.send}</button>
                 </div>
               </>
             )}
@@ -437,5 +437,6 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
     </div>
   );
 }
+
 
 

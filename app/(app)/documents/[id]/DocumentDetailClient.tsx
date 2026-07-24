@@ -199,7 +199,7 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { do
               ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
               : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.body} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 8v5M12 16h.01" /></svg>}
           </span>
-          <span style={{ fontSize: 13.5, color: T.heading, fontWeight: 500, lineHeight: 1.4 }}>{notice}</span>
+          <span style={{ fontSize: 14, color: T.heading, fontWeight: 500, lineHeight: 1.4 }}>{notice}</span>
         </div>
       )}
       {open && (
@@ -222,6 +222,7 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { do
     </>
   );
 }
+
 
 
 
