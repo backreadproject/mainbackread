@@ -9,6 +9,9 @@ export interface SupportInput {
   history: SupportTurn[];
   /** Who we are talking to, when we know. Shapes tone, never unlocks anything. */
   who: { signedIn: boolean; name?: string | null; plan?: string | null; isOrg?: boolean };
+  /** True when a person has already been brought in. The bot keeps helping,
+   *  it just stops re-escalating and stops promising to resolve their issue. */
+  humanWaiting?: boolean;
 }
 
 export const SupportOutput = z.object({
@@ -40,6 +43,7 @@ export const supportTask: Task<SupportInput, SupportOutput> = {
       "",
       ctx,
       "",
+      i.humanWaiting ? "A person from the team has already been brought into this conversation and will reply separately, here or by email. Keep answering anything else they ask that the reference material covers. Do not say you are escalating again, and do not promise to resolve what they raised, but never go silent on them." : "",
       "GROUNDING. Answer only from the reference material above. It is the whole truth you have about this product. If the answer is not in it, do not construct one from what you know about similar tools. Say you will get a person and set escalate to true.",
       "",
       "ESCALATE, do not guess, when any of these are true:",
@@ -88,3 +92,4 @@ export const supportTask: Task<SupportInput, SupportOutput> = {
     };
   },
 };
+

@@ -101,23 +101,22 @@ export async function POST(req: NextRequest) {
 
   await admin.from("support_messages").insert({ conversation_id: conversationId, role: "user", content: message.trim() });
 
-  // Once a human is involved, the bot stops answering. It must not talk over them.
-  if (existing?.status === "escalated" || existing?.status === "answered") {
-    await admin.from("support_conversations").update({ last_message_at: new Date().toISOString(), status: "escalated" }).eq("id", conversationId);
-    await notifyHuman(conversationId, message.trim(), "follow-up on an open conversation");
-    return NextResponse.json({ answer: "", escalate: true, waiting: true, conversationId });
-  }
+  // A person may already be involved. The bot keeps helping with anything else,
+  // it just does not re-escalate or promise to resolve what was raised. Going silent
+  // on someone who is still typing is worse than a partial answer.
+  const humanWaiting = existing?.status === "escalated" || existing?.status === "answered";
+  if (humanWaiting) await notifyHuman(conversationId, message.trim(), "follow-up on an open conversation");
 
-  const { data } = await runAI(supportTask, { question: message.trim(), history, who });
+  const { data } = await runAI(supportTask, { question: message.trim(), history, who, humanWaiting });
 
   await admin.from("support_messages").insert({ conversation_id: conversationId, role: "assistant", content: data.answer });
   await admin.from("support_conversations").update({
     last_message_at: new Date().toISOString(),
-    status: data.escalate ? "escalated" : "bot",
+    status: humanWaiting || data.escalate ? "escalated" : "bot",
     ...(data.escalate ? { escalated_at: new Date().toISOString() } : {}),
   }).eq("id", conversationId);
 
-  if (data.escalate) await notifyHuman(conversationId, message.trim(), data.reason);
+  if (data.escalate && !humanWaiting) await notifyHuman(conversationId, message.trim(), data.reason);
 
   return NextResponse.json({ answer: data.answer, escalate: data.escalate, conversationId });
 }
@@ -174,3 +173,4 @@ export async function GET(req: NextRequest) {
     hasEmail: !!conv.email,
   });
 }
+
