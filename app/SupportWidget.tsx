@@ -120,11 +120,11 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
         .rp-sw-row{transition:background .12s;cursor:pointer}
         .rp-sw-row:hover{background:#FAFBFA}
         @keyframes rpSwIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-        @media(max-width:520px){.rp-sw-panel{width:calc(100vw - 24px) !important;height:calc(100vh - 120px) !important;right:12px !important}}
+        @media(max-width:520px){.rp-sw-panel{width:calc(100vw - 24px) !important;height:calc(100vh - 120px) !important;right:12px !important;bottom:84px !important}}
       `}</style>
 
       {open && (
-        <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 92, width: 372, height: 560, background: T.canvas, borderRadius: 16, boxShadow: "0 20px 60px rgba(9,30,22,0.24)", border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
+        <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 88, width: 372, height: "min(560px, calc(100vh - 130px))", background: T.canvas, borderRadius: 16, boxShadow: "0 20px 60px rgba(9,30,22,0.24)", border: `1px solid ${T.border}`, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
 
           {/* HOME */}
           {tab === "home" && (
@@ -316,3 +316,4 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     </>
   );
 }
+
