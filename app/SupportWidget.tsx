@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { T } from "@/lib/theme";
-import { MessageCircle, X, ArrowRight, House, MessageSquare, CircleQuestionMark, ChevronRight, type LucideIcon } from "lucide-react";
+import { MessageCircle, X, ArrowRight, House, MessageSquare, LifeBuoy, ChevronRight, type LucideIcon } from "lucide-react";
 import { FAQ_ITEMS } from "@/lib/support-kb";
 
 type Msg = { role: string; content: string; created_at?: string };
@@ -291,12 +291,12 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
             {([
               ["home", "Home", House],
               ["messages", "Messages", MessageSquare],
-              ["help", "Help", CircleQuestionMark],
+              ["help", "Help", LifeBuoy],
             ] as [Tab, string, LucideIcon][]).map(([id, label, Icon]) => (
               <button key={id} onClick={() => setTab(id)} className="rp-sw-tab"
                 style={{ flex: 1, background: "none", border: "none", padding: "10px 0 11px", cursor: "pointer", fontFamily: T.font, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: tab === id ? T.green : T.muted }}>
                 <span style={{ position: "relative", display: "flex" }}>
-                  <Icon size={19} strokeWidth={1.8} />
+                  <Icon size={19} strokeWidth={tab === id ? 1.6 : 1.8} fill={tab === id ? "currentColor" : "none"} fillOpacity={tab === id ? 0.14 : 0} />
                   {id === "messages" && waiting && <span style={{ position: "absolute", top: -2, right: -4, width: 7, height: 7, borderRadius: 4, background: "#F04438" }} />}
                 </span>
                 <span style={{ fontSize: 10.5, fontWeight: 600 }}>{label}</span>
@@ -317,6 +317,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     </>
   );
 }
+
 
 
 
