@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel } from "@/lib/theme";
@@ -151,9 +151,9 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
       const pulse = reduce ? 1 : 1 + Math.sin(t * 2.1) * 0.06;
       const g = ctx!.createRadialGradient(cx, cy, 0, cx, cy, R * 0.24 * pulse); g.addColorStop(0, "rgba(51,230,162,0.55)"); g.addColorStop(0.45, "rgba(31,169,113,0.22)"); g.addColorStop(1, "rgba(31,169,113,0)"); ctx!.fillStyle = g; ctx!.beginPath(); ctx!.arc(cx, cy, R * 0.24 * pulse, 0, 7); ctx!.fill();
       const readyN = nodes.filter((x) => x.intent >= READY).length;
-      ctx!.beginPath(); ctx!.arc(cx, cy, 14, 0, 7); ctx!.fillStyle = "#fff"; ctx!.fill(); ctx!.lineWidth = 1.4; ctx!.strokeStyle = "rgba(11,122,75,.4)"; ctx!.stroke();
-      ctx!.fillStyle = "#0B7A4B"; ctx!.font = "700 14px 'DM Sans'"; ctx!.fillText(String(readyN), cx, cy - 1);
-      ctx!.fillStyle = "#3f8767"; ctx!.font = "7px 'DM Mono'"; ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy + 9);
+      ctx!.beginPath(); ctx!.arc(cx, cy, 23, 0, 7); ctx!.fillStyle = "#fff"; ctx!.fill(); ctx!.lineWidth = 1.4; ctx!.strokeStyle = "rgba(11,122,75,.4)"; ctx!.stroke();
+      ctx!.fillStyle = "#0B7A4B"; ctx!.font = "700 17px 'DM Sans'"; ctx!.fillText(String(readyN), cx, cy - 2);
+      ctx!.fillStyle = "#3f8767"; ctx!.font = "8px 'DM Mono'"; ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy + 13);
       if (readyCountRef.current) readyCountRef.current.textContent = String(readyN);
       nodes.forEach((n, i) => {
         const sel = i === selIdxRef.current;
@@ -328,3 +328,4 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     </div>
   );
 }
+

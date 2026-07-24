@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useRef } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
@@ -39,7 +39,13 @@ export default function NotificationBell() {
     const el = btnRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    const left = Math.max(12, Math.min(rect.left, window.innerWidth - PANEL_WIDTH - 12));
+    // The panel is wider than the 232px sidebar, so anchoring it to the bell leaves it
+    // straddling the edge. On desktop, start it just past the sidebar so it reads as one
+    // clean surface over the content. On mobile the sidebar is a drawer, so anchor as usual.
+    const SIDEBAR = 232;
+    const desktop = window.innerWidth > 1024;
+    const preferred = desktop ? SIDEBAR + 8 : rect.left;
+    const left = Math.max(12, Math.min(preferred, window.innerWidth - PANEL_WIDTH - 12));
     setPos({ top: rect.bottom + 8, left });
   }
   function toggle() {
@@ -103,3 +109,4 @@ export default function NotificationBell() {
     </div>
   );
 }
+
