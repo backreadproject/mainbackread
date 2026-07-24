@@ -1,0 +1,176 @@
+﻿import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { runAI, supportTask, type SupportTurn } from "@/lib/ai";
+import { resolvePlanForUser } from "@/lib/plan-context";
+import { sendEmail } from "@/lib/email";
+
+export const runtime = "nodejs";
+
+const PER_SESSION_PER_HOUR = 20;
+const PER_SESSION_PER_DAY = 60;
+const MAX_LEN = 600;
+
+function hourWindow(d = new Date()): string {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours())).toISOString();
+}
+function dayWindow(d = new Date()): string {
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString();
+}
+
+export async function POST(req: NextRequest) {
+  const { sessionToken, message, email, name, surface } = await req.json();
+
+  if (typeof sessionToken !== "string" || sessionToken.length < 20) {
+    return NextResponse.json({ error: "Invalid session." }, { status: 400 });
+  }
+  if (typeof message !== "string" || !message.trim()) {
+    return NextResponse.json({ error: "Say something first." }, { status: 400 });
+  }
+  if (message.length > MAX_LEN) {
+    return NextResponse.json({ error: `Keep it under ${MAX_LEN} characters.` }, { status: 400 });
+  }
+
+  const admin = createAdminClient();
+
+  // Rate limit before any AI spend. This endpoint is reachable without a login,
+  // so it is the same exposure the reader Ask endpoint has, and gets the same guard.
+  const [h, d] = await Promise.all([
+    admin.rpc("bump_rate_limit", { p_bucket: `support:${sessionToken}:h`, p_window: hourWindow() }),
+    admin.rpc("bump_rate_limit", { p_bucket: `support:${sessionToken}:d`, p_window: dayWindow() }),
+  ]);
+  if (!h.error && Number(h.data) > PER_SESSION_PER_HOUR) {
+    return NextResponse.json({ answer: "You have asked a lot in a short time. Give it an hour, or email privacy@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+  }
+  if (!d.error && Number(d.data) > PER_SESSION_PER_DAY) {
+    return NextResponse.json({ answer: "That is as much as I can help with today. Email privacy@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+  }
+
+  // Who is asking, when we can tell. Never used to unlock anything.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let who: { signedIn: boolean; name?: string | null; plan?: string | null; isOrg?: boolean } = { signedIn: false };
+  if (user) {
+    const { data: prof } = await admin.from("profiles").select("first_name, last_name").eq("id", user.id).single();
+    const ctx = await resolvePlanForUser(admin, user.id);
+    const display: Record<string, string> = { free: "Free", personal: "Personal", company_1: "Team", company_2: "Business" };
+    who = {
+      signedIn: true,
+      name: (prof as { first_name?: string | null } | null)?.first_name ?? null,
+      plan: display[ctx.plan.id] ?? ctx.plan.name,
+      isOrg: ctx.scope === "org",
+    };
+  }
+
+  // Find or open the conversation.
+  const { data: existing } = await admin
+    .from("support_conversations")
+    .select("id, status, escalated_at")
+    .eq("session_token", sessionToken)
+    .maybeSingle();
+
+  let conversationId = existing?.id as string | undefined;
+  if (!conversationId) {
+    const { data: created, error } = await admin.from("support_conversations").insert({
+      user_id: user?.id ?? null,
+      session_token: sessionToken,
+      email: user?.email ?? (typeof email === "string" ? email.trim() || null : null),
+      name: (typeof name === "string" ? name.trim() : "") || who.name || null,
+      surface: surface === "app" ? "app" : "marketing",
+    }).select("id").single();
+    if (error || !created) return NextResponse.json({ error: "Could not start a conversation." }, { status: 500 });
+    conversationId = created.id as string;
+  } else if (user?.id || (typeof email === "string" && email.trim())) {
+    // Fill in identity if we learn it mid-conversation.
+    await admin.from("support_conversations").update({
+      user_id: user?.id ?? null,
+      email: user?.email ?? (typeof email === "string" ? email.trim() : null),
+    }).eq("id", conversationId).is("email", null);
+  }
+
+  const { data: past } = await admin
+    .from("support_messages")
+    .select("role, content")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true })
+    .limit(20);
+  const history: SupportTurn[] = (past ?? []).map((m) => ({
+    role: m.role === "user" ? "user" : "assistant",
+    content: m.content as string,
+  }));
+
+  await admin.from("support_messages").insert({ conversation_id: conversationId, role: "user", content: message.trim() });
+
+  // Once a human is involved, the bot stops answering. It must not talk over them.
+  if (existing?.status === "escalated" || existing?.status === "answered") {
+    await admin.from("support_conversations").update({ last_message_at: new Date().toISOString(), status: "escalated" }).eq("id", conversationId);
+    await notifyHuman(conversationId, message.trim(), "follow-up on an open conversation");
+    return NextResponse.json({ answer: "", escalate: true, waiting: true, conversationId });
+  }
+
+  const { data } = await runAI(supportTask, { question: message.trim(), history, who });
+
+  await admin.from("support_messages").insert({ conversation_id: conversationId, role: "assistant", content: data.answer });
+  await admin.from("support_conversations").update({
+    last_message_at: new Date().toISOString(),
+    status: data.escalate ? "escalated" : "bot",
+    ...(data.escalate ? { escalated_at: new Date().toISOString() } : {}),
+  }).eq("id", conversationId);
+
+  if (data.escalate) await notifyHuman(conversationId, message.trim(), data.reason);
+
+  return NextResponse.json({ answer: data.answer, escalate: data.escalate, conversationId });
+}
+
+/** Email the operator. Best effort: support must not fail because email did. */
+async function notifyHuman(conversationId: string, message: string, reason: string): Promise<void> {
+  try {
+    const admin = createAdminClient();
+    const { data: conv } = await admin
+      .from("support_conversations")
+      .select("email, name, surface, user_id")
+      .eq("id", conversationId)
+      .single();
+    const c = (conv ?? {}) as { email: string | null; name: string | null; surface: string; user_id: string | null };
+    const who = [c.name, c.email].filter(Boolean).join(", ") || "an anonymous visitor";
+    const html = `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#F8F9FA;padding:24px;">
+      <div style="max-width:520px;margin:0 auto;background:#fff;border:1px solid #EAECEF;border-radius:12px;padding:22px;">
+        <p style="font-size:13px;color:#98A2B3;margin:0 0 6px;">Support needs you</p>
+        <p style="font-size:16px;font-weight:700;color:#0F1729;margin:0 0 12px;">${who}</p>
+        <p style="font-size:14px;color:#475467;line-height:1.55;margin:0 0 14px;">${message.replace(/</g, "&lt;")}</p>
+        <p style="font-size:12.5px;color:#98A2B3;margin:0 0 16px;">Why: ${reason} &middot; from the ${c.surface} site${c.user_id ? " &middot; signed in" : ""}</p>
+        <a href="https://app.readprospects.com/console-7f3ab9c2/support" style="display:inline-block;background:#0B7A4B;color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 18px;border-radius:8px;">Open in the console</a>
+      </div></body></html>`;
+    await sendEmail("readprospects", { to: "readprospects@gmail.com", subject: `Support: ${who}`, html });
+  } catch (err) {
+    console.error("[support] notify failed:", err instanceof Error ? err.message : String(err));
+  }
+}
+
+/** Read a conversation back. The session token is the secret, exactly like a
+ *  share token, which is why it must be long and random. No AI, so no spend. */
+export async function GET(req: NextRequest) {
+  const token = new URL(req.url).searchParams.get("session") ?? "";
+  if (token.length < 20) return NextResponse.json({ error: "Invalid session." }, { status: 400 });
+
+  const admin = createAdminClient();
+  const { data: conv } = await admin
+    .from("support_conversations")
+    .select("id, status, email")
+    .eq("session_token", token)
+    .maybeSingle();
+  if (!conv) return NextResponse.json({ messages: [], status: "new", hasEmail: false });
+
+  const { data: msgs } = await admin
+    .from("support_messages")
+    .select("role, content, created_at")
+    .eq("conversation_id", conv.id)
+    .order("created_at", { ascending: true })
+    .limit(60);
+
+  return NextResponse.json({
+    messages: msgs ?? [],
+    status: conv.status,
+    hasEmail: !!conv.email,
+  });
+}

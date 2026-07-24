@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+﻿import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "./Sidebar";
 import MobileShell from "./MobileShell";
@@ -6,6 +6,7 @@ import ResponsiveStyles from "./ResponsiveStyles";
 import { getOrgContext } from "@/lib/org-context";
 import { T } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
+import SupportWidget from "@/app/SupportWidget";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -38,6 +39,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       )}
       {children}
+      <SupportWidget surface="app" />
     </MobileShell>
   );
 }
+
