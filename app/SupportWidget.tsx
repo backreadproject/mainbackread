@@ -294,9 +294,9 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
               ["help", "Help", LifeBuoy],
             ] as [Tab, string, LucideIcon][]).map(([id, label, Icon]) => (
               <button key={id} onClick={() => setTab(id)} className="rp-sw-tab"
-                style={{ flex: 1, background: "none", border: "none", padding: "10px 0 11px", cursor: "pointer", fontFamily: T.font, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: tab === id ? T.green : T.muted }}>
+                style={{ flex: 1, background: "none", border: "none", padding: "10px 0 11px", cursor: "pointer", fontFamily: T.font, display: "flex", flexDirection: "column", alignItems: "center", gap: 3, color: tab === id ? T.green : T.body }}>
                 <span style={{ position: "relative", display: "flex" }}>
-                  <Icon size={21} strokeWidth={tab === id ? 2.9 : 2.5} />
+                  <Icon size={22} strokeWidth={3} />
                   {id === "messages" && waiting && <span style={{ position: "absolute", top: -2, right: -4, width: 7, height: 7, borderRadius: 4, background: "#F04438" }} />}
                 </span>
                 <span style={{ fontSize: 10.5, fontWeight: 600 }}>{label}</span>
@@ -317,6 +317,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
     </>
   );
 }
+
 
 
 
