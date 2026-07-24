@@ -8,13 +8,13 @@
 //      unreadable at normal screen brightness even when it looks fine in a mockup.
 export const T = {
   // Sidebar (warm dark green, darker top -> lighter bottom)
-  sidebarGradient: "linear-gradient(180deg, #16201A 0%, #1C2A22 55%, #223229 100%)",
-  sidebarHover: "rgba(255,255,255,0.07)",
-  sidebarActive: "#2A3D33",
-  sidebarText: "#B9C7BF",
+  sidebarGradient: "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)",
+  sidebarHover: "rgba(255,255,255,0.06)",
+  sidebarActive: "#164535",
+  sidebarText: "#B4C6BC",
   sidebarTextActive: "#FFFFFF",
-  sidebarSection: "#8A9A91",
-  sidebarCard: "#243429",
+  sidebarSection: "#6B8578",
+  sidebarCard: "#143D2E",
   // Brand
   brandGreen: "#26714F",
   // Content surfaces
@@ -123,5 +123,6 @@ export const infoBanner = {
   alignItems: "center",
   gap: 8,
 };
+
 
 

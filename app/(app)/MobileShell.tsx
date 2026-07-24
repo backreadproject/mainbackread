@@ -40,7 +40,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
           .app-topbar {
             display: flex; align-items: center; gap: 12px;
             height: 54px; flex-shrink: 0; padding: 0 16px;
-            background: #16201A; position: relative; z-index: 50;
+            background: #082019; position: relative; z-index: 50;
           }
           .app-body { position: relative; }
           .app-sidebar-wrap {
@@ -92,4 +92,5 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
     </div>
   );
 }
+
 
