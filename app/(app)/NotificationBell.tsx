@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
@@ -14,6 +15,7 @@ export default function NotificationBell() {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   async function load() {
     try {
       const res = await fetch("/api/notifications");
@@ -28,7 +30,13 @@ export default function NotificationBell() {
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
-    const onClick = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    const onClick = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (ref.current && ref.current.contains(t)) return;
+      // The panel is portalled to body, so it is not inside ref.current any more.
+      if (panelRef.current && panelRef.current.contains(t)) return;
+      setOpen(false);
+    };
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, []);
@@ -85,8 +93,8 @@ export default function NotificationBell() {
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
         {unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "#F04438", color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread > 9 ? "9+" : unread}</span>}
       </button>
-      {open && (
-        <div style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
+      {open && createPortal(
+        <div ref={panelRef} style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nt.title}</span>
             {unread > 0 && <button onClick={markAll} style={{ background: "none", border: "none", color: T.green, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>{nt.markAllRead}</button>}
@@ -104,9 +112,11 @@ export default function NotificationBell() {
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
 }
+
 
