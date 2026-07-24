@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/useLocale";
@@ -274,7 +274,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
       <div className="rdr-aurora" aria-hidden="true"><span className="a" /><span className="b" /></div>
       <style>{`
         .fx-ask{transition:background .15s}.fx-ask:hover{background:${GREEN_HOVER}}
-        .fx-in:focus{border-color:${BRAND};box-shadow:0 0 0 3px rgba(31,169,113,0.14)}
+        .rdr-fine:hover{text-decoration:underline}.fx-in:focus{border-color:${BRAND};box-shadow:0 0 0 3px rgba(31,169,113,0.14)}
         .rdr-handle{display:none}
         .rdr-aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
         .rdr-aurora span{position:absolute;border-radius:50%;filter:blur(90px)}
@@ -368,6 +368,9 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
               {r.ask} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </button>
           </div>
+          <div style={{ padding: "0 12px 10px", textAlign: "center" }}>
+            <a href="/privacy" className="rdr-fine" style={{ fontSize: 11, color: "#9AA5A0", textDecoration: "none" }}>{F.privacy}</a>
+          </div>
         </aside>
       </div>
       {forwardOpen && (
@@ -419,7 +422,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 12.5, color: BODY, lineHeight: 1.5, cursor: "pointer" }}>
                     <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2, width: 15, height: 15, accentColor: GREEN, flexShrink: 0 }} /> <span>{F.consent}</span>
                   </label>
-                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/privacy" style={{ color: GREEN, fontWeight: 600, textDecoration: "none" }}>{F.privacy}</a></div>
+                  <div style={{ fontSize: 11.5, color: SLATE, lineHeight: 1.55, margin: "10px 0 0", padding: "10px 12px", background: "#F6F8F7", borderRadius: 9 }}>{F.disclosure} <a href="/privacy" className="rdr-fine" style={{ color: SLATE, textDecoration: "none" }}>{F.privacy}</a></div>
                 </div>
                 {fwdErr && <p style={{ fontSize: 13, color: "#B42318", margin: "0 20px" }}>{fwdErr}</p>}
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px 18px" }}>
@@ -434,3 +437,5 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
     </div>
   );
 }
+
+
