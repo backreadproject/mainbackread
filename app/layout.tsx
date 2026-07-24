@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { DM_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import MarketingSupport from "./MarketingSupport";
 import ThemeScript from "./ThemeScript";
-const dmSans = DM_Sans({
+const dmSans = Inter({
   variable: "--font-dm-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],

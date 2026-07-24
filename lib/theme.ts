@@ -59,7 +59,7 @@ export const T = {
   scrim: "var(--rp-scrim)",
   overlayShadow: "var(--rp-overlay-shadow)",
   font: "var(--font-dm-sans), system-ui, sans-serif",
-  tracking: "-0.008em",
+  tracking: "normal",
   trackingTight: "-0.021em",
   rCard: 6,
   rBtn: 6,
