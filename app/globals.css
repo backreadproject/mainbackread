@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -35,19 +35,21 @@ body {
 /* Settings and Account: two-column card layout at full width. The page heading
    and any status message span both columns; the last card (the danger zone on
    Account) spans too, so destructive actions are never crowded beside something else. */
+
+
+/* Settings and Account: a single readable column. Form controls stretched to
+   full page width are harder to use, not easier, so the container is wide
+   enough to feel deliberate and narrow enough to read. */
 .set-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-  align-items: start;
+  max-width: 760px;
 }
-.set-grid > h1,
-.set-grid > p,
-.set-grid > div:first-of-type:has(h1),
-.set-grid > *:last-child {
-  grid-column: 1 / -1;
-}
-@media (max-width: 900px) {
-  .set-grid { grid-template-columns: 1fr; }
-  .set-grid > *:last-child { grid-column: auto; }
-}
+.set-grid input,
+.set-grid textarea,
+.set-grid select { max-width: 100%; }
+/* Long URLs and API keys must wrap inside their card, never push it open. */
+.set-grid code,
+.set-grid .break { overflow-wrap: anywhere; word-break: break-word; }
+

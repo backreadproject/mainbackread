@@ -76,7 +76,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
       {hooks.map((h) => (
         <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "10px 0", borderTop: `1px solid ${T.border}` }}>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: 13, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.url}</div>
+            <div style={{ fontSize: 13, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 340 }}>{h.url}</div>
             <div style={{ fontSize: 12, color: h.active ? T.greenText : T.muted }}>
               {h.active ? L.on : L.off}{h.last_status ? ` \u00b7 ${h.last_status}` : ""}{h.last_delivery_at ? ` \u00b7 ${new Date(h.last_delivery_at).toLocaleDateString()}` : ""}
             </div>
@@ -117,6 +117,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
     </div>
   );
 }
+
 
 
 
