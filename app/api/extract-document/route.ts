@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const targetId = (typeof variantId === "string" && variantId.trim()) ? variantId.trim() : documentId;
   await admin
     .from(targetTable)
-    .update({ extracted_text: result.text || null, extract_method: result.method, needs_page_ocr: result.needsPageOcr })
+    .update({ extracted_text: result.text || null, extract_method: result.method, needs_page_ocr: result.needsPageOcr, ...(result.pages != null ? { page_count: result.pages } : {}) })
     .eq("id", targetId);
 
   return NextResponse.json({
@@ -75,4 +75,5 @@ export async function POST(req: NextRequest) {
     needsPageOcr: result.needsPageOcr,
   });
 }
+
 
