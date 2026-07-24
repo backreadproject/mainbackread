@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import { Eye, MessageSquare } from "lucide-react";
 import { T, microLabel } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
@@ -22,7 +23,7 @@ export default function ActivityClient({ events, stats }: { events: { text: stri
             {events.map((e, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderBottom: i < events.length - 1 ? `1px solid ${T.border}` : "none" }}>
                 <span style={{ width: 26, height: 26, borderRadius: 7, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{e.kind === "opened" ? <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z M12 15a3 3 0 100-6 3 3 0 000 6z" /> : <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />}</svg>
+                        {e.kind === "opened" ? <Eye size={14} strokeWidth={1.9} /> : <MessageSquare size={14} strokeWidth={1.9} />}
                 </span>
                 <span style={{ fontSize: 15, color: T.heading, flex: 1 }}>{e.text}</span>
                 <span style={{ fontSize: 13, color: T.muted, flexShrink: 0 }}>{ago(e.at)}</span>
@@ -34,5 +35,6 @@ export default function ActivityClient({ events, stats }: { events: { text: stri
     </div>
   );
 }
+
 
 

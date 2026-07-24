@@ -2,22 +2,23 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import { LayoutGrid, FileText, Users, Building2, Layers, LifeBuoy, ScrollText, type LucideIcon } from "lucide-react";
 
 const ADMIN_SLUG = "console-7f3ab9c2";
 
-type Item = { href: string; label: string; d: string };
+type Item = { href: string; label: string; Icon: LucideIcon };
 
 export default function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname();
   const base = `/${ADMIN_SLUG}`;
   const NAV: Item[] = [
-    { href: base, label: "Dashboard", d: "M4 4h7v7H4z M13 4h7v4h-7z M13 11h7v9h-7z M4 14h7v6H4z" },
-    { href: `${base}/documents`, label: "Documents", d: "M5 3h8l4 4v14H5z M13 3v4h4" },
-    { href: `${base}/accounts`, label: "Accounts", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6" },
-    { href: `${base}/orgs`, label: "Organizations", d: "M3 21h18 M5 21V7l7-4 7 4v14 M9 21v-6h6v6" },
-    { href: `${base}/tiers`, label: "Tiers", d: "M12 2l3 6 6 .9-4.5 4.2 1.1 6.4-5.6-3-5.6 3 1.1-6.4L3 8.9 9 8z" },
-    { href: `${base}/support`, label: "Support", d: "M12 22a10 10 0 100-20 10 10 0 000 20z M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3 M12 17h.01" },
-    { href: `${base}/audit`, label: "Audit log", d: "M3 12h4l3 8 4-16 3 8h4" },
+    { href: base, label: "Dashboard", Icon: LayoutGrid },
+    { href: `${base}/documents`, label: "Documents", Icon: FileText },
+    { href: `${base}/accounts`, label: "Accounts", Icon: Users },
+    { href: `${base}/orgs`, label: "Organizations", Icon: Building2 },
+    { href: `${base}/tiers`, label: "Tiers", Icon: Layers },
+    { href: `${base}/support`, label: "Support", Icon: LifeBuoy },
+    { href: `${base}/audit`, label: "Audit log", Icon: ScrollText },
   ];
   async function signOut() {
     const supabase = createClient();
@@ -31,7 +32,7 @@ export default function AdminSidebar({ email }: { email: string }) {
       <a key={n.href} href={n.href} className="t-nav"
         style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 9, textDecoration: "none",
           color: active ? T.sidebarTextActive : T.sidebarText, background: active ? T.sidebarActive : "transparent", fontSize: 14, fontWeight: active ? 600 : 400, marginBottom: 3 }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={n.d} /></svg>
+        <n.Icon size={17} strokeWidth={1.75} />
         {n.label}
       </a>
     );
@@ -67,6 +68,7 @@ export default function AdminSidebar({ email }: { email: string }) {
     </aside>
   );
 }
+
 
 
 

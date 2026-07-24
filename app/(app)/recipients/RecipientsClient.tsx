@@ -3,17 +3,18 @@ import { useState, useMemo } from "react";
 import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import { Eye, MessageSquare, Users, TriangleAlert, type LucideIcon } from "lucide-react";
 type Row = { id: string; label: string | null; documentTitle: string; createdAt: string; opened: boolean; questions: number };
 type Stats = { total: number; opened: number; unopened: number; questions: number; escalated: number };
 const ICONS = { users: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6", eye: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z M12 15a3 3 0 100-6 3 3 0 000 6z", msg: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z", alert: "M12 9v4 M12 17h.01 M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L14 3.9a2 2 0 00-3.4 0z" };
 type Tone = "green" | "amber" | "indigo" | "neutral";
 // Tinted tile. Colour carries meaning, matching Overview and Documents.
-function StatCard({ icon, label, value, sub, tone = "neutral" }: { icon: string; label: string; value: number; sub: string; tone?: Tone }) {
+function StatCard({ Icon, label, value, sub, tone = "neutral" }: { Icon: LucideIcon; label: string; value: number; sub: string; tone?: Tone }) {
   const ink = statTileInk(tone);
   const sub2 = statTileSub(tone);
   return (<div style={statTile(tone)}>
     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: sub2 }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
+      <Icon size={15} strokeWidth={1.9} />
       <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
     </div>
     <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
@@ -44,10 +45,10 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
           <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{rp.subtitle}</p>
         </div>
         <div className="stat-grid" style={{ marginBottom: 22 }}>
-          <StatCard tone="green" icon={ICONS.eye} label={rp.statOpened} value={stats.opened} sub={`${stats.unopened} ${rp.statNotYet}`} />
-          <StatCard tone="amber" icon={ICONS.alert} label={rp.statEscalated} value={stats.escalated} sub={rp.statNeedReply} />
-          <StatCard tone="indigo" icon={ICONS.msg} label={rp.statQuestions} value={stats.questions} sub={rp.statAskedTotal} />
-          <StatCard tone="neutral" icon={ICONS.users} label={rp.statTotalReaders} value={stats.total} sub={`${stats.total} ${rp.statShared}`} />
+          <StatCard tone="green" Icon={Eye} label={rp.statOpened} value={stats.opened} sub={`${stats.unopened} ${rp.statNotYet}`} />
+          <StatCard tone="amber" Icon={TriangleAlert} label={rp.statEscalated} value={stats.escalated} sub={rp.statNeedReply} />
+          <StatCard tone="indigo" Icon={MessageSquare} label={rp.statQuestions} value={stats.questions} sub={rp.statAskedTotal} />
+          <StatCard tone="neutral" Icon={Users} label={rp.statTotalReaders} value={stats.total} sub={`${stats.total} ${rp.statShared}`} />
         </div>
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: `1px solid ${T.border}` }}>
@@ -75,6 +76,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
     </div>
   );
 }
+
 
 
 

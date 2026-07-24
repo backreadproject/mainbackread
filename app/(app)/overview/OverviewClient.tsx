@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
+import { Eye, MessageSquare, FileText } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
@@ -297,7 +298,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                   {events.map((e, i) => (
                     <div key={i} style={{ display: "flex", gap: 12, padding: "12px", alignItems: "flex-start", borderBottom: i < events.length - 1 ? `1px solid ${T.border}` : "none" }}>
                       <span style={{ width: 30, height: 30, borderRadius: 9, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", background: e.kind === "question" ? "#E6EEFB" : T.greenSoft, color: e.kind === "question" ? "#2563EB" : T.green }}>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{e.kind === "question" ? <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /> : <><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></>}</svg>
+                        {e.kind === "question" ? <MessageSquare size={15} strokeWidth={1.9} /> : <Eye size={15} strokeWidth={1.9} />}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 13.5, color: T.heading, lineHeight: 1.45 }}>{e.text}</div></div>
                       <span style={{ fontSize: 11, color: T.muted, fontFamily: mono }}>{ago(e.at)}</span>
@@ -310,7 +311,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                 <div style={{ padding: "6px 8px" }}>
                   {documents.map((d, i) => (
                     <a key={d.id} href={`/documents/${d.id}`} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 12px", textDecoration: "none", borderTop: i > 0 ? `1px solid ${T.border}` : "none" }}>
-                      <span style={{ width: 30, height: 30, borderRadius: 8, flex: "none", background: "rgba(11,122,75,.08)", color: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M5 3h8l4 4v14H5z" /></svg></span>
+                      <span style={{ width: 30, height: 30, borderRadius: 8, flex: "none", background: "rgba(11,122,75,.08)", color: T.green, display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={15} strokeWidth={1.9} /></span>
                       <span style={{ fontSize: 13.5, fontWeight: 600, color: T.heading, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
                       <span style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 22 }}>{d.spark.map((h, k) => <i key={k} style={{ width: 4, height: `${h}%`, borderRadius: 2, background: "linear-gradient(180deg,#1FA971,rgba(51,230,162,.4))" }} />)}</span>
                       <span style={{ fontSize: 12, color: T.muted, fontFamily: mono, width: 62, textAlign: "right" }}>{d.reads} {L.readsWord}</span>
@@ -326,6 +327,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     </div>
   );
 }
+
 
 
 

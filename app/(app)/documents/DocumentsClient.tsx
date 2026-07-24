@@ -5,6 +5,7 @@ import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
+import { FileText, Eye, MessageSquare, Users, type LucideIcon } from "lucide-react";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
@@ -17,13 +18,13 @@ const ICONS = {
 type Tone = "green" | "amber" | "indigo" | "neutral";
 // Tinted tile. Colour carries meaning, matching Overview: green healthy,
 // amber attention, indigo spread, neutral inert.
-function StatCard({ icon, label, value, sub, tone = "neutral" }: { icon: string; label: string; value: number; sub: string; tone?: Tone }) {
+function StatCard({ Icon, label, value, sub, tone = "neutral" }: { Icon: LucideIcon; label: string; value: number; sub: string; tone?: Tone }) {
   const ink = statTileInk(tone);
   const sub2 = statTileSub(tone);
   return (
     <div style={statTile(tone)}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: sub2 }}>
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
+        <Icon size={15} strokeWidth={1.9} />
         <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
       </div>
       <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
@@ -151,10 +152,10 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         {view === "active" && (
           <>
             <div className="stat-grid" style={{ marginBottom: 18 }}>
-              <StatCard tone="green" icon={ICONS.eye} label={dp.statTotalReads} value={stats.totalReads} sub={`${stats.pendingReads} ${dp.statPending}`} />
-              <StatCard tone="amber" icon={ICONS.msg} label={dp.statQuestions} value={stats.questions} sub={`${stats.escalated} ${dp.statEscalated}`} />
-              <StatCard tone="indigo" icon={ICONS.users} label={dp.statActiveReaders} value={stats.activeReaders} sub={`${stats.activeReaders} ${dp.statRecipients}`} />
-              <StatCard tone="neutral" icon={ICONS.doc} label={dp.statDocuments} value={stats.documents} sub={`${stats.shared} ${dp.statShared}`} />
+              <StatCard tone="green" Icon={Eye} label={dp.statTotalReads} value={stats.totalReads} sub={`${stats.pendingReads} ${dp.statPending}`} />
+              <StatCard tone="amber" Icon={MessageSquare} label={dp.statQuestions} value={stats.questions} sub={`${stats.escalated} ${dp.statEscalated}`} />
+              <StatCard tone="indigo" Icon={Users} label={dp.statActiveReaders} value={stats.activeReaders} sub={`${stats.activeReaders} ${dp.statRecipients}`} />
+              <StatCard tone="neutral" Icon={FileText} label={dp.statDocuments} value={stats.documents} sub={`${stats.shared} ${dp.statShared}`} />
             </div>
             <div style={{ background: T.greenSoft, border: `1px solid ${T.greenBorder}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4 M12 8h.01" /></svg>
@@ -233,6 +234,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

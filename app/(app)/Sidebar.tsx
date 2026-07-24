@@ -1,22 +1,23 @@
-"use client";
+﻿"use client";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import { LayoutGrid, FileText, Folder, Activity, Users, UsersRound, Settings, CircleUser, type LucideIcon } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import NotificationBell from "@/app/(app)/NotificationBell";
-type NavItem = { href: string; key: string; d: string; orgOnly?: boolean };
+type NavItem = { href: string; key: string; Icon: LucideIcon; orgOnly?: boolean };
 const NAV_MAIN: NavItem[] = [
-  { href: "/overview", key: "overview", d: "M4 4h7v7H4z M13 4h7v4h-7z M13 11h7v9h-7z M4 14h7v6H4z" },
-  { href: "/documents", key: "documents", d: "M5 3h8l4 4v14H5z M13 3v4h4" },
-  { href: "/projects", key: "projects", d: "M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" },
-  { href: "/activity", key: "activity", d: "M3 12h4l3 8 4-16 3 8h4" },
-  { href: "/recipients", key: "recipients", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6" },
+  { href: "/overview", key: "overview", Icon: LayoutGrid },
+  { href: "/documents", key: "documents", Icon: FileText },
+  { href: "/projects", key: "projects", Icon: Folder },
+  { href: "/activity", key: "activity", Icon: Activity },
+  { href: "/recipients", key: "recipients", Icon: Users },
 ];
 const NAV_CONFIG: NavItem[] = [
-  { href: "/members", key: "members", d: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6", orgOnly: true },
-  { href: "/settings", key: "settings", d: "M12 9a3 3 0 100 6 3 3 0 000-6z M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" },
-  { href: "/account", key: "account", d: "M12 12a4 4 0 100-8 4 4 0 000 8z M4 21a8 8 0 0116 0" },
+  { href: "/members", key: "members", Icon: UsersRound, orgOnly: true },
+  { href: "/settings", key: "settings", Icon: Settings },
+  { href: "/account", key: "account", Icon: CircleUser },
 ];
 export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl = null }: { email: string; workspaceName?: string; isOrg?: boolean; avatarUrl?: string | null }) {
   const pathname = usePathname();
@@ -42,7 +43,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
       <a key={n.href} href={n.href} className="t-nav"
         style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 9, textDecoration: "none",
           color: active ? T.sidebarTextActive : T.sidebarText, background: active ? T.sidebarActive : "transparent", fontSize: 14, fontWeight: active ? 600 : 400, marginBottom: 3 }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={n.d} /></svg>
+        <n.Icon size={17} strokeWidth={1.75} />
         {label(n.key)}
       </a>
     );
@@ -84,3 +85,5 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
     </aside>
   );
 }
+
+
