@@ -105,7 +105,12 @@ export async function POST(req: NextRequest) {
   // it just does not re-escalate or promise to resolve what was raised. Going silent
   // on someone who is still typing is worse than a partial answer.
   const humanWaiting = existing?.status === "escalated" || existing?.status === "answered";
-  if (humanWaiting) await notifyHuman(conversationId, message.trim(), "follow-up on an open conversation");
+  // Notify once per escalation. A follow-up only re-notifies if we already replied,
+  // because that means they came back after we thought it was handled. Nine emails
+  // from one conversation is an inbox nobody reads.
+  if (existing?.status === "answered") {
+    await notifyHuman(conversationId, message.trim(), "they replied after our answer");
+  }
 
   const { data } = await runAI(supportTask, { question: message.trim(), history, who, humanWaiting });
 
@@ -140,7 +145,8 @@ async function notifyHuman(conversationId: string, message: string, reason: stri
         <p style="font-size:12.5px;color:#98A2B3;margin:0 0 16px;">Why: ${reason} &middot; from the ${c.surface} site${c.user_id ? " &middot; signed in" : ""}</p>
         <a href="https://app.readprospects.com/console-7f3ab9c2/support" style="display:inline-block;background:#0B7A4B;color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 18px;border-radius:8px;">Open in the console</a>
       </div></body></html>`;
-    await sendEmail("readprospects", { to: "readprospects@gmail.com", subject: `Support: ${who}`, html });
+    const to = process.env.SUPPORT_NOTIFY_EMAIL || "readprospects@gmail.com";
+    await sendEmail("readprospects", { to, subject: `Support: ${who}`, html });
   } catch (err) {
     console.error("[support] notify failed:", err instanceof Error ? err.message : String(err));
   }
@@ -173,4 +179,5 @@ export async function GET(req: NextRequest) {
     hasEmail: !!conv.email,
   });
 }
+
 
