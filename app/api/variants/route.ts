@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
   const g = await guard(documentId);
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
 
+  if (typeof storagePath === "string" && /\.(docx?|pptx?)$/i.test(storagePath)) {
+    return NextResponse.json({ error: "Word and PowerPoint files are not supported. Export as PDF and upload again." }, { status: 415 });
+  }
+
   if (action === "create") {
     const { data: existing } = await g.admin.from("document_variants").select("label").eq("document_id", documentId);
     const labels = (existing ?? []).map((v) => String(v.label));
@@ -78,3 +82,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ error: "Unknown action." }, { status: 400 });
 }
+

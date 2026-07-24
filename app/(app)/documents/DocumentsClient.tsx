@@ -48,11 +48,18 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   const archivedCount = rows.filter((r) => r.archived).length;
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]; if (!file) return;
+    // Word and PowerPoint are rejected on purpose: the reader renders PDFs and images,
+    // so a .docx would upload cleanly and then fail to open for the recipient.
+    const isOffice = /\.(docx?|pptx?)$/i.test(file.name) ||
+      file.type.includes("officedocument") || file.type.includes("msword") || file.type.includes("ms-powerpoint");
+    if (isOffice) {
+      setError("Word and PowerPoint files cannot be shared yet. Export as PDF first, so your reader sees the document exactly as you designed it.");
+      return;
+    }
     const okType =
       file.type === "application/pdf" ||
-      file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
       file.type.startsWith("image/") ||
-      /\.(pdf|docx|jpe?g|png|webp|gif)$/i.test(file.name);
+      /\.(pdf|jpe?g|png|webp|gif)$/i.test(file.name);
     if (!okType) { setError(dp.chooseSupported); return; }
     setUploading(true); setError("");
     const supabase = createClient();
@@ -129,7 +136,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
               )}
               {abEnabled && <VariantUpload isOrg={isOrg} orgId={orgId} projects={projects} />}
               <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
-                <input type="file" accept="application/pdf,.docx,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
+                <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
                 {uploading ? dp.uploading : dp.addDocument}
               </label>
             </div>
@@ -221,6 +228,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

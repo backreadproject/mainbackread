@@ -14,7 +14,14 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
   const [err, setErr] = useState("");
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(e.target.files ?? []).slice(0, 4);
+    const all = Array.from(e.target.files ?? []).slice(0, 4);
+    const office = all.filter((f) => /\.(docx?|pptx?)$/i.test(f.name) || f.type.includes("officedocument") || f.type.includes("msword") || f.type.includes("ms-powerpoint"));
+    if (office.length > 0) {
+      setErr("Word and PowerPoint files cannot be shared yet. Export as PDF first, so your reader sees the document exactly as you designed it.");
+      setFiles([]); setNotes([]);
+      return;
+    }
+    const picked = all;
     setFiles(picked);
     setNotes(picked.map(() => ""));
     if (!title && picked[0]) setTitle(picked[0].name.replace(/\.(pdf|docx|jpe?g|png|webp|gif)$/i, ""));
@@ -104,7 +111,7 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
             )}
 
             <span style={{ fontSize: 12, fontWeight: 600, color: T.muted, display: "block", margin: "4px 0 6px" }}>Files (2 to 4)</span>
-            <input type="file" multiple accept="application/pdf,.docx,image/jpeg,image/png,image/webp,image/gif" onChange={onPick} style={{ ...input, padding: "9px 10px" }} />
+            <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onPick} style={{ ...input, padding: "9px 10px" }} />
 
             {files.map((f, i) => (
               <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderTop: `1px solid ${T.border}` }}>
@@ -138,4 +145,5 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
     </>
   );
 }
+
 

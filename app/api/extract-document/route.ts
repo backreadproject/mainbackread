@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
     .single();
   if (!doc) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
+  // Hard gate: the reader renders PDFs and images only. Reject Office documents here
+  // as well as in the UI, since the client check is advisory and can be bypassed.
+  if (/\.(docx?|pptx?)$/i.test(doc.storage_path as string)) {
+    return NextResponse.json({ error: "Word and PowerPoint files are not supported. Export as PDF and upload again." }, { status: 415 });
+  }
+
   const admin = createAdminClient();
 
   // A/B: when a variantId is given, extract THAT file and store the text on the
@@ -75,5 +81,6 @@ export async function POST(req: NextRequest) {
     needsPageOcr: result.needsPageOcr,
   });
 }
+
 
 
