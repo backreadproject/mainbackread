@@ -1,7 +1,7 @@
 ﻿"use client";
 import { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { T, microLabel } from "@/lib/theme";
+import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
@@ -14,15 +14,19 @@ const ICONS = {
   msg: "M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z",
   users: "M8 11a3 3 0 100-6 3 3 0 000 6z M2 20a6 6 0 0112 0 M16 11a3 3 0 100-6 M22 20a6 6 0 00-4-5.6",
 };
-function StatCard({ icon, label, value, sub }: { icon: string; label: string; value: number; sub: string }) {
+type Tone = "green" | "amber" | "indigo" | "neutral";
+// Tinted tile. Colour carries meaning, matching Overview: green healthy,
+// amber attention, indigo spread, neutral inert.
+function StatCard({ icon, label, value, sub, tone = "neutral" }: { icon: string; label: string; value: number; sub: string; tone?: Tone }) {
+  const ink = statTileInk(tone);
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
-      <div style={{ width: 30, height: 30, borderRadius: 8, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
+    <div style={statTile(tone)}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, color: ink, opacity: 0.75 }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={icon} /></svg>
+        <span style={{ fontSize: 11.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
       </div>
-      <div style={{ ...microLabel, marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 700, color: T.heading, marginBottom: 4, letterSpacing: T.trackingTight }}>{value}</div>
-      <div style={{ fontSize: 12, color: T.muted }}>{sub}</div>
+      <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      <div style={{ fontSize: 12.5, color: tone === "neutral" ? T.muted : ink, opacity: tone === "neutral" ? 1 : 0.75, marginTop: 4 }}>{sub}</div>
     </div>
   );
 }
@@ -115,9 +119,9 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }} onClick={() => menuOpen && setMenuOpen(null)}>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:#F8F9FA}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FAF8F4}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:#FAF8F4}`}</style>
       <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
-        <div style={{ display: "inline-flex", gap: 4, background: "#EDEFF2", padding: 4, borderRadius: 9, marginBottom: 22 }}>
+        <div style={{ display: "inline-flex", gap: 4, background: T.soft, padding: 4, borderRadius: 9, marginBottom: 22 }}>
           <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
           <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
         </div>
@@ -146,12 +150,12 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         {view === "active" && (
           <>
             <div className="stat-grid" style={{ marginBottom: 18 }}>
-              <StatCard icon={ICONS.doc} label={dp.statDocuments} value={stats.documents} sub={`${stats.shared} ${dp.statShared}`} />
-              <StatCard icon={ICONS.eye} label={dp.statTotalReads} value={stats.totalReads} sub={`${stats.pendingReads} ${dp.statPending}`} />
-              <StatCard icon={ICONS.msg} label={dp.statQuestions} value={stats.questions} sub={`${stats.escalated} ${dp.statEscalated}`} />
-              <StatCard icon={ICONS.users} label={dp.statActiveReaders} value={stats.activeReaders} sub={`${stats.activeReaders} ${dp.statRecipients}`} />
+              <StatCard tone="green" icon={ICONS.eye} label={dp.statTotalReads} value={stats.totalReads} sub={`${stats.pendingReads} ${dp.statPending}`} />
+              <StatCard tone="amber" icon={ICONS.msg} label={dp.statQuestions} value={stats.questions} sub={`${stats.escalated} ${dp.statEscalated}`} />
+              <StatCard tone="indigo" icon={ICONS.users} label={dp.statActiveReaders} value={stats.activeReaders} sub={`${stats.activeReaders} ${dp.statRecipients}`} />
+              <StatCard tone="neutral" icon={ICONS.doc} label={dp.statDocuments} value={stats.documents} sub={`${stats.shared} ${dp.statShared}`} />
             </div>
-            <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
+            <div style={{ background: T.greenSoft, border: `1px solid ${T.greenBorder}`, borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 8, marginBottom: 22 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4 M12 8h.01" /></svg>
               <span style={{ fontSize: 13, color: T.greenText }}>{dp.verdictHint}</span>
             </div>
@@ -188,7 +192,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
                   </button>
                   {menuOpen === r.id && (
-                    <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 8px 30px rgba(15,23,41,0.12)", width: 160, zIndex: 20, overflow: "hidden", padding: 4 }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 8px 30px rgba(30,26,22,0.12)", width: 160, zIndex: 20, overflow: "hidden", padding: 4 }}>
                       {r.archived ? (
                         <button className="t-menu-item" onClick={() => setArchived(r.id, false)} disabled={busy} style={menuItem}>{dp.restore}</button>
                       ) : (
@@ -213,7 +217,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         </div>
       </main>
       {confirmDelete && (
-        <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
+        <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(30,26,22,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 400, maxWidth: "100%" }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 8px", letterSpacing: T.trackingTight }}>{dp.deleteTitle}</h3>
             <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 20px" }}>{dp.deleteBodyA}{confirmDelete.title}{dp.deleteBodyB}</p>
@@ -228,6 +232,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 
