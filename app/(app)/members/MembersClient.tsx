@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { T, microLabel } from "@/lib/theme";
+import { T, microLabel, statTile, statTileInk } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
@@ -139,15 +139,19 @@ export default function MembersClient({ org, role, members: initial, invites: in
   const roleBadge = (r: string) => {
     const map: Record<string, [string, string]> = { owner: [T.greenSoft, T.greenText], admin: ["#EEF4FF", "#3538CD"], member: [T.pillNeutralBg, T.body] };
     const [bg, fg] = map[r] ?? map.member;
-    const roleLabel: Record<string, string> = { owner: locale === "fr" ? "propriÃ©taire" : "owner", admin: locale === "fr" ? "admin" : "admin", member: locale === "fr" ? "membre" : "member" };
+    const roleLabel: Record<string, string> = { owner: locale === "fr" ? "propriÃƒÂ©taire" : "owner", admin: locale === "fr" ? "admin" : "admin", member: locale === "fr" ? "membre" : "member" };
     return <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: bg, color: fg, textTransform: "uppercase", letterSpacing: "0.04em" }}>{roleLabel[r] ?? r}</span>;
   };
-  const stat = (label: string, value: number) => (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18 }}>
-      <div style={{ ...microLabel, marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight }}>{value}</div>
-    </div>
-  );
+  // Tinted tile, matching Overview, Documents and Recipients.
+  const stat = (label: string, value: number, tone: "green" | "amber" | "indigo" | "neutral" = "neutral") => {
+    const ink = statTileInk(tone);
+    return (
+      <div style={statTile(tone)}>
+        <div style={{ ...microLabel, color: ink, opacity: 0.75, marginBottom: 8 }}>{label}</div>
+        <div style={{ fontSize: 27, fontWeight: 600, color: ink, letterSpacing: "-0.04em", lineHeight: 1.05, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      </div>
+    );
+  };
 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -199,9 +203,9 @@ export default function MembersClient({ org, role, members: initial, invites: in
         )}
 
         <div className="stat-grid-3" style={{ marginBottom: 22 }}>
-          {stat(mp.statTotalMembers, active)}
-          {stat(mp.statOwnersAdmins, admins)}
-          {stat(mp.statPendingInvites, invites.length)}
+          {stat(mp.statTotalMembers, active, "green")}
+          {stat(mp.statOwnersAdmins, admins, "indigo")}
+          {stat(mp.statPendingInvites, invites.length, invites.length > 0 ? "amber" : "neutral")}
         </div>
 
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
@@ -240,5 +244,8 @@ export default function MembersClient({ org, role, members: initial, invites: in
     </div>
   );
 }
+
+
+
 
 
