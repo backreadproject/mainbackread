@@ -38,7 +38,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:#FAF8F4}.t-in:focus{border-color:${T.green};outline:none}`}</style>
-      <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
+      <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: T.soft, padding: 4, borderRadius: 9, marginBottom: 22 }}>{seg("all", rp.filterAll)}{seg("opened", rp.filterOpened)}{seg("unopened", rp.filterUnopened)}</div>
         <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{rp.title}</h1>
@@ -76,6 +76,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
     </div>
   );
 }
+
 
 
 

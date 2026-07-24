@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { T, microLabel } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
@@ -24,7 +24,7 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
           {canManage && <button onClick={() => setSharing(true)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pd.shareWithTeam}</button>}
         </div>
       </div>
-      <main style={{ maxWidth: 900, padding: "22px 30px 40px" }}>
+      <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>
         {documents.length === 0 ? (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 40, textAlign: "center" }}>
             <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{pd.empty}</p>
@@ -47,5 +47,6 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
     </div>
   );
 }
+
 
 

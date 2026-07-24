@@ -98,7 +98,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
     if (!isCompany) {
       return (
         <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-          <main style={{ maxWidth: 560, padding: "26px 30px" }}>
+          <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.orgTitle}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{mp.orgPartOfCompany}</p>
             <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 32, textAlign: "center" }}>
@@ -111,7 +111,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
     }
     return (
       <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-        <main style={{ maxWidth: 560, padding: "26px 30px" }}>
+        <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.setupTitle}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 16px" }}>{mp.setupSub}</p>
           {trial.started && trial.active && <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: T.greenText }}>{mp.trialActivePrefix} {trial.daysLeft} {trial.daysLeft === 1 ? mp.trialDay : mp.trialDays} {mp.trialLeft}</div>}
@@ -156,7 +156,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-in:focus{border-color:${T.green};outline:none}`}</style>
-      <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
+      <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.title}</h1>
@@ -244,6 +244,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
     </div>
   );
 }
+
 
 
 

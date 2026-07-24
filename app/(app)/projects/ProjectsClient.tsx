@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { T, microLabel } from "@/lib/theme";
+import { Folder } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
@@ -27,7 +28,7 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
   if (orgless) {
     return (
       <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-        <main style={{ maxWidth: 620, padding: "26px 30px" }}>
+        <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{pp.title}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{pp.introOrgless}</p>
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 40, textAlign: "center" }}>
@@ -42,7 +43,7 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-card{transition:transform .12s,box-shadow .12s;text-decoration:none}.t-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(15,23,41,0.08)}.t-in:focus{border-color:${T.green};outline:none}`}</style>
-      <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
+      <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{pp.title}</h1>
@@ -65,21 +66,24 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
             <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{pp.emptyNone}</p>
           </div>
         ) : (
-          <div className="card-grid-3">
-            {projects.map((p) => (
-              <a key={p.id} href={`/projects/${p.id}`} className="t-card" style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 20 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" /></svg>
-                </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                <div style={{ fontSize: 13, color: T.muted }}>{p.docCount} {p.docCount === 1 ? pp.docCountOne : pp.docCountMany}</div>
-              </a>
-            ))}
-          </div>
+            <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
+              {projects.map((p, i) => (
+                <a key={p.id} href={`/projects/${p.id}`} className="data-row" style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", textDecoration: "none", borderTop: i > 0 ? `1px solid ${T.borderSoft}` : "none" }}>
+                  <span style={{ width: 30, height: 30, borderRadius: 8, background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
+                    <Folder size={16} strokeWidth={1.9} />
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 14, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                  <span style={{ fontSize: 13, color: T.muted, flex: "none" }}>{p.docCount} {p.docCount === 1 ? pp.docCountOne : pp.docCountMany}</span>
+                </a>
+              ))}
+            </div>
         )}
       </main>
     </div>
   );
 }
+
+
+
 
 

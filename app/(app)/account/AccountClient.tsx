@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T, pageHeading } from "@/lib/theme";
@@ -54,7 +54,7 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-in-d:focus{border-color:#B42318;outline:none}.t-b{cursor:pointer}`}</style>
-      <main style={{ maxWidth: 560, padding: "26px 30px" }}>
+      <main className="set-grid" style={{ maxWidth: 1040, padding: "26px 30px 60px" }}>
         <h1 style={{ ...pageHeading, marginBottom: 20 }}>{ac.title}</h1>
         <div style={{ ...card, display: "flex", alignItems: "center", gap: 18 }}>
           <div style={{ width: 64, height: 64, borderRadius: "50%", background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, flexShrink: 0, overflow: "hidden" }}>
@@ -98,5 +98,7 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
     </div>
   );
 }
+
+
 
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useMemo } from "react";
 import { T, microLabel } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
@@ -23,7 +23,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
         <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{rd.onDoc} <a href={`/documents/${recipient.documentId}`} style={{ color: T.green, textDecoration: "none", fontWeight: 600 }}>{recipient.documentTitle}</a></p>
       </div>
       {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
-      <main style={{ maxWidth: 760, padding: "22px 30px 40px" }}>
+      <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>
         {summary.opens === 0 ? (
           <div style={card}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{rd.notOpenedYet}</p></div>
         ) : (<>
@@ -59,5 +59,6 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
     </div>
   );
 }
+
 
 

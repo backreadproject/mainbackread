@@ -44,7 +44,7 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-b{cursor:pointer}`}</style>
-      <main style={{ maxWidth: 560, padding: "26px 30px" }}>
+      <main className="set-grid" style={{ maxWidth: 1040, padding: "26px 30px 60px" }}>
         <h1 style={{ ...pageHeading, marginBottom: 20 }}>{st.title}</h1>
 
         {isOrg ? (
@@ -87,6 +87,8 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
     </div>
   );
 }
+
+
 
 
 

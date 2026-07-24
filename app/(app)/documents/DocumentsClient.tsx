@@ -122,7 +122,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }} onClick={() => menuOpen && setMenuOpen(null)}>
       <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FAF8F4}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:#FAF8F4}`}</style>
-      <main style={{ maxWidth: 1000, padding: "26px 30px" }}>
+      <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: T.soft, padding: 4, borderRadius: 9, marginBottom: 22 }}>
           <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
           <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
@@ -234,6 +234,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
 }
 const menuItem = { display: "block", width: "100%", textAlign: "left" as const, background: "none", border: "none", padding: "9px 12px", fontSize: 14, fontFamily: T.font, color: T.heading, cursor: "pointer", borderRadius: 7 };
+
 
 
 

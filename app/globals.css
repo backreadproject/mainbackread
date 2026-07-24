@@ -22,3 +22,32 @@ body {
   letter-spacing: -0.011em;
   line-height: 1.5;
 }
+
+/* Row hover. One rule for every list surface, so rows respond consistently
+   instead of each page defining its own. */
+.t-row, .data-row, .ov-r, .rp-row {
+  transition: background .12s;
+}
+.t-row:hover, .data-row:hover, .ov-r:hover, .rp-row:hover {
+  background: #FAF8F4;
+}
+
+/* Settings and Account: two-column card layout at full width. The page heading
+   and any status message span both columns; the last card (the danger zone on
+   Account) spans too, so destructive actions are never crowded beside something else. */
+.set-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.set-grid > h1,
+.set-grid > p,
+.set-grid > div:first-of-type:has(h1),
+.set-grid > *:last-child {
+  grid-column: 1 / -1;
+}
+@media (max-width: 900px) {
+  .set-grid { grid-template-columns: 1fr; }
+  .set-grid > *:last-child { grid-column: auto; }
+}
