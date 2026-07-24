@@ -66,6 +66,7 @@ export default function SupportWidget({ surface = "marketing" }: { surface?: "ma
       const j = await res.json();
       if (!res.ok) { setErr(j.error || "That did not go through."); setBusy(false); return; }
       if (j.answer) setMsgs((m) => [...m, { role: "assistant", content: j.answer }]);
+      else if (j.waiting) setMsgs((m) => [...m, { role: "note", content: "Sent to the team." }]);
       if (j.escalate) setStatus("escalated");
     } catch {
       setErr("That did not go through. Check your connection.");
@@ -121,15 +122,19 @@ export default function SupportWidget({ surface = "marketing" }: { surface?: "ma
               </div>
             )}
             {msgs.filter((m) => !m.content.startsWith("[contact]")).map((m, i) => (
+              m.role === "note" ? (
+                <div key={i} style={{ textAlign: "center", fontSize: 11.5, color: T.muted, margin: "2px 0 9px" }}>{m.content}</div>
+              ) : (
               <div key={i} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-end" : "flex-start", marginBottom: 9 }}>
                 <div style={{ ...bubble, background: m.role === "user" ? T.green : "#fff", color: m.role === "user" ? "#fff" : T.heading, border: m.role === "user" ? "none" : `1px solid ${T.border}` }}>
                   {m.role === "human" && <div style={{ fontSize: 10.5, fontWeight: 700, color: T.greenText, marginBottom: 3 }}>ReadProspects team</div>}
                   {m.content}
                 </div>
               </div>
+              )
             ))}
             {busy && <div style={{ fontSize: 12.5, color: T.muted, padding: "2px 4px" }}>Thinking...</div>}
-            {waiting && !hasEmail && (
+            {waiting && !hasEmail && surface === "marketing" && (
               <div style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, padding: 12, marginTop: 6 }}>
                 <div style={{ fontSize: 12.5, color: T.heading, fontWeight: 600, marginBottom: 6 }}>Where should we reply?</div>
                 <div style={{ display: "flex", gap: 6 }}>
@@ -166,3 +171,4 @@ export default function SupportWidget({ surface = "marketing" }: { surface?: "ma
     </>
   );
 }
+

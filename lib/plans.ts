@@ -1,4 +1,4 @@
-// Single source of truth for ReadProspects's plans: limits + feature gates.
+﻿// Single source of truth for ReadProspects's plans: limits + feature gates.
 // Everything that enforces a tier (caps on create actions, Company-only features)
 // reads from here. Billing later just sets which plan an account is on; it does
 // not change this file. Compiled from the approved plan structure.
@@ -76,7 +76,7 @@ const COMPANY_1_FEATURES: Record<FeatureFlag, boolean> = {
 // Company II adds the security set + the three integrations being built now.
 const COMPANY_2_FEATURES: Record<FeatureFlag, boolean> = {
   ...COMPANY_1_FEATURES,
-  granularPermissions: true, sso: true, auditLog: true, customRetention: true,
+  granularPermissions: true, sso: false, auditLog: true, customRetention: true,
   abVersions: true, webhookAlerts: true, zapier: true,
 };
 
@@ -163,3 +163,4 @@ export function withinLimit(current: number, limit: number | null): boolean {
 export function canAddOne(planId: string | null | undefined, key: keyof PlanLimits, current: number): boolean {
   return withinLimit(current, getLimit(planId, key));
 }
+
