@@ -27,7 +27,7 @@ export default function PlanForm({ targetUserId, scope, currentPlan, subscriptio
     else { const j = await res.json().catch(() => ({})); setMsg(j.error || "Failed."); }
   }
 
-  const field = { background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 11px", fontSize: 14, fontFamily: T.font } as const;
+  const field = { background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 11px", fontSize: 14, fontFamily: T.font } as const;
 
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "flex-end" }}>
@@ -43,7 +43,7 @@ export default function PlanForm({ targetUserId, scope, currentPlan, subscriptio
         </label>
       )}
       <button onClick={save} disabled={busy} style={{ ...primaryBtn, opacity: busy ? 0.6 : 1 }}>{busy ? "Saving\u2026" : "Save"}</button>
-      {msg && <span style={{ fontSize: 12, color: msg === "Saved." ? T.greenText : "#B42318", paddingBottom: 10 }}>{msg}</span>}
+      {msg && <span style={{ fontSize: 12, color: msg === "Saved." ? T.greenText : "var(--rp-danger-text)", paddingBottom: 10 }}>{msg}</span>}
     </div>
   );
 }

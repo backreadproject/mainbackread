@@ -67,13 +67,13 @@ export default async function TiersPage() {
             {expiring.map((r, i) => (
               <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{r.email}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708" }}>trial ends in {r.daysLeft}d</span>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "var(--rp-amber-soft)", color: "var(--rp-amber-text)" }}>trial ends in {r.daysLeft}d</span>
               </a>
             ))}
             {locked.map((r, i) => (
               <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderTop: (i || expiring.length) ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
                 <span style={{ color: T.heading, fontWeight: 600 }}>{r.email}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>trial lapsed \u2014 locked</span>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "var(--rp-danger-soft)", color: "var(--rp-danger-text)" }}>trial lapsed \u2014 locked</span>
               </a>
             ))}
           </div>
@@ -105,7 +105,7 @@ export default async function TiersPage() {
                   {members.slice(0, 12).map((r) => (
                     <a key={r.id} href={`/${ADMIN_SLUG}/accounts/${r.id}`} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", fontSize: 13, textDecoration: "none" }}>
                       <span style={{ color: T.heading }}>{r.email}{r.orgName ? <span style={{ color: T.muted }}> {"\u00b7"} {r.orgName}</span> : null}</span>
-                      <span style={{ color: r.access === "locked" ? "#B42318" : r.access === "trial" ? "#B54708" : T.muted, fontFamily: mono, fontSize: 12 }}>
+                      <span style={{ color: r.access === "locked" ? "var(--rp-danger-text)" : r.access === "trial" ? "var(--rp-amber-text)" : T.muted, fontFamily: mono, fontSize: 12 }}>
                         {r.access === "trial" ? `trial ${r.daysLeft}d` : r.access}
                       </span>
                     </a>

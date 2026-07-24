@@ -46,7 +46,7 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
 
   const totalReaders = recipients.filter((r) => r.variant_id).length;
   const thin = totalReaders < 6;
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "5px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const small = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "5px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
 
   return (
     <div style={{ padding: "22px 30px 0" }}>
@@ -79,9 +79,9 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
                 <div style={{ display: "flex", gap: 6 }}>
                   <button onClick={() => call({ action: "update", variantId: v.id, active: !v.active })} disabled={!!busy} style={small}>{v.active ? "Pause" : "Resume"}</button>
                   {confirming === v.id ? (
-                    <button onClick={async () => { if (await call({ action: "delete", variantId: v.id })) setConfirming(""); }} disabled={!!busy} style={{ ...small, color: "#fff", background: "#D92D20", borderColor: "#D92D20" }}>Confirm</button>
+                    <button onClick={async () => { if (await call({ action: "delete", variantId: v.id })) setConfirming(""); }} disabled={!!busy} style={{ ...small, color: "var(--rp-on-accent)", background: "var(--rp-danger)", borderColor: "var(--rp-danger-border)" }}>Confirm</button>
                   ) : (
-                    <button onClick={() => setConfirming(v.id)} disabled={!!busy} style={{ ...small, color: "#B42318", borderColor: "#FDA29B" }}>Delete</button>
+                    <button onClick={() => setConfirming(v.id)} disabled={!!busy} style={{ ...small, color: "var(--rp-danger-text)", borderColor: "var(--rp-danger-border)" }}>Delete</button>
                   )}
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
           })}
         </div>
 
-        {err && <p style={{ color: "#B42318", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
+        {err && <p style={{ color: "var(--rp-danger-text)", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
         {thin && (
           <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.5 }}>
             Too few readers to call a winner yet. Differences at this size are noise, not signal.

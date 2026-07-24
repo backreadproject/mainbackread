@@ -121,11 +121,11 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   );
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }} onClick={() => menuOpen && setMenuOpen(null)}>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FAF8F4}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:#FAF8F4}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}.t-cta:hover{opacity:.92}.t-menu-item:hover{background:var(--rp-hover)}`}</style>
       <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: T.soft, padding: 4, borderRadius: 9, marginBottom: 22 }}>
-          <button onClick={() => setView("active")} style={{ background: view === "active" ? "#fff" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
-          <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "#fff" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
+          <button onClick={() => setView("active")} style={{ background: view === "active" ? "var(--rp-card)" : "transparent", color: view === "active" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "active" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.active}</button>
+          <button onClick={() => setView("archived")} style={{ background: view === "archived" ? "var(--rp-card)" : "transparent", color: view === "archived" ? T.heading : T.body, fontSize: 13, fontWeight: 600, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: view === "archived" ? "0 1px 2px rgba(0,0,0,0.06)" : "none" }}>{dp.archived}{archivedCount > 0 ? ` (${archivedCount})` : ""}</button>
         </div>
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
           <div>
@@ -135,20 +135,20 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
           {view === "active" && (
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
               {isOrg && projects.length > 0 && (
-                <select value={uploadProject} onChange={(e) => setUploadProject(e.target.value)} title={dp.uploadIntoProject} style={{ border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff", color: T.body }}>
+                <select value={uploadProject} onChange={(e) => setUploadProject(e.target.value)} title={dp.uploadIntoProject} style={{ border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)", color: T.body }}>
                   <option value="">{dp.noProject}</option>
                   {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
               )}
               {abEnabled && <VariantUpload isOrg={isOrg} orgId={orgId} projects={projects} />}
-              <label className="t-cta" style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
+              <label className="t-cta" style={{ background: T.darkBtn, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
                 <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
                 {uploading ? dp.uploading : dp.addDocument}
               </label>
             </div>
           )}
         </div>
-        {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
+        {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, marginBottom: 16 }}>{error}</p>}
         {view === "active" && (
           <>
             <div className="stat-grid" style={{ marginBottom: 18 }}>
@@ -194,7 +194,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
                   </button>
                   {menuOpen === r.id && (
-                    <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 8px 30px rgba(30,26,22,0.12)", width: 160, zIndex: 20, overflow: "hidden", padding: 4 }}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", right: 0, top: 32, background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 10, boxShadow: "0 8px 30px rgba(30,26,22,0.12)", width: 160, zIndex: 20, overflow: "hidden", padding: 4 }}>
                       {r.archived ? (
                         <button className="t-menu-item" onClick={() => setArchived(r.id, false)} disabled={busy} style={menuItem}>{dp.restore}</button>
                       ) : (
@@ -209,7 +209,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
                           ))}
                         </div>
                       )}
-                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "#B42318", borderTop: `1px solid ${T.border}`, marginTop: 4 }}>{dp.del}</button>
+                      <button className="t-menu-item" onClick={() => { setMenuOpen(null); setConfirmDelete(r); }} style={{ ...menuItem, color: "var(--rp-danger-text)", borderTop: `1px solid ${T.border}`, marginTop: 4 }}>{dp.del}</button>
                     </div>
                   )}
                 </div>
@@ -220,12 +220,12 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
       </main>
       {confirmDelete && (
         <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: "rgba(30,26,22,0.45)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 400, maxWidth: "100%" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--rp-card)", borderRadius: 14, padding: 26, width: 400, maxWidth: "100%" }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 8px", letterSpacing: T.trackingTight }}>{dp.deleteTitle}</h3>
             <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 20px" }}>{dp.deleteBodyA}{confirmDelete.title}{dp.deleteBodyB}</p>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button onClick={() => setConfirmDelete(null)} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{dp.cancel}</button>
-              <button onClick={() => doDelete(confirmDelete)} disabled={busy} style={{ background: "#D92D20", color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? dp.deleting : dp.del}</button>
+              <button onClick={() => setConfirmDelete(null)} disabled={busy} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{dp.cancel}</button>
+              <button onClick={() => doDelete(confirmDelete)} disabled={busy} style={{ background: "var(--rp-danger)", color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? dp.deleting : dp.del}</button>
             </div>
           </div>
         </div>

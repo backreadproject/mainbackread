@@ -33,7 +33,7 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 24px" }}>{pp.introOrgless}</p>
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 40, textAlign: "center" }}>
             <p style={{ fontSize: 15, color: T.body, margin: "0 0 16px" }}>{pp.orglessBody}</p>
-            <a href="/members" style={{ display: "inline-block", background: T.green, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: T.rBtn, textDecoration: "none" }}>{pp.goToMembers} &rarr;</a>
+            <a href="/members" style={{ display: "inline-block", background: T.green, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 20px", borderRadius: T.rBtn, textDecoration: "none" }}>{pp.goToMembers} &rarr;</a>
           </div>
         </main>
       </div>
@@ -49,15 +49,15 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{pp.title}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{personal ? pp.subPersonal : pp.subTeam}</p>
           </div>
-          <button onClick={() => setShowNew((v) => !v)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pp.newProject}</button>
+          <button onClick={() => setShowNew((v) => !v)} style={{ background: T.darkBtn, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pp.newProject}</button>
         </div>
 
-        {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
+        {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, marginBottom: 16 }}>{error}</p>}
 
         {showNew && (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 20, display: "flex", gap: 10, alignItems: "center" }}>
-            <input className="t-in" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} placeholder={pp.projectNamePlaceholder} autoFocus style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
-            <button onClick={create} disabled={creating || !name.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: creating || !name.trim() ? 0.5 : 1 }}>{creating ? pp.creating : pp.create}</button>
+            <input className="t-in" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && create()} placeholder={pp.projectNamePlaceholder} autoFocus style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }} />
+            <button onClick={create} disabled={creating || !name.trim()} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: creating || !name.trim() ? 0.5 : 1 }}>{creating ? pp.creating : pp.create}</button>
           </div>
         )}
 

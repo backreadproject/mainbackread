@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
@@ -114,18 +114,18 @@ export default function MembersClient({ org, role, members: initial, invites: in
         <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.setupTitle}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 16px" }}>{mp.setupSub}</p>
-          {trial.started && trial.active && <div style={{ background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: T.greenText }}>{mp.trialActivePrefix} {trial.daysLeft} {trial.daysLeft === 1 ? mp.trialDay : mp.trialDays} {mp.trialLeft}</div>}
+          {trial.started && trial.active && <div style={{ background: T.greenSoft, border: "1px solid var(--rp-green-border)", borderRadius: 10, padding: "10px 14px", marginBottom: 20, fontSize: 13, color: T.greenText }}>{mp.trialActivePrefix} {trial.daysLeft} {trial.daysLeft === 1 ? mp.trialDay : mp.trialDays} {mp.trialLeft}</div>}
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 24 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>{mp.orgName}</span>
-            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder={mp.orgNamePlaceholder} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 }} />
+            <input value={orgName} onChange={(e) => setOrgName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createOrg()} placeholder={mp.orgNamePlaceholder} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 12 }} />
             <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 8 }}>{mp.companyDomain} <span style={{ fontWeight: 400, color: T.muted }}>{mp.optional}</span></span>
-            <input value={orgDomain} onChange={(e) => setOrgDomain(e.target.value)} placeholder={mp.domainPlaceholder} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 14 }} />
+            <input value={orgDomain} onChange={(e) => setOrgDomain(e.target.value)} placeholder={mp.domainPlaceholder} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 14 }} />
             <label style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 16, cursor: "pointer", fontSize: 14, color: T.body }}>
               <input type="checkbox" checked={migrateDocuments} onChange={(e) => setMigrateDocuments(e.target.checked)} style={{ width: 16, height: 16, accentColor: T.green, cursor: "pointer" }} />
               {mp.migrateDocs}
             </label>
-            <button onClick={createOrg} disabled={creating || !orgName.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: creating || !orgName.trim() ? 0.5 : 1 }}>{creating ? mp.creating : mp.createOrg}</button>
-            {error && <p style={{ fontSize: 13, color: "#B42318", marginTop: 12 }}>{error}</p>}
+            <button onClick={createOrg} disabled={creating || !orgName.trim()} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: creating || !orgName.trim() ? 0.5 : 1 }}>{creating ? mp.creating : mp.createOrg}</button>
+            {error && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", marginTop: 12 }}>{error}</p>}
             <p style={{ fontSize: 12, color: T.muted, marginTop: 16, lineHeight: 1.5 }}>{mp.createOrgNote}</p>
           </div>
         </main>
@@ -137,7 +137,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
   const active = members.length;
   const admins = members.filter((m) => m.role === "owner" || m.role === "admin").length;
   const roleBadge = (r: string) => {
-    const map: Record<string, [string, string]> = { owner: [T.greenSoft, T.greenText], admin: ["#EEF4FF", "#3538CD"], member: [T.pillNeutralBg, T.body] };
+    const map: Record<string, [string, string]> = { owner: [T.greenSoft, T.greenText], admin: ["var(--rp-indigo-soft)", "var(--rp-indigo-text)"], member: [T.pillNeutralBg, T.body] };
     const [bg, fg] = map[r] ?? map.member;
     const roleLabel: Record<string, string> = { owner: locale === "fr" ? "propriÃƒÂ©taire" : "owner", admin: locale === "fr" ? "admin" : "admin", member: locale === "fr" ? "membre" : "member" };
     return <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: bg, color: fg, textTransform: "uppercase", letterSpacing: "0.04em" }}>{roleLabel[r] ?? r}</span>;
@@ -162,25 +162,25 @@ export default function MembersClient({ org, role, members: initial, invites: in
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{mp.title}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{mp.manageWho} {org.name} {mp.manageWhat}</p>
           </div>
-          {canManage && <button onClick={() => setShowAdd((v) => !v)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{mp.inviteMember}</button>}
+          {canManage && <button onClick={() => setShowAdd((v) => !v)} style={{ background: T.darkBtn, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{mp.inviteMember}</button>}
         </div>
 
-        {error && <p style={{ color: "#B42318", fontSize: 14, marginBottom: 16 }}>{error}</p>}
+        {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, marginBottom: 16 }}>{error}</p>}
 
         {showAdd && canManage && (
           <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 18 }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: T.heading, marginBottom: 12 }}>{mp.inviteTeammate}</div>
             <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-              <input className="t-in" value={iFirst} onChange={(e) => setIFirst(e.target.value)} placeholder={mp.firstName} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
-              <input className="t-in" value={iLast} onChange={(e) => setILast(e.target.value)} placeholder={mp.lastName} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
+              <input className="t-in" value={iFirst} onChange={(e) => setIFirst(e.target.value)} placeholder={mp.firstName} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }} />
+              <input className="t-in" value={iLast} onChange={(e) => setILast(e.target.value)} placeholder={mp.lastName} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }} />
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <input className="t-in" value={iEmail} onChange={(e) => setIEmail(e.target.value)} onBlur={lookupName} placeholder={mp.emailPlaceholder} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
-              <select value={iRole} onChange={(e) => setIRole(e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }}>
+              <input className="t-in" value={iEmail} onChange={(e) => setIEmail(e.target.value)} onBlur={lookupName} placeholder={mp.emailPlaceholder} style={{ flex: 1, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }} />
+              <select value={iRole} onChange={(e) => setIRole(e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }}>
                 <option value="member">{mp.roleMember}</option>
                 <option value="admin">{mp.roleAdmin}</option>
               </select>
-              <button onClick={sendInvite} disabled={adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", opacity: adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim() ? 0.5 : 1 }}>{adding ? mp.sending : mp.sendInvite}</button>
+              <button onClick={sendInvite} disabled={adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim()} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", opacity: adding || !iEmail.trim() || !iFirst.trim() || !iLast.trim() ? 0.5 : 1 }}>{adding ? mp.sending : mp.sendInvite}</button>
             </div>
             {inviteNote && <p style={{ fontSize: 13, color: (inviteNote === mp.inviteSent || inviteNote === mp.addedDirectly) ? T.greenText : T.body, margin: "10px 0 0" }}>{inviteNote}</p>}
           </div>
@@ -195,7 +195,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
                   <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{inv.firstName} {inv.lastName}</div>
                   <div style={{ fontSize: 12, color: T.muted }}>{inv.email}</div>
                 </div>
-                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708", textTransform: "uppercase", letterSpacing: "0.04em", justifySelf: "start" }}>{mp.pending} &middot; {inv.role}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill, background: "var(--rp-amber-soft)", color: "var(--rp-amber-text)", textTransform: "uppercase", letterSpacing: "0.04em", justifySelf: "start" }}>{mp.pending} &middot; {inv.role}</span>
                 {canManage && <button onClick={() => revokeInvite(inv.id)} aria-label={mp.revoke} style={{ background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, justifySelf: "end", lineHeight: 0 }}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18 M6 6l12 12" /></svg></button>}
               </div>
             ))}
@@ -223,7 +223,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
               </div>
               <span className="data-cell" data-label={mp.colRole}>
                 {canManage && m.role !== "owner" ? (
-                  <select value={m.role} onChange={(e) => changeRole(m.id, e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, fontFamily: T.font, background: "#fff", color: T.body, textTransform: "capitalize" }}>
+                  <select value={m.role} onChange={(e) => changeRole(m.id, e.target.value as "admin" | "member")} style={{ border: `1px solid ${T.border}`, borderRadius: 7, padding: "4px 8px", fontSize: 12, fontFamily: T.font, background: "var(--rp-card)", color: T.body, textTransform: "capitalize" }}>
                     <option value="member">{mp.roleMember}</option>
                     <option value="admin">{mp.roleAdmin}</option>
                   </select>

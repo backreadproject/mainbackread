@@ -1,4 +1,4 @@
-const CARD="#FFFFFF",LINE="#E7EBF2",BAR="#EDEFF3";
+const CARD="var(--rp-card)",LINE="var(--rp-border)",BAR="var(--rp-border-soft)";
 export default function Loading(){
   const bar=(w:string,h:number)=>({width:w,height:h,background:BAR,borderRadius:6});
   return (<div style={{padding:"40px 40px",maxWidth:820}}>

@@ -63,7 +63,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   const pill = (pos: boolean, txt: string) => (<span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: pos ? T.pillPosBg : T.pillNeutralBg, color: pos ? T.pillPosText : T.pillNeutralText }}>{txt}</span>);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-b{cursor:pointer;transition:opacity .12s}.t-b:hover{opacity:.88}.t-rec{transition:background .12s;cursor:pointer}.t-rec:hover{background:#FCFCFD}.t-in:focus{border-color:${T.green};outline:none}`}</style>
+      <style>{`.t-b{cursor:pointer;transition:opacity .12s}.t-b:hover{opacity:.88}.t-rec{transition:background .12s;cursor:pointer}.t-rec:hover{background:var(--rp-soft)}.t-in:focus{border-color:${T.green};outline:none}`}</style>
       <div style={{ padding: "26px 30px 0" }}>
         <a href="/documents" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}>
           <span style={{ color: T.muted }}>{"\u2039"}</span> {dd.back}
@@ -74,13 +74,13 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={{ background: T.greenSoft, color: T.greenText, fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font }}>{dd.shareWithTeam}</button>}
         </div>
       </div>
-      {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
+      {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
       <VariantsPanel documentId={doc.id} variants={variants} recipients={recs} signals={signals} />
       <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0,1fr)", gap: 18, padding: "22px 30px 40px", alignItems: "start" }}>
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <span style={microLabel}>{dd.recipients}</span>
-            <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer", marginRight: 6 }}>Import CSV</button>
+            <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer", marginRight: 6 }}>Import CSV</button>
             <ShareButton documentId={doc.id} variants={variants} counts={recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>)} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
           </div>
           {recs.length === 0 ? <p style={{ fontSize: 14, color: T.body, padding: "6px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
@@ -109,7 +109,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                 {editing === sel.id ? (
                   <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 10 }}>
                     <input className="t-in" autoFocus value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveName(sel.id)} placeholder={dd.renamePlaceholder} style={{ border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "8px 11px", fontSize: 16, fontFamily: T.font, fontWeight: 600, color: T.heading }} />
-                    <button onClick={() => saveName(sel.id)} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{dd.save}</button>
+                    <button onClick={() => saveName(sel.id)} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{dd.save}</button>
                   </div>
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -119,7 +119,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", background: T.canvas, borderRadius: T.rInput, maxWidth: 520 }}>
                   <span style={{ fontSize: 12, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{readerOrigin.replace(/^https?:\/\//, "")}/read/{sel.share_token}</span>
-                  <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
+                  <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ fontSize: 12, fontWeight: 600, background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 7, padding: "5px 10px", cursor: "pointer", marginLeft: "auto", fontFamily: T.font, color: T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
                 </div>
               </div>
               {selSum && selSum.opens > 0 ? (
@@ -139,7 +139,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                     <div style={{ marginBottom: 24 }}>{selSum.questions.map((q, i) => (
                       <div key={i} style={{ background: T.canvas, borderRadius: T.rInput, padding: "12px 14px", marginBottom: 8 }}>
                         <p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{q.text}</p>
-                        {q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "#B42318", marginTop: 4, display: "inline-block" }}>{dd.escalated}</span>}
+                        {q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rp-danger-text)", marginTop: 4, display: "inline-block" }}>{dd.escalated}</span>}
                       </div>
                     ))}</div>
                   </>)}
@@ -153,7 +153,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                         </div>
                         <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdicts[sel.id].headline}</p>
                         <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdicts[sel.id].reasoning}</p>
-                        <div style={{ background: "#fff", borderRadius: T.rInput, padding: "12px 14px" }}>
+                        <div style={{ background: "var(--rp-card)", borderRadius: T.rInput, padding: "12px 14px" }}>
                           <div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{dd.doThisNext}</div>
                           <p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdicts[sel.id].nextAction}</p>
                         </div>
@@ -161,7 +161,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                       <ComposeWorkspace recipientId={sel.id} verdict={verdicts[sel.id]} />
                     </>
                   ) : (
-                    <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
+                    <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
                   )}
                 </>
               ) : <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{dd.notOpenedYet}</p>}
@@ -191,9 +191,9 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { do
   const sentMsg = ((dd.emailSent as string) || "").trim() || (locale === "fr" ? "E-mail envoy\u00e9" : "Email sent");
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{dd.shareWithProspect}</button>
+      <button onClick={() => setOpen(true)} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "6px 11px", fontSize: 12, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{dd.shareWithProspect}</button>
       {notice && (
-        <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1000, background: "#fff", border: `1px solid ${noticeKind === "success" ? T.green : T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, maxWidth: "calc(100vw - 40px)", fontFamily: T.font }}>
+        <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1000, background: "var(--rp-card)", border: `1px solid ${noticeKind === "success" ? T.green : T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 10, maxWidth: "calc(100vw - 40px)", fontFamily: T.font }}>
           <span style={{ width: 22, height: 22, borderRadius: 11, background: noticeKind === "success" ? T.greenSoft : T.canvas, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             {noticeKind === "success"
               ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={T.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>

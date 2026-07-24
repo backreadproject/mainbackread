@@ -81,17 +81,17 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
     window.location.href = `/documents/${doc.id}`;
   }
 
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff", marginBottom: 10 };
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 10 };
 
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap" }}>
+      <button onClick={() => setOpen(true)} style={{ background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap" }}>
         Upload A/B variants
       </button>
 
       {open && (
         <div onClick={() => !busy && setOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 520, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", fontFamily: T.font }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--rp-card)", borderRadius: 14, padding: 26, width: 520, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", fontFamily: T.font }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: T.heading, margin: "0 0 6px", letterSpacing: T.trackingTight }}>Upload A/B variants</h3>
             <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
               Pick two to four files. Each becomes a variant (A, B, C, D) of the same document. Readers are split between them automatically, and you compare how each one performs.
@@ -130,12 +130,12 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
               </div>
             ))}
 
-            {err && <p style={{ color: "#B42318", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
+            {err && <p style={{ color: "var(--rp-danger-text)", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
             {busy && step && <p style={{ color: T.body, fontSize: 13, margin: "12px 0 0" }}>{step}</p>}
 
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 20 }}>
-              <button onClick={() => setOpen(false)} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>Cancel</button>
-              <button onClick={go} disabled={busy || files.length < 2} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || files.length < 2 ? 0.5 : 1 }}>
+              <button onClick={() => setOpen(false)} disabled={busy} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>Cancel</button>
+              <button onClick={go} disabled={busy || files.length < 2} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || files.length < 2 ? 0.5 : 1 }}>
                 {busy ? "Working..." : "Create variants"}
               </button>
             </div>

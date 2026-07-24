@@ -23,13 +23,13 @@ export default function OrgActions({
     return { ok: res.ok, error: j.error as string | undefined };
   }
 
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const small = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
 
   if (mode === "member") {
     return (
       <button
         onClick={async () => { setBusy(true); const r = await call({ action: "removeMember", memberId }); setBusy(false); if (r.ok) router.refresh(); else alert(r.error || "Failed."); }}
-        disabled={busy} style={{ ...small, color: "#B42318", borderColor: "#FDA29B", opacity: busy ? 0.6 : 1, flex: "none" }}
+        disabled={busy} style={{ ...small, color: "var(--rp-danger-text)", borderColor: "var(--rp-danger-border)", opacity: busy ? 0.6 : 1, flex: "none" }}
         title={`Remove ${memberLabel ?? "member"}`}
       >
         {busy ? "Removing..." : "Remove"}

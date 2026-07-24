@@ -39,7 +39,7 @@ export default function AccountActions({ targetUserId, email, suspended }: { tar
     return { ok: false, error: r.error || "Failed." };
   }
 
-  const btn = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const btn = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
@@ -55,9 +55,9 @@ export default function AccountActions({ targetUserId, email, suspended }: { tar
           onConfirm={doDelete}
         />
       </div>
-      {msg && <span style={{ fontSize: 12, color: "#B42318" }}>{msg}</span>}
+      {msg && <span style={{ fontSize: 12, color: "var(--rp-danger-text)" }}>{msg}</span>}
       {link && (
-        <div style={{ maxWidth: 420, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
+        <div style={{ maxWidth: 420, background: T.greenSoft, border: "1px solid var(--rp-green-border)", borderRadius: 10, padding: "10px 12px" }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>One-time password reset link</div>
           <div style={{ fontSize: 11, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace" }}>{link}</div>
         </div>

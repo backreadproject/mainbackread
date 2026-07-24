@@ -44,12 +44,12 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
     if (!res.ok) { setError(json.error ?? pm.somethingWrong); setBusy(false); return; }
     onCreated(json.recipient, json.readUrl, mode === "email" ? { sent: !!json.emailSent, warning: json.emailWarning } : null);
   }
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 12 };
   const textareaStyle = { ...input, minHeight: 88, resize: "vertical" as const, marginBottom: 6, lineHeight: 1.5 };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 6 };
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 440, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--rp-card)", borderRadius: 14, padding: 26, width: 440, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking }}>
         <style>{`.t-in:focus{border-color:${T.green};outline:none}`}</style>
         {step === "type" && (
           <>
@@ -112,10 +112,10 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
                 </p>
               </>
             )}
-            {error && <p style={{ fontSize: 13, color: "#B42318", margin: "2px 0 12px" }}>{error}</p>}
+            {error && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", margin: "2px 0 12px" }}>{error}</p>}
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
               <button onClick={onClose} style={ghostBtn}>{pm.cancel}</button>
-              <button onClick={() => submit(step)} disabled={busy} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? pm.working : step === "email" ? pm.send : pm.createLink}</button>
+              <button onClick={() => submit(step)} disabled={busy} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? pm.working : step === "email" ? pm.send : pm.createLink}</button>
             </div>
           </>
         )}
@@ -123,7 +123,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
     </div>
   );
 }
-const choiceBtn = { display: "block", width: "100%", background: "#fff", border: "1px solid #EAECEF", borderRadius: 12, padding: 16, cursor: "pointer", fontFamily: "inherit" };
-const iconWrap = { width: 36, height: 36, borderRadius: 9, background: "#E7F6EF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
-const ghostBtn = { background: "#fff", border: "1px solid #EAECEF", borderRadius: 8, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", color: "#0F1729", cursor: "pointer" };
+const choiceBtn = { display: "block", width: "100%", background: "var(--rp-card)", border: "1px solid var(--rp-border)", borderRadius: 12, padding: 16, cursor: "pointer", fontFamily: "inherit" };
+const iconWrap = { width: 36, height: 36, borderRadius: 9, background: "var(--rp-green-soft)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
+const ghostBtn = { background: "var(--rp-card)", border: "1px solid var(--rp-border)", borderRadius: 8, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: "inherit", color: "var(--rp-heading)", cursor: "pointer" };
 

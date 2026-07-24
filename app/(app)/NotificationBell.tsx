@@ -91,10 +91,10 @@ export default function NotificationBell() {
     <div ref={ref} style={{ position: "relative" }}>
       <button ref={btnRef} onClick={toggle} aria-label={nt.title} style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 9, width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
-        {unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "#F04438", color: "#fff", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread > 9 ? "9+" : unread}</span>}
+        {unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "var(--rp-danger)", color: "var(--rp-on-accent)", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread > 9 ? "9+" : unread}</span>}
       </button>
       {open && createPortal(
-        <div ref={panelRef} style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
+        <div ref={panelRef} style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nt.title}</span>
             {unread > 0 && <button onClick={markAll} style={{ background: "none", border: "none", color: T.green, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>{nt.markAllRead}</button>}
@@ -103,7 +103,7 @@ export default function NotificationBell() {
             {notifs.length === 0 ? (
               <p style={{ fontSize: 13, color: T.muted, padding: "24px 14px", textAlign: "center", margin: 0 }}>{nt.empty}</p>
             ) : notifs.map((n) => (
-              <button key={n.id} onClick={() => openNotif(n)} style={{ display: "block", width: "100%", textAlign: "left", background: n.read_at ? "#fff" : T.greenSoft, border: "none", borderBottom: `1px solid ${T.border}`, padding: "12px 14px", cursor: "pointer", fontFamily: T.font }}>
+              <button key={n.id} onClick={() => openNotif(n)} style={{ display: "block", width: "100%", textAlign: "left", background: n.read_at ? "var(--rp-card)" : T.greenSoft, border: "none", borderBottom: `1px solid ${T.border}`, padding: "12px 14px", cursor: "pointer", fontFamily: T.font }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>{n.title}</span>
                   <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>{timeAgo(n.created_at)}</span>

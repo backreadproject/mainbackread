@@ -1,8 +1,9 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import MarketingSupport from "./MarketingSupport";
+import ThemeScript from "./ThemeScript";
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
   subsets: ["latin"],
@@ -25,8 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} h-full`}>
+    <html lang="en" className={`${dmSans.variable} h-full`} suppressHydrationWarning>
       <body className="min-h-full flex flex-col" style={{ fontFamily: "var(--font-dm-sans), system-ui, sans-serif" }}>
+        <ThemeScript />
         {children}
         <MarketingSupport />
       </body>

@@ -45,8 +45,8 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
   const mono = "'DM Mono', ui-monospace, monospace";
   const pill = (text: string, tone: "pos" | "neutral" | "warn") => (
     <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: T.rPill,
-      background: tone === "pos" ? T.pillPosBg : tone === "warn" ? "#FEE4E2" : T.pillNeutralBg,
-      color: tone === "pos" ? T.pillPosText : tone === "warn" ? "#B42318" : T.body }}>{text}</span>
+      background: tone === "pos" ? T.pillPosBg : tone === "warn" ? "var(--rp-danger-soft)" : T.pillNeutralBg,
+      color: tone === "pos" ? T.pillPosText : tone === "warn" ? "var(--rp-danger-text)" : T.body }}>{text}</span>
   );
 
   return (
@@ -59,8 +59,8 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
           </div>
           <form style={{ display: "flex", gap: 8 }}>
             <input name="q" defaultValue={q ?? ""} placeholder="Search email, name, org"
-              style={{ background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, width: 260 }} />
-            <button type="submit" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Search</button>
+              style={{ background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font, width: 260 }} />
+            <button type="submit" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Search</button>
           </form>
         </div>
 
@@ -83,7 +83,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
           ))}
         </div>
       </main>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-soft)}`}</style>
     </div>
   );
 }

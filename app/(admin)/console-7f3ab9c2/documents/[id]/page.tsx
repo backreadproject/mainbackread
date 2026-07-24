@@ -79,7 +79,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
           <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Ingestion</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 26, fontSize: 13 }}>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Extract method</div><div style={{ color: T.heading }}>{doc.extract_method || "unknown"}</div></div>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Needs OCR</div><div style={{ color: doc.needs_page_ocr ? "#B54708" : T.heading }}>{doc.needs_page_ocr ? "yes" : "no"}</div></div>
+            <div><div style={{ ...microLabel, marginBottom: 4 }}>Needs OCR</div><div style={{ color: doc.needs_page_ocr ? "var(--rp-amber-text)" : T.heading }}>{doc.needs_page_ocr ? "yes" : "no"}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Extracted text</div><div style={{ color: T.heading }}>{(doc.extracted_text ?? "").length.toLocaleString()} chars</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Verdicts run</div><div style={{ color: T.heading }}>{verdictRuns.length}</div></div>
           </div>
@@ -105,16 +105,16 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
                   </div>
                 </div>
                 {convo.length > 0 && (
-                  <div style={{ marginTop: 10, background: "#FBFCFC", border: `1px solid ${T.borderSoft}`, borderRadius: 10, padding: "10px 12px" }}>
+                  <div style={{ marginTop: 10, background: "var(--rp-soft)", border: `1px solid ${T.borderSoft}`, borderRadius: 10, padding: "10px 12px" }}>
                     {convo.map((m) => (
                       <div key={m.id} style={{ display: "flex", gap: 10, padding: "6px 0", alignItems: "flex-start" }}>
-                        <span style={{ flex: "none", fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: m.role === "user" ? "#E6EEFB" : T.greenSoft, color: m.role === "user" ? "#2563EB" : T.greenText, marginTop: 2 }}>
+                        <span style={{ flex: "none", fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: m.role === "user" ? "var(--rp-indigo-soft)" : T.greenSoft, color: m.role === "user" ? "var(--rp-indigo-text)" : T.greenText, marginTop: 2 }}>
                           {m.role === "user" ? "reader" : "ai"}
                         </span>
                         <span style={{ fontSize: 13, color: T.heading, lineHeight: 1.5, flex: 1, minWidth: 0 }}>
                           {m.content}
                           {m.page != null && <span style={{ color: T.muted, fontFamily: mono, fontSize: 11 }}> {"\u00b7"} p{m.page}</span>}
-                          {m.escalate && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708" }}>escalated</span>}
+                          {m.escalate && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "var(--rp-amber-soft)", color: "var(--rp-amber-text)" }}>escalated</span>}
                           {m.out_of_scope && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: T.pillNeutralBg, color: T.body }}>out of scope</span>}
                         </span>
                       </div>

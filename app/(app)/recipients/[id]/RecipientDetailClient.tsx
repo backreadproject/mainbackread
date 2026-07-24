@@ -22,7 +22,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
         <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{recipient.label || rd.unnamedReader}</h1>
         <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{rd.onDoc} <a href={`/documents/${recipient.documentId}`} style={{ color: T.green, textDecoration: "none", fontWeight: 600 }}>{recipient.documentTitle}</a></p>
       </div>
-      {error && <p style={{ color: "#B42318", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
+      {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
       <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>
         {summary.opens === 0 ? (
           <div style={card}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{rd.notOpenedYet}</p></div>
@@ -40,7 +40,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
           {summary.questions.length > 0 && (
             <div style={card}>
               <div style={{ ...microLabel, marginBottom: 14 }}>{rd.whatTheyAsked} &middot; {summary.questions.length}</div>
-              {summary.questions.map((q, i) => (<div key={i} style={{ background: T.canvas, borderRadius: T.rInput, padding: "12px 14px", marginBottom: 8 }}><p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{q.text}</p>{q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "#B42318", marginTop: 4, display: "inline-block" }}>{rd.escalated}</span>}</div>))}
+              {summary.questions.map((q, i) => (<div key={i} style={{ background: T.canvas, borderRadius: T.rInput, padding: "12px 14px", marginBottom: 8 }}><p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{q.text}</p>{q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rp-danger-text)", marginTop: 4, display: "inline-block" }}>{rd.escalated}</span>}</div>))}
             </div>
           )}
           <div style={card}>
@@ -50,9 +50,9 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{rd.reading}</span><span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: verdict.confidence === "high" ? T.pillPosBg : T.pillNeutralBg, color: verdict.confidence === "high" ? T.pillPosText : T.pillNeutralText }}>{verdict.confidence}{rd.confidenceSuffix}</span></div>
                 <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdict.headline}</p>
                 <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdict.reasoning}</p>
-                <div style={{ background: "#fff", borderRadius: T.rInput, padding: "12px 14px" }}><div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{rd.doThisNext}</div><p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdict.nextAction}</p></div>
+                <div style={{ background: "var(--rp-card)", borderRadius: T.rInput, padding: "12px 14px" }}><div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{rd.doThisNext}</div><p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdict.nextAction}</p></div>
               </div>
-            ) : <button onClick={readTheReader} disabled={busy} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{busy ? rd.readingBusy : rd.readTheReader}</button>}
+            ) : <button onClick={readTheReader} disabled={busy} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{busy ? rd.readingBusy : rd.readTheReader}</button>}
           </div>
         </>)}
       </main>

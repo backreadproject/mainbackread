@@ -37,7 +37,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
   const seg = (key: typeof filter, label: string) => (<button onClick={() => setFilter(key)} style={{ background: filter === key ? T.green : "transparent", color: filter === key ? "#fff" : T.body, fontSize: 13, fontWeight: filter === key ? 600 : 500, padding: "7px 16px", borderRadius: 7, border: "none", cursor: "pointer", fontFamily: T.font }}>{label}</button>);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:#FAF8F4}.t-in:focus{border-color:${T.green};outline:none}`}</style>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}.t-in:focus{border-color:${T.green};outline:none}`}</style>
       <main style={{ maxWidth: 1040, padding: "26px 30px" }}>
         <div style={{ display: "inline-flex", gap: 4, background: T.soft, padding: 4, borderRadius: 9, marginBottom: 22 }}>{seg("all", rp.filterAll)}{seg("opened", rp.filterOpened)}{seg("unopened", rp.filterUnopened)}</div>
         <div style={{ marginBottom: 20 }}>
@@ -53,7 +53,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: `1px solid ${T.border}` }}>
             <span style={{ fontSize: 13, color: T.muted }}>{filtered.length} {filtered.length === 1 ? rp.readerCountOne : rp.readerCountMany}</span>
-            <input className="t-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={rp.searchReaders} style={{ marginLeft: "auto", width: 220, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "7px 11px", fontSize: 13, fontFamily: T.font, background: "#fff" }} />
+            <input className="t-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={rp.searchReaders} style={{ marginLeft: "auto", width: 220, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "7px 11px", fontSize: 13, fontFamily: T.font, background: "var(--rp-card)" }} />
           </div>
           {filtered.length === 0 ? (
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{rows.length === 0 ? rp.emptyNone : rp.emptyFilter}</p></div>

@@ -50,10 +50,10 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
   async function deleteAccount() { if (!canDelete) return; setDelBusy(true); setDelMsg(""); const res = await fetch("/api/delete-account", { method: "POST" }); const json = await res.json(); if (!res.ok) { setDelMsg(json.error ?? ac.couldntDelete); setDelBusy(false); return; } const supabase = createClient(); await supabase.auth.signOut(); window.location.href = "/login"; }
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" };
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 12 };
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-in-d:focus{border-color:#B42318;outline:none}.t-b{cursor:pointer}`}</style>
+      <style>{`.t-in:focus{border-color:${T.green};outline:none}.t-in-d:focus{border-color:var(--rp-danger-border);outline:none}.t-b{cursor:pointer}`}</style>
       <main className="set-grid" style={{ maxWidth: 1040, padding: "26px 30px 60px" }}>
         <h1 style={{ ...pageHeading, marginBottom: 20 }}>{ac.title}</h1>
         <div style={{ ...card, display: "flex", alignItems: "center", gap: 18 }}>
@@ -62,11 +62,11 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
           </div>
           <div style={{ flex: 1 }}>
             <span style={label}>{ac.profilePhoto}</span>
-            <label className="t-b" style={{ display: "inline-block", background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "8px 14px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>
+            <label className="t-b" style={{ display: "inline-block", background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "8px 14px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>
               <input type="file" accept="image/*" onChange={uploadAvatar} disabled={avatarBusy} style={{ display: "none" }} />
               {avatarBusy ? ac.uploading : avatarUrl ? ac.changePhoto : ac.uploadPhoto}
             </label>
-            {avatarMsg && <p style={{ fontSize: 13, color: avatarOk ? T.greenText : "#B42318", margin: "10px 0 0" }}>{avatarMsg}</p>}
+            {avatarMsg && <p style={{ fontSize: 13, color: avatarOk ? T.greenText : "var(--rp-danger-text)", margin: "10px 0 0" }}>{avatarMsg}</p>}
           </div>
         </div>
         <div style={card}><span style={label}>{ac.email}</span><p style={{ fontSize: 16, color: T.heading, margin: 0 }}>{email}</p></div>
@@ -77,22 +77,22 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
             <input className="t-in" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={ac.firstName} style={{ ...input, flex: 1 }} />
             <input className="t-in" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={ac.lastName} style={{ ...input, flex: 1 }} />
           </div>
-          <button onClick={saveName} disabled={nameBusy || !firstName.trim() || !lastName.trim()} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: nameBusy || !firstName.trim() || !lastName.trim() ? 0.45 : 1 }}>{nameBusy ? ac.saving : ac.saveName}</button>
-          {nameMsg && <p style={{ fontSize: 13, color: nameOk ? T.greenText : "#B42318", marginTop: 12 }}>{nameMsg}</p>}
+          <button onClick={saveName} disabled={nameBusy || !firstName.trim() || !lastName.trim()} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: nameBusy || !firstName.trim() || !lastName.trim() ? 0.45 : 1 }}>{nameBusy ? ac.saving : ac.saveName}</button>
+          {nameMsg && <p style={{ fontSize: 13, color: nameOk ? T.greenText : "var(--rp-danger-text)", marginTop: 12 }}>{nameMsg}</p>}
         </div>
         <div style={card}>
           <span style={label}>{ac.changePassword}</span>
           <input className="t-in" type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder={ac.newPassword} style={input} />
-          <button onClick={changePassword} disabled={busy || !pw} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: busy || !pw ? 0.45 : 1 }}>{busy ? ac.updating : ac.updatePassword}</button>
-          {msg && <p style={{ fontSize: 13, color: msgOk ? T.greenText : "#B42318", marginTop: 12 }}>{msg}</p>}
+          <button onClick={changePassword} disabled={busy || !pw} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: busy || !pw ? 0.45 : 1 }}>{busy ? ac.updating : ac.updatePassword}</button>
+          {msg && <p style={{ fontSize: 13, color: msgOk ? T.greenText : "var(--rp-danger-text)", marginTop: 12 }}>{msg}</p>}
         </div>
-        <div style={{ ...card, border: "1px solid #FDA29B" }}>
-          <span style={{ ...label, color: "#B42318" }}>{ac.deleteAccount}</span>
+        <div style={{ ...card, border: "1px solid var(--rp-danger-border)" }}>
+          <span style={{ ...label, color: "var(--rp-danger-text)" }}>{ac.deleteAccount}</span>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 14px", lineHeight: 1.5 }}>{ac.deleteBody}</p>
-          <label style={{ fontSize: 13, color: T.body, display: "block", marginBottom: 6 }}>{ac.typeToConfirmA}<span style={{ fontWeight: 600, color: "#B42318" }}>{ac.deleteWord}</span>{ac.typeToConfirmB}</label>
-          <input className="t-in-d" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={ac.deleteWord} style={{ ...input, borderColor: canDelete ? "#B42318" : T.border }} />
-          <button onClick={deleteAccount} disabled={!canDelete || delBusy} className="t-b" style={{ background: canDelete ? "#D92D20" : T.pillNeutralBg, color: canDelete ? "#fff" : T.body, border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: canDelete ? "pointer" : "default", opacity: delBusy ? 0.6 : 1 }}>{delBusy ? ac.deleting : ac.deleteMyAccount}</button>
-          {delMsg && <p style={{ fontSize: 13, color: "#B42318", marginTop: 12 }}>{delMsg}</p>}
+          <label style={{ fontSize: 13, color: T.body, display: "block", marginBottom: 6 }}>{ac.typeToConfirmA}<span style={{ fontWeight: 600, color: "var(--rp-danger-text)" }}>{ac.deleteWord}</span>{ac.typeToConfirmB}</label>
+          <input className="t-in-d" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={ac.deleteWord} style={{ ...input, borderColor: canDelete ? "var(--rp-danger-border)" : T.border }} />
+          <button onClick={deleteAccount} disabled={!canDelete || delBusy} className="t-b" style={{ background: canDelete ? "var(--rp-danger)" : T.pillNeutralBg, color: canDelete ? "var(--rp-on-accent)" : T.body, border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: canDelete ? "pointer" : "default", opacity: delBusy ? 0.6 : 1 }}>{delBusy ? ac.deleting : ac.deleteMyAccount}</button>
+          {delMsg && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", marginTop: 12 }}>{delMsg}</p>}
         </div>
       </main>
     </div>

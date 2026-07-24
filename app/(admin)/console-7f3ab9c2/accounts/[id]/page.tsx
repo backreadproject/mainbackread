@@ -70,7 +70,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
 
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
           <div>
-            <h1 style={pageHeading}>{name}{banned && <span style={{ marginLeft: 10, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318", verticalAlign: "middle" }}>suspended</span>}</h1>
+            <h1 style={pageHeading}>{name}{banned && <span style={{ marginLeft: 10, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: T.rPill, background: "var(--rp-danger-soft)", color: "var(--rp-danger-text)", verticalAlign: "middle" }}>suspended</span>}</h1>
             <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
               {u?.email ?? "\u2014"} {"\u00b7"} {p.account_type ?? "personal"} {"\u00b7"} joined {u?.created_at ? new Date(u.created_at).toLocaleDateString() : "\u2014"}
               {u?.last_sign_in_at ? ` \u00b7 last seen ${new Date(u.last_sign_in_at).toLocaleDateString()}` : " \u00b7 never signed in"}

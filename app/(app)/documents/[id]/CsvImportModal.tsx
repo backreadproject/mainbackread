@@ -150,16 +150,16 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
   const sent = rows.filter((r) => r.status === "ok").length;
   const done = stage === "done";
 
-  const btn = { background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" } as const;
-  const ghost = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const btn = { background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" } as const;
+  const ghost = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
   const th = { fontSize: 11, fontWeight: 600, color: T.muted, textTransform: "uppercase" as const, letterSpacing: "0.06em", padding: "0 6px 8px 0", textAlign: "left" as const };
   const td = { padding: "5px 6px 5px 0", borderTop: `1px solid ${T.borderSoft}`, verticalAlign: "middle" as const };
-  const cell = (bad: boolean) => ({ width: "100%", boxSizing: "border-box" as const, border: `1px solid ${bad ? "#FDA29B" : "transparent"}`, borderRadius: 6, padding: "6px 8px", fontSize: 13, fontFamily: T.font, color: T.heading, background: bad ? "#FFFBFA" : "transparent" });
+  const cell = (bad: boolean) => ({ width: "100%", boxSizing: "border-box" as const, border: `1px solid ${bad ? "var(--rp-danger-border)" : "transparent"}`, borderRadius: 6, padding: "6px 8px", fontSize: 13, fontFamily: T.font, color: T.heading, background: bad ? "var(--rp-danger-soft)" : "transparent" });
 
   return (
     <div onClick={() => !busy && onClose()} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 26, width: 860, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", fontFamily: T.font, letterSpacing: T.tracking }}>
-        <style>{`.csv-in:focus{border-color:${T.green} !important;outline:none;background:#fff !important}.csv-in:hover{background:#FAFBFB}`}</style>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--rp-card)", borderRadius: 14, padding: 26, width: 860, maxWidth: "100%", maxHeight: "88vh", overflowY: "auto", fontFamily: T.font, letterSpacing: T.tracking }}>
+        <style>{`.csv-in:focus{border-color:${T.green} !important;outline:none;background:var(--rp-card) !important}.csv-in:hover{background:var(--rp-soft)}`}</style>
 
         <h3 style={{ fontSize: 19, fontWeight: 700, color: T.heading, margin: "0 0 4px", letterSpacing: T.trackingTight }}>Import recipients from CSV</h3>
         <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 18px" }}>
@@ -177,8 +177,8 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
               <button onClick={() => downloadCsvTemplate()} style={{ ...ghost, marginTop: 12, padding: "7px 14px", fontSize: 13 }}>Download template</button>
             </div>
             <input type="file" accept=".csv,text/csv" onChange={onFile}
-              style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "#fff" }} />
-            {err && <p style={{ color: "#B42318", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
+              style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)" }} />
+            {err && <p style={{ color: "var(--rp-danger-text)", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
               <button onClick={onClose} style={ghost}>Cancel</button>
             </div>
@@ -190,7 +190,7 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14, fontSize: 13 }}>
               <strong style={{ color: T.heading }}>{fileName}</strong>
               <span style={{ color: T.greenText }}>{valid} ready</span>
-              {bad > 0 && <span style={{ color: "#B42318" }}>{bad} to fix</span>}
+              {bad > 0 && <span style={{ color: "var(--rp-danger-text)" }}>{bad} to fix</span>}
               {live.length > 0 && <span style={{ color: T.muted }}>across {live.length} variant{live.length === 1 ? "" : "s"}</span>}
             </div>
 
@@ -227,8 +227,8 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
                         )}
                         <td style={{ ...td, fontSize: 12 }}>
                           {r.status === "ok" ? <span style={{ color: T.greenText }}>{r.message}</span>
-                            : r.status === "failed" ? <span style={{ color: "#B42318" }}>{r.message}</span>
-                            : e ? <span style={{ color: "#B42318" }}>{e}</span>
+                            : r.status === "failed" ? <span style={{ color: "var(--rp-danger-text)" }}>{r.message}</span>
+                            : e ? <span style={{ color: "var(--rp-danger-text)" }}>{e}</span>
                             : <span style={{ color: T.muted }}>ready</span>}
                         </td>
                         <td style={td}>
@@ -243,7 +243,7 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
               </table>
             </div>
 
-            {err && <p style={{ color: "#B42318", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
+            {err && <p style={{ color: "var(--rp-danger-text)", fontSize: 13, margin: "0 0 12px" }}>{err}</p>}
             {busy && progress && <p style={{ color: T.body, fontSize: 13, margin: "0 0 12px" }}>{progress}</p>}
 
             {!done ? (

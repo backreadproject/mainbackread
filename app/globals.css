@@ -1,55 +1,145 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
+
+/* Light is the default. Dark is opt in via html.dark, set by the inline script
+   in app/ThemeScript.tsx before first paint.
+
+   The old @media (prefers-color-scheme: dark) block is gone on purpose. It set
+   --background to #0a0a0a for anyone whose OS was in dark mode, which put a
+   near black page behind white cards and showed at the edges of short pages.
+   It would also beat the real toggle on load. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --rp-canvas: #FFFFFF;
+  --rp-card: #FFFFFF;
+  --rp-border: #E4E7EC;
+  --rp-border-soft: #EFF1F4;
+  --rp-hover: #F6F7F9;
+  --rp-soft: #F9FAFB;
+  --rp-heading: #101828;
+  --rp-body: #344054;
+  --rp-muted: #667085;
+  --rp-faint: #98A2B3;
+  --rp-green: #1F6F4A;
+  --rp-green-hover: #185C3D;
+  --rp-green-soft: #ECF6F0;
+  --rp-green-text: #14603C;
+  --rp-green-border: #CFE7DA;
+  --rp-amber: #B54708;
+  --rp-amber-soft: #FEF6EC;
+  --rp-amber-text: #93370D;
+  --rp-amber-border: #F5D9B4;
+  --rp-indigo: #3538CD;
+  --rp-indigo-soft: #EEF0FB;
+  --rp-indigo-text: #2D2FA6;
+  --rp-indigo-border: #D3D6F5;
+  --rp-danger: #B42318;
+  --rp-danger-hover: #912018;
+  --rp-danger-soft: #FEF3F2;
+  --rp-danger-text: #912018;
+  --rp-danger-border: #FDD9D5;
+  --rp-dark-btn: #101828;
+  --rp-on-accent: #FFFFFF;
+  --rp-shadow: none;
+  --rp-overlay-shadow: 0 12px 32px -12px rgba(16, 24, 40, 0.18);
+  --rp-scrim: rgba(16, 24, 40, 0.45);
+  --rp-side-bg: #FFFFFF;
+  --rp-side-border: #E4E7EC;
+  --rp-side-text: #475467;
+  --rp-side-text-active: #14603C;
+  --rp-side-active: #ECF6F0;
+  --rp-side-hover: #F6F7F9;
+  --rp-side-section: #98A2B3;
+  --rp-side-card: #FFFFFF;
+  --rp-side-card-border: #E4E7EC;
+  --rp-side-brand: #101828;
+  --rp-side-mark: #1F6F4A;
+  --rp-lime: #D8E84A;
+  --rp-lime-hover: #CDDD3E;
+  --rp-lime-ink: #08301F;
+  --rp-hero-bg: #0B241B;
+  --rp-hero-ink: #FFFFFF;
+  --rp-hero-mark: #3FBF84;
+  --rp-hero-sub: #A9C4B6;
+  --rp-hero-border: rgba(255,255,255,0.14);
+  --background: var(--rp-canvas);
+  --foreground: var(--rp-heading);
 }
+
+html.dark {
+  --rp-canvas: #0E1613;
+  --rp-card: #141D19;
+  --rp-border: #26332D;
+  --rp-border-soft: #1D2823;
+  --rp-hover: #1A241F;
+  --rp-soft: #18211D;
+  --rp-heading: #F0F4F1;
+  --rp-body: #C3CFC8;
+  --rp-muted: #8A9A91;
+  --rp-faint: #6B7A72;
+  --rp-green: #2E8A61;
+  --rp-green-hover: #35A073;
+  --rp-green-soft: #172C22;
+  --rp-green-text: #6FD6A4;
+  --rp-green-border: #244736;
+  --rp-amber: #B4712C;
+  --rp-amber-soft: #2C2114;
+  --rp-amber-text: #E8B476;
+  --rp-amber-border: #4A3820;
+  --rp-indigo: #4E51D6;
+  --rp-indigo-soft: #1B1E33;
+  --rp-indigo-text: #A3A6F0;
+  --rp-indigo-border: #2E3260;
+  --rp-danger: #8E2A20;
+  --rp-danger-hover: #A33328;
+  --rp-danger-soft: #2C1917;
+  --rp-danger-text: #F8968B;
+  --rp-danger-border: #4A2622;
+  --rp-dark-btn: #E7EDE9;
+  --rp-on-accent: #FFFFFF;
+  --rp-shadow: none;
+  --rp-overlay-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --rp-scrim: rgba(0, 0, 0, 0.6);
+  --rp-side-bg: #0B241B;
+  --rp-side-border: #143024;
+  --rp-side-text: #A9C4B6;
+  --rp-side-text-active: #FFFFFF;
+  --rp-side-active: #17402F;
+  --rp-side-hover: rgba(255, 255, 255, 0.06);
+  --rp-side-section: #6B8C7C;
+  --rp-side-card: #113124;
+  --rp-side-card-border: #1A4331;
+  --rp-side-brand: #FFFFFF;
+  --rp-side-mark: #3FBF84;
+  --rp-lime: #D8E84A;
+  --rp-lime-hover: #CDDD3E;
+  --rp-lime-ink: #08301F;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-dm-sans);
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
+html { color-scheme: light; background: var(--rp-canvas); }
+html.dark { color-scheme: dark; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--rp-canvas);
+  color: var(--rp-body);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-weight: 400;
   letter-spacing: -0.011em;
   line-height: 1.5;
 }
 
-/* Row hover. One rule for every list surface, so rows respond consistently
-   instead of each page defining its own. */
-.t-row, .data-row, .ov-r, .rp-row {
-  transition: background .12s;
-}
-.t-row:hover, .data-row:hover, .ov-r:hover, .rp-row:hover {
-  background: #FAF8F4;
-}
+input, textarea, select, button { color-scheme: inherit; }
 
-/* Settings and Account: two-column card layout at full width. The page heading
-   and any status message span both columns; the last card (the danger zone on
-   Account) spans too, so destructive actions are never crowded beside something else. */
+.t-row, .data-row, .ov-r, .rp-row { transition: background .12s; }
+.t-row:hover, .data-row:hover, .ov-r:hover, .rp-row:hover { background: var(--rp-hover); }
 
+.set-grid { display: flex; flex-direction: column; gap: 14px; max-width: 760px; }
+.set-grid input, .set-grid textarea, .set-grid select { max-width: 100%; }
+.set-grid code, .set-grid .break { overflow-wrap: anywhere; word-break: break-word; }
 
-/* Settings and Account: a single readable column. Form controls stretched to
-   full page width are harder to use, not easier, so the container is wide
-   enough to feel deliberate and narrow enough to read. */
-.set-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 760px;
-}
-.set-grid input,
-.set-grid textarea,
-.set-grid select { max-width: 100%; }
-/* Long URLs and API keys must wrap inside their card, never push it open. */
-.set-grid code,
-.set-grid .break { overflow-wrap: anywhere; word-break: break-word; }
-
+:focus-visible { outline: 2px solid var(--rp-green); outline-offset: 2px; }

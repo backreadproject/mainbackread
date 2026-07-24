@@ -39,7 +39,7 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
 
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" };
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 12 };
 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -57,8 +57,8 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
                 <input className="t-in" value={name} onChange={(e) => setName(e.target.value)} placeholder="Acme Inc." style={input} />
                 <span style={{ fontSize: 12, fontWeight: 600, color: T.muted, display: "block", marginBottom: 6 }}>{st.domain} <span style={{ fontWeight: 400 }}>{st.optional}</span></span>
                 <input className="t-in" value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="acme.com" style={input} />
-                <button onClick={saveOrg} disabled={busy} className="t-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: busy ? 0.5 : 1 }}>{busy ? st.saving : st.saveChanges}</button>
-                {msg && <p style={{ fontSize: 13, color: msgOk ? T.greenText : "#B42318", marginTop: 12 }}>{msg}</p>}
+                <button onClick={saveOrg} disabled={busy} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, opacity: busy ? 0.5 : 1 }}>{busy ? st.saving : st.saveChanges}</button>
+                {msg && <p style={{ fontSize: 13, color: msgOk ? T.greenText : "var(--rp-danger-text)", marginTop: 12 }}>{msg}</p>}
               </>
             ) : (
               <>

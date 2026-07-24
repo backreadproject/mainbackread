@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { T, microLabel } from "@/lib/theme";
@@ -34,8 +34,8 @@ export default function SupportConversations({ conversations }: { conversations:
 
   const pill = (status: string) => {
     const map: Record<string, [string, string, string]> = {
-      escalated: ["#FEF0C7", "#B54708", "needs you"],
-      answered: ["#E6EEFB", "#2563EB", "answered"],
+      escalated: ["var(--rp-amber-soft)", "var(--rp-amber-text)", "needs you"],
+      answered: ["var(--rp-indigo-soft)", "var(--rp-indigo-text)", "answered"],
       bot: [T.pillNeutralBg, T.body, "bot only"],
       closed: [T.pillNeutralBg, T.muted, "closed"],
     };
@@ -60,7 +60,7 @@ export default function SupportConversations({ conversations }: { conversations:
         <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden", maxHeight: 520, overflowY: "auto" }}>
           {conversations.map((c, i) => (
             <button key={c.id} onClick={() => { setOpenId(c.id); setErr(""); }}
-              style={{ display: "block", width: "100%", textAlign: "left", background: c.id === openId ? T.greenSoft : "#fff", border: "none", borderTop: i ? `1px solid ${T.border}` : "none", padding: "11px 13px", cursor: "pointer", fontFamily: T.font }}>
+              style={{ display: "block", width: "100%", textAlign: "left", background: c.id === openId ? T.greenSoft : "var(--rp-card)", border: "none", borderTop: i ? `1px solid ${T.border}` : "none", padding: "11px 13px", cursor: "pointer", fontFamily: T.font }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 3 }}>
                 <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {c.name || c.email || "Anonymous visitor"}
@@ -87,7 +87,7 @@ export default function SupportConversations({ conversations }: { conversations:
                   </div>
                 </div>
                 {conv.status !== "closed" && (
-                  <button onClick={() => call("close")} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
+                  <button onClick={() => call("close")} disabled={busy} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
                 )}
               </div>
 
@@ -95,10 +95,10 @@ export default function SupportConversations({ conversations }: { conversations:
                 {conv.messages.filter((m) => !m.content.startsWith("[contact]")).map((m) => (
                   <div key={m.id} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-start" : "flex-end", marginBottom: 9 }}>
                     <div style={{ maxWidth: "80%", padding: "9px 12px", borderRadius: 12, fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word",
-                      background: m.role === "user" ? "#fff" : m.role === "human" ? T.green : "#EEF4FF",
-                      color: m.role === "human" ? "#fff" : T.heading,
+                      background: m.role === "user" ? "var(--rp-card)" : m.role === "human" ? T.green : "var(--rp-indigo-soft)",
+                      color: m.role === "human" ? "var(--rp-on-accent)" : T.heading,
                       border: m.role === "user" ? `1px solid ${T.border}` : "none" }}>
-                      {m.role === "assistant" && <div style={{ fontSize: 10, fontWeight: 700, color: "#2563EB", marginBottom: 3 }}>BOT</div>}
+                      {m.role === "assistant" && <div style={{ fontSize: 10, fontWeight: 700, color: "var(--rp-indigo-text)", marginBottom: 3 }}>BOT</div>}
                       {m.role === "human" && <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.75)", marginBottom: 3 }}>YOU</div>}
                       {m.content}
                     </div>
@@ -106,14 +106,14 @@ export default function SupportConversations({ conversations }: { conversations:
                 ))}
               </div>
 
-              {err && <p style={{ fontSize: 13, color: "#B42318", margin: 0, padding: "8px 16px 0" }}>{err}</p>}
+              {err && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", margin: 0, padding: "8px 16px 0" }}>{err}</p>}
 
               <div style={{ borderTop: `1px solid ${T.border}`, padding: 12, display: "flex", gap: 8 }}>
                 <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2}
                   placeholder={conv.email ? "Your reply. Sent here and by email." : "Your reply. No email on file, so they will only see it in the chat."}
-                  style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 10, padding: "9px 11px", fontSize: 13, fontFamily: T.font, resize: "vertical", background: "#fff" }} />
+                  style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 10, padding: "9px 11px", fontSize: 13, fontFamily: T.font, resize: "vertical", background: "var(--rp-card)" }} />
                 <button onClick={() => call("reply", draft)} disabled={busy || !draft.trim()}
-                  style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
+                  style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
                   {busy ? "Sending..." : "Reply"}
                 </button>
               </div>

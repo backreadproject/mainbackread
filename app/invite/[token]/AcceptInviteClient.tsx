@@ -33,9 +33,9 @@ export default function AcceptInviteClient({ token }: { token: string }) {
 
   const shell = (children: React.ReactNode) => (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: T.canvas, fontFamily: T.font, letterSpacing: T.tracking, padding: 20 }}>
-      <div style={{ width: 400, maxWidth: "100%", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
+      <div style={{ width: 400, maxWidth: "100%", background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 14, padding: 32 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 24 }}>
-          <span style={{ color: T.brandGreen, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em", filter: "drop-shadow(0 0 3px rgba(51,230,162,0.55))" }}><circle cx="12" cy="12" r="9" stroke="#33E6A2" strokeWidth="2.4" /><circle cx="12" cy="12" r="3.5" fill="#33E6A2" /></svg></span>
+          <span style={{ color: T.brandGreen, fontSize: 20 }}><svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" style={{ display: "inline-block", verticalAlign: "-0.1em", filter: "drop-shadow(0 0 3px rgba(51,230,162,0.55))" }}><circle cx="12" cy="12" r="9" stroke="var(--rp-green-text)" strokeWidth="2.4" /><circle cx="12" cy="12" r="3.5" fill="var(--rp-green-text)" /></svg></span>
           <span style={{ fontSize: 20, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight }}>ReadProspects</span>
         </div>
         {children}
@@ -54,7 +54,7 @@ export default function AcceptInviteClient({ token }: { token: string }) {
     return shell(<>
       <h1 style={{ fontSize: 21, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 8px" }}>{iv.unavailableTitle}</h1>
       <p style={{ fontSize: 15, color: T.body, lineHeight: 1.5, margin: "0 0 20px" }}>{messages[reason] ?? messages.invalid}</p>
-      <a href="/login" style={{ display: "inline-block", background: T.green, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, textDecoration: "none" }}>{iv.goToSignIn}</a>
+      <a href="/login" style={{ display: "inline-block", background: T.green, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, textDecoration: "none" }}>{iv.goToSignIn}</a>
     </>);
   }
 
@@ -63,12 +63,12 @@ export default function AcceptInviteClient({ token }: { token: string }) {
     <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 22px" }}>{iv.hiPrefix} {info?.firstName}{iv.setPasswordBodyA}<strong style={{ color: T.heading }}>{info?.email}</strong>{iv.setPasswordBodyB}</p>
     <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, display: "block", marginBottom: 7 }}>{iv.choosePassword}</span>
     <div style={{ position: "relative", marginBottom: 16 }}>
-      <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && accept()} placeholder={iv.atLeast8} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 44px 11px 13px", fontSize: 15, fontFamily: T.font, background: "#fff" }} />
+      <input type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === "Enter" && accept()} placeholder={iv.atLeast8} style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 44px 11px 13px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)" }} />
       <button type="button" onClick={() => setShowPw((v) => !v)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", padding: 6, color: T.muted, lineHeight: 0 }}>
         {showPw ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" /></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
       </button>
     </div>
-    <button onClick={accept} disabled={busy || password.length < 8} style={{ width: "100%", background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: 13, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || password.length < 8 ? 0.5 : 1 }}>{busy ? iv.creatingAccount : iv.acceptAndJoin}</button>
-    {error && <p style={{ fontSize: 13, color: "#B42318", marginTop: 14 }}>{error}</p>}
+    <button onClick={accept} disabled={busy || password.length < 8} style={{ width: "100%", background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: 13, fontSize: 15, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || password.length < 8 ? 0.5 : 1 }}>{busy ? iv.creatingAccount : iv.acceptAndJoin}</button>
+    {error && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", marginTop: 14 }}>{error}</p>}
   </>);
 }

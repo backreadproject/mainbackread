@@ -63,13 +63,13 @@ export default async function OrgDetail({ params }: { params: Promise<{ id: stri
         <div style={box}>
           <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 14px" }}>At a glance</h2>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 34 }}>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Seats used</div><div style={{ fontSize: 18, fontWeight: 700, color: overSeats ? "#B42318" : T.heading }}>{seats}{seatLimit !== null ? ` / ${seatLimit}` : " / unlimited"}</div></div>
+            <div><div style={{ ...microLabel, marginBottom: 4 }}>Seats used</div><div style={{ fontSize: 18, fontWeight: 700, color: overSeats ? "var(--rp-danger-text)" : T.heading }}>{seats}{seatLimit !== null ? ` / ${seatLimit}` : " / unlimited"}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Projects</div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading }}>{projects.length}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Documents</div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading }}>{documents.length}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Pending invites</div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading }}>{invites.filter((i) => i.status === "pending").length}</div></div>
             <div><div style={{ ...microLabel, marginBottom: 4 }}>Created by</div><div style={{ fontSize: 13, color: T.heading, paddingTop: 4 }}>{creator?.user?.email ?? "unknown"}</div></div>
           </div>
-          {overSeats && <p style={{ fontSize: 13, color: "#B42318", margin: "12px 0 0" }}>This organization is over its seat limit for the {plan.name} plan.</p>}
+          {overSeats && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", margin: "12px 0 0" }}>This organization is over its seat limit for the {plan.name} plan.</p>}
         </div>
 
         <div style={box}>

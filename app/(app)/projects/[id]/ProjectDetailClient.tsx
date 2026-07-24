@@ -13,7 +13,7 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
   const [sharing, setSharing] = useState(false);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:#FCFCFD}`}</style>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-soft)}`}</style>
       <div style={{ padding: "26px 30px 0" }}>
         <a href="/projects" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}><span style={{ color: T.muted }}>{"\u2039"}</span> {pd.back}</a>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -21,7 +21,7 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
             <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{project.name}</h1>
             <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{documents.length} {documents.length === 1 ? pd.docCountOne : pd.docCountMany}</p>
           </div>
-          {canManage && <button onClick={() => setSharing(true)} style={{ background: T.darkBtn, color: "#fff", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pd.shareWithTeam}</button>}
+          {canManage && <button onClick={() => setSharing(true)} style={{ background: T.darkBtn, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pd.shareWithTeam}</button>}
         </div>
       </div>
       <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>

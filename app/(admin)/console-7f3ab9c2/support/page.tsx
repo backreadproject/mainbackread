@@ -81,8 +81,8 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
 
         <form style={{ display: "flex", gap: 8, marginBottom: 22 }}>
           <input name="q" defaultValue={term} autoFocus placeholder="Email, name, document title, reader..."
-            style={{ flex: 1, background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 14px", fontSize: 15, fontFamily: T.font }} />
-          <button type="submit" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 22px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Search</button>
+            style={{ flex: 1, background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 14px", fontSize: 15, fontFamily: T.font }} />
+          <button type="submit" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "11px 22px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>Search</button>
         </form>
 
         {!term && <p style={{ color: T.muted, fontSize: 14 }}>Type anything above: a customer email, a document title, or a reader&apos;s address.</p>}
@@ -93,7 +93,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             <div style={head}><h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: 0 }}>Accounts</h2><span style={{ ...microLabel }}>{accounts.length}</span></div>
             {accounts.map((a, i) => (
               <a key={a.id} href={`/${ADMIN_SLUG}/accounts/${a.id}`} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px", borderTop: i ? `1px solid ${T.border}` : "none", textDecoration: "none", fontSize: 14 }}>
-                <span style={{ color: T.heading, fontWeight: 600 }}>{a.email}{a.banned && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "#FEE4E2", color: "#B42318" }}>suspended</span>}</span>
+                <span style={{ color: T.heading, fontWeight: 600 }}>{a.email}{a.banned && <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: "var(--rp-danger-soft)", color: "var(--rp-danger-text)" }}>suspended</span>}</span>
                 <span style={{ color: T.muted, fontSize: 13 }}>{a.name}</span>
               </a>
             ))}
@@ -126,7 +126,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
         <SupportConversations conversations={conversations} />
         <ForwardMentions />
       </main>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-soft)}`}</style>
     </div>
   );
 }

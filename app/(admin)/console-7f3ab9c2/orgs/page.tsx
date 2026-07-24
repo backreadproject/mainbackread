@@ -72,16 +72,16 @@ export default async function OrgsPage() {
                     {plan.name}{o.subscription_active ? "" : " \u00b7 unpaid"}
                   </span>
                 </span>
-                <span className="data-cell" data-label="Seats" style={{ fontSize: 14, color: overSeats ? "#B42318" : T.body, fontWeight: overSeats ? 600 : 400 }}>{seats}{seatLimit !== null ? ` / ${seatLimit}` : ""}</span>
+                <span className="data-cell" data-label="Seats" style={{ fontSize: 14, color: overSeats ? "var(--rp-danger-text)" : T.body, fontWeight: overSeats ? 600 : 400 }}>{seats}{seatLimit !== null ? ` / ${seatLimit}` : ""}</span>
                 <span className="data-cell" data-label="Projects" style={{ fontSize: 14, color: T.body }}>{projCount.get(o.id) ?? 0}</span>
                 <span className="data-cell" data-label="Docs" style={{ fontSize: 14, color: T.body }}>{docCount.get(o.id) ?? 0}</span>
-                <span className="data-cell" data-label="Invites" style={{ fontSize: 13, color: (pendingInv.get(o.id) ?? 0) ? "#B54708" : T.muted, fontFamily: mono }}>{pendingInv.get(o.id) ?? 0}</span>
+                <span className="data-cell" data-label="Invites" style={{ fontSize: 13, color: (pendingInv.get(o.id) ?? 0) ? "var(--rp-amber-text)" : T.muted, fontFamily: mono }}>{pendingInv.get(o.id) ?? 0}</span>
               </a>
             );
           })}
         </div>
       </main>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-soft)}`}</style>
     </div>
   );
 }

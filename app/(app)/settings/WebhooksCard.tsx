@@ -14,7 +14,7 @@ function CopyButton({ value }: { value: string }) {
         try { await navigator.clipboard.writeText(value); setDone(true); setTimeout(() => setDone(false), 1800); } catch { /* ignore */ }
       }}
       title="Copy"
-      style={{ flex: "none", background: "#fff", border: `1px solid ${T.border}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600, fontFamily: T.font, color: done ? T.greenText : T.heading, cursor: "pointer", lineHeight: 1.6 }}>
+      style={{ flex: "none", background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 6, padding: "3px 8px", fontSize: 11, fontWeight: 600, fontFamily: T.font, color: done ? T.greenText : T.heading, cursor: "pointer", lineHeight: 1.6 }}>
       {done ? "Copied" : "Copy"}
     </button>
   );
@@ -56,8 +56,8 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
 
   const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
   const label = { fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 8, display: "block" as const };
-  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "#fff", marginBottom: 12 };
-  const small = { background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
+  const input = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "10px 12px", fontSize: 15, fontFamily: T.font, background: "var(--rp-card)", marginBottom: 12 };
+  const small = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 
   if (!enabled) {
     return (
@@ -85,7 +85,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
             <div style={{ display: "flex", gap: 6, flex: "none" }}>
               <button onClick={async () => { const r = await call({ action: "test", webhookId: h.id }); if (r) { setOk(true); setMsg(L.sent); } }} disabled={busy} style={small}>{L.test}</button>
               <button onClick={async () => { if (await call({ action: "toggle", webhookId: h.id })) router.refresh(); }} disabled={busy} style={small}>{h.active ? L.pause : L.resume}</button>
-              <button onClick={async () => { if (await call({ action: "delete", webhookId: h.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: "#B42318", borderColor: "#FDA29B" }}>{L.del}</button>
+              <button onClick={async () => { if (await call({ action: "delete", webhookId: h.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: "var(--rp-danger-text)", borderColor: "var(--rp-danger-border)" }}>{L.del}</button>
             </div>
           )}
         </div>
@@ -98,15 +98,15 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
           <button
             onClick={async () => { const r = await call({ action: "create", url }); if (r) { setOk(true); setMsg(L.saved); setSecret(r.secret ?? ""); setUrl(""); router.refresh(); } }}
             disabled={busy || !url.trim()}
-            style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || !url.trim() ? 0.5 : 1 }}>
+            style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "10px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || !url.trim() ? 0.5 : 1 }}>
             {L.add}
           </button>
         </div>
       )}
 
-      {msg && <p style={{ fontSize: 13, color: ok ? T.greenText : "#B42318", marginTop: 12 }}>{msg}</p>}
+      {msg && <p style={{ fontSize: 13, color: ok ? T.greenText : "var(--rp-danger-text)", marginTop: 12 }}>{msg}</p>}
       {secret && (
-        <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid #C7EBD8", borderRadius: 10, padding: "10px 12px" }}>
+        <div style={{ marginTop: 12, background: T.greenSoft, border: "1px solid var(--rp-green-border)", borderRadius: 10, padding: "10px 12px" }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: T.greenText, marginBottom: 4 }}>{L.secretNote}</div>
           <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
             <div style={{ fontSize: 12, color: T.body, wordBreak: "break-all", fontFamily: "ui-monospace, monospace", flex: 1, minWidth: 0 }}>{secret}</div>

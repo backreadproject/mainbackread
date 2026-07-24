@@ -39,9 +39,9 @@ export default function ForwardMentions() {
           value={email} onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && find()}
           placeholder="Their email address"
-          style={{ flex: 1, background: "#fff", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font }}
+          style={{ flex: 1, background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font }}
         />
-        <button onClick={find} disabled={busy || !email.trim()} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || !email.trim() ? 0.5 : 1 }}>
+        <button onClick={find} disabled={busy || !email.trim()} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || !email.trim() ? 0.5 : 1 }}>
           {busy ? "Looking..." : "Find"}
         </button>
       </div>

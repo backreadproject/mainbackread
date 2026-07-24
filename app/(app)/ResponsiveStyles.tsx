@@ -35,7 +35,7 @@ export default function ResponsiveStyles() {
         .row-head { display: none !important; }
         .data-row {
           display: block !important;
-          border: 1px solid #EAECEF;
+          border: 1px solid var(--rp-border);
           border-radius: 12px;
           margin-bottom: 10px;
           padding: 14px 16px !important;
@@ -43,13 +43,13 @@ export default function ResponsiveStyles() {
         .data-row > * { display: flex !important; width: auto; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; }
         .data-cell[data-label]::before {
           content: attr(data-label);
-          font-size: 12px; font-weight: 600; color: #667085;
+          font-size: 12px; font-weight: 600; color: var(--rp-muted);
           text-transform: uppercase; letter-spacing: 0.03em;
         }
         .dc-title {
           font-size: 15px !important; font-weight: 700 !important;
           padding-bottom: 8px !important; margin-bottom: 4px;
-          border-bottom: 1px solid #F2F4F7;
+          border-bottom: 1px solid var(--rp-border);
           white-space: normal !important; justify-content: flex-start !important;
         }
       }

@@ -50,7 +50,7 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
 
   const chanBtn = (val: typeof channel, label: string) => (
     <button key={val || "none"} onClick={() => setChannel(val)} type="button"
-      style={{ background: channel === val ? T.green : "#fff", color: channel === val ? "#fff" : T.body, border: `1px solid ${channel === val ? T.green : T.border}`, borderRadius: 20, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{label}</button>
+      style={{ background: channel === val ? T.green : "var(--rp-card)", color: channel === val ? "var(--rp-on-accent)" : T.body, border: `1px solid ${channel === val ? T.green : T.border}`, borderRadius: 20, padding: "6px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{label}</button>
   );
 
   return (
@@ -62,7 +62,7 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
         {quick.map((q) => (
           <button key={q.label} type="button" onClick={() => { setAsk(q.ask); if (q.message && !channel) setChannel("email"); }}
-            className="cw-b" style={{ background: ask === q.ask ? T.greenSoft : "#fff", color: ask === q.ask ? T.greenText : T.heading, border: `1px solid ${ask === q.ask ? T.green : T.border}`, borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{q.label}</button>
+            className="cw-b" style={{ background: ask === q.ask ? T.greenSoft : "var(--rp-card)", color: ask === q.ask ? T.greenText : T.heading, border: `1px solid ${ask === q.ask ? T.green : T.border}`, borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 600, fontFamily: T.font }}>{q.label}</button>
         ))}
         {soon.map((s) => (
           <span key={s} style={{ background: T.canvas, color: T.muted, border: `1px dashed ${T.border}`, borderRadius: T.rBtn, padding: "8px 14px", fontSize: 13, fontWeight: 500, fontFamily: T.font, display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -72,7 +72,7 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
       </div>
 
       <textarea className="cw-in" value={ask} onChange={(e) => setAsk(e.target.value)} placeholder={c.askPlaceholder} rows={2}
-        style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 14, fontFamily: T.font, background: "#fff", resize: "vertical", marginBottom: 14, lineHeight: 1.5 }} />
+        style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)", resize: "vertical", marginBottom: 14, lineHeight: 1.5 }} />
 
       <div style={{ marginBottom: 14 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: T.heading, marginBottom: 8 }}>{c.channelLabel}</div>
@@ -89,23 +89,23 @@ export default function ComposeWorkspace({ recipientId, verdict }: { recipientId
         <div style={{ marginBottom: 14 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: T.heading, marginBottom: 8 }}>{c.contextLabel}</div>
           <textarea className="cw-in" value={context} onChange={(e) => setContext(e.target.value)} placeholder={c.contextPlaceholder} rows={2}
-            style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 14, fontFamily: T.font, background: "#fff", resize: "vertical", lineHeight: 1.5 }} />
+            style={{ width: "100%", boxSizing: "border-box", border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "11px 13px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)", resize: "vertical", lineHeight: 1.5 }} />
         </div>
       ) : (
         <button type="button" onClick={() => setShowContext(true)} className="cw-b" style={{ background: "none", border: "none", color: T.green, fontSize: 13, fontWeight: 600, fontFamily: T.font, cursor: "pointer", padding: "0 0 14px" }}>+ {c.contextLabel}</button>
       )}
 
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <button onClick={() => run(ask)} disabled={busy} className="cw-b" style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "11px 22px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{busy ? c.generating : c.generate}</button>
-        {error && <span style={{ fontSize: 13, color: "#B42318" }}>{error}</span>}
+        <button onClick={() => run(ask)} disabled={busy} className="cw-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "11px 22px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{busy ? c.generating : c.generate}</button>
+        {error && <span style={{ fontSize: 13, color: "var(--rp-danger-text)" }}>{error}</span>}
       </div>
 
       {output && (
         <div style={{ marginTop: 18, background: T.canvas, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18 }}>
           {output.note && <div style={{ fontSize: 12, color: T.greenText, fontWeight: 600, marginBottom: 10 }}>{output.note}</div>}
-          <div style={{ fontSize: 14, color: T.heading, lineHeight: 1.6, whiteSpace: "pre-wrap", background: "#fff", borderRadius: T.rInput, padding: "14px 16px", border: `1px solid ${T.border}` }}>{output.output}</div>
+          <div style={{ fontSize: 14, color: T.heading, lineHeight: 1.6, whiteSpace: "pre-wrap", background: "var(--rp-card)", borderRadius: T.rInput, padding: "14px 16px", border: `1px solid ${T.border}` }}>{output.output}</div>
           <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-            <button onClick={copyOut} className="cw-b" style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "8px 16px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{copied ? c.copied : c.copy}</button>
+            <button onClick={copyOut} className="cw-b" style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "8px 16px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{copied ? c.copied : c.copy}</button>
             <button onClick={() => run(ask)} disabled={busy} className="cw-b" style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "8px 16px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.body, cursor: "pointer" }}>{c.regenerate}</button>
           </div>
         </div>

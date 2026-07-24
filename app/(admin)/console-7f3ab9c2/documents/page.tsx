@@ -91,7 +91,7 @@ export default async function AdminDocuments() {
               <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: grid, gap: 10, padding: "14px 18px", borderTop: i ? `1px solid ${T.border}` : "none", alignItems: "center", textDecoration: "none" }}>
                 <span className="data-cell dc-title" data-label="Document" style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {d.title}
-                  {d.needs_page_ocr && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "#FEF0C7", color: "#B54708" }}>OCR</span>}
+                  {d.needs_page_ocr && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "var(--rp-amber-soft)", color: "var(--rp-amber-text)" }}>OCR</span>}
                 </span>
                 <span className="data-cell" data-label="Owner" style={{ fontSize: 13, color: T.body, fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emailById.get(d.owner_id) || "unknown"}</span>
                 <span className="data-cell" data-label="Org / Project" style={{ fontSize: 13, color: org || proj ? T.greenText : T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[org, proj].filter(Boolean).join(" / ") || "personal"}</span>
@@ -109,7 +109,7 @@ export default async function AdminDocuments() {
           })}
         </div>
       </main>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:#FCFCFD}`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-soft)}`}</style>
     </div>
   );
 }

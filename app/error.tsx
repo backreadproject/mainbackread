@@ -9,7 +9,7 @@ export default function Error({ reset }: { error: Error; reset: () => void }) {
       </span>
       <h1 style={{ fontSize: 30, fontWeight: 700, letterSpacing: T.trackingTight, color: T.heading, margin: "0 0 10px" }}>Something went wrong.</h1>
       <p style={{ fontSize: 16, color: T.body, margin: "0 0 26px", maxWidth: 420, lineHeight: 1.55 }}>An unexpected error occurred. Try again, and if it keeps happening, refresh the page.</p>
-      <button onClick={reset} style={{ background: T.green, color: "#fff", fontSize: 15, fontWeight: 600, padding: "11px 22px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: "0 4px 14px rgba(11,122,75,0.22)" }}>Try again</button>
+      <button onClick={reset} style={{ background: T.green, color: "var(--rp-on-accent)", fontSize: 15, fontWeight: 600, padding: "11px 22px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font, boxShadow: "0 4px 14px rgba(11,122,75,0.22)" }}>Try again</button>
     </div>
   );
 }

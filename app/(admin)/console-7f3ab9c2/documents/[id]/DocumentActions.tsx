@@ -30,7 +30,7 @@ export default function DocumentActions({ documentId, title, archived }: { docum
 
   return (
     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-      <button onClick={toggleArchive} disabled={busy} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
+      <button onClick={toggleArchive} disabled={busy} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 16px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
         {archived ? "Restore" : "Archive"}
       </button>
       <ConfirmDialog

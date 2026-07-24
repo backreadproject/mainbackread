@@ -1,64 +1,75 @@
-﻿// ReadProspects design system. Single source of truth.
-// Direction: Notion warmth with Attio density. Every screen imports from here
-// so the look stays consistent by construction.
+// ReadProspects design system. Single source of truth.
+// Direction: sharp. Flat surfaces, one hairline border, no shadow, no gradient,
+// near-black on white. Definition comes from edges, not from atmosphere.
 //
-// Two rules that this palette exists to enforce:
-//   1. No pure white, no pure grey. Every surface carries a trace of the brand hue.
-//   2. Hierarchy comes from size and weight, never from opacity. Faded text is
-//      unreadable at normal screen brightness even when it looks fine in a mockup.
+// Every colour here is a CSS variable, not a hex. The values live in
+// app/globals.css under :root (light) and html.dark (dark). That is what lets
+// one theme object serve both modes: an inline style bakes its value at render
+// and a hex cannot flip, but var(--x) resolves in the browser and can.
 export const T = {
-  // Sidebar (warm dark green, darker top -> lighter bottom)
-  sidebarGradient: "linear-gradient(180deg, #082019 0%, #0B2E22 55%, #0E3A2C 100%)",
-  sidebarHover: "rgba(255,255,255,0.06)",
-  sidebarActive: "#164535",
-  sidebarText: "#B4C6BC",
-  sidebarTextActive: "#FFFFFF",
-  sidebarSection: "#6B8578",
-  sidebarCard: "#143D2E",
-  // Brand
-  brandGreen: "#26714F",
-  // Content surfaces
-  canvas: "#FDFCFA",
-  card: "#FFFFFF",
-  border: "#ECE7E0",
-  borderSoft: "#F5F2EC",
-  hover: "#FAF8F4",
-  soft: "#F5F2EC",
-  // Text
-  heading: "#1E1A16",
-  body: "#4B443C",
-  muted: "#7E766C",
-  // Accent (green)
-  green: "#26714F",
-  greenHover: "#1F5E42",
-  greenSoft: "#E9F3EE",
-  greenText: "#1A5439",
-  greenBorder: "#D9E8E0",
-  darkBtn: "#24201B",
-  // Meaning tints. Green healthy, amber attention, indigo spread, neutral inert.
-  amberSoft: "#FBF1E3",
-  amberText: "#7A4C13",
-  indigoSoft: "#ECEDF7",
-  indigoText: "#38377A",
-  // Pills
-  pillNeutralBg: "#F5F2EC",
-  pillNeutralText: "#4B443C",
-  pillPosBg: "#E9F3EE",
-  pillPosText: "#1A5439",
-  // Type
+  sidebarGradient: "var(--rp-side-bg)",
+  sidebarBg: "var(--rp-side-bg)",
+  sidebarBorder: "var(--rp-side-border)",
+  sidebarHover: "var(--rp-side-hover)",
+  sidebarActive: "var(--rp-side-active)",
+  sidebarText: "var(--rp-side-text)",
+  sidebarTextActive: "var(--rp-side-text-active)",
+  sidebarSection: "var(--rp-side-section)",
+  sidebarCard: "var(--rp-side-card)",
+  sidebarCardBorder: "var(--rp-side-card-border)",
+  sidebarBrand: "var(--rp-side-brand)",
+  sidebarMark: "var(--rp-side-mark)",
+  brandGreen: "var(--rp-green)",
+  canvas: "var(--rp-canvas)",
+  card: "var(--rp-card)",
+  border: "var(--rp-border)",
+  borderSoft: "var(--rp-border-soft)",
+  hover: "var(--rp-hover)",
+  soft: "var(--rp-soft)",
+  heading: "var(--rp-heading)",
+  body: "var(--rp-body)",
+  muted: "var(--rp-muted)",
+  faint: "var(--rp-faint)",
+  green: "var(--rp-green)",
+  greenHover: "var(--rp-green-hover)",
+  greenSoft: "var(--rp-green-soft)",
+  greenText: "var(--rp-green-text)",
+  greenBorder: "var(--rp-green-border)",
+  darkBtn: "var(--rp-dark-btn)",
+  // Text or icon on a filled accent. White in both themes, which is why it must
+  // not be written as #fff: a raw #fff in a background slot would refuse to flip.
+  onAccent: "var(--rp-on-accent)",
+  amber: "var(--rp-amber)",
+  amberSoft: "var(--rp-amber-soft)",
+  amberText: "var(--rp-amber-text)",
+  amberBorder: "var(--rp-amber-border)",
+  indigo: "var(--rp-indigo)",
+  indigoSoft: "var(--rp-indigo-soft)",
+  indigoText: "var(--rp-indigo-text)",
+  indigoBorder: "var(--rp-indigo-border)",
+  danger: "var(--rp-danger)",
+  dangerHover: "var(--rp-danger-hover)",
+  dangerSoft: "var(--rp-danger-soft)",
+  dangerText: "var(--rp-danger-text)",
+  dangerBorder: "var(--rp-danger-border)",
+  pillNeutralBg: "var(--rp-soft)",
+  pillNeutralText: "var(--rp-body)",
+  pillPosBg: "var(--rp-green-soft)",
+  pillPosText: "var(--rp-green-text)",
+  scrim: "var(--rp-scrim)",
+  overlayShadow: "var(--rp-overlay-shadow)",
   font: "var(--font-dm-sans), system-ui, sans-serif",
   tracking: "-0.008em",
-  trackingTight: "-0.03em",
-  // Radius
-  rCard: 12,
-  rBtn: 9,
-  rPill: 6,
-  rInput: 9,
-  // Elevation. Brand-tinted, never neutral black.
-  shadow: "0 1px 2px rgba(30,26,22,0.04), 0 6px 16px -10px rgba(30,26,22,0.10)",
-  shadowSm: "0 1px 2px rgba(30,26,22,0.04)",
+  trackingTight: "-0.021em",
+  rCard: 6,
+  rBtn: 6,
+  rPill: 4,
+  rInput: 6,
+  // Sharp means no elevation on page furniture. Both keys resolve to none, so
+  // the 44 existing boxShadow call sites go flat without a single edit.
+  shadow: "var(--rp-shadow)",
+  shadowSm: "var(--rp-shadow)",
 };
-// Reusable style fragments
 export const microLabel = {
   fontSize: 12,
   fontWeight: 600,
@@ -67,7 +78,7 @@ export const microLabel = {
   letterSpacing: "0.07em",
 };
 export const pageHeading = {
-  fontSize: 27,
+  fontSize: 26,
   fontWeight: 600,
   color: T.heading,
   letterSpacing: T.trackingTight,
@@ -75,54 +86,88 @@ export const pageHeading = {
 };
 export const cardStyle = {
   background: T.card,
-  border: `1px solid ${T.border}`,
+  border: "1px solid " + T.border,
   borderRadius: T.rCard,
   boxShadow: T.shadow,
 };
 export const primaryBtn = {
   background: T.green,
-  color: "#fff",
+  color: T.onAccent,
   border: "none",
   borderRadius: T.rBtn,
   fontSize: 14,
   fontWeight: 500,
   fontFamily: T.font,
   cursor: "pointer",
-  padding: "10px 18px",
-  boxShadow: "0 1px 2px rgba(38,113,79,0.3)",
+  padding: "9px 16px",
+  boxShadow: T.shadow,
 };
-// ---- structural component styles ----
+export const secondaryBtn = {
+  background: T.card,
+  color: T.body,
+  border: "1px solid " + T.border,
+  borderRadius: T.rBtn,
+  fontSize: 14,
+  fontWeight: 500,
+  fontFamily: T.font,
+  cursor: "pointer",
+  padding: "9px 16px",
+};
+export const dangerBtn = {
+  background: T.danger,
+  color: T.onAccent,
+  border: "none",
+  borderRadius: T.rBtn,
+  fontSize: 14,
+  fontWeight: 500,
+  fontFamily: T.font,
+  cursor: "pointer",
+  padding: "9px 16px",
+};
 export const statCard = {
   background: T.card,
-  border: `1px solid ${T.border}`,
+  border: "1px solid " + T.border,
   borderRadius: T.rCard,
   padding: 16,
-  boxShadow: T.shadowSm,
+  boxShadow: T.shadow,
 };
-// A stat tile where the colour carries meaning. Pass one of the four tones.
-export const statTile = (tone: "green" | "amber" | "indigo" | "neutral" = "neutral") => ({
-  background: tone === "green" ? T.greenSoft : tone === "amber" ? T.amberSoft : tone === "indigo" ? T.indigoSoft : T.soft,
+export type Tone = "green" | "amber" | "indigo" | "neutral";
+const toneRule: Record<Tone, string> = {
+  green: T.green,
+  amber: T.amber,
+  indigo: T.indigo,
+  neutral: T.border,
+};
+// The tone appears once, as a 3px rule down the left edge. The old tinted wash
+// is gone: four coloured blocks in a row read as decoration and blur the
+// numbers sitting on them.
+export const statTile = (tone: Tone = "neutral") => ({
+  background: T.card,
+  border: "1px solid " + T.border,
+  borderLeft: "3px solid " + toneRule[tone],
   borderRadius: T.rCard,
-  padding: "16px 17px",
+  padding: "15px 17px",
 });
-export const statTileInk = (tone: "green" | "amber" | "indigo" | "neutral" = "neutral") =>
-  tone === "green" ? T.greenText : tone === "amber" ? T.amberText : tone === "indigo" ? T.indigoText : T.heading;
-// Secondary text on a tinted tile. A real colour, never the ink at reduced opacity:
-// faded text reads as out of focus on a coloured surface.
-export const statTileSub = (tone: "green" | "amber" | "indigo" | "neutral" = "neutral") =>
-  tone === "green" ? "#3D7A5C" : tone === "amber" ? "#96682B" : tone === "indigo" ? "#5C5B96" : T.muted;
+export const statTileInk = (_tone: Tone = "neutral") => T.heading;
+export const statTileSub = (_tone: Tone = "neutral") => T.muted;
 export const tableHeader = {
-  ...microLabel,
+  fontSize: 12.5,
+  fontWeight: 600,
+  color: T.body,
+  background: T.soft,
 };
 export const infoBanner = {
   background: T.greenSoft,
-  border: `1px solid ${T.greenBorder}`,
-  borderRadius: 10,
-  padding: "12px 16px",
+  border: "1px solid " + T.greenBorder,
+  borderRadius: T.rCard,
+  padding: "11px 15px",
   display: "flex",
   alignItems: "center",
   gap: 8,
 };
-
-
-
+export const overlayStyle = {
+  background: T.card,
+  border: "1px solid " + T.border,
+  borderRadius: T.rCard,
+  boxShadow: T.overlayShadow,
+};

@@ -56,16 +56,16 @@ export default function ShareDialog({ resourceType, resourceId, resourceName, me
 
   const permLabels: Record<string, string> = { view: sd.permView, edit: sd.permEdit, manage: sd.permManage };
   const permBadge = (p: string) => {
-    const map: Record<string, [string, string]> = { view: [T.pillNeutralBg, T.body], edit: ["#EEF4FF", "#3538CD"], manage: [T.greenSoft, T.greenText] };
+    const map: Record<string, [string, string]> = { view: [T.pillNeutralBg, T.body], edit: ["var(--rp-indigo-soft)", "var(--rp-indigo-text)"], manage: [T.greenSoft, T.greenText] };
     const [bg, fg] = map[p] ?? map.view;
     return <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: bg, color: fg }}>{permLabels[p] ?? p}</span>;
   };
 
-  const sel = { border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 11px", fontSize: 14, fontFamily: T.font, background: "#fff", color: T.heading };
+  const sel = { border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 11px", fontSize: 14, fontFamily: T.font, background: "var(--rp-card)", color: T.heading };
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(15,23,41,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, padding: 24, width: 480, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking, maxHeight: "85vh", overflowY: "auto" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--rp-card)", borderRadius: 14, padding: 24, width: 480, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking, maxHeight: "85vh", overflowY: "auto" }}>
         <h3 style={{ fontSize: 19, fontWeight: 700, color: T.heading, margin: "0 0 4px", letterSpacing: T.trackingTight }}>{sd.title}</h3>
         <p style={{ fontSize: 14, color: T.body, margin: "0 0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resourceName}</p>
         <p style={{ fontSize: 12, color: T.muted, margin: "0 0 20px", lineHeight: 1.5 }}>{sd.introA}{resourceType === "project" ? sd.introBProject : sd.introBDoc}{sd.introC}</p>
@@ -94,9 +94,9 @@ export default function ShareDialog({ resourceType, resourceId, resourceName, me
             <option value="edit">{sd.canEdit}</option>
             <option value="manage">{sd.canManage}</option>
           </select>
-          <button onClick={addShare} disabled={busy} style={{ background: T.green, color: "#fff", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{sd.share}</button>
+          <button onClick={addShare} disabled={busy} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{sd.share}</button>
         </div>
-        {error && <p style={{ fontSize: 13, color: "#B42318", margin: "6px 0 0" }}>{error}</p>}
+        {error && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", margin: "6px 0 0" }}>{error}</p>}
 
         {/* Current shares */}
         <div style={{ marginTop: 22 }}>
@@ -120,7 +120,7 @@ export default function ShareDialog({ resourceType, resourceId, resourceName, me
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 22 }}>
-          <button onClick={onClose} style={{ background: "#fff", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{sd.done}</button>
+          <button onClick={onClose} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>{sd.done}</button>
         </div>
       </div>
     </div>
