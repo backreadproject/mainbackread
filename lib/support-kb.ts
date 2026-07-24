@@ -137,3 +137,48 @@ A: You can cancel at any time and it takes effect at the end of your current per
 export function supportKnowledge(): string {
   return [PRODUCT, "", "PLANS AND LIMITS", planFacts(), "", "COMMON QUESTIONS", FAQ].join("\n");
 }
+
+/** The FAQ as structured data, for the Help tab in the support widget.
+ *  Kept here so the bot and the help articles never drift apart. */
+export const FAQ_ITEMS: { q: string; a: string }[] = [
+  {
+    q: "How does sharing a document work?",
+    a: "Upload a document, then share it with a recipient by name. They get a private link on relaydocuments.com, a neutral delivery domain, so the reader page carries no ReadProspects branding. Each recipient gets their own link. You can send it by email from inside ReadProspects, or copy the link and send it yourself.",
+  },
+  {
+    q: "What is a verdict?",
+    a: "A verdict reads one person's behaviour on one document: what held them, what they re-read, what they asked, whether they forwarded it. It returns a short assessment of what they appear to be thinking and one concrete thing to do next. Under six readers or with thin signals, it says so rather than inventing a story.",
+  },
+  {
+    q: "What file types can I upload?",
+    a: "PDFs and images (JPEG, PNG, WebP, GIF). Word and PowerPoint are not supported yet. Export them as PDF first, which also means your reader sees the document exactly as you designed it.",
+  },
+  {
+    q: "Does the reader know they are being tracked?",
+    a: "The reader page is neutral and carries no ReadProspects branding. A privacy notice is linked from it, which explains plainly what is recorded and what the sender sees. As the sender, you are responsible for giving any notice the law requires where you are.",
+  },
+  {
+    q: "Is there a watermark on my document?",
+    a: "No, on any plan. Your document goes out as your document.",
+  },
+  {
+    q: "What happens when I hit a Free limit?",
+    a: "The action pauses and points you to the plan that lifts it. Nothing you have already sent or captured is touched.",
+  },
+  {
+    q: "Can I use a verdict to make a decision about someone?",
+    a: "Not for anything consequential. Our terms forbid using verdicts for decisions about employment, credit, insurance, housing or anything with a similar effect on a person. A verdict is a commercial inference from limited evidence and can be wrong.",
+  },
+  {
+    q: "How do A/B document versions work?",
+    a: "On Business, upload two to four versions of the same document. Readers are split between them automatically, or you can assign a version per recipient. The document page compares readers, open rate, questions and forwards per version.",
+  },
+  {
+    q: "Can I delete a reader's data?",
+    a: "Yes. Deleting a document removes its recipients, their signals and their conversations. A reader can also write to privacy@readprospects.com and ask to be erased.",
+  },
+  {
+    q: "How do I cancel?",
+    a: "You can cancel at any time and it takes effect at the end of your current period. Billing is not live yet, so nobody can be charged today.",
+  },
+];

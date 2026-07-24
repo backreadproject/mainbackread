@@ -39,8 +39,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       )}
       {children}
-      <SupportWidget surface="app" />
+      <SupportWidget surface="app" firstName={(profileRow?.first_name as string) || null} />
     </MobileShell>
   );
 }
+
 
