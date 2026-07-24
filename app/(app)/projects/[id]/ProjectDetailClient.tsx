@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
-import { T, microLabel } from "@/lib/theme";
+import { T } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
@@ -9,44 +9,36 @@ type Doc = { id: string; title: string; created_at: string };
 type Member = { userId: string; email: string | null };
 export default function ProjectDetailClient({ project, documents, canManage, members }: { project: Project; documents: Doc[]; canManage: boolean; members: Member[] }) {
   const locale = useLocale();
+  const fr = locale === "fr";
   const pd = getDict(locale).projectDetailPage;
   const [sharing, setSharing] = useState(false);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-soft)}`}</style>
-      <div style={{ padding: "26px 30px 0" }}>
-        <a href="/projects" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}><span style={{ color: T.muted }}>{"\u2039"}</span> {pd.back}</a>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}`}</style>
+      <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
+        <a href="/projects" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> {pd.back}</a>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <div>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{project.name}</h1>
-            <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{documents.length} {documents.length === 1 ? pd.docCountOne : pd.docCountMany}</p>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{project.name}</h1>
+            <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{documents.length} {documents.length === 1 ? pd.docCountOne : pd.docCountMany}</p>
           </div>
-          {canManage && <button onClick={() => setSharing(true)} style={{ background: T.darkBtn, color: "var(--rp-on-accent)", fontSize: 14, fontWeight: 600, padding: "10px 18px", borderRadius: T.rBtn, border: "none", cursor: "pointer" }}>{pd.shareWithTeam}</button>}
+          {canManage && <button onClick={() => setSharing(true)} style={{ height: 34, background: T.green, color: T.onAccent, fontSize: 13.5, fontWeight: 500, padding: "0 13px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font, whiteSpace: "nowrap" }}>{pd.shareWithTeam}</button>}
         </div>
-      </div>
-      <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>
-        {documents.length === 0 ? (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 40, textAlign: "center" }}>
-            <p style={{ fontSize: 15, color: T.body, margin: 0 }}>{pd.empty}</p>
+        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 26, boxShadow: T.shadow }}>
+          <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body }}>
+            <span>{pd.colDocument}</span><span>{pd.colAdded}</span>
           </div>
-        ) : (
-          <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden" }}>
-            <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "11px 18px", borderBottom: `1px solid ${T.border}`, ...microLabel }}>
-              <span>{pd.colDocument}</span><span>{pd.colAdded}</span>
-            </div>
-            {documents.map((d, i) => (
-              <a key={d.id} href={`/documents/${d.id}`} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "15px 18px", borderBottom: i < documents.length - 1 ? `1px solid ${T.border}` : "none", alignItems: "center" }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
-                <span style={{ fontSize: 14, color: T.body }}>{new Date(d.created_at).toLocaleDateString(locale === "fr" ? "fr-FR" : undefined, { day: "numeric", month: "short" })}</span>
-              </a>
-            ))}
-          </div>
-        )}
+          {documents.length === 0 ? (
+            <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{pd.empty}</p></div>
+          ) : documents.map((d, i) => (
+            <a key={d.id} href={"/documents/" + d.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "13px 18px", borderBottom: i < documents.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
+              <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{d.title}</span>
+              <span style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(d.created_at).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
+            </a>
+          ))}
+        </div>
       </main>
       {sharing && <ShareDialog resourceType="project" resourceId={project.id} resourceName={project.name} members={members} onClose={() => setSharing(false)} />}
     </div>
   );
 }
-
-
-

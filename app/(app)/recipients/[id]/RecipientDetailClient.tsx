@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 import { useState, useMemo } from "react";
-import { T, microLabel } from "@/lib/theme";
+import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
@@ -13,52 +13,64 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
   const summary = useMemo(() => { const dwell: Record<number, number> = {}; const questions: { text: string; escalated?: boolean }[] = []; let opens = 0; for (const s of signals) { if (s.kind === "opened") opens++; if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) dwell[s.page] = Number((s.value as { ms: number }).ms) || 0; if (s.kind === "question" && s.value && typeof s.value === "object" && "text" in s.value) questions.push({ text: String((s.value as { text: string }).text), escalated: (s.value as { escalated?: boolean }).escalated }); } return { dwell, questions, opens }; }, [signals]);
   const maxDwell = Math.max(1, ...Object.values(summary.dwell));
   async function readTheReader() { setBusy(true); setError(""); const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: recipient.id }) }); const json = await res.json(); if (!res.ok) { setError(json.error ?? rd.couldntRead); setBusy(false); return; } setVerdict(json.verdict); setBusy(false); }
-  const card = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginBottom: 16 };
+  const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 16 };
+  const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-b{cursor:pointer}`}</style>
-      <div style={{ padding: "26px 30px 0" }}>
-        <a href="/recipients" style={{ fontSize: 13, color: T.body, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 12 }}><span style={{ color: T.muted }}>{"\u2039"}</span> {rd.back}</a>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{recipient.label || rd.unnamedReader}</h1>
-        <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{rd.onDoc} <a href={`/documents/${recipient.documentId}`} style={{ color: T.green, textDecoration: "none", fontWeight: 600 }}>{recipient.documentTitle}</a></p>
-      </div>
-      {error && <p style={{ color: "var(--rp-danger-text)", fontSize: 14, padding: "12px 30px 0" }}>{error}</p>}
-      <main style={{ maxWidth: 1040, padding: "22px 30px 40px" }}>
-        {summary.opens === 0 ? (
-          <div style={card}><p style={{ fontSize: 15, color: T.body, margin: 0 }}>{rd.notOpenedYet}</p></div>
-        ) : (<>
-          <div style={card}>
-            <div style={{ ...microLabel, marginBottom: 14 }}>{rd.howTheyRead}</div>
-            {Object.keys(summary.dwell).length === 0 ? <p style={{ fontSize: 14, color: T.body, margin: 0 }}>{rd.openedNoDwell}</p> : Object.entries(summary.dwell).sort((a, b) => Number(a[0]) - Number(b[0])).map(([page, ms]) => (
-              <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
-                <span style={{ fontSize: 12, color: T.body, width: 52, fontWeight: 500 }}>{rd.page} {page}</span>
-                <div style={{ flex: 1, height: 8, background: T.canvas, borderRadius: 20, overflow: "hidden", maxWidth: 360 }}><div style={{ width: `${(Number(ms) / maxDwell) * 100}%`, height: "100%", background: T.green, borderRadius: 20 }} /></div>
-                <span style={{ fontSize: 13, color: T.body }}>{(Number(ms) / 1000).toFixed(1)}s</span>
-              </div>
-            ))}
-          </div>
-          {summary.questions.length > 0 && (
+      <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
+        <a href="/recipients" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> {rd.back}</a>
+        <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{recipient.label || rd.unnamedReader}</h1>
+        <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rd.onDoc} <a href={"/documents/" + recipient.documentId} style={{ color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>{recipient.documentTitle}</a></p>
+        {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
+        <div style={{ marginTop: 26 }}>
+          {summary.opens === 0 ? (
+            <div style={{ ...card, padding: 40, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{rd.notOpenedYet}</p></div>
+          ) : (<>
             <div style={card}>
-              <div style={{ ...microLabel, marginBottom: 14 }}>{rd.whatTheyAsked} &middot; {summary.questions.length}</div>
-              {summary.questions.map((q, i) => (<div key={i} style={{ background: T.canvas, borderRadius: T.rInput, padding: "12px 14px", marginBottom: 8 }}><p style={{ fontSize: 15, color: T.heading, margin: 0 }}>{q.text}</p>{q.escalated && <span style={{ fontSize: 11, fontWeight: 600, color: "var(--rp-danger-text)", marginTop: 4, display: "inline-block" }}>{rd.escalated}</span>}</div>))}
-            </div>
-          )}
-          <div style={card}>
-            <div style={{ ...microLabel, marginBottom: 14 }}>{rd.verdict}</div>
-            {verdict ? (
-              <div style={{ background: T.canvas, borderRadius: T.rCard, boxShadow: T.shadow, padding: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}><span style={{ fontSize: 12, fontWeight: 600, color: T.body }}>{rd.reading}</span><span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: verdict.confidence === "high" ? T.pillPosBg : T.pillNeutralBg, color: verdict.confidence === "high" ? T.pillPosText : T.pillNeutralText }}>{verdict.confidence}{rd.confidenceSuffix}</span></div>
-                <p style={{ fontSize: 20, fontWeight: 700, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdict.headline}</p>
-                <p style={{ fontSize: 14, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>{verdict.reasoning}</p>
-                <div style={{ background: "var(--rp-card)", borderRadius: T.rInput, padding: "12px 14px" }}><div style={{ fontSize: 12, fontWeight: 600, color: T.green, marginBottom: 3 }}>{rd.doThisNext}</div><p style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{verdict.nextAction}</p></div>
+              <div style={head}>{rd.howTheyRead}</div>
+              <div style={{ padding: 18 }}>
+                {Object.keys(summary.dwell).length === 0 ? <p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{rd.openedNoDwell}</p> : Object.entries(summary.dwell).sort((a, b) => Number(a[0]) - Number(b[0])).map(([page, ms]) => (
+                  <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
+                    <span style={{ fontSize: 12.5, color: T.muted, width: 58, flex: "none" }}>{rd.page} {page}</span>
+                    <div style={{ flex: 1, height: 6, background: T.soft, border: "1px solid " + T.border, borderRadius: 2, overflow: "hidden", maxWidth: 360 }}><div style={{ width: ((Number(ms) / maxDwell) * 100) + "%", height: "100%", background: T.green }} /></div>
+                    <span style={{ fontSize: 13, color: T.body, fontVariantNumeric: "tabular-nums" }}>{(Number(ms) / 1000).toFixed(1)}s</span>
+                  </div>
+                ))}
               </div>
-            ) : <button onClick={readTheReader} disabled={busy} className="t-b" style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "11px 20px", fontSize: 14, fontWeight: 600, fontFamily: T.font }}>{busy ? rd.readingBusy : rd.readTheReader}</button>}
-          </div>
-        </>)}
+            </div>
+            {summary.questions.length > 0 && (
+              <div style={card}>
+                <div style={head}>{rd.whatTheyAsked} &middot; {summary.questions.length}</div>
+                <div>
+                  {summary.questions.map((q, i) => (
+                    <div key={i} style={{ padding: "13px 18px", borderBottom: i < summary.questions.length - 1 ? "1px solid " + T.borderSoft : "none" }}>
+                      <p style={{ fontSize: 13.5, color: T.heading, margin: 0, lineHeight: 1.5 }}>{q.text}</p>
+                      {q.escalated && <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.heading, marginTop: 6 }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber }} />{rd.escalated}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div style={card}>
+              <div style={head}>{rd.verdict}</div>
+              <div style={{ padding: 18 }}>
+                {verdict ? (<>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.heading, marginBottom: 10 }}>
+                    <i style={{ width: 6, height: 6, borderRadius: 2, background: verdict.confidence === "high" ? T.green : T.faint }} />
+                    {verdict.confidence}{rd.confidenceSuffix}
+                  </span>
+                  <p style={{ fontSize: 19, fontWeight: 600, color: T.heading, lineHeight: 1.3, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{verdict.headline}</p>
+                  <p style={{ fontSize: 14, color: T.body, lineHeight: 1.55, margin: "0 0 14px" }}>{verdict.reasoning}</p>
+                  <div style={{ background: T.greenSoft, border: "1px solid " + T.greenBorder, borderRadius: T.rCard, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: T.greenText, marginBottom: 3 }}>{rd.doThisNext}</div>
+                    <p style={{ fontSize: 14, color: T.heading, margin: 0, lineHeight: 1.5 }}>{verdict.nextAction}</p>
+                  </div>
+                </>) : <button onClick={readTheReader} disabled={busy} style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>{busy ? rd.readingBusy : rd.readTheReader}</button>}
+              </div>
+            </div>
+          </>)}
+        </div>
       </main>
     </div>
   );
 }
-
-
-
