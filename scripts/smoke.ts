@@ -18,7 +18,7 @@ async function main() {
   const thin = await runAI(verdictTask, {
     documentText: doc, documentTitle: "Meridian", readerName: "Sarah", readerOrg: "Meridian",
     pages: [{ page: 1, title: "Cover", seconds: 4, visits: 1 }],
-    backtracks: [], questionsAsked: [], forwardedTo: [], openCount: 1,
+    backtracks: [], questionsAsked: [], replies: [], forwardedTo: [], openCount: 1,
   }, { documentId: "doc_demo" });
   console.log("THIN SIGNALS →", thin.data.confidence, "|", thin.data.headline, "\n");
 
@@ -26,7 +26,7 @@ async function main() {
     documentText: doc, documentTitle: "Meridian", readerName: "Sarah", readerOrg: "Meridian Capital",
     pages: [{ page: 7, title: "Pricing", seconds: 94, visits: 3 }],
     backtracks: ["returned from page 8 to page 7"],
-    questionsAsked: ["Is the annual commit negotiable?"],
+    questionsAsked: ["Is the annual commit negotiable?"], replies: [],
     forwardedTo: ["finance@meridian.vc"], openCount: 3,
   }, { documentId: "doc_demo" });
   console.log("RICH SIGNALS →", rich.data.confidence, "|", rich.data.headline);

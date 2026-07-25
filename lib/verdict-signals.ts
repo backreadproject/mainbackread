@@ -14,6 +14,7 @@ export type DocLite = { title?: string | null; extracted_text?: string | null };
 export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: SignalRow[]): VerdictInput {
   const dwellByPage: Record<number, { seconds: number; visits: number; capped: boolean }> = {};
   const questionsAsked: string[] = [];
+  const replies: string[] = [];
   const forwardedTo: string[] = [];
   const dwellSeq: number[] = [];
   let openCount = 0;
@@ -24,6 +25,8 @@ export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: 
       openCount++;
     } else if (s.kind === "question") {
       if (typeof v.text === "string" && v.text.trim()) questionsAsked.push(v.text.trim());
+    } else if (s.kind === "replied") {
+      if (typeof v.text === "string" && v.text.trim()) replies.push(v.text.trim());
     } else if (s.kind === "forwarded") {
       const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
       for (const c of cols) {
@@ -61,5 +64,5 @@ export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: 
   const readerOrg = email.includes("@") ? email.split("@")[1] : "";
   const documentText = (doc.extracted_text ?? "").trim() || doc.title || "this document";
 
-  return { documentText, documentTitle: doc.title || "this document", readerName, readerOrg, pages, backtracks, questionsAsked, forwardedTo, openCount };
+  return { documentText, documentTitle: doc.title || "this document", readerName, readerOrg, pages, backtracks, questionsAsked, replies, forwardedTo, openCount };
 }

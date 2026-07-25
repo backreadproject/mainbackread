@@ -16,6 +16,9 @@ export interface VerdictInput {
   pages: PageSignal[];
   backtracks: string[];
   questionsAsked: string[];
+  /** What the reader wrote back, verbatim. Not scored, not summarised: a reply
+   *  is the one thing here that is not an inference. */
+  replies: string[];
   forwardedTo: string[];
   openCount: number;
 }
@@ -32,7 +35,11 @@ export type VerdictOutput = z.infer<typeof VerdictOutput>;
 /**
  * The signal hierarchy is the whole intellectual claim of the product:
  *
- *   questions asked  >  forwarding  >  re-reads  >  dwell  >  opens
+ *   replies  >  questions asked  >  forwarding  >  re-reads  >  dwell  >  opens
+ *
+ * A reply sits above everything because it is not evidence to reason from, it is
+ * the answer. Once someone tells you what they think, inferring what they think
+ * is running an estimate over the top of the truth.
  *
  * A question is stated intent. Dwell is a proxy, and a weak one — a reader who
  * sat on your pricing slide for 90 seconds may have been getting coffee.
@@ -58,11 +65,14 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
       "Diagnose the DEAL, not the document. The sender does not want analytics — they want to know what the reader is thinking and what to do about it.",
       "",
       "SIGNAL HIERARCHY — weight strictly in this order:",
-      "1. Questions asked — stated intent. Worth more than everything below combined.",
-      "2. Forwarding — who they involved tells you what stage the deal is at.",
-      "3. Re-reads and backtracks — friction, or the thing they are weighing.",
-      "4. Dwell time — a weak proxy. Never build a verdict on dwell alone.",
-      "5. Open count — engagement, nothing more.",
+      "1. A REPLY — they wrote back. This is not evidence to weigh, it is the answer. When a reply is present, read it and report what it says. Do not infer around it, do not soften it, and do not let dwell or opens argue with it.",
+      "2. Questions asked — stated intent. Worth more than everything below combined.",
+      "3. Forwarding — who they involved tells you what stage the deal is at.",
+      "4. Re-reads and backtracks — friction, or the thing they are weighing.",
+      "5. Dwell time — a weak proxy. Never build a verdict on dwell alone.",
+      "6. Open count — engagement, nothing more.",
+      "",
+      "WHEN THERE IS A REPLY: confidence is high, because you are not guessing. If they declined, say so plainly and make nextAction about closing it out cleanly rather than pursuing. A rejection the sender has not registered is the most expensive thing in their list. If they asked for something, nextAction is to send it.",
       "",
       "HONESTY REQUIREMENT: If the signals are thin — little dwell, no questions, no forwarding — say so and set confidence to low. Do NOT manufacture a narrative. A confident verdict on thin evidence is worse than no verdict, because the sender will act on it.",
       "",
@@ -80,6 +90,7 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
         pages: i.pages,
         backtracks: i.backtracks,
         questionsAsked: i.questionsAsked,
+        repliedWithTheirOwnWords: i.replies,
         forwardedTo: i.forwardedTo,
       },
       null,
@@ -87,6 +98,15 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
     ),
 
   fixture: (i) => {
+    if (i.replies.length) {
+      return {
+        headline: "[fixture] They replied. Read their words, not the signals.",
+        reasoning: "A reply supersedes everything inferred from how they read it.",
+        nextAction: "Answer them.",
+        confidence: "high" as const,
+        evidence: i.replies.slice(0, 2),
+      };
+    }
     const thin = i.questionsAsked.length === 0 && i.forwardedTo.length === 0;
     if (thin) {
       return {
