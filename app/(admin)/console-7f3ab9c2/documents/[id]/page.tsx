@@ -131,7 +131,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
                       {(r.email as string | null) || "no email"} {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} questions {"\u00b7"} {a.forwards} forwards {"\u00b7"} sent {new Date(r.created_at).toLocaleDateString()}
                     </div>
                   </div>
-                  <EraseReader recipientId={r.id} label={(r.email as string | null) || nameOf(r)} />
+                  <EraseReader recipientId={r.id} expected={(r.email as string | null) || nameOf(r)} />
                 </div>
                 {dwellPages.length > 0 && (
                   <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 14 }}>
