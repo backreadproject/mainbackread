@@ -231,7 +231,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <main style={{ maxWidth: 1040, padding: "26px 32px 60px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div className="ov-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, gap: 14 }}>
           <div>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, color: T.greenText, fontFamily: mono, border: "1px solid " + T.greenBorder, background: T.greenSoft, padding: "3px 9px", borderRadius: T.rPill, marginBottom: 9 }}>
               <span style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} /> {L.live}
@@ -239,9 +239,9 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
             <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{greeting()}</h1>
             <p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{o.subtitle}</p>
           </div>
-          <div style={{ textAlign: "right" }}>
+          <div className="ov-head-r" style={{ textAlign: "right", flexShrink: 0 }}>
             <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>{today}</div>
-            <a href="/documents" style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, background: T.green, color: T.onAccent, fontSize: 14, fontWeight: 500, padding: "9px 15px", borderRadius: T.rBtn, textDecoration: "none", boxShadow: T.shadow }}>
+            <a href="/documents" style={{ marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, background: T.green, color: T.onAccent, fontSize: 14, fontWeight: 500, padding: "9px 15px", borderRadius: T.rBtn, textDecoration: "none", boxShadow: T.shadow, whiteSpace: "nowrap" }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg> {L.newDoc}
             </a>
           </div>
@@ -259,7 +259,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                   <span style={{ fontSize: 12, color: T.muted, fontFamily: mono }}><span ref={readyCountRef}>{readyList.length}</span> / {readers.length} {L.readersWord}</span>
                 </div>
                 <div style={{ position: "relative", padding: "0 8px 4px" }}>
-                  <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: 470 }} />
+                  <canvas ref={canvasRef} className="ov-field" style={{ display: "block", width: "100%", height: 470 }} />
                   {toast && (
                     <div style={{ position: "absolute", left: 18, bottom: 12, display: "flex", alignItems: "center", gap: 9, background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, padding: "9px 12px", fontSize: 12, color: T.heading, boxShadow: T.overlayShadow }}>
                       <span style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} /> {toast}
@@ -304,7 +304,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                         <span style={{ display: "block", fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.doc}</span>
                       </span>
                         <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.heading, whiteSpace: "nowrap" }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} />{r.replied ? L.vReplied : L.vReady}</span>
-                      <span style={{ flex: "none", fontSize: 13, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
+                      <span className="ov-reads" style={{ flex: "none", fontSize: 13, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
                     </a>
                   ))}
                 </div>
@@ -330,8 +330,8 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                       <span style={{ width: 26, height: 26, borderRadius: 4, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", background: e.kind === "question" ? T.indigoSoft : T.greenSoft, color: e.kind === "question" ? T.indigoText : T.greenText }}>
                         {e.kind === "question" ? <MessageSquare size={14} strokeWidth={1.9} /> : <Eye size={14} strokeWidth={1.9} />}
                       </span>
-                      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, color: T.heading, lineHeight: 1.45 }}>{e.text}</div></div>
-                      <span style={{ fontSize: 11, color: T.muted, fontFamily: mono }}>{ago(e.at)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, color: T.heading, lineHeight: 1.45, overflowWrap: "anywhere" }}>{e.text}</div></div>
+                      <span style={{ fontSize: 11, color: T.muted, fontFamily: mono, flexShrink: 0 }}>{ago(e.at)}</span>
                     </div>
                   ))}
                 </div>
@@ -343,8 +343,8 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                     <a key={d.id} href={"/documents/" + d.id} className="ov-r" style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 18px", textDecoration: "none", borderTop: i > 0 ? "1px solid " + T.borderSoft : "none" }}>
                       <span style={{ width: 26, height: 26, borderRadius: 4, flex: "none", background: T.greenSoft, color: T.greenText, display: "flex", alignItems: "center", justifyContent: "center" }}><FileText size={14} strokeWidth={1.9} /></span>
                       <span style={{ fontSize: 14, fontWeight: 500, color: T.heading, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
-                      <span style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 20 }}>{d.spark.map((h, k) => <i key={k} style={{ width: 3, height: h + "%", borderRadius: 1, background: T.green }} />)}</span>
-                      <span style={{ fontSize: 12, color: T.muted, fontFamily: mono, width: 62, textAlign: "right" }}>{d.reads} {L.readsWord}</span>
+                      <span className="ov-spark" style={{ display: "flex", gap: 3, alignItems: "flex-end", height: 20 }}>{d.spark.map((h, k) => <i key={k} style={{ width: 3, height: h + "%", borderRadius: 1, background: T.green }} />)}</span>
+                      <span className="ov-reads" style={{ fontSize: 12, color: T.muted, fontFamily: mono, width: 62, textAlign: "right" }}>{d.reads} {L.readsWord}</span>
                     </a>
                   ))}
                 </div>
@@ -353,7 +353,19 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
           </>
         )}
       </main>
-      <style>{`@media (max-width: 900px){ .ov-row{ grid-template-columns: 1fr !important; } .ov-tiles{ grid-template-columns: 1fr 1fr !important; } } .ov-r{ transition: background .12s } .ov-r:hover{ background: var(--rp-hover) }`}</style>
+      <style>{`
+        @media (max-width: 900px){ .ov-row{ grid-template-columns: 1fr !important; } .ov-tiles{ grid-template-columns: 1fr 1fr !important; } }
+        .ov-r{ transition: background .12s }
+        .ov-r:hover{ background: var(--rp-hover) }
+        @media (max-width: 600px){
+          .ov-head{ flex-direction: column !important; align-items: stretch !important; }
+          .ov-head-r{ text-align: left !important; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+          .ov-head-r a{ margin-top: 0 !important; }
+          .ov-spark{ display: none !important; }
+          .ov-reads{ display: none !important; }
+          .ov-field{ height: 320px !important; }
+        }
+      `}</style>
     </div>
   );
 }

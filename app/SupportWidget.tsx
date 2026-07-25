@@ -101,19 +101,40 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
         .rp-sw-row:hover{background:var(--rp-hover)}
         .rp-sw-launch{transition:background .12s}
         .rp-sw-launch:hover{background:var(--rp-green-hover)}
-        @media(max-width:520px){.rp-sw-panel{width:calc(100vw - 24px) !important;height:calc(100vh - 108px) !important;right:12px !important;bottom:72px !important}}
+        @media(max-width:520px){
+          .rp-sw-panel{
+            width:auto !important; left:12px !important; right:12px !important;
+            top:12px !important; bottom:72px !important; height:auto !important;
+          }
+          .rp-sw-longtitle{display:none}
+          .rp-sw-shorttitle{display:inline}
+          .rp-sw-faqlong{display:none}
+          .rp-sw-faqshort{display:inline}
+        }
+        .rp-sw-shorttitle{display:none}
+        .rp-sw-faqshort{display:none}
       `}</style>
       {open && (
         <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 76, width: 366, height: "min(540px, calc(100vh - 130px))", background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
           <div style={head}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
               {waiting && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, flexShrink: 0 }} />}
-              <span style={{ fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap" }}>
-                {showFaq ? "Common questions" : waiting ? "With the team" : "ReadProspects support"}
+              <span style={{ fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {showFaq ? "Questions" : waiting ? "With the team" : (
+                  <>
+                    <span className="rp-sw-longtitle">ReadProspects support</span>
+                    <span className="rp-sw-shorttitle">Support</span>
+                  </>
+                )}
               </span>
             </span>
             <button onClick={() => setShowFaq((v) => !v)} style={{ ...linkBtn, marginLeft: "auto" }}>
-              {showFaq ? "Back to chat" : "Common questions"}
+              {showFaq ? "Back to chat" : (
+                <>
+                  <span className="rp-sw-faqlong">Common questions</span>
+                  <span className="rp-sw-faqshort">Questions</span>
+                </>
+              )}
             </button>
             <button onClick={() => setOpen(false)} aria-label="Close" title="Close" style={iconBtn}>
               <X size={13} strokeWidth={2} />
