@@ -103,8 +103,11 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
         .rp-sw-launch:hover{background:var(--rp-green-hover)}
         @media(max-width:520px){
           .rp-sw-panel{
-            width:auto !important; left:12px !important; right:12px !important;
-            top:12px !important; bottom:72px !important; height:auto !important;
+            position:fixed !important;
+            top:10px !important; bottom:70px !important;
+            left:10px !important; right:10px !important;
+            width:auto !important; max-width:none !important;
+            height:auto !important; max-height:none !important;
           }
           .rp-sw-longtitle{display:none}
           .rp-sw-shorttitle{display:inline}
@@ -115,7 +118,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
         .rp-sw-faqshort{display:none}
       `}</style>
       {open && (
-        <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 76, width: 366, height: "min(540px, calc(100vh - 130px))", background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
+        <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 76, width: 366, height: "min(540px, calc(100dvh - 130px))", background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
           <div style={head}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
               {waiting && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, flexShrink: 0 }} />}
@@ -240,7 +243,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
       {/* Not the universal glowing circle. A small labelled control that reads as
           part of the app rather than a bolted-on chatbot. */}
       <button onClick={() => setOpen((v) => !v)} className="rp-sw-launch" aria-label="Support"
-        style={{ position: "fixed", right: 22, bottom: 22, height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, fontFamily: T.font, cursor: "pointer", boxShadow: T.overlayShadow, zIndex: 9999 }}>
+        style={{ position: "fixed", right: 22, bottom: "calc(22px + env(safe-area-inset-bottom, 0px))", height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, fontFamily: T.font, cursor: "pointer", boxShadow: T.overlayShadow, zIndex: 9999 }}>
         {open ? <X size={15} strokeWidth={2} /> : <MessageCircle size={15} strokeWidth={2} />}
         <span>{open ? "Close" : "Support"}</span>
         {!open && waiting && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, marginLeft: 1 }} />}
