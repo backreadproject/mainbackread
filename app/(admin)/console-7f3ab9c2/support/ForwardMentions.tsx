@@ -34,7 +34,7 @@ export default function ForwardMentions() {
       <div style={{ padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body }}>Forwarded colleagues</div>
       <div style={{ padding: 18 }}>
         <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.55, margin: "0 0 14px" }}>
-          People named when a reader forwarded a document. They have no account and no reader link, so this is the only way to erase them on request.
+          People named when a reader forwarded a document. Each of them received their own reader link, so they may have opened it and generated signals of their own. Erasing removes their reader record along with everything it captured, and strips their details from the forward that named them.
         </p>
         <div style={{ display: "flex", gap: 9, marginBottom: 14 }}>
           <input className="fm-in" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && find()} placeholder="Their email address"
@@ -64,7 +64,7 @@ export default function ForwardMentions() {
             <ConfirmDialog
               triggerLabel="Erase this person"
               title="Erase this person from every forward?"
-              body="Their name and email are removed from each forward that mentions them. The forward itself stays, so the sender's counts remain accurate, but this person is no longer identifiable. This cannot be undone."
+              body="This removes their reader record entirely: their link, every open, page dwell, question and conversation it captured. It also strips their name and email from each forward that named them, while keeping the forward event itself so the sender's counts stay accurate. The sender's engagement figures for this document will drop accordingly. This cannot be undone."
               expected={searched}
               confirmLabel="Erase permanently"
               onConfirm={async () => {

@@ -91,7 +91,7 @@ function forwardEmail({ toName, forwarder, docTitle, readUrl, note, privacyUrl }
     <div style="background:#F6F8F7;border-radius:10px;padding:12px 14px;margin:14px 0 12px;font-size:11.5px;color:#586760;line-height:1.6;">
       <strong style="color:#111A16;">Why you got this:</strong> ${fw} forwarded this document to you using RelayDocuments, a service for sharing documents by link. If this was not meant for you, you can ignore it, nothing opens until you choose to.
     </div>
-    <p style="font-size:11.5px;color:#98A2B3;text-align:center;margin:0;"><a href="${pv}" style="color:#159A56;font-weight:600;text-decoration:none;">Privacy notice</a> &middot; RelayDocuments Inc</p>
+    <p style="font-size:11.5px;color:#98A2B3;text-align:center;margin:0;"><a href="${pv}" style="color:#159A56;font-weight:600;text-decoration:none;">Privacy notice</a> &middot; ReadProspects Technologies Nigeria</p>
   </div>
   </body></html>`;
 }

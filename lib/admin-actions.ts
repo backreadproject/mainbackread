@@ -251,8 +251,14 @@ export async function eraseReaderAction(recipientId: string, confirmText: string
 
 export type ForwardMention = { signalId: string; recipientId: string; readerName: string; documentTitle: string; colleagueName: string; at: string };
 
-/** Finds every forwarded-signal that names this email. These people never opened
- *  anything and have no recipient row, so they cannot be erased any other way. */
+/** Finds every forwarded-signal that names this email.
+ *
+ *  A forwarded colleague DOES get a full recipients row with its own share_token
+ *  (see /api/forward), so they can and do open the document and generate signals.
+ *  This finder only surfaces the mention inside the forwarder's signal; the erase
+ *  action below is what removes their actual record. An earlier version of this
+ *  comment claimed they had no recipient row, and the erase path was built on that
+ *  false premise, so erasure reported success while leaving the person's data intact. */
 export async function findForwardMentions(email: string): Promise<ForwardMention[]> {
   const me = await getAdminUser();
   if (!me) return [];
@@ -313,6 +319,28 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
     .eq("kind", "forwarded")
     .limit(2000);
 
+
+  // 1. Their own recipient rows. A forwarded colleague is a real recipient with
+  //    its own share_token, so this is where the bulk of their personal data
+  //    lives: the row itself plus every signal and reader message, which cascade.
+  const { data: theirRows } = await admin
+    .from("recipients")
+    .select("id, document_id")
+    .ilike("email", needle);
+  const rowIds = (theirRows ?? []).map((r) => r.id as string);
+  let signalsRemoved = 0;
+  let messagesRemoved = 0;
+  if (rowIds.length) {
+    const { count: sc } = await admin.from("signals").select("id", { count: "exact", head: true }).in("recipient_id", rowIds);
+    const { count: mc } = await admin.from("reader_messages").select("id", { count: "exact", head: true }).in("recipient_id", rowIds);
+    signalsRemoved = sc ?? 0;
+    messagesRemoved = mc ?? 0;
+    const { error: delErr } = await admin.from("recipients").delete().in("id", rowIds);
+    if (delErr) return fail(delErr.message, 500);
+  }
+
+  // 2. The mention inside the forwarder's signal. The event stays so the sender's
+  //    forward count remains truthful; only the person's details go.
   let changed = 0;
   for (const s of sigs ?? []) {
     const v = (s.value ?? {}) as Record<string, unknown>;
@@ -329,7 +357,13 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
 
   await writeAudit({
     actorId: me.id, actorEmail: me.email, action: "erase_forward_mentions",
-    detail: { email: needle, signalsUpdated: changed },
+    detail: {
+      email: needle,
+      signalsUpdated: changed,
+      recipientRowsRemoved: rowIds.length,
+      signalsRemoved,
+      messagesRemoved,
+    },
   });
   return { ok: true };
 }
