@@ -144,3 +144,44 @@ input, textarea, select, button { color-scheme: inherit; }
 .set-grid code, .set-grid .break { overflow-wrap: anywhere; word-break: break-word; }
 
 :focus-visible { outline: 2px solid var(--rp-green); outline-offset: 2px; }
+
+/* ---------- Tables on narrow screens ----------
+   A six-column grid is 55px per column on a phone, which truncates every value
+   into uselessness. Below 700px the header row goes and each row becomes two
+   lines: the name, then the handful of facts that matter, each labelled from
+   its own data-label so the numbers are not bare. Columns marked sm-hide drop
+   entirely; showing everything would turn ten rows into a very long scroll. */
+@media (max-width: 700px) {
+  .row-head { display: none !important; }
+  .data-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 5px 12px !important;
+    padding: 13px 16px !important;
+  }
+  .data-row > * { min-width: 0; }
+  .data-row .dc-title {
+    order: 1;
+    flex: 1 1 auto;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    font-size: 14px !important;
+    line-height: 1.35 !important;
+  }
+  .data-row > div:last-child { order: 2; flex: 0 0 auto; }
+  .data-row .data-cell:not(.dc-title) { order: 3; font-size: 12.5px !important; }
+  .data-row .data-cell[data-label]:not(.dc-title):not(.sm-nolabel)::after {
+    content: " " attr(data-label);
+    color: var(--rp-faint);
+    text-transform: lowercase;
+    font-weight: 400;
+  }
+  .sm-hide { display: none !important; }
+  .stat-strip, .ov-tiles { grid-template-columns: 1fr 1fr !important; }
+  .lim-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 420px) {
+  .stat-strip, .ov-tiles { grid-template-columns: 1fr !important; }
+}

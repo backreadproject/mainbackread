@@ -103,12 +103,22 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   ];
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }} onClick={() => menuOpen && setMenuOpen(null)}>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}.t-menu-item:hover{background:var(--rp-hover)}.dc-in:focus{outline:none;border-color:var(--rp-green)}`}</style>
+      <style>{`
+        .t-row{transition:background .12s}
+        .t-row:hover{background:var(--rp-hover)}
+        .t-menu-item:hover{background:var(--rp-hover)}
+        .dc-in:focus{outline:none;border-color:var(--rp-green)}
+        @media (max-width: 700px){
+          .dc-bar-l, .dc-bar-r { width: 100%; flex-wrap: wrap; }
+          .dc-bar-l select, .dc-bar-r select { flex: 1 1 140px; min-width: 0 !important; }
+          .dc-bar-r input { flex: 1 1 100%; width: auto !important; }
+        }
+      `}</style>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{dp.title}</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{dp.subtitle} {dp.verdictHint}</p>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, margin: "26px 0 16px", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", gap: 9 }}>
+        <div className="dc-bar" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, margin: "26px 0 16px", flexWrap: "wrap" }}>
+          <div className="dc-bar-l" style={{ display: "flex", gap: 9 }}>
             <select value={view} onChange={(e) => setView(e.target.value as "active" | "archived")} style={{ ...sel, minWidth: 150 }}>
               <option value="active">{dp.active}</option>
               <option value="archived">{dp.archived}{archivedCount > 0 ? " (" + archivedCount + ")" : ""}</option>
@@ -127,7 +137,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
               </select>
             )}
           </div>
-          <div style={{ display: "flex", gap: 9, alignItems: "center" }}>
+          <div className="dc-bar-r" style={{ display: "flex", gap: 9, alignItems: "center" }}>
             <input className="dc-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={fr ? "Rechercher un document" : "Search a document"} style={{ ...sel, width: 240 }} />
             {view === "active" && abEnabled && <VariantUpload isOrg={isOrg} orgId={orgId} projects={projects} />}
             {view === "active" && (
@@ -162,9 +172,9 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
               <span className="data-cell" data-label={dp.colRecipients} style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{r.recipients}</span>
               <span className="data-cell" data-label={dp.colReads} style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{r.reads}</span>
               <span className="data-cell" data-label={dp.colQuestions} style={{ fontSize: 13.5, color: r.questions > 0 ? T.heading : T.faint, fontWeight: r.questions > 0 ? 500 : 400, fontVariantNumeric: "tabular-nums" }}>{r.questions}</span>
-              <span className="data-cell" data-label={dp.colProject} style={{ fontSize: 13.5, color: r.projectName ? T.body : T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "\u2014"}</span>
-              <span className="data-cell" data-label={dp.colAdded} style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(r.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
-              <span className="data-cell" data-label={dp.colStatus}>
+              <span className="data-cell sm-hide" data-label={dp.colProject} style={{ fontSize: 13.5, color: r.projectName ? T.body : T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.projectName ?? "\u2014"}</span>
+              <span className="data-cell sm-hide" data-label={dp.colAdded} style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(r.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
+              <span className="data-cell sm-nolabel" data-label={dp.colStatus}>
                 <span title={r.archived ? "Archived. Hidden from your active list; readers with the link can still open it." : r.recipients === 0 ? "Not shared yet. Nobody has been sent this document." : r.reads > 0 ? "Active. At least one recipient has opened it." : "Awaiting. Sent, but nobody has opened it yet."} style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading, cursor: "help" }}>
                   <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: r.archived ? T.faint : r.recipients === 0 ? T.faint : r.reads > 0 ? T.green : T.amber }} />
                   {r.archived ? dp.statusArchived : r.recipients === 0 ? (fr ? "Non partag\u00e9" : "Not shared") : r.reads > 0 ? dp.statusActive : dp.statusAwaiting}
