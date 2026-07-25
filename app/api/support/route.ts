@@ -43,10 +43,10 @@ export async function POST(req: NextRequest) {
     admin.rpc("bump_rate_limit", { p_bucket: `support:${sessionToken}:d`, p_window: dayWindow() }),
   ]);
   if (!h.error && Number(h.data) > PER_SESSION_PER_HOUR) {
-    return NextResponse.json({ answer: "You have asked a lot in a short time. Give it an hour, or email privacy@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+    return NextResponse.json({ answer: "You have asked a lot in a short time. Give it an hour, or email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
   }
   if (!d.error && Number(d.data) > PER_SESSION_PER_DAY) {
-    return NextResponse.json({ answer: "That is as much as I can help with today. Email privacy@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+    return NextResponse.json({ answer: "That is as much as I can help with today. Email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
   }
 
   // Who is asking, when we can tell. Never used to unlock anything.
