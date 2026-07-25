@@ -88,7 +88,7 @@ export default async function TiersPage() {
                 <span style={{ fontSize: 12.5, color: T.muted, fontFamily: mono, flex: "none" }}>{members.length}</span>
               </div>
               <div style={{ padding: 18 }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 22, marginBottom: members.length ? 16 : 0 }}>
+                <div className="lim-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0,1fr))", gap: 16, paddingBottom: members.length ? 16 : 0, marginBottom: members.length ? 16 : 0, borderBottom: members.length ? "1px solid " + T.borderSoft : "none" }}>
                   {limit("Docs / mo", cap(plan.limits.documentsPerMonth))}
                   {limit("Verdicts / doc", cap(plan.limits.verdictsPerDocumentPerMonth))}
                   {limit("Recipients / doc", cap(plan.limits.recipientsPerDocument))}
@@ -117,7 +117,7 @@ export default async function TiersPage() {
           );
         })}
       </main>
-      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}@media (max-width: 900px){ .stat-strip{ grid-template-columns: 1fr 1fr !important; } }`}</style>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}@media (max-width: 900px){ .stat-strip{ grid-template-columns: 1fr 1fr !important; } .lim-grid{ grid-template-columns: 1fr 1fr 1fr !important; } }@media (max-width: 560px){ .lim-grid{ grid-template-columns: 1fr 1fr !important; } }`}</style>
     </div>
   );
 }

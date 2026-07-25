@@ -104,7 +104,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
         </div>
         <div style={card}>
           <div style={head}>Ingestion</div>
-          <div style={{ padding: 18, display: "flex", flexWrap: "wrap", gap: 26 }}>
+          <div className="lim-grid" style={{ padding: 18, display: "grid", gridTemplateColumns: "repeat(5, minmax(0,1fr))", gap: 16 }}>
             {meta("Pages", doc.page_count ? String(doc.page_count) : "unknown")}
             {meta("Extract method", (doc.extract_method as string | null) || "none")}
             {meta("Needs OCR", doc.needs_page_ocr ? "yes" : "no", !!doc.needs_page_ocr)}
@@ -162,7 +162,7 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
           })}
         </div>
       </main>
-      <style>{`@media (max-width: 860px){ .stat-strip{ grid-template-columns: 1fr 1fr !important; } }`}</style>
+      <style>{`@media (max-width: 860px){ .stat-strip{ grid-template-columns: 1fr 1fr !important; } .lim-grid{ grid-template-columns: 1fr 1fr 1fr !important; } }@media (max-width: 560px){ .lim-grid{ grid-template-columns: 1fr 1fr !important; } }`}</style>
     </div>
   );
 }
