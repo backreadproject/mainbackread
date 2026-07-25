@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import { fetchJson, postJson } from "@/lib/fetch-json";
 type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string };
 const PANEL_WIDTH = 300;
 export default function NotificationBell() {
@@ -16,17 +17,18 @@ export default function NotificationBell() {
   const ref = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  // Polls every 30s, so a failure is silent on purpose: an error banner that
+  // reappears twice a minute is worse than a bell that quietly stays stale.
   async function load() {
     try {
-      const res = await fetch("/api/notifications");
-      const d = await res.json();
+      const d = await fetchJson<{ notifications?: Notif[]; unread?: number }>("/api/notifications", {}, 20000);
       setNotifs(d.notifications ?? []);
       setUnread(d.unread ?? 0);
     } catch {}
   }
   useEffect(() => {
     load();
-    const t = setInterval(load, 30000); // poll every 30s
+    const t = setInterval(load, 30000);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
@@ -47,9 +49,6 @@ export default function NotificationBell() {
     const el = btnRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    // The panel is wider than the 232px sidebar, so anchoring it to the bell leaves it
-    // straddling the edge. On desktop, start it just past the sidebar so it reads as one
-    // clean surface over the content. On mobile the sidebar is a drawer, so anchor as usual.
     const SIDEBAR = 232;
     const desktop = window.innerWidth > 1024;
     const preferred = desktop ? SIDEBAR + 8 : rect.left;
@@ -68,47 +67,53 @@ export default function NotificationBell() {
     return () => { window.removeEventListener("resize", reposition); window.removeEventListener("scroll", reposition, true); };
   }, [open]);
   async function markAll() {
-    await fetch("/api/notifications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ all: true }) });
     setNotifs((prev) => prev.map((n) => ({ ...n, read_at: new Date().toISOString() })));
     setUnread(0);
+    try { await postJson("/api/notifications", { all: true }, 20000); } catch { load(); }
   }
   async function openNotif(n: Notif) {
     if (!n.read_at) {
-      await fetch("/api/notifications", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: n.id }) });
       setUnread((u) => Math.max(0, u - 1));
       setNotifs((prev) => prev.map((x) => x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x));
+      try { await postJson("/api/notifications", { id: n.id }, 20000); } catch {}
     }
     if (n.link) window.location.href = n.link;
   }
   function timeAgo(iso: string) {
     const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
     if (s < 60) return nt.justNow;
-    if (s < 3600) return `${Math.floor(s / 60)}m`;
-    if (s < 86400) return `${Math.floor(s / 3600)}h`;
-    return `${Math.floor(s / 86400)}d`;
+    if (s < 3600) return Math.floor(s / 60) + "m";
+    if (s < 86400) return Math.floor(s / 3600) + "h";
+    return Math.floor(s / 86400) + "d";
   }
   return (
     <div ref={ref} style={{ position: "relative" }}>
-      <button ref={btnRef} onClick={toggle} aria-label={nt.title} style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 9, width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "rgba(255,255,255,0.85)" }}>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
-        {unread > 0 && <span style={{ position: "absolute", top: -4, right: -4, background: "var(--rp-danger)", color: "var(--rp-on-accent)", fontSize: 10, fontWeight: 700, minWidth: 16, height: 16, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{unread > 9 ? "9+" : unread}</span>}
+      {/* This button used to be styled with rgba white values from the old dark
+          sidebar. On a light sidebar that is white on white: invisible. */}
+      <button ref={btnRef} onClick={toggle} aria-label={nt.title} title={nt.title}
+        style={{ position: "relative", background: "transparent", border: "1px solid " + T.sidebarBorder, borderRadius: T.rBtn, width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.sidebarText, flex: "none" }}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 01-3.46 0" /></svg>
+        {unread > 0 && <span style={{ position: "absolute", top: -5, right: -5, background: T.danger, color: T.onAccent, fontSize: 10, fontWeight: 600, minWidth: 15, height: 15, borderRadius: 3, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>{unread > 9 ? "9+" : unread}</span>}
       </button>
       {open && createPortal(
-        <div ref={panelRef} style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: 12, boxShadow: "0 12px 40px rgba(15,23,41,0.16)", zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", borderBottom: `1px solid ${T.border}` }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nt.title}</span>
-            {unread > 0 && <button onClick={markAll} style={{ background: "none", border: "none", color: T.green, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: T.font }}>{nt.markAllRead}</button>}
+        <div ref={panelRef} style={{ position: "fixed", top: pos?.top ?? 0, left: pos?.left ?? 0, width: PANEL_WIDTH, maxWidth: "calc(100vw - 24px)", background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, zIndex: 1000, overflow: "hidden", fontFamily: T.font }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: T.soft, borderBottom: "1px solid " + T.border }}>
+            <span style={{ fontSize: 12.5, fontWeight: 600, color: T.body }}>{nt.title}</span>
+            {unread > 0 && <button onClick={markAll} style={{ background: "none", border: "none", color: T.greenText, fontSize: 12.5, cursor: "pointer", fontFamily: T.font, padding: 0, borderBottom: "1px solid " + T.greenBorder }}>{nt.markAllRead}</button>}
           </div>
           <div style={{ maxHeight: 380, overflowY: "auto" }}>
             {notifs.length === 0 ? (
               <p style={{ fontSize: 13, color: T.muted, padding: "24px 14px", textAlign: "center", margin: 0 }}>{nt.empty}</p>
-            ) : notifs.map((n) => (
-              <button key={n.id} onClick={() => openNotif(n)} style={{ display: "block", width: "100%", textAlign: "left", background: n.read_at ? "var(--rp-card)" : T.greenSoft, border: "none", borderBottom: `1px solid ${T.border}`, padding: "12px 14px", cursor: "pointer", fontFamily: T.font }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: T.heading }}>{n.title}</span>
-                  <span style={{ fontSize: 11, color: T.muted, whiteSpace: "nowrap" }}>{timeAgo(n.created_at)}</span>
+            ) : notifs.map((n, i) => (
+              <button key={n.id} onClick={() => openNotif(n)} style={{ display: "block", width: "100%", textAlign: "left", background: T.card, border: "none", borderBottom: i < notifs.length - 1 ? "1px solid " + T.borderSoft : "none", padding: "11px 14px", cursor: "pointer", fontFamily: T.font }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2, alignItems: "baseline" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: n.read_at ? 400 : 600, color: T.heading, minWidth: 0 }}>
+                    <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: n.read_at ? "transparent" : T.green }} />
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</span>
+                  </span>
+                  <span style={{ fontSize: 11.5, color: T.faint, whiteSpace: "nowrap", flex: "none" }}>{timeAgo(n.created_at)}</span>
                 </div>
-                {n.body && <p style={{ fontSize: 12, color: T.body, margin: 0, lineHeight: 1.4 }}>{n.body}</p>}
+                {n.body && <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 0 13px", lineHeight: 1.45 }}>{n.body}</p>}
               </button>
             ))}
           </div>
@@ -118,5 +123,3 @@ export default function NotificationBell() {
     </div>
   );
 }
-
-
