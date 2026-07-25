@@ -1,8 +1,8 @@
 ﻿import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type WebhookEvent = "reader.opened" | "reader.question" | "reader.forwarded";
-export const WEBHOOK_EVENTS: WebhookEvent[] = ["reader.opened", "reader.question", "reader.forwarded"];
+export type WebhookEvent = "reader.opened" | "reader.question" | "reader.forwarded" | "reader.replied";
+export const WEBHOOK_EVENTS: WebhookEvent[] = ["reader.opened", "reader.question", "reader.forwarded", "reader.replied"];
 
 // SSRF guard. Customer-supplied URLs must not be able to reach our own network.
 const BLOCKED = /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/i;
@@ -41,6 +41,11 @@ function slackBlurb(p: Payload): string {
     const a = String(p.data.answer ?? "").trim();
     const short = a.length > 320 ? a.slice(0, 320) + "\u2026" : a;
     return `*${who}* asked a question on _${p.document.title}_: "${q}"` + (short ? `\n> ${short}` : "");
+  }
+  if (p.event === "reader.replied") {
+    const t = String(p.data.text ?? "").trim();
+    const short = t.length > 400 ? t.slice(0, 400) + "\u2026" : t;
+    return `*${who}* replied on _${p.document.title}_:` + (short ? `\n> ${short}` : "");
   }
   if (p.event === "reader.forwarded") return `*${who}* forwarded _${p.document.title}_ to ${Number(p.data.colleagueCount ?? 0)} colleague(s).`;
   return `*${who}* opened _${p.document.title}_.`;

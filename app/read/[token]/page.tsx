@@ -1,10 +1,9 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import PdfReader from "./PdfReader";
 import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
 import { sourceForRecipient } from "@/lib/variants";
-
 // Neutral, un-branded metadata for the reader surface. This runs on relaydocuments.com
 // and must never fall back to the marketing default title (which names ReadProspects). We show
 // the document's own name in the tab and mark the page no-index so nothing branded leaks.
@@ -34,7 +33,6 @@ export async function generateMetadata({
     openGraph: { title: name, description: "You have received a document." },
   };
 }
-
 export default async function ReadPage({
   params,
 }: {
@@ -46,7 +44,7 @@ export default async function ReadPage({
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, first_name")
+    .select("id, first_name, email, document_id, documents ( owner_id, organization_id )")
     .eq("share_token", token)
     .single();
   const doc = recipient ? await sourceForRecipient(admin, recipient.id as string) : null;
@@ -59,10 +57,47 @@ export default async function ReadPage({
   }
   const firstName = (recipient.first_name as string | null)?.trim() || "";
   const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
+  const readerEmail = ((recipient.email as string | null) ?? "").trim();
+  const recDoc = recipient.documents as unknown as { owner_id: string; organization_id: string | null } | undefined;
+
+  // Was this reader forwarded the document by another reader? If so we must not
+  // name the sender: a forwarded colleague was told "Hero shared this with you"
+  // and has never heard of the account holder. Naming them would disclose a
+  // customer to someone the neutral domain exists to keep them from.
+  //
+  // A forwarded recipient always has an email, because /api/forward requires
+  // one, so a link-mode reader can never be forwarded and this never runs for
+  // them. Scoped to this document: being forwarded document A says nothing
+  // about how you received document B.
+  let wasForwarded = false;
+  if (readerEmail) {
+    const { data: fwd } = await admin
+      .from("signals")
+      .select("id, recipients!inner ( document_id )")
+      .eq("kind", "forwarded")
+      .eq("recipients.document_id", recipient.document_id as string)
+      .contains("value", { colleagues: [{ email: readerEmail }] })
+      .limit(1);
+    wasForwarded = (fwd ?? []).length > 0;
+  }
+
+  // Who shared this, named only for readers who were told that name already.
+  let senderName = "";
+  if (recDoc?.owner_id && !wasForwarded) {
+    const [{ data: prof }, orgRes] = await Promise.all([
+      admin.from("profiles").select("first_name, last_name").eq("id", recDoc.owner_id).single(),
+      recDoc.organization_id
+        ? admin.from("organizations").select("name").eq("id", recDoc.organization_id).single()
+        : Promise.resolve({ data: null }),
+    ]);
+    const personName = `${(prof?.first_name as string) || ""} ${(prof?.last_name as string) || ""}`.trim();
+    const orgName = ((orgRes as { data: { name?: string } | null }).data?.name ?? "").trim();
+    senderName = personName || orgName;
+  }
+  const senderFirst = senderName.split(/\s+/)[0] || "";
   const { data: signed } = await admin.storage
     .from("documents")
     .createSignedUrl(doc.storagePath, 3600);
-
   // Load the saved conversation (server-side, service-role only) so it restores on any
   // device that opens this link. reader_messages is invisible to account holders.
   const { data: messages } = await admin
@@ -74,7 +109,16 @@ export default async function ReadPage({
     role: (m.role === "doc" ? "doc" : "user") as "user" | "doc",
     text: (m.content as string) ?? "",
   }));
-
-  return <PdfReader title={doc.title} fileUrl={signed?.signedUrl ?? ""} token={token} greeting={greeting} initialThread={initialThread} />;
+  return (
+    <PdfReader
+      title={doc.title}
+      fileUrl={signed?.signedUrl ?? ""}
+      token={token}
+      greeting={greeting}
+      initialThread={initialThread}
+      senderName={senderName}
+      senderFirst={senderFirst}
+      readerEmail={readerEmail}
+    />
+  );
 }
-

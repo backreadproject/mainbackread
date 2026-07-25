@@ -87,7 +87,7 @@ function installModernPolyfills() {
 
 type Msg = { role: "user" | "doc"; text: string };
 
-export default function PdfReader({ title, fileUrl, token, greeting, initialThread = [] }: { title: string; fileUrl: string; token: string; greeting: string; initialThread?: Msg[] }) {
+export default function PdfReader({ title, fileUrl, token, greeting, initialThread = [], senderName = "", senderFirst = "", readerEmail = "" }: { title: string; fileUrl: string; token: string; greeting: string; initialThread?: Msg[]; senderName?: string; senderFirst?: string; readerEmail?: string }) {
   const locale = useLocale();
   const r = getDict(locale).readerPage;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -113,6 +113,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   const [fwdBusy, setFwdBusy] = useState(false);
   const [fwdErr, setFwdErr] = useState("");
   const [fwdDone, setFwdDone] = useState<string | null>(null);
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  // Prefilled for anyone we already have an address for. Link-mode readers have
+  // none, and they are exactly the readers who had no way to reply at all before.
+  const [replyEmail, setReplyEmail] = useState(readerEmail);
+  const [replyBusy, setReplyBusy] = useState(false);
+  const [replyErr, setReplyErr] = useState("");
+  const [replyDone, setReplyDone] = useState(false);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -255,6 +263,44 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
     done: fr ? "Termin\u00e9" : "Done",
     sentMsg: (n: number) => fr ? `${n} coll\u00e8gue(s) recevront leur propre lien par e-mail.` : `${n} colleague${n === 1 ? "" : "s"} will get their own link by email.`,
   };
+  // Named only when the page decided it was safe to name them. A forwarded
+  // colleague gets "the sender", because they were never told who that is.
+  const RP = {
+    btn: senderFirst ? (fr ? `R\u00e9pondre \u00e0 ${senderFirst}` : `Reply to ${senderFirst}`) : (fr ? "R\u00e9pondre \u00e0 l\u2019exp\u00e9diteur" : "Reply to the sender"),
+    btnShort: fr ? "R\u00e9pondre" : "Reply",
+    title: senderName ? (fr ? `R\u00e9pondre \u00e0 ${senderName}` : `Reply to ${senderName}`) : (fr ? "R\u00e9pondre \u00e0 l\u2019exp\u00e9diteur" : "Reply to the sender"),
+    sub: fr ? "Votre message lui parvient directement, avec ce document en r\u00e9f\u00e9rence." : "Your message goes straight to them, about this document.",
+    message: fr ? "Votre message" : "Your message",
+    messagePh: fr ? "\u00c9crivez votre r\u00e9ponse\u2026" : "Write your reply\u2026",
+    emailLabel: senderFirst ? (fr ? `O\u00f9 ${senderFirst} doit-il r\u00e9pondre ?` : `Where should ${senderFirst} reply?`) : (fr ? "O\u00f9 doit-on vous r\u00e9pondre ?" : "Where should they reply?"),
+    emailPh: "you@company.com",
+    needMessage: fr ? "\u00c9crivez d\u2019abord un message." : "Write a message first.",
+    needEmail: fr ? "Une adresse e-mail valide est requise." : "A valid email address is required.",
+    send: fr ? "Envoyer" : "Send reply",
+    sending: fr ? "Envoi\u2026" : "Sending\u2026",
+    cancel: fr ? "Annuler" : "Cancel",
+    failed: fr ? "L\u2019envoi a \u00e9chou\u00e9. R\u00e9essayez." : "That didn\u2019t send. Please try again.",
+    doneTitle: fr ? "R\u00e9ponse envoy\u00e9e" : "Reply sent",
+    doneMsg: senderFirst ? (fr ? `${senderFirst} la recevra par e-mail.` : `${senderFirst} will get it by email.`) : (fr ? "Elle sera transmise par e-mail." : "It will reach them by email."),
+    done: fr ? "Termin\u00e9" : "Done",
+    disclosure: fr ? "Votre message et votre adresse e-mail sont transmis \u00e0 la personne qui vous a envoy\u00e9 ce document." : "Your message and email address are shared with whoever sent you this document.",
+  };
+  async function submitReply() {
+    setReplyErr("");
+    const msg = replyText.trim();
+    const em = replyEmail.trim();
+    if (!msg) { setReplyErr(RP.needMessage); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { setReplyErr(RP.needEmail); return; }
+    setReplyBusy(true);
+    try {
+      const res = await fetch("/api/reply", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, message: msg, email: em }) });
+      const raw = await res.text();
+      let json: { error?: string } = {};
+      try { json = JSON.parse(raw); } catch { json = {}; }
+      if (!res.ok) { setReplyErr(json.error || RP.failed); setReplyBusy(false); return; }
+      setReplyDone(true); setReplyBusy(false);
+    } catch { setReplyErr(RP.failed); setReplyBusy(false); }
+  }
   const fwdInput = { width: "100%", boxSizing: "border-box" as const, border: `1px solid ${LINE}`, borderRadius: 6, padding: "9px 11px", fontFamily: AEON, fontSize: 13, color: INK, background: "#fff", outline: "none" } as const;
   async function submitForward() {
     setFwdErr("");
@@ -283,12 +329,13 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         @keyframes fwdGlow{0%,100%{box-shadow:0 0 0 0 rgba(31,169,113,0.5),0 6px 18px rgba(31,169,113,0.42)}50%{box-shadow:0 0 0 8px rgba(31,169,113,0),0 8px 26px rgba(31,169,113,0.62)}}
         @media (prefers-reduced-motion: reduce){.fx-fwd-glow{animation:none}}
         .fwd-short{display:none}
+        .rpl-short{display:none}
         .rdr-chev{display:none}
         @media ${MOBILE}{
           .rdr-grid{grid-template-columns:1fr !important;gap:0 !important;padding:10px !important;}
           .rdr-rail{display:none !important;}
           .rdr-title{display:none !important;}
-          .fwd-full{display:none !important;}.fwd-short{display:inline !important;}.fx-fwd{margin-left:auto !important;}
+          .fwd-full{display:none !important;}.fwd-short{display:inline !important;}.fx-fwd{margin-left:auto !important;}.rpl-full{display:none !important;}.rpl-short{display:inline !important;}
           .rdr-main{padding-bottom:132px !important;}
           .rdr-aside{position:fixed !important;top:auto !important;bottom:0 !important;left:0 !important;right:0 !important;height:auto !important;max-height:86vh !important;border-radius:6px 6px 0 0 !important;z-index:40 !important;border-top:1px solid ${LINE} !important;box-shadow:none !important;}
           .rdr-handle{display:block;width:40px;height:4px;border-radius:4px;background:#D7DED8;margin:8px auto 0;}
@@ -308,6 +355,10 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           </span>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
           <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "38%" }}>{title}</h1>
+            <button onClick={() => { setReplyOpen(true); setReplyDone(false); setReplyErr(""); }} style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: "#fff", color: GREEN, border: `1px solid ${GREEN}`, borderRadius: 6, padding: "8px 13px", fontSize: 13, fontWeight: 500, fontFamily: AEON, cursor: "pointer" }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 016 6v1" /></svg>
+              <span className="rpl-full">{RP.btn}</span><span className="rpl-short">{RP.btnShort}</span>
+            </button>
           <button onClick={() => { setForwardOpen(true); setFwdDone(null); setFwdErr(""); }} className="fx-fwd fx-fwd-glow" style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: GREEN, color: "#fff", border: "none", borderRadius: 6, padding: "8px 13px", fontSize: 13, fontWeight: 500, fontFamily: AEON, cursor: "pointer" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12h13M11 6l6 6-6 6" /><path d="M17 5h3v3" /></svg>
             <span className="fwd-full">{F.btn}</span><span className="fwd-short">{F.btnShort}</span>
@@ -368,6 +419,43 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           </div>
         </aside>
       </div>
+      {replyOpen && (
+        <div onClick={() => setReplyOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(17,26,22,0.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "26px 16px", overflowY: "auto" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, background: "#fff", border: `1px solid ${LINE}`, borderRadius: 6, boxShadow: "0 12px 32px -12px rgba(15,40,28,0.22)", fontFamily: AEON, overflow: "hidden" }}>
+            {replyDone ? (
+              <div style={{ padding: 28, textAlign: "center" }}>
+                <div style={{ width: 40, height: 40, borderRadius: 6, background: GREEN_SOFT, color: GREEN, display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: INK, margin: "0 0 4px" }}>{RP.doneTitle}</h3>
+                <p style={{ fontSize: 14, color: BODY, margin: "0 0 18px" }}>{RP.doneMsg}</p>
+                <button onClick={() => setReplyOpen(false)} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 6, padding: "9px 16px", fontSize: 14, fontWeight: 500, fontFamily: AEON, cursor: "pointer" }}>{RP.done}</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ padding: "18px 20px 4px" }}>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: INK }}>{RP.title}</h3>
+                  <p style={{ margin: "5px 0 0", fontSize: 13, color: BODY, lineHeight: 1.5 }}>{RP.sub}</p>
+                </div>
+                <div style={{ padding: "14px 20px 4px" }}>
+                  <label style={{ display: "block", fontSize: 12, color: BODY, marginBottom: 5 }}>{RP.message}</label>
+                  <textarea className="fx-in" value={replyText} onChange={(e) => setReplyText(e.target.value)} rows={5} maxLength={2000} placeholder={RP.messagePh} style={{ ...fwdInput, resize: "vertical", marginBottom: 12, lineHeight: 1.55 }} />
+                  <label style={{ display: "block", fontSize: 12, color: BODY, marginBottom: 5 }}>{RP.emailLabel}</label>
+                  <input className="fx-in" type="email" value={replyEmail} onChange={(e) => setReplyEmail(e.target.value)} placeholder={RP.emailPh} style={fwdInput} />
+                </div>
+                <div style={{ padding: "12px 20px 0" }}>
+                  <div style={{ fontSize: 12, color: SLATE, lineHeight: 1.55, padding: "10px 12px", background: CANVAS, border: `1px solid ${LINE}`, borderRadius: 6 }}>{RP.disclosure} <a href="/privacy" className="rdr-fine" style={{ color: SLATE, textDecoration: "none" }}>{F.privacy}</a></div>
+                </div>
+                {replyErr && <p style={{ fontSize: 13, color: "#B42318", margin: "12px 20px 0" }}>{replyErr}</p>}
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, padding: "14px 20px 18px" }}>
+                  <button onClick={() => setReplyOpen(false)} style={{ background: "#fff", border: `1px solid ${LINE}`, borderRadius: 6, padding: "9px 14px", fontSize: 14, fontWeight: 500, color: BODY, fontFamily: AEON, cursor: "pointer" }}>{RP.cancel}</button>
+                  <button onClick={submitReply} disabled={replyBusy} style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 6, padding: "9px 14px", fontSize: 14, fontWeight: 500, fontFamily: AEON, cursor: "pointer", opacity: replyBusy ? 0.6 : 1 }}>{replyBusy ? RP.sending : RP.send}</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       {forwardOpen && (
         <div onClick={() => setForwardOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(17,26,22,0.45)", display: "flex", alignItems: "flex-start", justifyContent: "center", zIndex: 100, padding: "26px 16px", overflowY: "auto" }}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, background: "#fff", border: `1px solid ${LINE}`, borderRadius: 6, boxShadow: "0 12px 32px -12px rgba(15,40,28,0.22)", fontFamily: AEON, overflow: "hidden" }}>
