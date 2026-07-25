@@ -56,11 +56,19 @@ export async function POST(req: NextRequest) {
     .order("created_at", { ascending: true });
 
   const rows = (signals ?? []) as SignalRow[];
-  const input = buildVerdictInput(recipient as RecipientLite, doc, rows);
 
-  const { data, cost } = await runAI(verdictTask, input, { documentId: doc.title });
-
-  await logUsage(admin, "verdict", { userId: user.id, orgId: ctx.orgId, documentId: doc.id });
-
-  return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
+  // Everything below can throw: a missing API key, a model error, a response
+  // that fails schema validation, or a document with no extracted text. An
+  // unhandled throw here becomes a bare 500 HTML page, which tells the sender
+  // nothing and tells us nothing without digging through platform logs.
+  try {
+    const input = buildVerdictInput(recipient as RecipientLite, doc, rows);
+    const { data, cost } = await runAI(verdictTask, input, { documentId: doc.title });
+    await logUsage(admin, "verdict", { userId: user.id, orgId: ctx.orgId, documentId: doc.id });
+    return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("[verdict-live] failed", { recipientId, documentId: doc.id, hasText: !!doc.extracted_text, error: msg });
+    return NextResponse.json({ error: "Could not read this reader: " + msg }, { status: 500 });
+  }
 }

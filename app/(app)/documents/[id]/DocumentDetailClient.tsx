@@ -59,7 +59,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
       clearTimeout(kill);
       const text = await res.text();
       let json: { verdict?: Verdict; error?: string } = {};
-      try { json = JSON.parse(text); } catch { throw new Error("Server returned " + res.status + ". The request may have timed out."); }
+      try { json = JSON.parse(text); } catch { throw new Error("Server returned " + res.status + " and no error detail. Check the server logs."); }
       if (!res.ok) throw new Error(json.error ?? dd.couldntRead);
       if (!json.verdict) throw new Error(dd.couldntRead);
       setVerdicts((p) => ({ ...p, [id]: json.verdict as Verdict }));
