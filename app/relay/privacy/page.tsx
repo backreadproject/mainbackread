@@ -31,7 +31,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function RelayPrivacy() {
-  const updated = "24 July 2026";
+  const updated = "25 July 2026";
   const mail = { color: GREEN, fontWeight: 600, textDecoration: "none" };
   return (
     <div style={{ minHeight: "100vh", background: CANVAS, fontFamily: FONT, color: BODY }}>
@@ -58,6 +58,9 @@ export default function RelayPrivacy() {
             returned to a page, any questions you type into the document, and whether you forward it. We also process the
             technical information your browser sends, including your IP address, which our hosting providers record in order
             to deliver the page.
+            <br /><br />
+            If you choose to reply to the sender, we also handle the message you write and the email address you give us for
+            them to reply to. Unlike everything above, you supply this yourself, and only if you decide to.
           </Section>
 
           <Section title="Why we handle it">
@@ -69,13 +72,14 @@ export default function RelayPrivacy() {
           <Section title="What the sender can see">
             The person who shared the document can see your reading activity, including the questions you asked. If they have
             connected an alert service such as Slack, your question and the answer are delivered to them at the moment you
-            ask.
+            ask. The same applies to a reply: if you send one, it reaches them by email, in their account, and at any alert
+            service they have connected.
           </Section>
 
           <Section title="Assessment of your reading">
             The sender can also generate an assessment of how you read. It analyses your behaviour, what you spent time on,
-            what you returned to, what you asked, whether you forwarded it, and produces a written interpretation of what you
-            appear to be considering and what the sender might do next. Under data protection law this is profiling, and you
+            what you returned to, what you asked, whether you forwarded it, and anything you replied, and produces a written
+            interpretation of what you appear to be considering and what the sender might do next. Under data protection law this is profiling, and you
             can object to it using the contact below.
             <br /><br />
             An assessment of this kind is an inference drawn from limited evidence. It can be wrong, and it is not a
@@ -95,6 +99,18 @@ export default function RelayPrivacy() {
             for advertising.
           </Section>
 
+          <Section title="If you reply to the sender">
+            The document page has a reply button. If you use it, your message and the email address you enter are sent to the
+            person who shared the document with you: by email, in their ReadProspects account, and to any alert service they
+            have connected, such as Slack. They can reply to you directly at the address you gave.
+            <br /><br />
+            We keep the address so that the person who shared the document can contact you about it. Your message is also read
+            by the assessment described above when the sender generates one, which means it is sent to Anthropic in the United
+            States along with the document. It is not used to train any AI model.
+            <br /><br />
+            You do not have to reply, and nothing is sent until you press send. If you would rather not give an email address,
+            you can simply not use the button.
+          </Section>
           <Section title="If you forward the document">
             Each colleague you name receives their own link and can see that you shared it. The sender is told that the
             document was forwarded. Please provide someone&rsquo;s contact details only if you are entitled to.
@@ -102,7 +118,8 @@ export default function RelayPrivacy() {
 
           <Section title="Your rights">
             You can ask us for a copy of the information we hold about you, ask us to correct it, ask us to delete it
-            entirely, or object to the assessment described above. If someone forwarded a document to you and gave us your
+            entirely, or object to the assessment described above. This covers anything you sent us through the reply button,
+            including the address you gave. If someone forwarded a document to you and gave us your
             details, you can ask us to remove them.
             <br /><br />
             The person who sent you the document decides what is collected, so contacting them directly is often fastest. You
