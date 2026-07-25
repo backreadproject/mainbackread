@@ -2,7 +2,7 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
-import { LayoutGrid, FileText, Users, Building2, Layers, LifeBuoy, ScrollText, type LucideIcon } from "lucide-react";
+import { LayoutGrid, FileText, Users, Building2, Layers, LifeBuoy, ScrollText, ShieldCheck, type LucideIcon } from "lucide-react";
 import ThemeToggle from "@/app/(app)/ThemeToggle";
 const ADMIN_SLUG = "console-7f3ab9c2";
 type Item = { href: string; label: string; Icon: LucideIcon };
@@ -16,6 +16,7 @@ export default function AdminSidebar({ email }: { email: string }) {
     { href: `${base}/orgs`, label: "Organizations", Icon: Building2 },
     { href: `${base}/tiers`, label: "Tiers", Icon: Layers },
     { href: `${base}/support`, label: "Support", Icon: LifeBuoy },
+    { href: `${base}/erasures`, label: "Erasures", Icon: ShieldCheck },
     { href: `${base}/audit`, label: "Audit log", Icon: ScrollText },
   ];
   async function signOut() {
