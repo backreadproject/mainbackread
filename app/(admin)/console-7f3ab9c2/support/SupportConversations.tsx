@@ -1,119 +1,118 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { T, microLabel } from "@/lib/theme";
-
+import { T } from "@/lib/theme";
+import { postJson, errMsg } from "@/lib/fetch-json";
 type Msg = { id: string; role: string; content: string; created_at: string };
 type Conv = {
   id: string; email: string | null; name: string | null; surface: string; status: string;
   last_message_at: string; escalated_at: string | null; messages: Msg[];
 };
-
 export default function SupportConversations({ conversations }: { conversations: Conv[] }) {
   const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(conversations[0]?.id ?? null);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-
   const conv = conversations.find((c) => c.id === openId) ?? null;
   const mono = "'DM Mono', ui-monospace, monospace";
-
   async function call(action: string, message?: string) {
     if (!conv) return;
     setBusy(true); setErr("");
-    const res = await fetch("/api/admin/support-action", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ conversationId: conv.id, action, message }),
-    });
-    setBusy(false);
-    if (!res.ok) { const j = await res.json().catch(() => ({})); setErr(j.error || "Failed."); return; }
-    setDraft("");
-    router.refresh();
+    try {
+      await postJson("/api/admin/support-action", { conversationId: conv.id, action, message });
+      setDraft("");
+      router.refresh();
+    } catch (e) {
+      setErr(errMsg(e, "Failed."));
+    } finally {
+      setBusy(false);
+    }
   }
-
-  const pill = (status: string) => {
-    const map: Record<string, [string, string, string]> = {
-      escalated: ["var(--rp-amber-soft)", "var(--rp-amber-text)", "needs you"],
-      answered: ["var(--rp-indigo-soft)", "var(--rp-indigo-text)", "answered"],
-      bot: [T.pillNeutralBg, T.body, "bot only"],
-      closed: [T.pillNeutralBg, T.muted, "closed"],
+  const statusOf = (status: string): [string, string] => {
+    const map: Record<string, [string, string]> = {
+      escalated: [T.amber, "needs you"],
+      answered: [T.indigo, "answered"],
+      bot: [T.faint, "bot only"],
+      closed: [T.faint, "closed"],
     };
-    const [bg, fg, label] = map[status] ?? map.bot;
-    return <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: T.rPill, background: bg, color: fg, flex: "none" }}>{label}</span>;
+    return map[status] ?? map.bot;
   };
-
+  const state = (status: string) => {
+    const [dot, label] = statusOf(status);
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted, flex: "none", whiteSpace: "nowrap" }}>
+        <i style={{ width: 6, height: 6, borderRadius: 2, background: dot }} />{label}
+      </span>
+    );
+  };
+  const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow } as const;
+  const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body } as const;
   if (conversations.length === 0) {
     return (
-      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 22, marginTop: 24 }}>
-        <div style={{ ...microLabel, marginBottom: 6 }}>Conversations</div>
-        <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>Nobody has used the support chat yet.</p>
+      <div style={{ ...card, marginTop: 18 }}>
+        <div style={head}>Conversations</div>
+        <div style={{ padding: 40, textAlign: "center" }}><p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>Nobody has used the support chat yet.</p></div>
       </div>
     );
   }
-
   return (
-    <div style={{ marginTop: 24 }}>
-      <div style={{ ...microLabel, marginBottom: 10 }}>Conversations</div>
-      <div style={{ display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gap: 14, alignItems: "start" }}>
-
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, overflow: "hidden", maxHeight: 520, overflowY: "auto" }}>
-          {conversations.map((c, i) => (
-            <button key={c.id} onClick={() => { setOpenId(c.id); setErr(""); }}
-              style={{ display: "block", width: "100%", textAlign: "left", background: c.id === openId ? T.greenSoft : "var(--rp-card)", border: "none", borderTop: i ? `1px solid ${T.border}` : "none", padding: "11px 13px", cursor: "pointer", fontFamily: T.font }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 3 }}>
-                <span style={{ fontSize: 13, fontWeight: 600, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {c.name || c.email || "Anonymous visitor"}
-                </span>
-                {pill(c.status)}
-              </div>
-              <div style={{ fontSize: 11, color: T.muted, fontFamily: mono }}>
-                {c.surface} {"\u00b7"} {new Date(c.last_message_at).toLocaleDateString()} {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </div>
-            </button>
-          ))}
+    <div style={{ marginTop: 18 }}>
+      <div className="sc-grid" style={{ display: "grid", gridTemplateColumns: "260px minmax(0,1fr)", gap: 14, alignItems: "start" }}>
+        <div style={{ ...card, overflow: "hidden" }}>
+          <div style={head}>Conversations</div>
+          <div style={{ maxHeight: 480, overflowY: "auto" }}>
+            {conversations.map((c, i) => (
+              <button key={c.id} onClick={() => { setOpenId(c.id); setErr(""); }} className="sc-item"
+                style={{ display: "block", width: "100%", textAlign: "left", background: c.id === openId ? T.greenSoft : T.card, border: "none", borderBottom: i < conversations.length - 1 ? "1px solid " + T.borderSoft : "none", padding: "11px 13px", cursor: "pointer", fontFamily: T.font }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", marginBottom: 3 }}>
+                  <span style={{ fontSize: 13, fontWeight: c.id === openId ? 600 : 400, color: c.id === openId ? T.greenText : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {c.name || c.email || "Anonymous visitor"}
+                  </span>
+                  {state(c.status)}
+                </div>
+                <div style={{ fontSize: 11.5, color: T.faint, fontFamily: mono }}>
+                  {c.surface} {"\u00b7"} {new Date(c.last_message_at).toLocaleDateString()} {new Date(c.last_message_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
-
-        <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, display: "flex", flexDirection: "column", minHeight: 360, maxHeight: 520 }}>
+        <div style={{ ...card, display: "flex", flexDirection: "column", minHeight: 360, maxHeight: 520 }}>
           {!conv ? (
-            <div style={{ padding: 22, fontSize: 13, color: T.muted }}>Pick a conversation.</div>
+            <div style={{ padding: 40, textAlign: "center", fontSize: 13.5, color: T.muted }}>Pick a conversation.</div>
           ) : (
             <>
-              <div style={{ padding: "13px 16px", borderBottom: `1px solid ${T.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{conv.name || "Anonymous visitor"}</div>
-                  <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
-                    {conv.email || "no email on file"} {"\u00b7"} {conv.surface} site
-                  </div>
-                </div>
+              <div style={{ ...head, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {conv.name || "Anonymous visitor"}
+                  <span style={{ color: T.muted, fontWeight: 400 }}> {"\u00b7"} {conv.email || "no email on file"} {"\u00b7"} {conv.surface}</span>
+                </span>
                 {conv.status !== "closed" && (
-                  <button onClick={() => call("close")} disabled={busy} style={{ background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "6px 12px", fontSize: 13, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
+                  <button onClick={() => call("close")} disabled={busy} style={{ height: 28, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer", flex: "none" }}>Close</button>
                 )}
               </div>
-
-              <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", background: T.canvas }}>
+              <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px" }}>
                 {conv.messages.filter((m) => !m.content.startsWith("[contact]")).map((m) => (
                   <div key={m.id} style={{ display: "flex", justifyContent: m.role === "user" ? "flex-start" : "flex-end", marginBottom: 9 }}>
-                    <div style={{ maxWidth: "80%", padding: "9px 12px", borderRadius: 12, fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word",
-                      background: m.role === "user" ? "var(--rp-card)" : m.role === "human" ? T.green : "var(--rp-indigo-soft)",
-                      color: m.role === "human" ? "var(--rp-on-accent)" : T.heading,
-                      border: m.role === "user" ? `1px solid ${T.border}` : "none" }}>
-                      {m.role === "assistant" && <div style={{ fontSize: 10, fontWeight: 700, color: "var(--rp-indigo-text)", marginBottom: 3 }}>BOT</div>}
-                      {m.role === "human" && <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.75)", marginBottom: 3 }}>YOU</div>}
+                    <div style={{ maxWidth: "82%", padding: "9px 12px", borderRadius: T.rCard, fontSize: 13, lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word",
+                      background: m.role === "human" ? T.green : T.card,
+                      color: m.role === "human" ? T.onAccent : T.heading,
+                      border: m.role === "human" ? "none" : "1px solid " + T.border }}>
+                      {m.role === "assistant" && <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.muted, marginBottom: 4 }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.indigo }} />Bot</div>}
+                      {m.role === "human" && <div style={{ fontSize: 11.5, color: T.onAccent, marginBottom: 4 }}>You</div>}
                       {m.content}
                     </div>
                   </div>
                 ))}
               </div>
-
-              {err && <p style={{ fontSize: 13, color: "var(--rp-danger-text)", margin: 0, padding: "8px 16px 0" }}>{err}</p>}
-
-              <div style={{ borderTop: `1px solid ${T.border}`, padding: 12, display: "flex", gap: 8 }}>
-                <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2}
+              {err && <div style={{ background: T.dangerSoft, borderTop: "1px solid " + T.dangerBorder, padding: "10px 16px", fontSize: 13, color: T.dangerText }}>{err}</div>}
+              <div style={{ borderTop: "1px solid " + T.border, padding: 12, display: "flex", gap: 8, flexShrink: 0 }}>
+                <textarea className="sc-in" value={draft} onChange={(e) => setDraft(e.target.value)} rows={2}
                   placeholder={conv.email ? "Your reply. Sent here and by email." : "Your reply. No email on file, so they will only see it in the chat."}
-                  style={{ flex: 1, minWidth: 0, border: `1px solid ${T.border}`, borderRadius: 10, padding: "9px 11px", fontSize: 13, fontFamily: T.font, resize: "vertical", background: "var(--rp-card)" }} />
+                  style={{ flex: 1, minWidth: 0, boxSizing: "border-box", border: "1px solid " + T.border, borderRadius: T.rInput, padding: "9px 11px", fontSize: 13, fontFamily: T.font, resize: "vertical", background: T.card, color: T.heading, lineHeight: 1.55 }} />
                 <button onClick={() => call("reply", draft)} disabled={busy || !draft.trim()}
-                  style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
+                  style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", flex: "none", alignSelf: "flex-end", opacity: busy || !draft.trim() ? 0.5 : 1 }}>
                   {busy ? "Sending..." : "Reply"}
                 </button>
               </div>
@@ -121,7 +120,7 @@ export default function SupportConversations({ conversations }: { conversations:
           )}
         </div>
       </div>
+      <style>{`.sc-in:focus{outline:none;border-color:var(--rp-green)}.sc-item{transition:background .12s}@media (max-width: 900px){ .sc-grid{ grid-template-columns: 1fr !important; } }`}</style>
     </div>
   );
 }
-

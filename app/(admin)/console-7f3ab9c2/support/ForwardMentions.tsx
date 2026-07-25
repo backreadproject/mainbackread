@@ -1,89 +1,87 @@
-﻿"use client";
+"use client";
 import { useState } from "react";
-import { T, microLabel } from "@/lib/theme";
+import { T } from "@/lib/theme";
 import ConfirmDialog from "../ConfirmDialog";
-
+import { postJson, errMsg } from "@/lib/fetch-json";
 type Mention = { signalId: string; recipientId: string; readerName: string; documentTitle: string; colleagueName: string; at: string };
-
 export default function ForwardMentions() {
   const [email, setEmail] = useState("");
   const [searched, setSearched] = useState("");
   const [mentions, setMentions] = useState<Mention[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
-
+  const [err, setErr] = useState("");
+  // This is an erasure tool. A silent failure showing "no forwards name X" is
+  // the worst possible answer here: it reads as "nothing to erase" when the
+  // truth may be the opposite, and someone acts on that.
   async function find() {
     if (!email.trim()) return;
-    setBusy(true); setMsg("");
-    const res = await fetch("/api/admin/erase-mentions", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), action: "find" }),
-    });
-    const j = await res.json().catch(() => ({}));
-    setBusy(false);
-    setSearched(email.trim());
-    setMentions(j.mentions ?? []);
+    setBusy(true); setMsg(""); setErr(""); setMentions([]);
+    try {
+      const j = await postJson<{ mentions?: Mention[] }>("/api/admin/erase-mentions", { email: email.trim(), action: "find" });
+      setSearched(email.trim());
+      setMentions(j.mentions ?? []);
+    } catch (e) {
+      setSearched("");
+      setErr(errMsg(e, "Could not run that search."));
+    } finally {
+      setBusy(false);
+    }
   }
-
   const mono = "'DM Mono', ui-monospace, monospace";
-
   return (
-    <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginTop: 24 }}>
-      <div style={{ ...microLabel, marginBottom: 6 }}>Forwarded colleagues</div>
-      <p style={{ fontSize: 13, color: T.body, lineHeight: 1.5, margin: "0 0 14px" }}>
-        People named when a reader forwarded a document. They have no account and no reader link, so this is the only way to erase them on request.
-      </p>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-        <input
-          value={email} onChange={(e) => setEmail(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && find()}
-          placeholder="Their email address"
-          style={{ flex: 1, background: "var(--rp-card)", color: T.heading, border: `1px solid ${T.border}`, borderRadius: T.rInput, padding: "9px 12px", fontSize: 14, fontFamily: T.font }}
-        />
-        <button onClick={find} disabled={busy || !email.trim()} style={{ background: T.green, color: "var(--rp-on-accent)", border: "none", borderRadius: T.rBtn, padding: "9px 18px", fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer", opacity: busy || !email.trim() ? 0.5 : 1 }}>
-          {busy ? "Looking..." : "Find"}
-        </button>
+    <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginTop: 18 }}>
+      <div style={{ padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body }}>Forwarded colleagues</div>
+      <div style={{ padding: 18 }}>
+        <p style={{ fontSize: 13.5, color: T.muted, lineHeight: 1.55, margin: "0 0 14px" }}>
+          People named when a reader forwarded a document. They have no account and no reader link, so this is the only way to erase them on request.
+        </p>
+        <div style={{ display: "flex", gap: 9, marginBottom: 14 }}>
+          <input className="fm-in" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && find()} placeholder="Their email address"
+            style={{ flex: 1, height: 34, boxSizing: "border-box", background: T.card, color: T.heading, border: "1px solid " + T.border, borderRadius: T.rInput, padding: "0 11px", fontSize: 13.5, fontFamily: T.font }} />
+          <button onClick={find} disabled={busy || !email.trim()} style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", opacity: busy || !email.trim() ? 0.5 : 1 }}>
+            {busy ? "Looking..." : "Find"}
+          </button>
+        </div>
+        <style>{`.fm-in:focus{outline:none;border-color:var(--rp-green)}`}</style>
+        {err && <div style={{ background: T.dangerSoft, border: "1px solid " + T.dangerBorder, borderRadius: T.rCard, padding: "11px 13px", fontSize: 13.5, color: T.dangerText, lineHeight: 1.5 }}>{err}</div>}
+        {!err && searched && mentions.length === 0 && !busy && (
+          <p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>No forwards name {searched}.</p>
+        )}
+        {mentions.length > 0 && (
+          <>
+            <p style={{ fontSize: 13.5, color: T.heading, margin: "0 0 10px" }}>
+              {mentions.length} forward{mentions.length === 1 ? "" : "s"} name{mentions.length === 1 ? "s" : ""} {searched}.
+            </p>
+            <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 14 }}>
+              {mentions.map((m, i) => (
+                <div key={m.signalId} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 12px", borderBottom: i < mentions.length - 1 ? "1px solid " + T.borderSoft : "none", fontSize: 13 }}>
+                  <span style={{ color: T.heading, minWidth: 0 }}>{m.readerName} forwarded {m.documentTitle}{m.colleagueName !== "unnamed" ? " to " + m.colleagueName : ""}</span>
+                  <span style={{ color: T.faint, fontFamily: mono, fontSize: 12, flex: "none" }}>{new Date(m.at).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+            <ConfirmDialog
+              triggerLabel="Erase this person"
+              title="Erase this person from every forward?"
+              body="Their name and email are removed from each forward that mentions them. The forward itself stays, so the sender's counts remain accurate, but this person is no longer identifiable. This cannot be undone."
+              expected={searched}
+              confirmLabel="Erase permanently"
+              onConfirm={async () => {
+                try {
+                  await postJson("/api/admin/erase-mentions", { email: searched, action: "erase", confirmText: searched });
+                  setMentions([]);
+                  setMsg("Erased " + searched + " from all forwards.");
+                  return { ok: true };
+                } catch (e) {
+                  return { ok: false, error: errMsg(e, "Failed.") };
+                }
+              }}
+            />
+          </>
+        )}
+        {msg && <p style={{ fontSize: 13.5, color: T.greenText, margin: "12px 0 0" }}>{msg}</p>}
       </div>
-
-      {searched && mentions.length === 0 && !busy && (
-        <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>No forwards name {searched}.</p>
-      )}
-
-      {mentions.length > 0 && (
-        <>
-          <p style={{ fontSize: 13, color: T.heading, margin: "0 0 10px" }}>
-            {mentions.length} forward{mentions.length === 1 ? "" : "s"} name{mentions.length === 1 ? "s" : ""} <strong>{searched}</strong>.
-          </p>
-          <div style={{ marginBottom: 14 }}>
-            {mentions.map((m, i) => (
-              <div key={m.signalId} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "9px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13 }}>
-                <span style={{ color: T.heading }}>{m.readerName} forwarded <em>{m.documentTitle}</em>{m.colleagueName !== "unnamed" ? ` to ${m.colleagueName}` : ""}</span>
-                <span style={{ color: T.muted, fontFamily: mono, fontSize: 12, flex: "none" }}>{new Date(m.at).toLocaleDateString()}</span>
-              </div>
-            ))}
-          </div>
-          <ConfirmDialog
-            triggerLabel="Erase this person"
-            title="Erase this person from every forward?"
-            body="Their name and email are removed from each forward that mentions them. The forward itself stays, so the sender's counts remain accurate, but this person is no longer identifiable. This cannot be undone."
-            expected={searched}
-            confirmLabel="Erase permanently"
-            onConfirm={async () => {
-              const res = await fetch("/api/admin/erase-mentions", {
-                method: "POST", headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email: searched, action: "erase", confirmText: searched }),
-              });
-              if (res.ok) { setMentions([]); setMsg(`Erased ${searched} from all forwards.`); return { ok: true }; }
-              const j = await res.json().catch(() => ({}));
-              return { ok: false, error: j.error || "Failed." };
-            }}
-          />
-        </>
-      )}
-
-      {msg && <p style={{ fontSize: 13, color: T.greenText, margin: "12px 0 0" }}>{msg}</p>}
     </div>
   );
 }
-
