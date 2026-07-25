@@ -11,7 +11,7 @@ export default function DocumentActions({ documentId, title, archived }: { docum
   async function toggleArchive() {
     setBusy(true); setErr("");
     try {
-      await postJson("/api/admin/delete-document", { documentId, action: archived ? "restore" : "archive" });
+      await postJson("/api/admin/delete-document", { documentId, mode: "archive", archived: !archived });
       router.refresh();
     } catch (e) {
       setErr(errMsg(e, "Failed."));
@@ -34,7 +34,7 @@ export default function DocumentActions({ documentId, title, archived }: { docum
           confirmLabel="Delete permanently"
           onConfirm={async () => {
             try {
-              await postJson("/api/admin/delete-document", { documentId, action: "delete", confirmText: title });
+              await postJson("/api/admin/delete-document", { documentId, mode: "delete", confirmText: title });
               setTimeout(() => router.push("/console-7f3ab9c2/documents"), 0);
               return { ok: true };
             } catch (e) {
