@@ -5,7 +5,7 @@ import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { Eye, MessageSquare, FileText } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-type Reader = { id: string; name: string; doc: string; opens: number; questions: number; lastAt: string; intent: number };
+type Reader = { id: string; name: string; doc: string; opens: number; questions: number; lastAt: string; intent: number; replied?: boolean };
 type Stats = { documents: number; recipients: number; reads: number; questions: number };
 type Ev = { text: string; at: string; kind: string };
 type Doc = { id: string; title: string; reads: number; spark: number[] };
@@ -83,8 +83,9 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   function ago(iso: string) { if (!iso) return "\u2014"; const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000); if (s < 60) return o.justNow; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; return Math.floor(s / 86400) + "d"; }
   const today = new Date().toLocaleDateString(fr ? "fr-FR" : undefined, { weekday: "long", month: "short", day: "numeric" });
   const initials = (n: string) => n.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-  function verdict(intent: number) { if (intent >= READY) return { label: L.vReady, cls: "ready" }; if (intent >= WARM) return { label: L.vWarm, cls: "warm" }; return { label: L.vGlance, cls: "glanced" }; }
-  function whyOf(op: number, q: number) {
+  function verdict(intent: number, replied?: boolean) { if (replied) return { label: L.vReplied, cls: "replied" }; if (intent >= READY) return { label: L.vReady, cls: "ready" }; if (intent >= WARM) return { label: L.vWarm, cls: "warm" }; return { label: L.vGlance, cls: "glanced" }; }
+  function whyOf(op: number, q: number, replied?: boolean) {
+    if (replied) return L.whyReplied;
     if (q >= 1 && op >= 2) return fr ? "A relu le document et pos\u00e9 une question." : "Reread it and asked a question.";
     if (op >= 3) return fr ? "Est revenu trois fois." : "Came back three times.";
     if (op >= 2) return fr ? "L\u2019a lu deux fois." : "Read it twice.";
@@ -141,7 +142,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         let left = nx + 16; if (left + pw > wrap.width - 6) left = nx - 16 - pw;
         left = Math.max(6, Math.min(left, wrap.width - pw - 6));
         const top = Math.max(6, Math.min(ny - ph / 2, wrap.height - ph - 6));
-        setSelected({ id: n.id, name: n.name, doc: n.doc, ini: initials(n.name), verdict: verdict(n.intent), reads: n.opens, questions: n.questions, last: ago(n.lastAt), why: whyOf(n.opens, n.questions), left, top });
+        setSelected({ id: n.id, name: n.name, doc: n.doc, ini: initials(n.name), verdict: verdict(n.intent, n.replied), reads: n.opens, questions: n.questions, last: ago(n.lastAt), why: whyOf(n.opens, n.questions, n.replied), left, top });
       } else { selIdxRef.current = -1; setSelected(null); }
     });
     const supabase = createClient();
@@ -221,7 +222,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow } as const;
   const ch = { display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid " + T.border } as const;
   const mono = "'DM Mono', ui-monospace, monospace";
-  const chipBg = (cls: string) => (cls === "ready" ? { background: T.greenSoft, color: T.greenText } : cls === "warm" ? { background: T.amberSoft, color: T.amberText } : { background: T.soft, color: T.body });
+  const chipDot = (cls: string) => (cls === "replied" ? T.green : cls === "ready" ? T.green : cls === "warm" ? T.amber : T.faint);
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <main style={{ maxWidth: 1040, padding: "26px 32px 60px" }}>

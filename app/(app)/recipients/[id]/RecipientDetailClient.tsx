@@ -13,6 +13,8 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
   const rd = getDict(locale).recipientDetailPage;
   const fr = locale === "fr";
   const [verdict, setVerdict] = useState<Verdict | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
+  const [handled, setHandled] = useState(signals.some((s) => s.kind === "reply_handled"));
+  const [handleBusy, setHandleBusy] = useState(false);
   const summary = useMemo(() => {
     const dwell: Record<number, number> = {};
     const questions: { text: string; escalated?: boolean }[] = [];
@@ -34,6 +36,10 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
     title: fr ? "Ils ont r\u00e9pondu" : "They replied",
     sub: fr ? "Leurs mots, pas une inf\u00e9rence." : "Their words, not an inference.",
     replyTo: fr ? "R\u00e9pondre" : "Reply to them",
+    markHandled: fr ? "Marquer comme trait\u00e9" : "Mark as handled",
+    isHandled: fr ? "Trait\u00e9" : "Handled",
+    undo: fr ? "Annuler" : "Undo",
+    handledNote: fr ? "Retir\u00e9 du haut de votre file." : "Cleared from the top of your queue.",
     note: fr
       ? "Une r\u00e9ponse rend toute lecture d\u2019intention superflue. Lisez ce qu\u2019ils ont \u00e9crit avant tout le reste."
       : "A reply makes any reading of intent redundant. Take what they wrote over anything inferred below.",
@@ -57,6 +63,21 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
       setError(e instanceof Error ? (e.name === "AbortError" ? "Timed out after 90 seconds." : e.message) : rd.couldntRead);
     } finally {
       setBusy(false);
+    }
+  }
+  async function setHandledState(next: boolean) {
+    setHandleBusy(true); setError("");
+    try {
+      const res = await fetch("/api/reply-handled", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: recipient.id, handled: next }) });
+      const raw = await res.text();
+      let json: { error?: string } = {};
+      try { json = JSON.parse(raw); } catch { json = {}; }
+      if (!res.ok) throw new Error(json.error ?? "Could not save that.");
+      setHandled(next);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not save that.");
+    } finally {
+      setHandleBusy(false);
     }
   }
   const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 16 };
@@ -96,6 +117,17 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
                       )}
                       {rep.email && <span style={{ fontSize: 12.5, color: T.muted, fontFamily: mono }}>{rep.email}</span>}
                       <span style={{ fontSize: 12, color: T.faint, fontFamily: mono }}>{new Date(rep.at).toLocaleString()}</span>
+                      {i === summary.replies.length - 1 && (
+                        handled ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 12.5, color: T.muted, marginLeft: "auto" }}>
+                            <i style={{ width: 6, height: 6, borderRadius: 2, background: T.faint }} />
+                            {RP.isHandled}
+                            <button onClick={() => setHandledState(false)} disabled={handleBusy} style={{ background: "none", border: "none", padding: 0, fontSize: 12.5, fontFamily: T.font, color: T.greenText, cursor: "pointer", borderBottom: "1px solid " + T.greenBorder }}>{RP.undo}</button>
+                          </span>
+                        ) : (
+                          <button onClick={() => setHandledState(true)} disabled={handleBusy} title={RP.handledNote} style={{ marginLeft: "auto", height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer", opacity: handleBusy ? 0.6 : 1 }}>{RP.markHandled}</button>
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
