@@ -45,7 +45,7 @@ export default async function AdminDocuments() {
     if (d.needs_page_ocr) acc.ocr++;
     return acc;
   }, { opens: 0, questions: 0, forwards: 0, recipients: 0, ocr: 0 });
-  const grid = "2.2fr 1.6fr 1.2fr 0.7fr 0.7fr 0.7fr 0.7fr 1fr";
+  const grid = "2fr 1.5fr 1.1fr 0.9fr 0.7fr 0.9fr 0.8fr 1fr";
   const mono = "'DM Mono', ui-monospace, monospace";
   const cells: [number, string][] = [
     [documents.length, "Documents"], [totals.recipients, "Recipients"], [totals.opens, "Opens"],
@@ -66,7 +66,7 @@ export default async function AdminDocuments() {
         </div>
         <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginTop: 18 }}>
           <div className="row-head" style={{ display: "grid", gridTemplateColumns: grid, gap: 10, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap" }}>
-            <span>Document</span><span>Owner</span><span>Org / Project</span><span>Rec</span><span>Opens</span><span>Q</span><span>Fwd</span><span>Status</span>
+            <span>Document</span><span>Owner</span><span>Org / Project</span><span>Readers</span><span>Opens</span><span>Questions</span><span>Forwards</span><span>Status</span>
           </div>
           {documents.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13.5 }}>No documents yet.</div>}
           {documents.map((d, i) => {
