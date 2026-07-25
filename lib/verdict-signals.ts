@@ -1,4 +1,5 @@
-﻿import type { VerdictInput } from "@/lib/ai/tasks/verdict";
+import type { VerdictInput } from "@/lib/ai/tasks/verdict";
+import { clampDwellMs, DWELL_CAP_MS } from "@/lib/dwell";
 
 export type SignalRow = { kind: string; page: number | null; value: unknown; created_at?: string };
 export type RecipientLite = { label?: string | null; first_name?: string | null; last_name?: string | null; email?: string | null };
@@ -11,7 +12,7 @@ export type DocLite = { title?: string | null; extracted_text?: string | null };
 //   forwarded   -> forwardedTo    (value.colleagues[].email)
 //   page_dwell  -> per-page seconds + visits, and a backtrack trail
 export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: SignalRow[]): VerdictInput {
-  const dwellByPage: Record<number, { seconds: number; visits: number }> = {};
+  const dwellByPage: Record<number, { seconds: number; visits: number; capped: boolean }> = {};
   const questionsAsked: string[] = [];
   const forwardedTo: string[] = [];
   const dwellSeq: number[] = [];
@@ -32,15 +33,18 @@ export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: 
         }
       }
     } else if (s.kind === "page_dwell" && s.page != null && typeof v.ms !== "undefined") {
-      const ms = Number(v.ms) || 0;
-      const cur = dwellByPage[s.page] ?? { seconds: 0, visits: 0 };
-      dwellByPage[s.page] = { seconds: Math.max(cur.seconds, Math.round(ms / 1000)), visits: cur.visits + 1 };
+      // Rows written before the cap existed still hold raw values, so clamp
+      // here too rather than trusting the table.
+      const raw = Number(v.ms) || 0;
+      const ms = clampDwellMs(raw);
+      const cur = dwellByPage[s.page] ?? { seconds: 0, visits: 0, capped: false };
+      dwellByPage[s.page] = { seconds: Math.max(cur.seconds, Math.round(ms / 1000)), visits: cur.visits + 1, capped: cur.capped || raw > DWELL_CAP_MS || v.capped === true };
       dwellSeq.push(s.page);
     }
   }
 
   const pages = Object.entries(dwellByPage)
-    .map(([page, d]) => ({ page: Number(page), title: `Page ${page}`, seconds: d.seconds, visits: d.visits }))
+    .map(([page, d]) => ({ page: Number(page), title: d.capped ? `Page ${page} (dwell capped, tab likely left open, treat as unreliable)` : `Page ${page}`, seconds: d.seconds, visits: d.visits }))
     .sort((a, b) => b.seconds - a.seconds);
 
   const back: string[] = [];

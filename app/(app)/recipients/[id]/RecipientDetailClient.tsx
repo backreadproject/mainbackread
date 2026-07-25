@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo } from "react";
 import { T } from "@/lib/theme";
+import { clampDwellMs, formatDwell, DWELL_CAP_MS } from "@/lib/dwell";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
@@ -10,7 +11,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
   const locale = useLocale();
   const rd = getDict(locale).recipientDetailPage;
   const [verdict, setVerdict] = useState<Verdict | null>(null); const [busy, setBusy] = useState(false); const [error, setError] = useState("");
-  const summary = useMemo(() => { const dwell: Record<number, number> = {}; const questions: { text: string; escalated?: boolean }[] = []; let opens = 0; for (const s of signals) { if (s.kind === "opened") opens++; if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) dwell[s.page] = Number((s.value as { ms: number }).ms) || 0; if (s.kind === "question" && s.value && typeof s.value === "object" && "text" in s.value) questions.push({ text: String((s.value as { text: string }).text), escalated: (s.value as { escalated?: boolean }).escalated }); } return { dwell, questions, opens }; }, [signals]);
+  const summary = useMemo(() => { const dwell: Record<number, number> = {}; const questions: { text: string; escalated?: boolean }[] = []; let opens = 0; for (const s of signals) { if (s.kind === "opened") opens++; if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) dwell[s.page] = clampDwellMs((s.value as { ms: unknown }).ms); if (s.kind === "question" && s.value && typeof s.value === "object" && "text" in s.value) questions.push({ text: String((s.value as { text: string }).text), escalated: (s.value as { escalated?: boolean }).escalated }); } return { dwell, questions, opens }; }, [signals]);
   const maxDwell = Math.max(1, ...Object.values(summary.dwell));
     // Same guard as the document detail page: a 504 returns HTML, so an
   // unguarded res.json() throws and leaves the button stuck on "Reading...".
@@ -53,7 +54,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
                   <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
                     <span style={{ fontSize: 12.5, color: T.muted, width: 58, flex: "none" }}>{rd.page} {page}</span>
                     <div style={{ flex: 1, height: 6, background: T.soft, border: "1px solid " + T.border, borderRadius: 2, overflow: "hidden", maxWidth: 360 }}><div style={{ width: ((Number(ms) / maxDwell) * 100) + "%", height: "100%", background: T.green }} /></div>
-                    <span style={{ fontSize: 13, color: T.body, fontVariantNumeric: "tabular-nums" }}>{(Number(ms) / 1000).toFixed(1)}s</span>
+                    <span title={Number(ms) >= DWELL_CAP_MS ? "Capped. A tab left open, not attention." : undefined} style={{ fontSize: 13, color: Number(ms) >= DWELL_CAP_MS ? T.faint : T.body, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDwell(Number(ms))}</span>
                   </div>
                 ))}
               </div>

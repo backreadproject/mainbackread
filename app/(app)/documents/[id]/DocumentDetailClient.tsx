@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import { clampDwellMs, formatDwell, DWELL_CAP_MS } from "@/lib/dwell";
 import ShareDialog from "@/app/(app)/ShareDialog";
 import ProspectModal from "@/app/(app)/documents/[id]/ProspectModal";
 import ComposeWorkspace from "@/app/(app)/documents/[id]/ComposeWorkspace";
@@ -42,7 +43,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
     for (const s of signals) {
       const m = map[s.recipient_id]; if (!m) continue;
       if (s.kind === "opened") m.opens++;
-      if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) m.dwell[s.page] = Number((s.value as { ms: number }).ms) || 0;
+      if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) m.dwell[s.page] = clampDwellMs((s.value as { ms: unknown }).ms);
       if (s.kind === "question" && s.value && typeof s.value === "object" && "text" in s.value) m.questions.push({ text: String((s.value as { text: string }).text), escalated: (s.value as { escalated?: boolean }).escalated });
     }
     return map;
@@ -152,7 +153,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                         <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
                           <span style={{ fontSize: 12.5, color: T.muted, width: 58, flex: "none" }}>{dd.page} {page}</span>
                           <div style={{ flex: 1, height: 6, background: T.soft, border: "1px solid " + T.border, borderRadius: 2, overflow: "hidden", maxWidth: 340 }}><div style={{ width: ((Number(ms) / maxDwell) * 100) + "%", height: "100%", background: T.green }} /></div>
-                          <span style={{ fontSize: 13, color: T.body, fontVariantNumeric: "tabular-nums" }}>{(Number(ms) / 1000).toFixed(1)}s</span>
+                          <span title={Number(ms) >= DWELL_CAP_MS ? "Capped. A tab left open, not attention." : undefined} style={{ fontSize: 13, color: Number(ms) >= DWELL_CAP_MS ? T.faint : T.body, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDwell(Number(ms))}</span>
                         </div>
                       ))}
                     </div>
