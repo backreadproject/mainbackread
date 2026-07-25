@@ -1,18 +1,15 @@
-﻿"use client";
+"use client";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { T, microLabel } from "@/lib/theme";
-
+import { T } from "@/lib/theme";
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Rec = { id: string; variant_id?: string | null };
 type Sig = { recipient_id: string; kind: string };
-
 export default function VariantsPanel({ documentId, variants, recipients, signals }: { documentId: string; variants: Variant[]; recipients: Rec[]; signals: Sig[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState("");
   const [confirming, setConfirming] = useState("");
   const [err, setErr] = useState("");
-
   const stats = useMemo(() => {
     const byRec = new Map<string, string | null>(recipients.map((r) => [r.id, r.variant_id ?? null]));
     const out = new Map<string, { readers: number; opens: number; questions: number; forwards: number; opened: Set<string> }>();
@@ -31,7 +28,6 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
     }
     return out;
   }, [variants, recipients, signals]);
-
   async function call(body: Record<string, unknown>) {
     setBusy(String(body.variantId ?? "x")); setErr("");
     const res = await fetch("/api/variants", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId, ...body }) });
@@ -41,62 +37,58 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
     router.refresh();
     return true;
   }
-
   if (variants.length === 0) return null;
-
   const totalReaders = recipients.filter((r) => r.variant_id).length;
   const thin = totalReaders < 6;
-  const small = { background: "var(--rp-card)", border: `1px solid ${T.border}`, borderRadius: T.rBtn, padding: "5px 10px", fontSize: 12, fontWeight: 600, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
-
+  const small = { height: 28, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 10px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" } as const;
+  const stat = (v: number, l: string, ink: string) => (
+    <div>
+      <div style={{ fontSize: 17, fontWeight: 600, color: ink, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{v}</div>
+      <div style={{ fontSize: 11.5, color: T.muted, marginTop: 1 }}>{l}</div>
+    </div>
+  );
   return (
-    <div style={{ padding: "22px 30px 0" }}>
-      <div style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14 }}>
-          <span style={microLabel}>Variants</span>
-          <span style={{ fontSize: 12, color: T.muted }}>{totalReaders} reader{totalReaders === 1 ? "" : "s"} split across {variants.length}</span>
+    <div style={{ maxWidth: 1040, padding: "20px 28px 0" }}>
+      <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: T.body }}>Variants</span>
+          <span style={{ fontSize: 12.5, color: T.muted }}>{totalReaders} reader{totalReaders === 1 ? "" : "s"} across {variants.length}</span>
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(variants.length, 4)}, minmax(0,1fr))`, gap: 12 }}>
-          {variants.map((v) => {
-            const a = stats.get(v.id) ?? { readers: 0, opens: 0, questions: 0, forwards: 0, opened: new Set<string>() };
-            const openRate = a.readers > 0 ? Math.round((a.opened.size / a.readers) * 100) : 0;
-            return (
-              <div key={v.id} style={{ border: `1px solid ${v.active ? T.border : T.borderSoft}`, borderRadius: 12, padding: 14, opacity: v.active ? 1 : 0.6 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ width: 26, height: 26, borderRadius: 8, background: T.greenSoft, color: T.green, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>{v.label}</span>
-                  {!v.active && <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: T.pillNeutralBg, color: T.body }}>paused</span>}
-                  {!v.storage_path && <span title="Uses the base document file" style={{ fontSize: 11, color: T.muted, cursor: "help" }}>shared file</span>}
+        <div style={{ padding: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(" + Math.min(variants.length, 4) + ", minmax(0,1fr))", gap: 12 }}>
+            {variants.map((v) => {
+              const a = stats.get(v.id) ?? { readers: 0, opens: 0, questions: 0, forwards: 0, opened: new Set<string>() };
+              const openRate = a.readers > 0 ? Math.round((a.opened.size / a.readers) * 100) : 0;
+              return (
+                <div key={v.id} style={{ border: "1px solid " + T.border, borderLeft: "3px solid " + (v.active ? T.green : T.border), borderRadius: T.rCard, padding: 14 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ width: 22, height: 22, borderRadius: 4, border: "1px solid " + T.border, background: T.soft, color: T.heading, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11.5, fontWeight: 600 }}>{v.label}</span>
+                    {!v.active && <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: T.muted }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.faint }} />paused</span>}
+                    {!v.storage_path && <span title="Uses the base document file" style={{ fontSize: 12, color: T.faint, cursor: "help" }}>shared file</span>}
+                  </div>
+                  {v.note && <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.5, margin: "0 0 12px" }}>{v.note}</p>}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginBottom: 12 }}>
+                    {stat(a.readers, "readers", T.heading)}
+                    {stat(openRate, "% opened", T.heading)}
+                    {stat(a.questions, "questions", a.questions ? T.heading : T.faint)}
+                    {stat(a.forwards, "forwards", a.forwards ? T.heading : T.faint)}
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => call({ action: "update", variantId: v.id, active: !v.active })} disabled={!!busy} style={small}>{v.active ? "Pause" : "Resume"}</button>
+                    {confirming === v.id ? (
+                      <button onClick={async () => { if (await call({ action: "delete", variantId: v.id })) setConfirming(""); }} disabled={!!busy} style={{ ...small, color: T.onAccent, background: T.danger, border: "none" }}>Confirm</button>
+                    ) : (
+                      <button onClick={() => setConfirming(v.id)} disabled={!!busy} style={{ ...small, color: T.dangerText, borderColor: T.dangerBorder }}>Delete</button>
+                    )}
+                  </div>
                 </div>
-                {v.note && <p style={{ fontSize: 13, color: T.body, lineHeight: 1.45, margin: "0 0 10px" }}>{v.note}</p>}
-
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{a.readers}</div><div style={{ fontSize: 11, color: T.muted }}>readers</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{openRate}%</div><div style={{ fontSize: 11, color: T.muted }}>opened</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.questions ? T.heading : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.questions}</div><div style={{ fontSize: 11, color: T.muted }}>questions</div></div>
-                  <div><div style={{ fontSize: 18, fontWeight: 700, color: a.forwards ? T.greenText : T.muted, fontVariantNumeric: "tabular-nums" }}>{a.forwards}</div><div style={{ fontSize: 11, color: T.muted }}>forwards</div></div>
-                </div>
-
-                <div style={{ display: "flex", gap: 6 }}>
-                  <button onClick={() => call({ action: "update", variantId: v.id, active: !v.active })} disabled={!!busy} style={small}>{v.active ? "Pause" : "Resume"}</button>
-                  {confirming === v.id ? (
-                    <button onClick={async () => { if (await call({ action: "delete", variantId: v.id })) setConfirming(""); }} disabled={!!busy} style={{ ...small, color: "var(--rp-on-accent)", background: "var(--rp-danger)", borderColor: "var(--rp-danger-border)" }}>Confirm</button>
-                  ) : (
-                    <button onClick={() => setConfirming(v.id)} disabled={!!busy} style={{ ...small, color: "var(--rp-danger-text)", borderColor: "var(--rp-danger-border)" }}>Delete</button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          {err && <div style={{ marginTop: 14, background: T.dangerSoft, border: "1px solid " + T.dangerBorder, borderRadius: T.rCard, padding: "11px 13px", fontSize: 13.5, color: T.dangerText }}>{err}</div>}
+          {thin && <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.55 }}>Too few readers to call a winner yet. Differences at this size are noise, not signal.</p>}
         </div>
-
-        {err && <p style={{ color: "var(--rp-danger-text)", fontSize: 13, margin: "12px 0 0" }}>{err}</p>}
-        {thin && (
-          <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.5 }}>
-            Too few readers to call a winner yet. Differences at this size are noise, not signal.
-          </p>
-        )}
       </div>
     </div>
   );
 }
-
