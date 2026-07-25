@@ -18,11 +18,11 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
   return (
     <div className={`app-shell${open ? " drawer-open" : ""}`}>
       <style>{`
-        .app-shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: ${T.canvas}; }
+        .app-shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: ${T.canvas}; }
         .app-topbar { display: none; }
         .app-body { display: flex; flex: 1; min-height: 0; }
         .app-sidebar-wrap { flex-shrink: 0; }
-        .app-content { flex: 1; min-width: 0; overflow-y: auto; background: ${T.canvas}; }
+        .app-content { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; background: ${T.canvas}; }
         .app-scrim { display: none; }
         .drawer-close { display: none; }
         @media (max-width: 1024px) {
@@ -35,6 +35,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
           .app-body { position: relative; }
           .app-sidebar-wrap {
             position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; z-index: 60;
+            max-width: 88vw;
             transform: translateX(-100%); transition: transform .25s ease;
           }
           .app-sidebar-wrap > div { height: 100%; }
@@ -48,13 +49,18 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
           .app-shell.drawer-open .app-scrim { opacity: 1; pointer-events: auto; }
           .drawer-close {
             display: flex; align-items: center; justify-content: center;
-            position: fixed; top: 12px; left: 244px; z-index: 62;
+            position: fixed; top: 12px; left: min(244px, 88vw); z-index: 62;
             width: 34px; height: 34px; border-radius: ${T.rBtn}px;
             background: ${T.card}; border: 1px solid ${T.border};
             color: ${T.body}; cursor: pointer;
             transform: translateX(-100%); opacity: 0; transition: transform .25s ease, opacity .25s ease;
           }
           .app-shell.drawer-open .drawer-close { transform: translateX(0); opacity: 1; }
+        }
+        @media (max-width: 600px) {
+          .app-content main { padding-left: 16px !important; padding-right: 16px !important; }
+          .app-content h1 { font-size: 21px !important; }
+          .app-content .page-header { flex-direction: column !important; align-items: stretch !important; gap: 12px !important; }
         }
       `}</style>
       <div className="app-topbar">
