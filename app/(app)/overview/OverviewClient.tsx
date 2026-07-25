@@ -69,6 +69,9 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     lReady: fr ? "Pr\u00eat" : "Ready",
     lWarm: fr ? "En int\u00e9r\u00eat" : "Warming",
     lGlance: fr ? "Coup d\u2019\u0153il" : "Glanced",
+      vReplied: fr ? "A r\u00e9pondu" : "Replied",
+      lReplied: fr ? "A r\u00e9pondu" : "Replied",
+      whyReplied: fr ? "Vous a \u00e9crit. Lisez ses mots." : "Wrote back to you. Read their words.",
     reading: fr ? "lit en ce moment" : "is reading now",
     askedQ: fr ? "a pos\u00e9 une question" : "asked a question",
     aReader: fr ? "Un lecteur" : "A reader",
@@ -104,7 +107,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   const palRef = useRef<Pal>(FALLBACK);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function flashToast(txt: string) { setToast(txt); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 3200); }
-  const readyList = readers.filter((r) => r.intent >= READY).sort((a, b) => b.intent - a.intent).slice(0, 3);
+  const readyList = readers.filter((r) => r.replied || r.intent >= READY).sort((a, b) => b.intent - a.intent).slice(0, 3);
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv || !hasData) return;
@@ -186,12 +189,14 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         const wob = reduce ? 0 : Math.sin(n.wob) * (n.wobA / Math.max(n.r, 40)) * 0.5;
         const a = n.ang + wob; n.x = cx + Math.cos(a) * n.r; n.y = cy + Math.sin(a) * n.r;
         const ready = n.intent >= READY, warm = n.intent >= WARM && !ready;
-        const col = ready ? P.green : warm ? P.amber : P.faint; const size = ready ? 7 : warm ? 5.5 : 4.5;
+        const replied = !!n.replied;
+        const col = replied || ready ? P.green : warm ? P.amber : P.faint; const size = replied ? 8.5 : ready ? 7 : warm ? 5.5 : 4.5;
+        if (replied) { ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 5, 0, 7); ctx!.strokeStyle = rgba(P.green, 0.5); ctx!.lineWidth = 1.6; ctx!.stroke(); }
         if (ready) { const pr = reduce ? 0 : Math.sin(t * 2 + n.wob) * 0.5 + 0.5; ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 4 + pr * 6, 0, 7); ctx!.strokeStyle = rgba(P.green, 0.3 * (1 - pr)); ctx!.lineWidth = 1.2; ctx!.stroke(); ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(n.x, n.y); ctx!.strokeStyle = rgba(P.green, 0.26); ctx!.setLineDash([2, 4]); ctx!.lineWidth = 1; ctx!.stroke(); ctx!.setLineDash([]); }
         ctx!.beginPath(); ctx!.arc(n.x, n.y, size, 0, 7); ctx!.fillStyle = col; ctx!.fill();
         if (sel) { ctx!.beginPath(); ctx!.arc(n.x, n.y, size + 7, 0, 7); ctx!.strokeStyle = P.green; ctx!.lineWidth = 2; ctx!.stroke(); }
         const d = Math.hypot(mx - n.x, my - n.y); n._h = d < 14;
-        if (ready || n._h) {
+        if (replied || ready || n._h) {
           const p = n.name.split(" "); const lab = p[0] + (p[1] ? " " + p[1][0] + "." : "");
           ctx!.font = "600 " + (n._h ? 11 : 10) + "px 'DM Sans'"; ctx!.textAlign = "center";
           const w = ctx!.measureText(lab).width;
@@ -265,7 +270,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                       <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                         <span style={{ width: 32, height: 32, borderRadius: 5, flex: "none", background: T.green, color: T.onAccent, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12 }}>{selected.ini}</span>
                         <div><div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{selected.name}</div><div style={{ fontSize: 11, color: T.muted, fontFamily: mono, marginTop: 1 }}>{selected.doc}</div></div>
-                        <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: T.rPill, whiteSpace: "nowrap", ...chipBg(selected.verdict.cls) }}>{selected.verdict.label}</span>
+                          <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.heading, whiteSpace: "nowrap" }}><i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: chipDot(selected.verdict.cls) }} />{selected.verdict.label}</span>
                       </div>
                       <div style={{ display: "flex", gap: 6, margin: "12px 0 10px" }}>
                         {[[selected.reads, L.bReads], [selected.questions, L.bQ], [selected.last, L.bLast]].map(([v, l], k) => (
@@ -282,6 +287,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                 </div>
                 <div style={{ display: "flex", gap: 18, justifyContent: "center", padding: "4px 0 14px", fontSize: 11, color: T.muted }}>
                   <span><i style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, marginRight: 6, verticalAlign: 1, background: T.green }} />{L.lReady}</span>
+                    <span><i style={{ display: "inline-block", width: 7, height: 7, borderRadius: 2, marginRight: 6, verticalAlign: 1, background: T.green, boxShadow: "0 0 0 2px " + T.greenSoft }} />{L.lReplied}</span>
                   <span><i style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, marginRight: 6, verticalAlign: 1, background: T.amber }} />{L.lWarm}</span>
                   <span><i style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, marginRight: 6, verticalAlign: 1, background: T.faint }} />{L.lGlance}</span>
                 </div>
@@ -297,7 +303,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                         <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
                         <span style={{ display: "block", fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.doc}</span>
                       </span>
-                      <span style={{ flex: "none", fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: T.rPill, background: T.greenSoft, color: T.greenText }}>{L.vReady}</span>
+                        <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.heading, whiteSpace: "nowrap" }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} />{r.replied ? L.vReplied : L.vReady}</span>
                       <span style={{ flex: "none", fontSize: 13, color: T.muted, width: 62, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{r.opens} {L.readsWord}</span>
                     </a>
                   ))}
