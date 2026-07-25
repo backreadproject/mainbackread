@@ -55,7 +55,9 @@ function channelGuidance(channel?: string): string {
 export const composeTask: Task<ComposeInput, ComposeOutput> = {
   id: "compose",
   tier: "reason",
-  maxTokens: 1200,
+  // A full email plus a note does not fit in 1200. Truncation surfaces as an
+  // unparseable response, not as a token limit, so it is worth headroom.
+  maxTokens: 2400,
   schema: ComposeOutput,
   cacheable: (i) => `DOCUMENT -- "${i.documentTitle}"\n\n${i.documentText}`,
   system: (i) =>

@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
   const validChannels = ["email", "linkedin", "text", "whatsapp"];
   const cleanChannel = typeof channel === "string" && validChannels.includes(channel) ? channel : "";
 
+  // Wrapped for the same reason as verdict-live: a throw here becomes a bare
+  // 500 HTML page, which tells the sender nothing and hides the real cause.
+  try {
   const { data, cost } = await runAI(composeTask, {
     documentText: docText,
     documentTitle: doc.title,
@@ -89,4 +92,9 @@ export async function POST(req: NextRequest) {
   }, { documentId: doc.title });
 
   return NextResponse.json({ output: data.output, note: data.note, costUsd: cost.usd });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("[compose-live] failed", { recipientId, ask: String(ask).slice(0, 80), error: msg });
+    return NextResponse.json({ error: "Could not draft this: " + msg }, { status: 500 });
+  }
 }
