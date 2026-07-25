@@ -49,10 +49,25 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   }, [signals, recs]);
   async function readTheReader(id: string) {
     setVerdictBusy(id); setError("");
-    const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: id }) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error ?? dd.couldntRead); setVerdictBusy(""); return; }
-    setVerdicts((p) => ({ ...p, [id]: json.verdict })); setVerdictBusy("");
+    // A verdict is a real model call and can be slow. Without this guard a
+    // timeout returns an HTML error page, res.json() throws, and the button
+    // sits on "Reading..." forever with nothing to tell you why.
+    try {
+      const ctrl = new AbortController();
+      const kill = setTimeout(() => ctrl.abort(), 90000);
+      const res = await fetch("/api/verdict-live", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ recipientId: id }), signal: ctrl.signal });
+      clearTimeout(kill);
+      const text = await res.text();
+      let json: { verdict?: Verdict; error?: string } = {};
+      try { json = JSON.parse(text); } catch { throw new Error("Server returned " + res.status + ". The request may have timed out."); }
+      if (!res.ok) throw new Error(json.error ?? dd.couldntRead);
+      if (!json.verdict) throw new Error(dd.couldntRead);
+      setVerdicts((p) => ({ ...p, [id]: json.verdict as Verdict }));
+    } catch (e) {
+      setError(e instanceof Error ? (e.name === "AbortError" ? "Timed out after 90 seconds." : e.message) : dd.couldntRead);
+    } finally {
+      setVerdictBusy("");
+    }
   }
   async function saveName(id: string) {
     const supabase = createClient();

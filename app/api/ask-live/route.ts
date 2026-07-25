@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, askTask } from "@/lib/ai";
 import { checkAskLimits } from "@/lib/rate-limit";
@@ -6,6 +6,9 @@ import { deliverForRecipient } from "@/lib/webhooks";
 import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
+// Model calls plus Supabase round trips exceed Vercel's 10s default,
+// which returns a 504 HTML page rather than JSON. 60s is the Hobby ceiling.
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const { token, question, currentPage, documentText } = await req.json();

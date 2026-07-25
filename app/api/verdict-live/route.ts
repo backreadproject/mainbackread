@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
@@ -6,6 +6,9 @@ import { resolvePlanForUser, isLocked, checkVerdictQuota, logUsage } from "@/lib
 import { buildVerdictInput, type SignalRow, type RecipientLite } from "@/lib/verdict-signals";
 
 export const runtime = "nodejs";
+// Model calls plus Supabase round trips exceed Vercel's 10s default,
+// which returns a 504 HTML page rather than JSON. 60s is the Hobby ceiling.
+export const maxDuration = 60;
 
 // Sender-only. Reads a recipient's real signals and produces a verdict.
 export async function POST(req: NextRequest) {

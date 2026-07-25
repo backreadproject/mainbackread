@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, supportTask, type SupportTurn } from "@/lib/ai";
@@ -6,6 +6,9 @@ import { resolvePlanForUser } from "@/lib/plan-context";
 import { sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
+// Model calls plus Supabase round trips exceed Vercel's 10s default,
+// which returns a 504 HTML page rather than JSON. 60s is the Hobby ceiling.
+export const maxDuration = 60;
 
 const PER_SESSION_PER_HOUR = 20;
 const PER_SESSION_PER_DAY = 60;
