@@ -101,6 +101,8 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
         .rp-sw-row:hover{background:var(--rp-hover)}
         .rp-sw-launch{transition:background .12s}
         .rp-sw-launch:hover{background:var(--rp-green-hover)}
+        .rp-sw-shorttitle{display:none}
+        .rp-sw-faqshort{display:none}
         @media(max-width:520px){
           .rp-sw-panel{
             position:fixed !important;
@@ -114,8 +116,6 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
           .rp-sw-faqlong{display:none}
           .rp-sw-faqshort{display:inline}
         }
-        .rp-sw-shorttitle{display:none}
-        .rp-sw-faqshort{display:none}
       `}</style>
       {open && (
         <div className="rp-sw-panel" style={{ position: "fixed", right: 22, bottom: 76, width: 366, height: "min(540px, calc(100dvh - 130px))", background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 9998, fontFamily: T.font, letterSpacing: T.tracking }}>
