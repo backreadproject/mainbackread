@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const admin = createAdminClient();
   const { data: origin } = await admin
     .from("recipients")
-    .select("id, label, first_name, last_name, document_id, documents ( title )")
+    .select("id, label, first_name, last_name, email, document_id, documents ( title )")
     .eq("share_token", token)
     .single();
   if (!origin) return NextResponse.json({ error: "This link is no longer valid." }, { status: 404 });
@@ -57,7 +57,13 @@ export async function POST(req: Request) {
       .single();
     if (error || !rec) { sent.push({ email: c.email, ok: false }); continue; }
     const readUrl = readerLink(rec.share_token as string, new URL(req.url).origin);
-    const emailResult = await sendEmail("relay", { to: c.email, subject: `${forwarder} shared "${docTitle}" with you`, html: forwardEmail({ toName: firstName, forwarder, docTitle, readUrl, note, privacyUrl }) });
+    const forwarderEmail = (origin.email as string | null) ?? null;
+    const emailResult = await sendEmail("relay", {
+      to: c.email,
+      subject: `${forwarder} shared "${docTitle}" with you`,
+      html: forwardEmail({ toName: firstName, forwarder, docTitle, readUrl, note, privacyUrl }),
+      replyTo: forwarderEmail ?? undefined,
+    });
     sent.push({ email: c.email, ok: emailResult.ok });
   }
 

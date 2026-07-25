@@ -249,7 +249,15 @@ export async function eraseReaderAction(recipientId: string, confirmText: string
 
 /* ---------------- forwarded colleagues (erasure for third parties) ---------------- */
 
-export type ForwardMention = { signalId: string; recipientId: string; readerName: string; documentTitle: string; colleagueName: string; at: string };
+export type ForwardMention = {
+  signalId: string | null;      // null when this is their own reader record, not a mention
+  recipientId: string;
+  readerName: string;
+  documentTitle: string;
+  colleagueName: string;
+  at: string;
+  kind: "mention" | "record";
+};
 
 /** Finds every forwarded-signal that names this email.
  *
@@ -278,16 +286,36 @@ export async function findForwardMentions(email: string): Promise<ForwardMention
     const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
     return cols.some((c) => c && typeof c === "object" && String((c as { email?: unknown }).email ?? "").trim().toLowerCase() === needle);
   });
-  if (hits.length === 0) return [];
 
   const recIds = [...new Set(hits.map((h) => h.recipient_id))];
-  const { data: recs } = await admin.from("recipients").select("id, label, first_name, last_name, document_id").in("id", recIds);
+  const { data: recs } = recIds.length ? await admin.from("recipients").select("id, label, first_name, last_name, document_id").in("id", recIds) : { data: [] };
   const recMap = new Map((recs ?? []).map((r) => [r.id, r]));
   const docIds = [...new Set((recs ?? []).map((r) => r.document_id))];
   const { data: docs } = docIds.length ? await admin.from("documents").select("id, title").in("id", docIds) : { data: [] };
   const docMap = new Map((docs ?? []).map((d) => [d.id, d.title as string]));
 
-  return hits.map((h) => {
+  // Their own reader records. A data subject request arrives as an email
+  // address, not a document, so the search has to find everything that address
+  // touches. Searching only forwards meant a direct recipient who was never
+  // forwarded to came back as "nothing to erase" while their records sat there.
+  const { data: ownRows } = await admin
+    .from("recipients")
+    .select("id, label, first_name, last_name, document_id, created_at")
+    .ilike("email", needle);
+  const ownDocIds = [...new Set((ownRows ?? []).map((r) => r.document_id as string))];
+  const { data: ownDocs } = ownDocIds.length ? await admin.from("documents").select("id, title").in("id", ownDocIds) : { data: [] };
+  const ownDocMap = new Map((ownDocs ?? []).map((d) => [d.id, d.title as string]));
+  const ownEntries: ForwardMention[] = (ownRows ?? []).map((r) => ({
+    signalId: null,
+    recipientId: r.id as string,
+    readerName: (r.label as string) || [r.first_name, r.last_name].filter(Boolean).join(" ").trim() || "This person",
+    documentTitle: ownDocMap.get(r.document_id as string) ?? "a document",
+    colleagueName: "",
+    at: r.created_at as string,
+    kind: "record" as const,
+  }));
+
+  const mentionEntries: ForwardMention[] = hits.map((h) => {
     const r = recMap.get(h.recipient_id) as { label: string | null; first_name: string | null; last_name: string | null; document_id: string } | undefined;
     const v = (h.value ?? {}) as Record<string, unknown>;
     const cols = Array.isArray(v.colleagues) ? v.colleagues : [];
@@ -299,8 +327,11 @@ export async function findForwardMentions(email: string): Promise<ForwardMention
       documentTitle: r ? (docMap.get(r.document_id) ?? "a document") : "a document",
       colleagueName: match?.name || "unnamed",
       at: h.created_at as string,
+      kind: "mention" as const,
     };
   });
+
+  return [...ownEntries, ...mentionEntries].sort((a, b) => (a.at < b.at ? 1 : -1));
 }
 
 /** Removes this person from every forwarded signal that names them. The forward

@@ -61,7 +61,14 @@ export async function POST(req: Request) {
   const { data: prof } = await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).single();
   const inviterName = `${(prof?.first_name as string) || ""} ${(prof?.last_name as string) || ""}`.trim() || (user.email ?? "A teammate");
   const html = inviteEmail({ firstName: firstName.trim(), inviterName, orgName: ctx.org.name, acceptUrl });
-  const emailResult = await sendEmail("readprospects", { to: cleanEmail, subject: `${inviterName} invited you to join ${ctx.org.name} on ReadProspects`, html });
+  const emailResult = await sendEmail("readprospects", {
+    to: cleanEmail,
+    subject: `${inviterName} invited you to join ${ctx.org.name} on ReadProspects`,
+    html,
+    // A reply to an invitation should reach the person who sent it, not a
+    // noreply mailbox. The invite already names them, so this reveals nothing.
+    replyTo: user.email ?? undefined,
+  });
   if (!emailResult.ok) {
     return NextResponse.json({ ok: true, invite: { id: invite.id }, emailSent: false, acceptUrl, emailWarning: `Invitation created, but the email failed: ${emailResult.error ?? ""}. Share this link: ${acceptUrl}` });
   }
