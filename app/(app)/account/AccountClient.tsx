@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import { postJson, errMsg } from "@/lib/fetch-json";
 export default function AccountClient({ email, firstName: initialFirst = "", lastName: initialLast = "", avatarUrl: initialAvatar = null }: { email: string; firstName?: string; lastName?: string; avatarUrl?: string | null }) {
   const locale = useLocale();
   const fr = locale === "fr";
@@ -46,7 +47,19 @@ export default function AccountClient({ email, firstName: initialFirst = "", las
     setNameBusy(false);
   }
   async function changePassword() { if (pw.length < 6) { setMsgOk(false); setMsg(ac.passwordTooShort); return; } setBusy(true); setMsg(""); const supabase = createClient(); const { error } = await supabase.auth.updateUser({ password: pw }); setMsgOk(!error); setMsg(error ? error.message : ac.passwordUpdated); setPw(""); setBusy(false); }
-  async function deleteAccount() { if (!canDelete) return; setDelBusy(true); setDelMsg(""); const res = await fetch("/api/delete-account", { method: "POST" }); const json = await res.json(); if (!res.ok) { setDelMsg(json.error ?? ac.couldntDelete); setDelBusy(false); return; } const supabase = createClient(); await supabase.auth.signOut(); window.location.href = "/login"; }
+  async function deleteAccount() {
+    if (!canDelete) return;
+    setDelBusy(true); setDelMsg("");
+    try {
+      await postJson("/api/delete-account", {});
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch (e) {
+      setDelMsg(errMsg(e, ac.couldntDelete));
+      setDelBusy(false);
+    }
+  }
   const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 14 };
   const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
   const body = { padding: 18 };

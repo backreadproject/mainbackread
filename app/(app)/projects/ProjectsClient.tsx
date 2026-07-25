@@ -3,6 +3,7 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import { postJson, errMsg } from "@/lib/fetch-json";
 type Project = { id: string; name: string; createdAt: string; docCount: number };
 export default function ProjectsClient({ projects, orgless, personal = false }: { projects: Project[]; orgless: boolean; personal?: boolean }) {
   const locale = useLocale();
@@ -15,10 +16,13 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
   async function create() {
     if (!name.trim()) return;
     setCreating(true); setError("");
-    const res = await fetch("/api/create-project", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: name.trim() }) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error ?? pp.couldNotCreate); setCreating(false); return; }
-    window.location.reload();
+    try {
+      await postJson("/api/create-project", { name: name.trim() });
+      window.location.reload();
+    } catch (e) {
+      setError(errMsg(e, pp.couldNotCreate));
+      setCreating(false);
+    }
   }
   const sel = { height: 34, boxSizing: "border-box" as const, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 10px", fontSize: 13.5, fontFamily: T.font, background: T.card, color: T.body };
   if (orgless) {

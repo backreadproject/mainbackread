@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import { postJson, fetchJson, errMsg } from "@/lib/fetch-json";
 type Member = { id: string; userId: string; email: string | null; firstName?: string; lastName?: string; avatarUrl?: string | null; role: "owner" | "admin" | "member"; joinedAt: string };
 type Org = { id: string; name: string } | null;
 type Invite = { id: string; email: string; firstName: string; lastName: string; role: "admin" | "member"; createdAt: string; expiresAt: string };
@@ -36,18 +37,20 @@ export default function MembersClient({ org, role, members: initial, invites: in
   async function createOrg() {
     if (!orgName.trim()) return;
     setCreating(true); setError("");
-    const res = await fetch("/api/create-org", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: orgName.trim(), domain: orgDomain.trim(), migrateDocuments }) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error ?? mp.couldNotCreateOrg); setCreating(false); return; }
-    window.location.reload();
+    try {
+      await postJson("/api/create-org", { name: orgName.trim(), domain: orgDomain.trim(), migrateDocuments });
+      window.location.reload();
+    } catch (e) {
+      setError(errMsg(e, mp.couldNotCreateOrg));
+      setCreating(false);
+    }
   }
   async function lookupName() {
     const email = iEmail.trim().toLowerCase();
     if (!email || iFirst || iLast) return;
     // Auto-fill name if this email already has a ReadProspects account.
     try {
-      const res = await fetch("/api/lookup-user?email=" + encodeURIComponent(email));
-      const d = await res.json();
+      const d = await fetchJson<{ found?: boolean; firstName?: string; lastName?: string }>("/api/lookup-user?email=" + encodeURIComponent(email), {}, 15000);
       if (d.found) { if (d.firstName) setIFirst(d.firstName); if (d.lastName) setILast(d.lastName); }
     } catch {}
   }
@@ -55,15 +58,18 @@ export default function MembersClient({ org, role, members: initial, invites: in
     const email = iEmail.trim().toLowerCase();
     if (!email || !iFirst.trim() || !iLast.trim() || !org) { setError(mp.nameEmailRequired); return; }
     setAdding(true); setError(""); setInviteNote("");
-    const res = await fetch("/api/create-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole }) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error ?? mp.couldNotSendInvite); setAdding(false); return; }
-    if (json.addedDirectly) { setInviteNote(mp.addedDirectly); window.location.reload(); return; }
-    if (json.emailSent) setInviteNote(mp.inviteSent);
-    else setInviteNote(json.emailWarning ?? mp.inviteCreated);
-    setIEmail(""); setIFirst(""); setILast("");
-    setInvites((prev) => [{ id: json.invite?.id ?? Math.random().toString(), email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole, createdAt: new Date().toISOString(), expiresAt: "" }, ...prev]);
-    setAdding(false);
+    try {
+      const json = await postJson<{ addedDirectly?: boolean; emailSent?: boolean; emailWarning?: string; invite?: { id?: string } }>("/api/create-invite", { email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole });
+      if (json.addedDirectly) { setInviteNote(mp.addedDirectly); window.location.reload(); return; }
+      if (json.emailSent) setInviteNote(mp.inviteSent);
+      else setInviteNote(json.emailWarning ?? mp.inviteCreated);
+      setIEmail(""); setIFirst(""); setILast("");
+      setInvites((prev) => [{ id: json.invite?.id ?? Math.random().toString(), email, firstName: iFirst.trim(), lastName: iLast.trim(), role: iRole, createdAt: new Date().toISOString(), expiresAt: "" }, ...prev]);
+    } catch (e) {
+      setError(errMsg(e, mp.couldNotSendInvite));
+    } finally {
+      setAdding(false);
+    }
   }
   async function revokeInvite(id: string) {
     const res = await fetch("/api/revoke-invite", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ inviteId: id }) });
