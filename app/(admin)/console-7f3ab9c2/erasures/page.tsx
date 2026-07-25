@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdminPage, ADMIN_SLUG } from "@/lib/admin";
 import { T } from "@/lib/theme";
+import ErasureTool from "./ErasureTool";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 // Every erasure we have performed, both paths. erase_reader and
@@ -39,8 +40,11 @@ export default async function ErasuresPage() {
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>Erasures</h1>
-        <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>Every data subject erasure performed, newest first. Open one to produce a report you can send or file.</p>
-        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginTop: 26 }}>
+        <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>Erase someone on request, and retrieve a certificate for anyone already erased.</p>
+        <ErasureTool />
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "26px 0 0" }}>Certificates</h2>
+        <p style={{ fontSize: 13.5, color: T.muted, margin: "5px 0 0" }}>Every erasure performed, newest first. Open one to produce a report you can send or file.</p>
+        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginTop: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: grid, gap: 12, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap" }}>
             <span>Reference</span><span>Subject</span><span>Route</span><span>When</span>
           </div>

@@ -1,7 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ADMIN_SLUG } from "@/lib/admin";
 import { T } from "@/lib/theme";
-import ForwardMentions from "./ForwardMentions";
 import SupportConversations from "./SupportConversations";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -113,7 +112,6 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           </div>
         )}
         <SupportConversations conversations={conversations} />
-        <ForwardMentions />
       </main>
       <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}`}</style>
     </div>
