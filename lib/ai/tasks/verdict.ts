@@ -43,7 +43,10 @@ export type VerdictOutput = z.infer<typeof VerdictOutput>;
 export const verdictTask: Task<VerdictInput, VerdictOutput> = {
   id: "verdict",
   tier: "reason",
-  maxTokens: 700,
+  // 700 was not enough for headline + reasoning + nextAction + up to four
+  // evidence strings. The object was being truncated mid-write, which surfaced
+  // as an unparseable response rather than as a token limit.
+  maxTokens: 1400,
   schema: VerdictOutput,
 
   cacheable: (i) => `DOCUMENT — "${i.documentTitle}"\n\n${i.documentText}`,

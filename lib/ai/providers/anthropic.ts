@@ -62,6 +62,22 @@ export const anthropicProvider: Provider = {
       .filter((b: { type: string }) => b.type === "text")
       .map((b: { text: string }) => b.text)
       .join("");
+    // When a response yields no text we are blind: extractJson reports only
+    // "No JSON object in response", which is true but useless. Log what the
+    // model actually returned so the cause is visible in one line.
+    if (!text.trim()) {
+      const kinds = (data.content ?? []).map((b: { type: string }) => b.type);
+      console.error("[anthropic] empty text response", {
+        model,
+        stopReason: data.stop_reason ?? null,
+        blockTypes: kinds,
+        maxTokens: req.maxTokens,
+      });
+      throw new Error(
+        "Model returned no text. stop_reason=" + (data.stop_reason ?? "unknown") +
+        " blocks=[" + kinds.join(",") + "] maxTokens=" + req.maxTokens
+      );
+    }
     const u = data.usage ?? {};
     return {
       text,

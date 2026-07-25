@@ -1,4 +1,4 @@
-﻿import type { Task, RunResult, Provider, ProviderName } from "./types";
+import type { Task, RunResult, Provider, ProviderName } from "./types";
 import { priceOf, ZERO_USAGE } from "./models";
 import { mockProvider } from "./providers/mock";
 import { anthropicProvider } from "./providers/anthropic";
@@ -27,7 +27,18 @@ function extractJson(raw: string): unknown {
   const cleaned = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("No JSON object in response");
+  // These are three different failures and they used to share one message,
+  // which made them indistinguishable in production. An empty response, a
+  // prose response, and a response truncated by max_tokens need different
+  // fixes, so each says so.
+  if (!cleaned) throw new Error("Model returned empty text");
+  if (start === -1) throw new Error("No JSON in response. First 200 chars: " + cleaned.slice(0, 200));
+  if (end === -1 || end < start) {
+    throw new Error(
+      "JSON truncated, no closing brace. Likely hit maxTokens. Length " +
+      cleaned.length + ", tail: " + cleaned.slice(-120)
+    );
+  }
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 /**
