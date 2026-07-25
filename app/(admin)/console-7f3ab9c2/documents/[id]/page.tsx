@@ -1,122 +1,158 @@
-﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdminPage, ADMIN_SLUG } from "@/lib/admin";
-import { T, pageHeading, microLabel } from "@/lib/theme";
+import { T } from "@/lib/theme";
+import { clampDwellMs, formatDwell, DWELL_CAP_MS } from "@/lib/dwell";
 import DocumentActions from "./DocumentActions";
 import EraseReader from "./EraseReader";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
-
 export default async function AdminDocumentDetail({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
   const { id } = await params;
   const admin = createAdminClient();
-
-  const { data: doc } = await admin
-    .from("documents")
-    .select("id, title, owner_id, organization_id, project_id, created_at, archived_at, page_count, storage_path, extract_method, needs_page_ocr, extracted_text")
-    .eq("id", id)
-    .single();
-  if (!doc) return <div style={{ padding: 30, fontFamily: T.font }}>Document not found.</div>;
-
-  const { data: owner } = await admin.auth.admin.getUserById(doc.owner_id);
-  const { data: recs } = await admin.from("recipients").select("id, label, first_name, last_name, email, delivery, share_token, created_at").eq("document_id", id).order("created_at", { ascending: false });
-  const recipients = recs ?? [];
+  const { data: doc } = await admin.from("documents").select("id, title, owner_id, organization_id, project_id, created_at, archived_at, storage_path, page_count, extract_method, needs_page_ocr, extracted_text").eq("id", id).single();
+  if (!doc) return <div style={{ padding: 30, fontFamily: T.font, color: T.body }}>Document not found.</div>;
+  const { data: ownerUser } = await admin.auth.admin.getUserById(doc.owner_id);
+  let orgName: string | null = null;
+  if (doc.organization_id) {
+    const { data } = await admin.from("organizations").select("name").eq("id", doc.organization_id).single();
+    orgName = (data?.name as string | null) ?? null;
+  }
+  let projectName: string | null = null;
+  if (doc.project_id) {
+    const { data } = await admin.from("projects").select("name").eq("id", doc.project_id).single();
+    projectName = (data?.name as string | null) ?? null;
+  }
+  const { data: recsRaw } = await admin.from("recipients").select("id, label, first_name, last_name, email, share_token, created_at").eq("document_id", id).order("created_at", { ascending: false });
+  const recipients = recsRaw ?? [];
   const recIds = recipients.map((r) => r.id);
-
   const { data: sigsRaw } = recIds.length ? await admin.from("signals").select("recipient_id, kind, page, value, created_at").in("recipient_id", recIds).order("created_at", { ascending: false }) : { data: [] };
-  const signals = (sigsRaw ?? []) as Sig[];
-  const { data: msgs } = await admin.from("reader_messages").select("id, recipient_id, role, content, page, escalate, out_of_scope, created_at").eq("document_id", id).order("created_at", { ascending: true });
-  const messages = msgs ?? [];
-  const { data: vRuns } = await admin.from("usage_events").select("id, created_at, user_id").eq("kind", "verdict").eq("document_id", id).order("created_at", { ascending: false });
-  const verdictRuns = vRuns ?? [];
-
-  const per = new Map<string, { opens: number; questions: number; forwards: number; dwellMs: number; pages: Set<number>; last: string }>();
+  const signals = sigsRaw ?? [];
+  const { data: msgsRaw } = recIds.length ? await admin.from("reader_messages").select("recipient_id, role, content, escalate, created_at").in("recipient_id", recIds).order("created_at", { ascending: true }) : { data: [] };
+  const messages = msgsRaw ?? [];
+  const per = new Map<string, { opens: number; questions: number; forwards: number; dwell: Record<number, number>; capped: boolean }>();
+  for (const r of recipients) per.set(r.id, { opens: 0, questions: 0, forwards: 0, dwell: {}, capped: false });
   for (const s of signals) {
-    const a = per.get(s.recipient_id) ?? { opens: 0, questions: 0, forwards: 0, dwellMs: 0, pages: new Set<number>(), last: s.created_at };
+    const a = per.get(s.recipient_id); if (!a) continue;
     if (s.kind === "opened") a.opens++;
     else if (s.kind === "question") a.questions++;
     else if (s.kind === "forwarded") a.forwards++;
-    else if (s.kind === "page_dwell") {
-      const v = (s.value ?? {}) as Record<string, unknown>;
-      a.dwellMs += Number(v.ms) || 0;
-      if (s.page != null) a.pages.add(s.page);
+    else if (s.kind === "page_dwell" && s.page != null && s.value && typeof s.value === "object" && "ms" in s.value) {
+      const raw = Number((s.value as { ms: unknown }).ms) || 0;
+      a.dwell[s.page] = Math.max(a.dwell[s.page] ?? 0, clampDwellMs(raw));
+      if (raw > DWELL_CAP_MS) a.capped = true;
     }
-    if (new Date(s.created_at) > new Date(a.last)) a.last = s.created_at;
-    per.set(s.recipient_id, a);
   }
   const msgsByRec = new Map<string, typeof messages>();
   for (const m of messages) {
     const arr = msgsByRec.get(m.recipient_id) ?? [];
-    arr.push(m); msgsByRec.set(m.recipient_id, arr);
+    arr.push(m);
+    msgsByRec.set(m.recipient_id, arr);
   }
-
-  const mono = "'DM Mono', ui-monospace, monospace";
-  const box = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 16 } as const;
+  const totals = recipients.reduce((acc, r) => {
+    const a = per.get(r.id)!;
+    acc.opens += a.opens; acc.questions += a.questions; acc.forwards += a.forwards;
+    return acc;
+  }, { opens: 0, questions: 0, forwards: 0 });
+  const escalated = messages.filter((m) => m.escalate).length;
   const nameOf = (r: { label: string | null; first_name: string | null; last_name: string | null }) =>
-    r.label || [r.first_name, r.last_name].filter(Boolean).join(" ").trim() || "Unnamed reader";
-  const secs = (ms: number) => (ms >= 60000 ? `${Math.round(ms / 60000)}m` : `${Math.round(ms / 1000)}s`);
-
+    (r.label as string | null) || [r.first_name, r.last_name].filter(Boolean).join(" ").trim() || "Unnamed reader";
+  const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 14 } as const;
+  const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body } as const;
+  const mono = "'DM Mono', ui-monospace, monospace";
+  const cells: [string, string, boolean][] = [
+    [String(recipients.length), "Readers", false],
+    [String(totals.opens), "Opens", false],
+    [String(totals.questions), "Questions", false],
+    [String(totals.forwards), "Forwards", false],
+    [String(escalated), "Escalated", escalated > 0],
+  ];
+  const meta = (l: string, v: string, warn = false) => (
+    <div>
+      <div style={{ fontSize: 12.5, color: T.muted, marginBottom: 2 }}>{l}</div>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: T.heading }}>
+        {warn && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber }} />}{v}
+      </div>
+    </div>
+  );
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
-      <main style={{ maxWidth: 1000, padding: "26px 30px 60px" }}>
-        <a href={`/${ADMIN_SLUG}/documents`} style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none", display: "inline-block", marginBottom: 14 }}>&larr; All documents</a>
-
-        <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
-          <div>
-            <h1 style={pageHeading}>{doc.title}</h1>
-            <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
-              {owner?.user?.email ?? "unknown owner"} {"\u00b7"} {doc.page_count ?? "?"} pages {"\u00b7"} added {new Date(doc.created_at).toLocaleDateString()}
+      <main style={{ maxWidth: 1000, padding: "34px 28px 120px" }}>
+        <a href={"/" + ADMIN_SLUG + "/documents"} style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> All documents</a>
+        <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "inline-flex", alignItems: "center", gap: 10 }}>
+              {doc.archived_at && <i title="Archived" style={{ width: 7, height: 7, borderRadius: 2, flex: "none", background: T.faint }} />}
+              {doc.title}
+            </h1>
+            <p style={{ fontSize: 12.5, color: T.muted, margin: "7px 0 0", fontFamily: mono }}>
+              {ownerUser?.user?.email ?? "unknown owner"} {"\u00b7"} {orgName ? orgName : "personal"}{projectName ? " / " + projectName : ""} {"\u00b7"} added {new Date(doc.created_at).toLocaleDateString()}
               {doc.archived_at ? " \u00b7 archived" : ""}
             </p>
           </div>
           <DocumentActions documentId={doc.id} title={doc.title} archived={!!doc.archived_at} />
         </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Ingestion</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 26, fontSize: 13 }}>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Extract method</div><div style={{ color: T.heading }}>{doc.extract_method || "unknown"}</div></div>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Needs OCR</div><div style={{ color: doc.needs_page_ocr ? "var(--rp-amber-text)" : T.heading }}>{doc.needs_page_ocr ? "yes" : "no"}</div></div>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Extracted text</div><div style={{ color: T.heading }}>{(doc.extracted_text ?? "").length.toLocaleString()} chars</div></div>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Verdicts run</div><div style={{ color: T.heading }}>{verdictRuns.length}</div></div>
+        <div className="stat-strip" style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card, margin: "26px 0 14px" }}>
+          {cells.map(([v, l, warn], i) => (
+            <div key={l} style={{ padding: "15px 18px", borderLeft: i ? "1px solid " + T.border : "none" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 20, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>
+                {warn && <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: T.amber }} />}{v}
+              </div>
+              <div style={{ fontSize: 12.5, color: T.muted, marginTop: 3 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={card}>
+          <div style={head}>Ingestion</div>
+          <div style={{ padding: 18, display: "flex", flexWrap: "wrap", gap: 26 }}>
+            {meta("Pages", doc.page_count ? String(doc.page_count) : "unknown")}
+            {meta("Extract method", (doc.extract_method as string | null) || "none")}
+            {meta("Needs OCR", doc.needs_page_ocr ? "yes" : "no", !!doc.needs_page_ocr)}
+            {meta("Extracted text", doc.extracted_text ? (doc.extracted_text as string).length.toLocaleString() + " chars" : "none", !doc.extracted_text)}
+            {meta("Storage", (doc.storage_path as string | null) ? "present" : "missing", !doc.storage_path)}
           </div>
         </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Readers ({recipients.length})</h2>
-          {recipients.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>Nobody has been sent this yet.</p>}
+        <div style={card}>
+          <div style={head}>Readers {"\u00b7"} {recipients.length}</div>
+          {recipients.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13.5 }}>Nobody has been sent this document.</div>}
           {recipients.map((r, i) => {
-            const a = per.get(r.id) ?? { opens: 0, questions: 0, forwards: 0, dwellMs: 0, pages: new Set<number>(), last: "" };
-            const convo = msgsByRec.get(r.id) ?? [];
+            const a = per.get(r.id)!;
+            const thread = msgsByRec.get(r.id) ?? [];
+            const dwellPages = Object.entries(a.dwell).sort((x, y) => Number(x[0]) - Number(y[0]));
             return (
-              <div key={r.id} style={{ borderTop: i ? `1px solid ${T.border}` : "none", padding: "14px 0" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: T.heading }}>{nameOf(r)}</div>
-                    <div style={{ fontSize: 12, color: T.muted, fontFamily: mono, marginTop: 2 }}>{r.email || "no email"} {"\u00b7"} {r.delivery || "link"}</div>
+              <div key={r.id} style={{ padding: "14px 18px", borderBottom: i < recipients.length - 1 ? "1px solid " + T.borderSoft : "none" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                      <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: a.opens > 0 ? T.green : T.faint }} />
+                      <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{nameOf(r)}</span>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: T.faint, fontFamily: mono, marginTop: 2 }}>
+                      {(r.email as string | null) || "no email"} {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} questions {"\u00b7"} {a.forwards} forwards {"\u00b7"} sent {new Date(r.created_at).toLocaleDateString()}
+                    </div>
                   </div>
-                  <EraseReader recipientId={r.id} expected={(r.email || nameOf(r)) as string} />
-                  <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>
-                    {a.opens} opens {"\u00b7"} {a.questions} Q {"\u00b7"} {a.forwards} fwd {"\u00b7"} {secs(a.dwellMs)} on {a.pages.size} pages
-                    {a.last ? ` \u00b7 last ${new Date(a.last).toLocaleDateString()}` : ""}
-                  </div>
+                  <EraseReader recipientId={r.id} label={(r.email as string | null) || nameOf(r)} />
                 </div>
-                {convo.length > 0 && (
-                  <div style={{ marginTop: 10, background: "var(--rp-soft)", border: `1px solid ${T.borderSoft}`, borderRadius: 10, padding: "10px 12px" }}>
-                    {convo.map((m) => (
-                      <div key={m.id} style={{ display: "flex", gap: 10, padding: "6px 0", alignItems: "flex-start" }}>
-                        <span style={{ flex: "none", fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: m.role === "user" ? "var(--rp-indigo-soft)" : T.greenSoft, color: m.role === "user" ? "var(--rp-indigo-text)" : T.greenText, marginTop: 2 }}>
-                          {m.role === "user" ? "reader" : "ai"}
-                        </span>
-                        <span style={{ fontSize: 13, color: T.heading, lineHeight: 1.5, flex: 1, minWidth: 0 }}>
-                          {m.content}
-                          {m.page != null && <span style={{ color: T.muted, fontFamily: mono, fontSize: 11 }}> {"\u00b7"} p{m.page}</span>}
-                          {m.escalate && <span style={{ marginLeft: 7, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: "var(--rp-amber-soft)", color: "var(--rp-amber-text)" }}>escalated</span>}
-                          {m.out_of_scope && <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: T.rPill, background: T.pillNeutralBg, color: T.body }}>out of scope</span>}
-                        </span>
+                {dwellPages.length > 0 && (
+                  <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 14 }}>
+                    {dwellPages.map(([page, ms]) => (
+                      <span key={page} style={{ fontSize: 12.5, color: ms >= DWELL_CAP_MS ? T.faint : T.body, fontFamily: mono }}>
+                        p{page} {formatDwell(ms)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {thread.length > 0 && (
+                  <div style={{ marginTop: 12, border: "1px solid " + T.border, borderRadius: T.rCard }}>
+                    {thread.map((m, k) => (
+                      <div key={k} style={{ padding: "10px 12px", borderBottom: k < thread.length - 1 ? "1px solid " + T.borderSoft : "none" }}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11.5, color: T.muted, marginBottom: 3 }}>
+                          <i style={{ width: 6, height: 6, borderRadius: 2, background: m.role === "user" ? T.indigo : T.green }} />
+                          {m.role === "user" ? "reader" : "companion"}
+                          {m.escalate ? <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 6 }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber }} />escalated</span> : null}
+                          <span style={{ color: T.faint, fontFamily: mono, marginLeft: 6 }}>{new Date(m.created_at).toLocaleString()}</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: T.heading, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{m.content}</div>
                       </div>
                     ))}
                   </div>
@@ -125,24 +161,8 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
             );
           })}
         </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Raw signals ({signals.length})</h2>
-          {signals.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>None yet.</p>}
-          {signals.slice(0, 60).map((s, i) => {
-            const r = recipients.find((x) => x.id === s.recipient_id);
-            return (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "7px 0", borderTop: i ? `1px solid ${T.borderSoft}` : "none", fontSize: 13 }}>
-                <span style={{ color: T.heading }}>{r ? nameOf(r) : "unknown"} <span style={{ color: T.green, fontWeight: 600 }}>{s.kind}</span>{s.page != null ? <span style={{ color: T.muted }}> p{s.page}</span> : null}</span>
-                <span style={{ color: T.muted, fontFamily: mono, fontSize: 11 }}>{new Date(s.created_at).toLocaleString()}</span>
-              </div>
-            );
-          })}
-          {signals.length > 60 && <p style={{ color: T.muted, fontSize: 12, marginTop: 10 }}>Showing the 60 most recent of {signals.length}.</p>}
-        </div>
       </main>
+      <style>{`@media (max-width: 860px){ .stat-strip{ grid-template-columns: 1fr 1fr !important; } }`}</style>
     </div>
   );
 }
-
-
