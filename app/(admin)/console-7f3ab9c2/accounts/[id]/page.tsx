@@ -1,34 +1,27 @@
-﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdminPage, ADMIN_SLUG } from "@/lib/admin";
-import { T, pageHeading, microLabel } from "@/lib/theme";
+import { T } from "@/lib/theme";
 import PlanForm from "./PlanForm";
 import AccountActions from "./AccountActions";
-
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
 type Prof = { first_name: string | null; last_name: string | null; workspace_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
 type Org = { id: string; name: string | null; domain: string | null; plan: string | null; subscription_active: boolean | null };
-
 export default async function AccountDetail({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage();
   const { id } = await params;
   const admin = createAdminClient();
-
   const { data: authUser } = await admin.auth.admin.getUserById(id);
   const u = authUser?.user;
   const banned = !!(u as unknown as { banned_until?: string | null } | undefined)?.banned_until;
-
   const { data: profile } = await admin.from("profiles").select("first_name, last_name, workspace_name, account_type, active_org_id, plan, trial_started_at").eq("id", id).single();
   const p = (profile ?? {}) as Prof;
   const isOrg = p.account_type === "company" || p.account_type === "organization";
-
   let org: Org | null = null;
   if (isOrg && p.active_org_id) {
     const { data } = await admin.from("organizations").select("id, name, domain, plan, subscription_active").eq("id", p.active_org_id).single();
     org = (data as Org) ?? null;
   }
-
   const { data: docs } = await admin.from("documents").select("id, title, created_at, archived_at").eq("owner_id", id).order("created_at", { ascending: false });
   const documents = docs ?? [];
   const docIds = documents.map((d) => d.id);
@@ -39,7 +32,6 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
   const signals = sigs ?? [];
   const { data: usage } = await admin.from("usage_events").select("kind").eq("user_id", id);
   const usageEvents = usage ?? [];
-
   const recToDoc = new Map(recipients.map((r) => [r.id, r.document_id]));
   const recByDoc = new Map<string, number>();
   for (const r of recipients) recByDoc.set(r.document_id, (recByDoc.get(r.document_id) ?? 0) + 1);
@@ -55,68 +47,75 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
   }
   const verdicts = usageEvents.filter((e) => e.kind === "verdict").length;
   const sends = usageEvents.filter((e) => e.kind === "send").length;
-
   const name = [p.first_name, p.last_name].filter(Boolean).join(" ").trim() || p.workspace_name || "\u2014";
-  const box = { background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, boxShadow: T.shadow, padding: 18, marginBottom: 16 } as const;
+  const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 14 } as const;
+  const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body } as const;
   const mono = "'DM Mono', ui-monospace, monospace";
-  const stat = (label: string, value: string | number) => (
-    <div key={label}><div style={{ ...microLabel, marginBottom: 4 }}>{label}</div><div style={{ fontSize: 18, fontWeight: 700, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{value}</div></div>
+  const cells: [number, string][] = [
+    [documents.length, "Documents"], [recipients.length, "Recipients"], [tot.opens, "Opens"],
+    [tot.questions, "Questions"], [tot.forwards, "Forwards"], [verdicts, "Verdicts"], [sends, "Sends"],
+  ];
+  const meta = (l: string, v: string, ink?: string) => (
+    <div>
+      <div style={{ fontSize: 12.5, color: T.muted, marginBottom: 2 }}>{l}</div>
+      <div style={{ fontSize: 13.5, color: ink ?? T.heading }}>{v}</div>
+    </div>
   );
-
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
-      <main style={{ maxWidth: 1000, padding: "26px 30px 60px" }}>
-        <a href={`/${ADMIN_SLUG}/accounts`} style={{ fontSize: 13, color: T.green, fontWeight: 600, textDecoration: "none", display: "inline-block", marginBottom: 14 }}>&larr; All accounts</a>
-
-        <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 18 }}>
-          <div>
-            <h1 style={pageHeading}>{name}{banned && <span style={{ marginLeft: 10, fontSize: 12, fontWeight: 600, padding: "4px 10px", borderRadius: T.rPill, background: "var(--rp-danger-soft)", color: "var(--rp-danger-text)", verticalAlign: "middle" }}>suspended</span>}</h1>
-            <p style={{ fontSize: 13, color: T.muted, margin: "5px 0 0", fontFamily: mono }}>
+      <main style={{ maxWidth: 1000, padding: "34px 28px 120px" }}>
+        <a href={"/" + ADMIN_SLUG + "/accounts"} style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> All accounts</a>
+        <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "inline-flex", alignItems: "center", gap: 10 }}>
+              {banned && <i title="Suspended" style={{ width: 7, height: 7, borderRadius: 2, flex: "none", background: T.danger }} />}
+              {name}
+            </h1>
+            <p style={{ fontSize: 12.5, color: T.muted, margin: "7px 0 0", fontFamily: mono }}>
               {u?.email ?? "\u2014"} {"\u00b7"} {p.account_type ?? "personal"} {"\u00b7"} joined {u?.created_at ? new Date(u.created_at).toLocaleDateString() : "\u2014"}
-              {u?.last_sign_in_at ? ` \u00b7 last seen ${new Date(u.last_sign_in_at).toLocaleDateString()}` : " \u00b7 never signed in"}
+              {u?.last_sign_in_at ? " \u00b7 last seen " + new Date(u.last_sign_in_at).toLocaleDateString() : " \u00b7 never signed in"}
+              {banned ? " \u00b7 suspended" : ""}
             </p>
           </div>
           <AccountActions targetUserId={id} email={u?.email ?? ""} suspended={banned} />
         </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 14px" }}>Footprint</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 34 }}>
-            {stat("Documents", documents.length)}
-            {stat("Recipients", recipients.length)}
-            {stat("Opens", tot.opens)}
-            {stat("Questions", tot.questions)}
-            {stat("Forwards", tot.forwards)}
-            {stat("Verdicts", verdicts)}
-            {stat("Sends", sends)}
+        <div className="stat-strip" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card, margin: "26px 0 14px" }}>
+          {cells.map(([v, l], i) => (
+            <div key={l} style={{ padding: "15px 16px", borderLeft: i ? "1px solid " + T.border : "none" }}>
+              <div style={{ fontSize: 20, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>{v}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 3 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={card}>
+          <div style={head}>Plan</div>
+          <div style={{ padding: 18 }}>
+            <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "company_1") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 26, marginTop: 18 }}>
+              {meta("Trial started", p.trial_started_at ? new Date(p.trial_started_at).toLocaleDateString() : "not started")}
+              {org && meta("Subscription", org.subscription_active ? "active" : "inactive", org.subscription_active ? T.greenText : T.body)}
+              {org && meta("Org domain", org.domain || "\u2014")}
+            </div>
           </div>
         </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Plan</h2>
-          <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "company_1") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 26, marginTop: 16, fontSize: 13 }}>
-            <div><div style={{ ...microLabel, marginBottom: 4 }}>Trial started</div><div style={{ color: T.heading }}>{p.trial_started_at ? new Date(p.trial_started_at).toLocaleDateString() : "not started"}</div></div>
-            {org && <div><div style={{ ...microLabel, marginBottom: 4 }}>Subscription</div><div style={{ color: org.subscription_active ? T.greenText : T.body }}>{org.subscription_active ? "active" : "inactive"}</div></div>}
-            {org && <div><div style={{ ...microLabel, marginBottom: 4 }}>Org domain</div><div style={{ color: T.heading }}>{org.domain || "\u2014"}</div></div>}
-          </div>
-        </div>
-
-        <div style={box}>
-          <h2 style={{ fontSize: 14, fontWeight: 700, color: T.heading, margin: "0 0 12px" }}>Documents ({documents.length})</h2>
-          {documents.length === 0 && <p style={{ color: T.muted, fontSize: 13, margin: 0 }}>None.</p>}
+        <div style={card}>
+          <div style={head}>Documents {"\u00b7"} {documents.length}</div>
+          {documents.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.muted, fontSize: 13.5 }}>None.</div>}
           {documents.map((d, i) => {
             const a = per.get(d.id) ?? { opens: 0, questions: 0, forwards: 0 };
             return (
-              <a key={d.id} href={`/${ADMIN_SLUG}/documents/${d.id}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderTop: i ? `1px solid ${T.border}` : "none", fontSize: 14, textDecoration: "none" }}>
-                <span style={{ color: T.heading, fontWeight: 600 }}>{d.title}{d.archived_at ? <span style={{ color: T.muted, fontWeight: 400 }}> (archived)</span> : ""}</span>
-                <span style={{ color: T.muted, fontFamily: mono, fontSize: 12 }}>{recByDoc.get(d.id) ?? 0} rec {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} Q {"\u00b7"} {a.forwards} fwd</span>
+              <a key={d.id} href={"/" + ADMIN_SLUG + "/documents/" + d.id} className="t-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 18px", borderBottom: i < documents.length - 1 ? "1px solid " + T.borderSoft : "none", fontSize: 13.5, textDecoration: "none" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                  {d.archived_at && <i title="Archived" style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: T.faint }} />}
+                  <span style={{ color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.title}</span>
+                </span>
+                <span style={{ color: T.faint, fontFamily: mono, fontSize: 12, flex: "none", whiteSpace: "nowrap" }}>{recByDoc.get(d.id) ?? 0} readers {"\u00b7"} {a.opens} opens {"\u00b7"} {a.questions} questions {"\u00b7"} {a.forwards} forwards</span>
               </a>
             );
           })}
         </div>
       </main>
+      <style>{`.t-row{transition:background .12s}.t-row:hover{background:var(--rp-hover)}@media (max-width: 1000px){ .stat-strip{ grid-template-columns: 1fr 1fr 1fr !important; } }`}</style>
     </div>
   );
 }
-
