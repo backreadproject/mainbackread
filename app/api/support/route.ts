@@ -84,11 +84,16 @@ export async function POST(req: NextRequest) {
     if (error || !created) return NextResponse.json({ error: "Could not start a conversation." }, { status: 500 });
     conversationId = created.id as string;
   } else if (user?.id || (typeof email === "string" && email.trim())) {
-    // Fill in identity if we learn it mid-conversation.
-    await admin.from("support_conversations").update({
-      user_id: user?.id ?? null,
-      email: user?.email ?? (typeof email === "string" ? email.trim() : null),
-    }).eq("id", conversationId).is("email", null);
+    // Fill in identity if we learn it mid-conversation. These are two separate
+    // writes on purpose: the account link must land even when an email is already
+    // stored, and the email must not be overwritten once we have one.
+    if (user?.id) {
+      await admin.from("support_conversations").update({ user_id: user.id }).eq("id", conversationId);
+    }
+    const learnedEmail = user?.email ?? (typeof email === "string" ? email.trim() : "");
+    if (learnedEmail) {
+      await admin.from("support_conversations").update({ email: learnedEmail }).eq("id", conversationId).is("email", null);
+    }
   }
 
   const { data: past } = await admin
@@ -118,10 +123,12 @@ export async function POST(req: NextRequest) {
   const { data } = await runAI(supportTask, { question: message.trim(), history, who, humanWaiting });
 
   await admin.from("support_messages").insert({ conversation_id: conversationId, role: "assistant", content: data.answer });
+  const alreadyWaiting = existing?.status === "escalated" && !!existing?.escalated_at;
+  const startsNewWait = data.escalate && !alreadyWaiting;
   await admin.from("support_conversations").update({
     last_message_at: new Date().toISOString(),
     status: humanWaiting || data.escalate ? "escalated" : "bot",
-    ...(data.escalate ? { escalated_at: new Date().toISOString() } : {}),
+    ...(startsNewWait ? { escalated_at: new Date().toISOString() } : {}),
   }).eq("id", conversationId);
 
   if (data.escalate && !humanWaiting) await notifyHuman(conversationId, message.trim(), data.reason);
