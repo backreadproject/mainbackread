@@ -76,7 +76,18 @@ export async function POST(req: Request) {
     else if (orgName) senderName = orgName;
     else senderName = "A colleague";
     const html = brandedEmail({ firstName: firstName.trim(), senderName, docTitle, readUrl, note: noteClean });
-    const emailResult = await sendEmail("relay", { to: email.trim(), subject: `${senderName} shared "${docTitle}" with you`, html });
+    // The From stays documents@relaydocuments.com, which is what keeps the tool
+    // invisible. Reply-To is the sender's own address, so a reader who replies
+    // reaches the person who shared the document rather than a send-only mailbox
+    // with no MX record. A reply is a stronger signal than any dwell time, and it
+    // was being dropped. The email already names the sender in its subject and
+    // body, so this reveals nothing the reader was not already told.
+    const emailResult = await sendEmail("relay", {
+      to: email.trim(),
+      subject: `${senderName} shared "${docTitle}" with you`,
+      html,
+      replyTo: user.email ?? undefined,
+    });
     if (!emailResult.ok) {
       return NextResponse.json({ ok: true, recipient: rec, readUrl, emailSent: false, emailWarning: `Recipient created, but the email failed to send: ${emailResult.error ?? ""}` });
     }

@@ -37,7 +37,7 @@ export type SendResult = { ok: boolean; skipped?: boolean; error?: string };
 
 export async function sendEmail(
   account: EmailAccount,
-  msg: { to: string | string[]; subject: string; html: string; from?: string }
+  msg: { to: string | string[]; subject: string; html: string; from?: string; replyTo?: string }
 ): Promise<SendResult> {
   const { apiKey, from } = config(account);
   if (!apiKey) return { ok: false, skipped: true };
@@ -45,7 +45,16 @@ export async function sendEmail(
     const resp = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: msg.from || from, to: Array.isArray(msg.to) ? msg.to : [msg.to], subject: msg.subject, html: msg.html }),
+      // reply_to is omitted entirely when absent. Resend rejects an empty string,
+      // and a broken Reply-To is worse than none: the reply bounces instead of
+      // going to the default From.
+      body: JSON.stringify({
+        from: msg.from || from,
+        to: Array.isArray(msg.to) ? msg.to : [msg.to],
+        subject: msg.subject,
+        html: msg.html,
+        ...(msg.replyTo && msg.replyTo.includes("@") ? { reply_to: msg.replyTo } : {}),
+      }),
     });
     if (!resp.ok) return { ok: false, error: (await resp.text()).slice(0, 200) };
     return { ok: true };
