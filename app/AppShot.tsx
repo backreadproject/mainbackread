@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import IntentField, { type FieldNode } from "./IntentField";
 // A faithful, code-built replica of the Overview screen for the marketing hero.
 //
 // Overview rather than Documents on purpose: a table of files looks like every
@@ -11,6 +11,19 @@ import { useState } from "react";
 // Org is ReadProspects Inc, account is support@readprospects.com, initials
 // avatar. Nothing personal, nothing from a real tenant.
 type Node = { x: number; y: number; b: "ready" | "warm" | "glance"; n?: string; full?: string; doc?: string; reads?: string; dwell?: string; q?: string; why?: string };
+const FIELD: FieldNode[] = [
+  { intent: 0.94, band: "ready", short: "Dana W.", full: "Dana Whitfield", doc: "Q3 proposal \u2014 Northwind", reads: "12", dwell: "6m 40s", q: "3", why: "Re-read pricing three times and asked about the annual commit." },
+  { intent: 0.88, band: "ready", short: "Aisha B.", full: "Aisha Bello", doc: "Pricing overview 2026", reads: "9", dwell: "5m 30s", q: "4", why: "Asked what happens at the seat limit. Buying signal." },
+  { intent: 0.84, band: "ready", short: "Marcus C.", full: "Marcus Cole", doc: "Pricing overview 2026", reads: "8", dwell: "4m 12s", q: "2", why: "Came back twice to the tiers table, then forwarded it." },
+  { intent: 0.8, band: "ready", short: "Elena R.", full: "Elena Ross", doc: "Security questionnaire", reads: "4", dwell: "3m 05s", q: "1", why: "Went straight to data retention and stayed there." },
+  { intent: 0.62, band: "warm", full: "Sam Rivera", doc: "Q3 proposal \u2014 Northwind", reads: "2", dwell: "1m 18s", q: "0", why: "Opened twice, no questions yet." },
+  { intent: 0.55, band: "warm", full: "Priya Raman", doc: "Implementation plan v2", reads: "2", dwell: "0m 54s", q: "1", why: "One question, then went quiet." },
+  { intent: 0.5, band: "warm", full: "Tom Okafor", doc: "Pricing overview 2026", reads: "1", dwell: "1m 40s", q: "0", why: "Long single read of the pricing page." },
+  { intent: 0.44, band: "warm", full: "Lena Fischer", doc: "Security questionnaire", reads: "2", dwell: "1m 02s", q: "0", why: "Skimmed, came back the next day." },
+  { intent: 0.3, band: "glance" }, { intent: 0.26, band: "glance" }, { intent: 0.22, band: "glance" },
+  { intent: 0.19, band: "glance" }, { intent: 0.16, band: "glance" }, { intent: 0.13, band: "glance" },
+  { intent: 0.1, band: "glance" }, { intent: 0.07, band: "glance" },
+];
 const NODES: Node[] = [
   { x: 112, y: 168, b: "ready", n: "Dana W.", full: "Dana Whitfield", doc: "Q3 proposal \u2014 Northwind", reads: "12", dwell: "6m 40s", q: "3", why: "Re-read pricing three times and asked about the annual commit." },
   { x: 181, y: 124, b: "ready", n: "Marcus C.", full: "Marcus Cole", doc: "Pricing overview 2026", reads: "8", dwell: "4m 12s", q: "2", why: "Came back twice to the tiers table, then forwarded it." },
@@ -143,54 +156,7 @@ const SHOT_CSS = `
   .rp-shot .s-top{flex-direction:column}
 }
 `;
-function Field({ open, setOpen }: { open: number | null; setOpen: (i: number | null) => void }) {
-  const fill = (b: string) => (b === "ready" ? "#1F6F4A" : b === "warm" ? "#B54708" : "#98A2B3");
-  const size = (b: string) => (b === "ready" ? 7 : b === "warm" ? 5.5 : 4.5);
-  return (
-    <svg viewBox="0 0 300 300" style={{ display: "block", width: "100%", height: "auto" }} role="img" aria-label="Intent field">
-      <circle cx="150" cy="150" r="45" fill="none" stroke="#1F6F4A" strokeOpacity="0.55" strokeWidth="1.4" strokeDasharray="6 6" />
-      <circle cx="150" cy="150" r="83" fill="none" stroke="#1F6F4A" strokeOpacity="0.4" strokeWidth="1.4" strokeDasharray="6 6" />
-      <circle cx="150" cy="150" r="123" fill="none" stroke="#1F6F4A" strokeOpacity="0.28" strokeWidth="1.4" strokeDasharray="6 6" />
-      {[0, 45, 90, 135].map((a) => {
-        const rad = (a * Math.PI) / 180;
-        return <line key={a} x1={150 - Math.cos(rad) * 123} y1={150 - Math.sin(rad) * 123} x2={150 + Math.cos(rad) * 123} y2={150 + Math.sin(rad) * 123} stroke="#1F6F4A" strokeOpacity="0.16" strokeWidth="1" />;
-      })}
-      {NODES.map((nd, i) => {
-        const sel = open === i;
-        const clickable = !!nd.full;
-        return (
-          <g key={i} className={"s-node d" + (i % 4)} onClick={clickable ? () => setOpen(sel ? null : i) : undefined} style={{ cursor: clickable ? "pointer" : "default" }}>
-            {nd.b === "ready" && (
-              <>
-                <line x1="150" y1="150" x2={nd.x} y2={nd.y} stroke="#1F6F4A" strokeOpacity="0.26" strokeWidth="1" strokeDasharray="2 4" />
-                <circle className="s-pulse" cx={nd.x} cy={nd.y} r="11" fill="none" stroke="#1F6F4A" strokeWidth="1.2" />
-              </>
-            )}
-            {sel && <circle cx={nd.x} cy={nd.y} r={size(nd.b) + 6} fill="none" stroke="#1F6F4A" strokeWidth="2" />}
-            {clickable && <circle cx={nd.x} cy={nd.y} r="15" fill="transparent" />}
-            <circle cx={nd.x} cy={nd.y} r={size(nd.b)} fill={fill(nd.b)} />
-            {nd.n && <text x={nd.x} y={nd.y - 14} textAnchor="middle" fontSize="10" fontWeight="600" fill="#101828" style={{ pointerEvents: "none" }}>{nd.n}</text>}
-          </g>
-        );
-      })}
-      {[["GLANCED", 31], ["WARMING", 71], ["READY", 109]].map(([label, y]) => (
-        <g key={label as string} style={{ pointerEvents: "none" }}>
-          <rect x={150 - 32} y={(y as number) - 9} width="64" height="13" fill="#FFFFFF" />
-          <text x="150" y={y as number} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#344054" letterSpacing="0.5">{label as string}</text>
-        </g>
-      ))}
-      <circle cx="150" cy="150" r="23" fill="#FFFFFF" stroke="#E4E7EC" strokeWidth="1" />
-      <text x="150" y="149" textAnchor="middle" fontSize="17" fontWeight="600" fill="#14603C" style={{ pointerEvents: "none" }}>4</text>
-      <text x="150" y="162" textAnchor="middle" fontSize="8" fill="#667085" letterSpacing="0.4" style={{ pointerEvents: "none" }}>READY</text>
-    </svg>
-  );
-}
 export default function AppShot() {
-  const [open, setOpen] = useState<number | null>(null);
-  const sel = open === null ? null : NODES[open];
-  // Popover placement in percent, so it tracks the SVG as it scales.
-  const px = sel ? (sel.x > 150 ? { right: (300 - sel.x) / 3 + 6 + "%" } : { left: sel.x / 3 + 6 + "%" }) : {};
-  const py = sel ? { top: Math.min(sel.y / 3, 58) + "%" } : {};
   return (
     <div className="rp-shot">
       <style>{SHOT_CSS}</style>
@@ -245,19 +211,7 @@ export default function AppShot() {
                 <span className="s-cnt">4 / 16 readers</span>
               </div>
               <div className="s-field s-fieldwrap">
-                <Field open={open} setOpen={setOpen} />
-                {sel && (
-                  <div className="s-pop" style={{ ...px, ...py }}>
-                    <div className="s-popn">{sel.full}</div>
-                    <div className="s-popd">{sel.doc}</div>
-                    <div className="s-popk">
-                      <span>reads<b>{sel.reads}</b></span>
-                      <span>dwell<b>{sel.dwell}</b></span>
-                      <span>questions<b>{sel.q}</b></span>
-                    </div>
-                    <div className="s-popw">{sel.why}</div>
-                  </div>
-                )}
+                <IntentField nodes={FIELD} height={330} />
               </div>
               <div className="s-hint">Click a reader</div>
               <div className="s-legend">
