@@ -7,6 +7,9 @@ type NotifyInput = {
   title: string;
   body?: string;
   link?: string;
+  /** Values the client needs to render this in any language. Without them a
+   *  notification is frozen in the language it was written in. */
+  params?: Record<string, string | number> | null;
   email?: { to: string; subject: string; html: string } | null; // optional email dispatch
 };
 
@@ -21,6 +24,7 @@ export async function notify(input: NotifyInput): Promise<void> {
       title: input.title,
       body: input.body ?? null,
       link: input.link ?? null,
+      params: input.params ?? null,
     });
   } catch {
     // Non-fatal: never let a notification failure break the main action.

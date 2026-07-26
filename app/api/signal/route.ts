@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
         type: "reader_opened",
         title: `${readerName} opened ${doc.title}`,
         body: "They have started reading. Open ReadProspects to read their read.",
+        params: { reader: readerName, doc: doc.title },
         link: `/documents/${doc.id}`,
         email: null,
       });

@@ -5,7 +5,29 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import { fetchJson, postJson } from "@/lib/fetch-json";
-type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string };
+const NOTE = {
+  en: {
+    reader_opened: (p: Record<string, string>) => [p.reader + " opened " + p.doc, "They have started reading."],
+    reader_replied: (p: Record<string, string>) => [p.reader + " replied about " + p.doc, p.preview ?? ""],
+    added_to_org: (p: Record<string, string>) => ["You were added to " + p.org, "You now have access as " + p.role + "."],
+    doc_shared: (p: Record<string, string>) => [p.sharer + " shared a " + p.resource + " with you", "You now have " + p.permission + " access."],
+  },
+  fr: {
+    reader_opened: (p: Record<string, string>) => [p.reader + " a ouvert " + p.doc, "La lecture a commenc\u00e9."],
+    reader_replied: (p: Record<string, string>) => [p.reader + " a r\u00e9pondu au sujet de " + p.doc, p.preview ?? ""],
+    added_to_org: (p: Record<string, string>) => ["Vous avez \u00e9t\u00e9 ajout\u00e9 \u00e0 " + p.org, "Vous avez d\u00e9sormais l\u2019acc\u00e8s en tant que " + p.role + "."],
+    doc_shared: (p: Record<string, string>) => [p.sharer + " a partag\u00e9 un " + p.resource + " avec vous", "Vous avez d\u00e9sormais l\u2019acc\u00e8s " + p.permission + "."],
+  },
+} as const;
+/** Falls back to the stored English text when a row predates params. */
+function render(n: { type: string; title: string; body: string | null; params: Record<string, string> | null }, locale: "en" | "fr"): [string, string] {
+  if (!n.params) return [n.title, n.body ?? ""];
+  const fn = (NOTE[locale] as Record<string, (p: Record<string, string>) => string[]>)[n.type];
+  if (!fn) return [n.title, n.body ?? ""];
+  const [title, body] = fn(n.params);
+  return [title, body];
+}
+type Notif = { id: string; type: string; title: string; body: string | null; link: string | null; params: Record<string, string> | null; read_at: string | null; created_at: string };
 const PANEL_WIDTH = 300;
 export default function NotificationBell() {
   const locale = useLocale();
@@ -109,11 +131,11 @@ export default function NotificationBell() {
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2, alignItems: "baseline" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: n.read_at ? 400 : 600, color: T.heading, minWidth: 0 }}>
                     <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: n.read_at ? "transparent" : T.green }} />
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title}</span>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{render(n, locale)[0]}</span>
                   </span>
                   <span style={{ fontSize: 11.5, color: T.faint, whiteSpace: "nowrap", flex: "none" }}>{timeAgo(n.created_at)}</span>
                 </div>
-                {n.body && <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 0 13px", lineHeight: 1.45 }}>{n.body}</p>}
+                {render(n, locale)[1] && <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 0 13px", lineHeight: 1.45 }}>{render(n, locale)[1]}</p>}
               </button>
             ))}
           </div>

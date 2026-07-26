@@ -82,6 +82,7 @@ export async function POST(req: NextRequest) {
     type: "reader_replied",
     title: `${readerName} replied about ${doc.title}`,
     body: preview,
+    params: { reader: readerName, doc: doc.title, preview },
     link,
     email: null,
   });

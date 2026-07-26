@@ -8,7 +8,7 @@ export async function GET() {
 
   const { data } = await supabase
     .from("notifications")
-    .select("id, type, title, body, link, read_at, created_at")
+    .select("id, type, title, body, link, params, read_at, created_at")
     .order("created_at", { ascending: false })
     .limit(30);
 

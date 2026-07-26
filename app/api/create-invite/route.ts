@@ -42,6 +42,7 @@ export async function POST(req: Request) {
       type: "added_to_org",
       title: `You were added to ${ctx.org.name}`,
       body: `You now have access as ${role}.`,
+      params: { org: ctx.org.name, role },
       link: "/overview",
       email: { to: cleanEmail, subject: `You've been added to ${ctx.org.name} on ReadProspects`, html: notifyEmail(`You've joined ${ctx.org.name}`, `You now have access as ${role}. Open ReadProspects to get started.`, `${origin0}/overview`, "Open ReadProspects") },
     });

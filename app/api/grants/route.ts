@@ -97,6 +97,7 @@ export async function POST(req: Request) {
       type: "doc_shared",
       title: `${sharer} shared a ${resourceType} with you`,
       body: `You now have ${permission} access.`,
+      params: { sharer, resource: resourceType, permission },
       link: resourceType === "document" ? `/documents/${resourceId}` : `/projects/${resourceId}`,
       email: targetMember?.email ? { to: targetMember.email, subject: `${sharer} shared a ${resourceType} with you on ReadProspects`, html: notifyEmail(`${sharer} shared a ${resourceType} with you`, `You now have ${permission} access. Open ReadProspects to view it.`, link, "Open in ReadProspects") } : null,
     });
