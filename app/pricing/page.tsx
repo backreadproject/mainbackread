@@ -191,6 +191,7 @@ export default async function PricingPage() {
           <a href="/pricing" style={{ color: BODY, textDecoration: "none" }}>{c.footer.pricing}</a>
           <a href="/privacy" style={{ color: BODY, textDecoration: "none" }}>{c.footer.privacy}</a>
           <a href="/terms" style={{ color: BODY, textDecoration: "none" }}>{c.footer.terms}</a>
+            <a href="https://www.linkedin.com/company/readprospects" target="_blank" rel="noopener noreferrer" aria-label="ReadProspects on LinkedIn" style={{ color: BODY, display: "inline-flex", alignItems: "center" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 11-.02 5.001A2.5 2.5 0 014.98 3.5zM3 8.98h4v12.02H3V8.98zM9.5 8.98h3.83v1.64h.05c.53-.95 1.83-1.96 3.77-1.96 4.03 0 4.78 2.5 4.78 5.75v6.59h-4v-5.84c0-1.39-.03-3.18-2-3.18-2 0-2.31 1.51-2.31 3.08v5.94h-4V8.98z"/></svg></a>
         </div>
         <div>{c.footer.tag}</div>
       </footer>
