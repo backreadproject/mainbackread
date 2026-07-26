@@ -415,7 +415,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
             </button>
           </div>
           <div style={{ padding: "0 12px 10px", textAlign: "center" }}>
-            <a href="/privacy" className="rdr-fine" style={{ fontSize: 11, color: "#9AA5A0", textDecoration: "none" }}>{F.privacy}</a>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+              <a href="/privacy" className="rdr-fine" style={{ fontSize: 11, color: "#9AA5A0", textDecoration: "none" }}>{F.privacy}</a>
+              <span style={{ color: "#D7DEDA", fontSize: 10 }}>&middot;</span>
+              <button onClick={() => { document.cookie = "locale=" + (locale === "fr" ? "en" : "fr") + "; path=/; max-age=31536000; samesite=lax"; window.location.reload(); }}
+                style={{ background: "none", border: "none", padding: 0, fontSize: 11, color: "#9AA5A0", cursor: "pointer", fontFamily: AEON }}>
+                {locale === "fr" ? "English" : "Fran\u00e7ais"}
+              </button>
+            </span>
           </div>
         </aside>
       </div>

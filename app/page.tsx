@@ -183,6 +183,13 @@ const CSS = `
   .rp-ring{width:19px;height:19px;border:2.4px solid #33E6A2;border-radius:50%;position:relative}
   .rp-ring::after{content:"";position:absolute;inset:5px;background:#33E6A2;border-radius:50%}
   .rp-links{display:flex;gap:28px;font-size:14px}.rp-links a{color:#93A79C}
+  .rp-menu{display:none;position:relative}
+  .rp-menu summary{list-style:none;cursor:pointer;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#93A79C}
+  .rp-menu summary::-webkit-details-marker{display:none}
+  .rp-menu[open] summary{color:#F2F7F4;border-color:rgba(255,255,255,0.24)}
+  .rp-menupanel{position:absolute;right:0;top:42px;min-width:190px;background:#0A1710;border:1px solid rgba(255,255,255,0.10);border-radius:12px;padding:6px;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,0.5)}
+  .rp-menupanel a{display:block;padding:10px 12px;border-radius:8px;font-size:14px;color:#93A79C}
+  .rp-menupanel a:hover{background:rgba(255,255,255,0.05);color:#F2F7F4}
   .rp-navr{display:flex;align-items:center;gap:16px;font-size:14px}.rp-navr a.sign{color:#93A79C}
   .rp-hero{position:relative;z-index:1;text-align:center;padding:76px 0 40px;overflow:hidden}
   .rp-h1{font-size:60px;line-height:1.03;font-weight:700;letter-spacing:-0.035em;margin:22px auto 0;max-width:820px}
@@ -288,6 +295,7 @@ const CSS = `
   @media (max-width:900px){
     .rp-hero{padding:52px 0 30px}.rp-h1{font-size:40px}.rp-h2{font-size:30px}
     .rp-links{display:none}
+      .rp-menu{display:block}
     .rp-grid4,.rp-plans{grid-template-columns:repeat(2,1fr)}
     .rp-steps,.rp-dash,.rp-stats{grid-template-columns:1fr}
     .rp-cap{grid-template-columns:1fr}.rp-cap.rev .txt{order:0}
@@ -334,6 +342,17 @@ export default async function LandingPage() {
             <div className="rp-links">
               <a href="#why">{c.nav.why}</a><a href="#how">{c.nav.how}</a><a href="#platform">{c.nav.platform}</a><a href="/pricing">{c.nav.pricing}</a>
             </div>
+            <details className="rp-menu">
+              <summary aria-label="Menu">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
+              </summary>
+              <div className="rp-menupanel">
+                <a href="#why">{c.nav.why}</a>
+                <a href="#how">{c.nav.how}</a>
+                <a href="#platform">{c.nav.platform}</a>
+                <a href="#pricing">{c.nav.pricing}</a>
+              </div>
+            </details>
             <div className="rp-navr">
               <LanguageSwitcher current={locale} dark />
               {loggedIn
