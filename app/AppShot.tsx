@@ -187,7 +187,7 @@ const SHOT_CSS = `
 }
 @media (max-width:640px){
   .rp-shot .s-main{padding:13px}
-  .rp-shot .s-tiles{grid-template-columns:1fr 1fr}
+  .rp-shot .s-tiles{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
   .rp-shot .s-top{flex-direction:column}
 }
 `;

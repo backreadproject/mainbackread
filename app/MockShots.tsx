@@ -24,7 +24,7 @@ export const MOCK_CSS = `
 .rp-m .m-h{font-size:13px;font-weight:600;color:${S.hd};margin:0 0 2px}
 .rp-m .m-s{font-size:11px;color:${S.mu};margin:0}
 .rp-m .m-tbl{border:1px solid ${S.bd};border-radius:6px;overflow:hidden;margin-top:12px}
-.rp-m .m-tr{display:grid;grid-template-columns:1.3fr 1.3fr .5fr .8fr .5fr .9fr;gap:9px;padding:9px 12px;align-items:center}
+.rp-m .m-tr{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.3fr) minmax(0,.5fr) minmax(0,.8fr) minmax(0,.5fr) minmax(0,.9fr);gap:9px;padding:9px 12px;align-items:center}
 .rp-m .m-th{background:${S.sf};border-bottom:1px solid ${S.bd};font-size:10.5px;font-weight:600;color:${S.bo};white-space:nowrap}
 .rp-m .m-td{border-bottom:1px solid ${S.bs};font-size:11.5px;color:${S.bo}}
 .rp-m .m-td:last-child{border-bottom:none}
@@ -48,7 +48,7 @@ export const MOCK_CSS = `
 .rp-m .m-bub.q{background:${R.green};color:#fff;margin-left:auto}
 .rp-m .m-bub.a{background:${R.soft};border:1px solid ${R.line};color:${R.body}}
 .rp-m .m-in{display:flex;gap:8px;padding:11px 14px;border-top:1px solid ${R.line}}
-.rp-m .m-inb{flex:1;border:1px solid ${R.line};border-radius:6px;padding:7px 10px;font-size:11.5px;color:${S.fa}}
+.rp-m .m-inb{flex:1;min-width:0;border:1px solid ${R.line};border-radius:6px;padding:7px 10px;font-size:11.5px;color:${S.fa};white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rp-m .m-ing{background:${R.green};color:#fff;border-radius:6px;padding:7px 14px;font-size:11.5px;font-weight:500;white-space:nowrap}
 .rp-m .m-pg{display:flex;align-items:center;gap:11px;margin-bottom:9px}
 .rp-m .m-pgl{font-size:11px;color:${S.mu};width:46px;flex:none}
@@ -62,7 +62,7 @@ export const MOCK_CSS = `
 .rp-m .m-next{background:${S.gs};border:1px solid ${S.gb};border-radius:6px;padding:10px 12px}
 .rp-m .m-nk{font-size:11px;font-weight:600;color:${S.gt};margin-bottom:3px}
 .rp-m .m-nv{font-size:12px;color:${S.hd};line-height:1.45;margin:0}
-.rp-m .m-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rp-m .m-two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 .rp-m .m-col{border:1px solid ${S.bd};border-radius:6px;padding:12px}
 .rp-m .m-cn{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .rp-m .m-cnn{font-size:12.5px;font-weight:600;color:${S.hd}}
@@ -70,10 +70,10 @@ export const MOCK_CSS = `
 .rp-m .m-kv:last-of-type{border-bottom:none}
 .rp-m .m-kv b{color:${S.hd};font-weight:600;font-variant-numeric:tabular-nums}
 @media (max-width:640px){
-  .rp-m .m-tr{grid-template-columns:1.4fr .6fr .9fr}
+  .rp-m .m-tr{grid-template-columns:minmax(0,1.4fr) minmax(0,.6fr) minmax(0,.9fr)}
   .rp-m .m-hide{display:none}
-  .rp-m .m-strip{grid-template-columns:1fr 1fr}
-  .rp-m .m-two{grid-template-columns:1fr}
+  .rp-m .m-strip{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .rp-m .m-two{grid-template-columns:minmax(0,1fr)}
 }
 `;
 type L = "en" | "fr";
