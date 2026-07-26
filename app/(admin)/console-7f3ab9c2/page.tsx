@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 import Link from "next/link";
 export const runtime = "nodejs";
@@ -11,6 +11,7 @@ async function n(admin: Admin, table: string, col: string, kind?: string): Promi
   return count ?? 0;
 }
 export default async function AdminDashboard() {
+  await requireAdminPage("dashboard");
   const admin = createAdminClient();
   const [accounts, orgs, documents, recipients, opens, questions, forwards, verdicts, sends] = await Promise.all([
     n(admin, "profiles", "id"), n(admin, "organizations", "id"), n(admin, "documents", "id"), n(admin, "recipients", "id"),

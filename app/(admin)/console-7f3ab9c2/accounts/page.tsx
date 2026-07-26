@@ -1,10 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null };
 export default async function AccountsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  await requireAdminPage("accounts.read");
   const { q } = await searchParams;
   const term = (q ?? "").trim().toLowerCase();
   const admin = createAdminClient();

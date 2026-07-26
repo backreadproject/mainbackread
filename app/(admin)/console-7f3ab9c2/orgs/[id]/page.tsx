@@ -6,7 +6,7 @@ import OrgActions from "./OrgActions";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function OrgDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireAdminPage("accounts.detail");
   const { id } = await params;
   const admin = createAdminClient();
   const { data: org } = await admin.from("organizations").select("id, name, domain, plan, subscription_active, created_at, created_by").eq("id", id).single();

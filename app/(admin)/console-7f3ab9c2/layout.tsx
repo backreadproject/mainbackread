@@ -6,9 +6,20 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireAdminPage();
+  const s = await requireAdminPage();
+  const base = "/console-7f3ab9c2";
+  const allowed = [
+    base,
+    ...(s.can("documents.read") ? [base + "/documents"] : []),
+    ...(s.can("accounts.read") ? [base + "/accounts", base + "/orgs"] : []),
+    ...(s.can("billing.manage") ? [base + "/tiers", base + "/billing"] : []),
+    ...(s.can("support.handle") ? [base + "/support"] : []),
+    ...(s.can("erasure.handle") ? [base + "/erasures"] : []),
+    ...(s.can("audit.read") ? [base + "/audit"] : []),
+    ...(s.can("roles.manage") ? [base + "/team"] : []),
+  ];
   return (
-    <MobileShell sidebar={<AdminSidebar email={user.email ?? ""} />}>
+    <MobileShell sidebar={<AdminSidebar email={s.email ?? ""} role={s.role} allowed={allowed} />}>
       {children}
     </MobileShell>
   );

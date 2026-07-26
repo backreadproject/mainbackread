@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 type Prof = { first_name: string | null; last_name: string | null; workspace_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
 type Org = { id: string; name: string | null; domain: string | null; plan: string | null; subscription_active: boolean | null };
 export default async function AccountDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireAdminPage("accounts.detail");
   const { id } = await params;
   const admin = createAdminClient();
   const { data: authUser } = await admin.auth.admin.getUserById(id);

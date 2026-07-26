@@ -1,10 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 import { getPlan } from "@/lib/plans";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function OrgsPage() {
+  await requireAdminPage("accounts.read");
   const admin = createAdminClient();
   const { data: orgsRaw } = await admin.from("organizations").select("id, name, domain, plan, subscription_active, created_at, created_by").order("created_at", { ascending: false });
   const orgs = orgsRaw ?? [];

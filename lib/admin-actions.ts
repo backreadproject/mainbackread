@@ -12,6 +12,7 @@ function fail(error: string, status = 400): ActionResult {
 export async function deleteDocumentAction(documentId: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("destructive")) return fail("Your role does not allow that.", 403);
   if (!documentId) return fail("Missing document.");
 
   const admin = createAdminClient();
@@ -51,6 +52,7 @@ export async function deleteDocumentAction(documentId: string, confirmText: stri
 export async function setDocumentArchivedAction(documentId: string, archived: boolean): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("documents.read")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
   const { data: doc } = await admin.from("documents").select("id, title, owner_id").eq("id", documentId).single();
   if (!doc) return fail("Document not found.", 404);
@@ -75,6 +77,7 @@ export async function setDocumentArchivedAction(documentId: string, archived: bo
 export async function setUserSuspendedAction(targetUserId: string, suspended: boolean): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   if (targetUserId === me.id) return fail("You cannot suspend your own admin account.");
 
   const admin = createAdminClient();
@@ -92,6 +95,7 @@ export async function setUserSuspendedAction(targetUserId: string, suspended: bo
 export async function resetPasswordLinkAction(targetUserId: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
   const { data: target } = await admin.auth.admin.getUserById(targetUserId);
   const email = target?.user?.email;
@@ -107,6 +111,7 @@ export async function resetPasswordLinkAction(targetUserId: string): Promise<Act
 export async function deleteUserAction(targetUserId: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("destructive")) return fail("Your role does not allow that.", 403);
   if (targetUserId === me.id) return fail("You cannot delete your own admin account.");
 
   const admin = createAdminClient();
@@ -138,6 +143,7 @@ export async function deleteUserAction(targetUserId: string, confirmText: string
 export async function removeMemberAction(memberId: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
 
   const { data: m } = await admin.from("organization_members").select("id, organization_id, user_id, email, role").eq("id", memberId).single();
@@ -158,6 +164,7 @@ export async function removeMemberAction(memberId: string): Promise<ActionResult
 export async function revokeInviteAction(inviteId: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
 
   const { data: inv } = await admin.from("invitations").select("id, organization_id, email").eq("id", inviteId).single();
@@ -175,6 +182,7 @@ export async function revokeInviteAction(inviteId: string): Promise<ActionResult
 export async function deleteOrgAction(orgId: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("destructive")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
 
   const { data: org } = await admin.from("organizations").select("id, name").eq("id", orgId).single();
@@ -205,6 +213,7 @@ export async function deleteOrgAction(orgId: string, confirmText: string): Promi
 export async function eraseReaderAction(recipientId: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("erasure.handle")) return fail("Your role does not allow that.", 403);
   if (!recipientId) return fail("Missing reader.");
 
   const admin = createAdminClient();
@@ -270,6 +279,7 @@ export type ForwardMention = {
 export async function findForwardMentions(email: string): Promise<ForwardMention[]> {
   const me = await getAdminUser();
   if (!me) return [];
+    if (!me.can("erasure.handle")) return [];
   const needle = (email ?? "").trim().toLowerCase();
   if (!needle) return [];
 
@@ -339,6 +349,7 @@ export async function findForwardMentions(email: string): Promise<ForwardMention
 export async function eraseForwardMentionsAction(email: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("erasure.handle")) return fail("Your role does not allow that.", 403);
   const needle = (email ?? "").trim().toLowerCase();
   if (!needle) return fail("An email address is required.");
   if ((confirmText ?? "").trim().toLowerCase() !== needle) return fail("The email you typed does not match.");
@@ -404,6 +415,7 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
 export async function replyToSupportAction(conversationId: string, message: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   const text = (message ?? "").trim();
   if (!text) return fail("Write something first.");
   if (text.length > 4000) return fail("That is too long for a chat reply.");
@@ -452,6 +464,7 @@ export async function replyToSupportAction(conversationId: string, message: stri
 export async function closeSupportAction(conversationId: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
+    if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
   const admin = createAdminClient();
   const { error } = await admin.from("support_conversations").update({ status: "closed" }).eq("id", conversationId);
   if (error) return fail(error.message, 500);

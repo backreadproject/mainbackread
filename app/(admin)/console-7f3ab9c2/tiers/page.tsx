@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/plans";
 import { trialInfo } from "@/lib/trial";
@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
 export default async function TiersPage() {
+  await requireAdminPage("billing.manage");
   const admin = createAdminClient();
   const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
   const users = list?.users ?? [];

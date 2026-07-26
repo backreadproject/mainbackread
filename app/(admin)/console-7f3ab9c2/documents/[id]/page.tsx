@@ -7,7 +7,7 @@ import EraseReader from "./EraseReader";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function AdminDocumentDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage();
+  await requireAdminPage("documents.read");
   const { id } = await params;
   const admin = createAdminClient();
   const { data: doc } = await admin.from("documents").select("id, title, owner_id, organization_id, project_id, created_at, archived_at, storage_path, page_count, extract_method, needs_page_ocr, extracted_text").eq("id", id).single();

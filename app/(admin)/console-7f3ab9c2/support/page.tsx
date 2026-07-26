@@ -1,10 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 import SupportConversations from "./SupportConversations";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function SupportPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  await requireAdminPage("support.handle");
   const { q } = await searchParams;
   const term = (q ?? "").trim();
   const low = term.toLowerCase();

@@ -23,7 +23,7 @@ function qs(over: Record<string, string | undefined>): string {
 export default async function ErasuresPage({ searchParams }: {
   searchParams: Promise<{ q?: string; from?: string; to?: string; page?: string }>;
 }) {
-  await requireAdminPage();
+  await requireAdminPage("erasure.handle");
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const from = (sp.from ?? "").trim();

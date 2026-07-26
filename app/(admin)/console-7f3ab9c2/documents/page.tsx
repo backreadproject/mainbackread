@@ -1,9 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ADMIN_SLUG } from "@/lib/admin";
+import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function AdminDocuments() {
+  await requireAdminPage("documents.read");
   const admin = createAdminClient();
   const { data: docs } = await admin
     .from("documents")

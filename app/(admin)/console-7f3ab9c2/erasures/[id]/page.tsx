@@ -12,7 +12,7 @@ export default async function ErasureReport({ params, searchParams }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ view?: string }>;
 }) {
-  await requireAdminPage();
+  await requireAdminPage("erasure.handle");
   const { id } = await params;
   const { view } = await searchParams;
   // Two audiences, two documents. The internal copy carries everything. The

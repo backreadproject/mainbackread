@@ -14,7 +14,7 @@ function qs(over: Record<string, string | undefined>): string {
 export default async function AuditPage({ searchParams }: {
   searchParams: Promise<{ q?: string; action?: string; from?: string; to?: string; page?: string }>;
 }) {
-  await requireAdminPage();
+  await requireAdminPage("audit.read");
   const sp = await searchParams;
   const q = (sp.q ?? "").trim();
   const action = (sp.action ?? "").trim();

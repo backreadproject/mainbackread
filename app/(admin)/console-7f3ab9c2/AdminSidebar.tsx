@@ -2,11 +2,11 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
-import { LayoutGrid, FileText, Users, Building2, Layers, LifeBuoy, ScrollText, ShieldCheck, type LucideIcon } from "lucide-react";
+import { LayoutGrid, FileText, Users, Building2, Layers, LifeBuoy, ScrollText, ShieldCheck, Wallet, UserCog, type LucideIcon } from "lucide-react";
 import ThemeToggle from "@/app/(app)/ThemeToggle";
 const ADMIN_SLUG = "console-7f3ab9c2";
 type Item = { href: string; label: string; Icon: LucideIcon };
-export default function AdminSidebar({ email }: { email: string }) {
+export default function AdminSidebar({ email, role, allowed }: { email: string; role: string; allowed: string[] }) {
   const pathname = usePathname();
   const base = `/${ADMIN_SLUG}`;
   const NAV: Item[] = [
@@ -18,7 +18,9 @@ export default function AdminSidebar({ email }: { email: string }) {
     { href: `${base}/support`, label: "Support", Icon: LifeBuoy },
     { href: `${base}/erasures`, label: "Erasures", Icon: ShieldCheck },
     { href: `${base}/audit`, label: "Audit log", Icon: ScrollText },
-  ];
+    { href: `${base}/billing`, label: "Billing", Icon: Wallet },
+    { href: `${base}/team`, label: "Console team", Icon: UserCog },
+  ].filter((n) => allowed.includes(n.href));
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
