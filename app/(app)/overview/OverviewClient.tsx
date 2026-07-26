@@ -354,7 +354,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         )}
       </main>
       <style>{`
-        @media (max-width: 900px){ .ov-row{ grid-template-columns: 1fr !important; } .ov-tiles{ grid-template-columns: 1fr 1fr !important; } }
+        @media (max-width: 900px){ .ov-row{ grid-template-columns: minmax(0, 1fr) !important; } .ov-tiles{ grid-template-columns: 1fr 1fr !important; } }
         .ov-r{ transition: background .12s }
         .ov-r:hover{ background: var(--rp-hover) }
         @media (max-width: 600px){

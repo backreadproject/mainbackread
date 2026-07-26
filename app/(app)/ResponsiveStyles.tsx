@@ -31,7 +31,9 @@ export default function ResponsiveStyles() {
         .stat-strip { grid-template-columns: repeat(2, 1fr) !important; }
         .lim-grid { grid-template-columns: repeat(2, 1fr) !important; }
         .card-grid-3 { grid-template-columns: 1fr; }
-        .two-col { grid-template-columns: 1fr; }
+        .two-col { grid-template-columns: minmax(0, 1fr); }
+        /* A grid or flex child will not shrink below its content unless told to. */
+        .data-row > *, .data-cell { min-width: 0; }
         .screen-pad { padding: 18px 16px; }
         /* Clear the fixed support launcher, which otherwise sits on the last row. */
         .app-content main { padding-bottom: 96px !important; }

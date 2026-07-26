@@ -120,7 +120,7 @@ export default function SupportConversations({ conversations }: { conversations:
           )}
         </div>
       </div>
-      <style>{`.sc-in:focus{outline:none;border-color:var(--rp-green)}.sc-item{transition:background .12s}@media (max-width: 900px){ .sc-grid{ grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`.sc-in:focus{outline:none;border-color:var(--rp-green)}.sc-item{transition:background .12s}@media (max-width: 900px){ .sc-grid{ grid-template-columns: minmax(0, 1fr) !important; } }`}</style>
     </div>
   );
 }

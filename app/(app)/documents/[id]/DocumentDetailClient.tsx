@@ -198,13 +198,13 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         </div>
       </div>
       <style>{`
-        @media (max-width: 900px){ .dd-grid{ grid-template-columns: 1fr !important; } }
+        @media (max-width: 900px){ .dd-grid{ grid-template-columns: minmax(0, 1fr) !important; } }
         @media (max-width: 700px){
           .dd-head{ flex-direction: column !important; align-items: stretch !important; }
           .dd-head button{ width: 100%; }
           .dd-wrap{ padding-left: 16px !important; padding-right: 16px !important; }
           .dd-grid{ padding-left: 16px !important; padding-right: 16px !important; gap: 12px !important; }
-          .dd-link{ font-size: 11.5px !important; }
+          .dd-link{ font-size: 11.5px !important; overflow-wrap: anywhere; }
           .dd-dwell{ max-width: none !important; }
         }
       `}</style>
