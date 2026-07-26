@@ -51,7 +51,7 @@ export default function ReferralAuth({ mode }: { mode: "auth" | "join" }) {
     }
   }
   return (
-    <div style={{ maxWidth: 380, margin: "0 auto" }}>
+    <div style={{ maxWidth: 400 }}>
       {mode === "auth" ? (
         <>
           <div style={{ display: "flex", gap: 18, marginBottom: 4, fontSize: 13.5 }}>
@@ -85,11 +85,12 @@ export default function ReferralAuth({ mode }: { mode: "auth" | "join" }) {
             Choose the link people will use. It cannot be changed later, so pick something you are happy to print.
           </p>
           <label style={label}>Your referral link</label>
-          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-            <span style={{ fontSize: 13, color: T.muted, whiteSpace: "nowrap" }}>readprospects.com/?ref=</span>
-            <input style={{ ...input, height: 34, flex: 1, minWidth: 0 }} value={code}
+          <div style={{ display: "flex", alignItems: "center", border: "1px solid " + T.border, borderRadius: T.rInput, background: T.card, overflow: "hidden" }}>
+            <span style={{ fontSize: 13, color: T.muted, whiteSpace: "nowrap", padding: "0 0 0 11px", flex: "none" }}>readprospects.com/?ref=</span>
+            <input value={code}
               onChange={(e) => setCode(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-              placeholder="yourname" maxLength={32} />
+              placeholder="yourname" maxLength={32}
+              style={{ flex: 1, minWidth: 0, height: 38, border: "none", outline: "none", background: "transparent", color: T.heading, fontSize: 14, fontFamily: T.font, padding: "0 11px 0 2px" }} />
           </div>
           <label style={label}>Display name</label>
           <input style={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="How we address you" />

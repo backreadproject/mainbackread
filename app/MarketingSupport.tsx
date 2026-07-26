@@ -13,6 +13,7 @@ export default async function MarketingSupport() {
 
   if (host.includes("relaydocuments")) return null;
   if (host.startsWith("app.")) return null;
+  if (host.startsWith("referrals.")) return null;
 
   return <SupportWidget surface="marketing" />;
 }
