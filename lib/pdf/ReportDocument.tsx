@@ -21,7 +21,7 @@ const C = {
 };
 const s = StyleSheet.create({
   page: { paddingTop: 48, paddingBottom: 64, paddingHorizontal: 48, fontSize: 10, color: C.body, fontFamily: "Helvetica", lineHeight: 1.5 },
-  eyebrow: { fontSize: 8, color: C.faint, letterSpacing: 1.2, marginBottom: 8 },
+  eyebrow: { fontSize: 8, color: C.faint, letterSpacing: 0.9, marginBottom: 8 },
   h1: { fontSize: 22, color: C.ink, fontFamily: "Helvetica-Bold", lineHeight: 1.25, marginBottom: 10 },
   h2: { fontSize: 12, color: C.ink, fontFamily: "Helvetica-Bold", marginBottom: 10, marginTop: 4 },
   sub: { fontSize: 10, color: C.muted, marginBottom: 22 },
@@ -51,7 +51,9 @@ const s = StyleSheet.create({
   quote: { borderLeftWidth: 2, borderLeftColor: C.greenLine, paddingLeft: 8, marginBottom: 5, fontSize: 9, color: C.body, lineHeight: 1.5 },
   limits: { backgroundColor: C.soft, borderWidth: 1, borderColor: C.line, borderRadius: 4, padding: 12 },
   foot: { position: "absolute", bottom: 30, left: 48, right: 48, flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: C.faint },
-  brandRow: { flexDirection: "row", alignItems: "center", marginBottom: 26 },
+  brandRow: { flexDirection: "row", alignItems: "center", paddingBottom: 18, borderBottomWidth: 1, borderBottomColor: C.line },
+  metaRow: { flexDirection: "row", paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: C.line, marginBottom: 30 },
+  metaCol: { flex: 1, paddingRight: 16 },
   logo: { width: 34, height: 34, marginRight: 11, objectFit: "contain" },
   brandName: { fontSize: 12, color: C.ink, fontFamily: "Helvetica-Bold" },
   forBox: { borderTopWidth: 1, borderTopColor: C.line, marginTop: 26, paddingTop: 14, flexDirection: "row" },
@@ -95,6 +97,28 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
             {branding?.companyName ? <Text style={s.brandName}>{branding.companyName}</Text> : null}
           </View>
         )}
+        <View style={s.metaRow}>
+          {branding?.reporter ? (
+            <View style={s.metaCol}>
+              <Text style={s.forK}>PREPARED BY</Text>
+              <Text style={s.forV}>{branding.reporter}</Text>
+            </View>
+          ) : null}
+          {branding?.recipient ? (
+            <View style={s.metaCol}>
+              <Text style={s.forK}>
+                {branding.recipientKind === "department" ? "FOR THE TEAM"
+                  : branding.recipientKind === "organisation" ? "FOR"
+                  : "PREPARED FOR"}
+              </Text>
+              <Text style={s.forV}>{branding.recipient}</Text>
+            </View>
+          ) : null}
+          <View style={s.metaCol}>
+            <Text style={s.forK}>DATE</Text>
+            <Text style={s.forV}>{dateStr}</Text>
+          </View>
+        </View>
         <Text style={s.eyebrow}>READING REPORT</Text>
         <Text style={s.h1}>{data.documentTitle}</Text>
         <Text style={s.sub}>
@@ -115,26 +139,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         {branding?.note ? <Text style={s.note}>{branding.note}</Text> : null}
 
-        {(branding?.reporter || branding?.recipient) && (
-          <View style={s.forBox}>
-            {branding?.reporter ? (
-              <View style={s.forCell}>
-                <Text style={s.forK}>PREPARED BY</Text>
-                <Text style={s.forV}>{branding.reporter}</Text>
-              </View>
-            ) : null}
-            {branding?.recipient ? (
-              <View style={s.forCell}>
-                <Text style={s.forK}>
-                  {branding.recipientKind === "department" ? "FOR THE TEAM"
-                    : branding.recipientKind === "organisation" ? "FOR"
-                    : "PREPARED FOR"}
-                </Text>
-                <Text style={s.forV}>{branding.recipient}</Text>
-              </View>
-            ) : null}
-          </View>
-        )}
+
 
         <Foot title={footTitle} />
       </Page>
@@ -147,7 +152,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
             ? "Nothing here warrants action yet."
             : report.priorities.length + (report.priorities.length === 1 ? " reader worth acting on" : " readers worth acting on")}
         </Text>
-        <Text style={s.sub}>From {data.documentTitle}, {dateStr}.</Text>
+        <Text style={s.sub}>{data.documentTitle} {"\u00b7"} {dateStr}{branding?.reporter ? "  \u00b7  prepared by " + branding.reporter : ""}</Text>
 
         {report.priorities.length === 0 ? (
           <Text style={s.lead}>

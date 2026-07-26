@@ -30,6 +30,15 @@ function str(v: unknown, key: string): string {
   }
   return "";
 }
+/** page_dwell stores milliseconds under "ms", already capped by /api/signal.
+ *  Reading the wrong key here is what made every dwell figure zero. */
+function dwellSeconds(v: unknown): number {
+  if (v && typeof v === "object" && "ms" in (v as Record<string, unknown>)) {
+    const ms = (v as Record<string, unknown>).ms;
+    return typeof ms === "number" ? Math.round(ms / 1000) : 0;
+  }
+  return 0;
+}
 function num(v: unknown, key: string): number {
   if (v && typeof v === "object" && key in (v as Record<string, unknown>)) {
     const x = (v as Record<string, unknown>)[key];
@@ -101,7 +110,7 @@ export async function assembleReport(
   for (const s of signals) {
     if (s.kind !== "page_dwell" || s.page == null) continue;
     const cur = pageAgg.get(s.page) ?? { seconds: 0, readers: new Set<string>() };
-    cur.seconds += num(s.value, "seconds");
+    cur.seconds += dwellSeconds(s.value);
     cur.readers.add(s.recipient_id);
     pageAgg.set(s.page, cur);
   }
@@ -124,7 +133,7 @@ export async function assembleReport(
       lastSeen = s.created_at;
       if (s.kind === "opened") opens++;
       else if (s.kind === "page_dwell" && s.page != null) {
-        const sec = num(s.value, "seconds");
+        const sec = dwellSeconds(s.value);
         seconds += sec;
         const cur = perPage.get(s.page) ?? { seconds: 0, visits: 0 };
         cur.seconds += sec;

@@ -75,11 +75,15 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
   async function build() {
     setBusy(true); setMsg("");
     try {
-      // Remember the branding so the next report does not ask again.
-      fetch("/api/report-settings", {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ companyName: company, logoUrl, defaultReporter: reporter }),
-      }).catch(() => {});
+      // Awaited, not fired and forgotten: the report route reads these settings
+      // to find the logo, so a race here means the logo is missing from the
+      // report the customer just configured.
+      try {
+        await fetch("/api/report-settings", {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ companyName: company, logoUrl, defaultReporter: reporter }),
+        });
+      } catch { /* the report still builds, just without saved branding */ }
 
       const res = await fetch("/api/report", {
         method: "POST",
