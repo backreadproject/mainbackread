@@ -179,10 +179,8 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         ctx!.stroke();
       });
       ctx!.setLineDash([]);
-      if (W > 520) {
-        ctx!.strokeStyle = rgba(P.green, 0.22); ctx!.lineWidth = 1;
-        for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
-      }
+      ctx!.strokeStyle = rgba(P.green, 0.28); ctx!.lineWidth = 1;
+      for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
       ctx!.restore();
       ctx!.font = "600 10px 'DM Mono', monospace"; ctx!.textAlign = "center";
       const bands: [string, number][] = [
