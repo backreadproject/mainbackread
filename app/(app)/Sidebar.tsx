@@ -2,7 +2,7 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
-import { LayoutGrid, FileText, Folder, Activity, Users, UsersRound, Settings, CircleUser, type LucideIcon } from "lucide-react";
+import { LayoutGrid, FileText, Folder, Activity, Users, UsersRound, Settings, CreditCard, CircleUser, type LucideIcon } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import NotificationBell from "@/app/(app)/NotificationBell";
@@ -19,6 +19,7 @@ const NAV_MAIN: NavItem[] = [
 const NAV_CONFIG: NavItem[] = [
   { href: "/members", key: "members", Icon: UsersRound, orgOnly: true },
   { href: "/settings", key: "settings", Icon: Settings },
+  { href: "/billing", key: "billing", Icon: CreditCard },
   { href: "/account", key: "account", Icon: CircleUser },
 ];
 export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl = null }: { email: string; workspaceName?: string; isOrg?: boolean; avatarUrl?: string | null }) {

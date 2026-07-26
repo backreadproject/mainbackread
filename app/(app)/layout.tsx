@@ -33,6 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div style={{ background: "var(--rp-amber-soft)", borderBottom: "1px solid var(--rp-amber-border)", padding: "8px 20px", fontSize: 13, color: "var(--rp-amber-text)", display: "flex", alignItems: "center", gap: 8 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--rp-amber-text)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 2" /></svg>
           <span>Free trial: <strong>{trial.daysLeft} day{trial.daysLeft === 1 ? "" : "s"}</strong> left.</span>
+          <a href="/billing" style={{ marginLeft: "auto", color: "var(--rp-amber-text)", fontWeight: 600, textDecoration: "underline" }}>See plans</a>
         </div>
       )}
       {children}
