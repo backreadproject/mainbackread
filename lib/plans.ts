@@ -41,12 +41,37 @@ export type FeatureFlag =
   | "webhookAlerts"
   | "zapier";
 
+export interface PlanPrice {
+  /** US cents. Integer arithmetic only. */
+  monthly: number;
+  annual: number;
+}
 export interface PlanConfig {
   id: PlanId;
   name: string;
   tagline: string;
   limits: PlanLimits;
+  price: PlanPrice;
   features: Record<FeatureFlag, boolean>;
+}
+export const CURRENCY = "USD";
+/** Everyone referred by someone keeps 5% off, for the life of the subscription. */
+export const REFERRAL_DISCOUNT = 0.05;
+/** What a plan costs a given customer, in cents. */
+export function priceFor(planId: PlanId, interval: "monthly" | "annual", discounted = false): number {
+  const base = PLANS[planId].price[interval];
+  if (!discounted || base === 0) return base;
+  return Math.round(base * (1 - REFERRAL_DISCOUNT));
+}
+export function formatPrice(cents: number): string {
+  return "$" + (cents / 100).toFixed(cents % 100 === 0 ? 0 : 2);
+}
+/** Annual saving as a percentage, derived rather than stated, so it can never
+ *  disagree with the prices above. */
+export function annualSaving(planId: PlanId): number {
+  const p = PLANS[planId].price;
+  if (!p.monthly) return 0;
+  return Math.round((1 - p.annual / (p.monthly * 12)) * 100);
 }
 
 const ALL_OFF: Record<FeatureFlag, boolean> = {
@@ -85,6 +110,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     id: "free",
     name: "Free",
     tagline: "Highly limited. A taste of the real thing.",
+    price: { monthly: 0, annual: 0 },
     limits: {
       documentsPerMonth: 2,
       verdictsPerDocumentPerMonth: 2,
@@ -98,6 +124,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     id: "personal",
     name: "Personal",
     tagline: "Paid. Does everything, but cannot run an organization.",
+    price: { monthly: 2000, annual: 23000 },
     limits: {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
@@ -109,8 +136,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
   },
   company_1: {
     id: "company_1",
-    name: "Company I",
-    tagline: "First company plan. Organizations and what comes with them.",
+    name: "Team",
+    tagline: "Your whole team, reading together.",
+    price: { monthly: 5900, annual: 65500 },
     limits: {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
@@ -122,8 +150,9 @@ export const PLANS: Record<PlanId, PlanConfig> = {
   },
   company_2: {
     id: "company_2",
-    name: "Company II",
-    tagline: "Second company plan. By design, does more than Company I.",
+    name: "Business",
+    tagline: "Unlimited seats, fully locked down.",
+    price: { monthly: 9900, annual: 110000 },
     limits: {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { postJson, errMsg } from "@/lib/fetch-json";
-const PERSONAL_PLANS = [["free", "Free"], ["personal", "Personal"]];
-const ORG_PLANS = [["company_1", "Company I"], ["company_2", "Company II"]];
+import { PLANS } from "@/lib/plans";
+const PERSONAL_PLANS: [string, string][] = [["free", PLANS.free.name], ["personal", PLANS.personal.name]];
+const ORG_PLANS: [string, string][] = [["company_1", PLANS.company_1.name], ["company_2", PLANS.company_2.name]];
 export default function PlanForm({ targetUserId, scope, currentPlan, subscriptionActive, orgName }: {
   targetUserId: string; scope: "org" | "personal"; currentPlan: string; subscriptionActive: boolean; orgName: string | null;
 }) {
