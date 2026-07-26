@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, askTask } from "@/lib/ai";
 import { checkAskLimits } from "@/lib/rate-limit";
 import { deliverForRecipient } from "@/lib/webhooks";
+import { notify } from "@/lib/notify";
 import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
@@ -24,11 +25,11 @@ export async function POST(req: NextRequest) {
 
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, document_id, documents ( title, extracted_text )")
+    .select("id, label, first_name, last_name, document_id, documents ( id, title, extracted_text, owner_id )")
     .eq("share_token", token)
     .single();
 
-  const doc = recipient?.documents as unknown as { title: string; extracted_text: string | null } | undefined;
+  const doc = recipient?.documents as unknown as { id: string; title: string; extracted_text: string | null; owner_id: string } | undefined;
   if (!recipient || !doc) {
     return NextResponse.json({ error: "This link has expired." }, { status: 404 });
   }
@@ -89,6 +90,22 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[ask-live] transcript write threw:", err instanceof Error ? err.message : String(err));
+  }
+
+  if (doc.owner_id) {
+    const readerName = (recipient as unknown as { label: string | null; first_name: string | null; last_name: string | null }).label
+      || [(recipient as unknown as { first_name: string | null }).first_name, (recipient as unknown as { last_name: string | null }).last_name].filter(Boolean).join(" ").trim()
+      || "A reader";
+    const q = question.trim();
+    notify({
+      userId: doc.owner_id,
+      type: "reader_question",
+      title: `${readerName} asked about ${doc.title}`,
+      body: q.length > 160 ? q.slice(0, 160) + "\u2026" : q,
+      link: `/recipients/${recipient.id}`,
+      params: { reader: readerName, doc: doc.title, question: q.length > 160 ? q.slice(0, 160) + "\u2026" : q },
+      email: null,
+    });
   }
 
   await deliverForRecipient(recipient.id, "reader.question", { question: question.trim(), answer: data.answer, page: pageNum, escalated: !!data.escalate, outOfScope: !!data.outOfScope });

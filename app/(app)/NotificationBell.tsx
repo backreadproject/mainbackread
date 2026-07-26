@@ -8,12 +8,14 @@ import { fetchJson, postJson } from "@/lib/fetch-json";
 const NOTE = {
   en: {
     reader_opened: (p: Record<string, string>) => [p.reader + " opened " + p.doc, "They have started reading."],
+    reader_question: (p: Record<string, string>) => [p.reader + " asked about " + p.doc, p.question ?? ""],
     reader_replied: (p: Record<string, string>) => [p.reader + " replied about " + p.doc, p.preview ?? ""],
     added_to_org: (p: Record<string, string>) => ["You were added to " + p.org, "You now have access as " + p.role + "."],
     doc_shared: (p: Record<string, string>) => [p.sharer + " shared a " + p.resource + " with you", "You now have " + p.permission + " access."],
   },
   fr: {
     reader_opened: (p: Record<string, string>) => [p.reader + " a ouvert " + p.doc, "La lecture a commenc\u00e9."],
+    reader_question: (p: Record<string, string>) => [p.reader + " a pos\u00e9 une question sur " + p.doc, p.question ?? ""],
     reader_replied: (p: Record<string, string>) => [p.reader + " a r\u00e9pondu au sujet de " + p.doc, p.preview ?? ""],
     added_to_org: (p: Record<string, string>) => ["Vous avez \u00e9t\u00e9 ajout\u00e9 \u00e0 " + p.org, "Vous avez d\u00e9sormais l\u2019acc\u00e8s en tant que " + p.role + "."],
     doc_shared: (p: Record<string, string>) => [p.sharer + " a partag\u00e9 un " + p.resource + " avec vous", "Vous avez d\u00e9sormais l\u2019acc\u00e8s " + p.permission + "."],
