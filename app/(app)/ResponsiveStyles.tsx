@@ -33,6 +33,8 @@ export default function ResponsiveStyles() {
         .card-grid-3 { grid-template-columns: 1fr; }
         .two-col { grid-template-columns: 1fr; }
         .screen-pad { padding: 18px 16px; }
+        /* Clear the fixed support launcher, which otherwise sits on the last row. */
+        .app-content main { padding-bottom: 96px !important; }
 
         /* Table rows reflow into stacked cards */
         .row-head { display: none !important; }
@@ -44,6 +46,14 @@ export default function ResponsiveStyles() {
           padding: 14px 16px !important;
         }
         .data-row > * { display: flex !important; width: auto; justify-content: space-between; align-items: center; gap: 12px; padding: 5px 0; }
+        .data-cell {
+          white-space: normal !important;
+          overflow: visible !important;
+          text-overflow: clip !important;
+          overflow-wrap: anywhere;
+        }
+        /* The label must not wrap or it stacks under itself; only the value does. */
+        .data-cell[data-label]::before { flex: 0 0 auto; white-space: nowrap; }
         .data-cell[data-label]::before {
           content: attr(data-label);
           font-size: 12px; font-weight: 600; color: var(--rp-muted);
