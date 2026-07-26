@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 // A faithful, code-built replica of the Overview screen for the marketing hero.
 //
 // Overview rather than Documents on purpose: a table of files looks like every
@@ -8,14 +10,20 @@
 //
 // Org is ReadProspects Inc, account is support@readprospects.com, initials
 // avatar. Nothing personal, nothing from a real tenant.
-const READY = [
-  { x: 112, y: 168, n: "Dana W." },
-  { x: 181, y: 124, n: "Marcus C." },
-  { x: 157, y: 191, n: "Aisha B." },
-  { x: 126, y: 119, n: "Elena R." },
+type Node = { x: number; y: number; b: "ready" | "warm" | "glance"; n?: string; full?: string; doc?: string; reads?: string; dwell?: string; q?: string; why?: string };
+const NODES: Node[] = [
+  { x: 112, y: 168, b: "ready", n: "Dana W.", full: "Dana Whitfield", doc: "Q3 proposal \u2014 Northwind", reads: "12", dwell: "6m 40s", q: "3", why: "Re-read pricing three times and asked about the annual commit." },
+  { x: 181, y: 124, b: "ready", n: "Marcus C.", full: "Marcus Cole", doc: "Pricing overview 2026", reads: "8", dwell: "4m 12s", q: "2", why: "Came back twice to the tiers table, then forwarded it." },
+  { x: 157, y: 191, b: "ready", n: "Aisha B.", full: "Aisha Bello", doc: "Pricing overview 2026", reads: "9", dwell: "5m 30s", q: "4", why: "Asked what happens at the seat limit. Buying signal." },
+  { x: 126, y: 119, b: "ready", n: "Elena R.", full: "Elena Ross", doc: "Security questionnaire", reads: "4", dwell: "3m 05s", q: "1", why: "Went straight to data retention and stayed there." },
+  { x: 80, y: 121, b: "warm", full: "Sam Rivera", doc: "Q3 proposal \u2014 Northwind", reads: "2", dwell: "1m 18s", q: "0", why: "Opened twice, no questions yet." },
+  { x: 217, y: 184, b: "warm", full: "Priya Raman", doc: "Implementation plan v2", reads: "2", dwell: "0m 54s", q: "1", why: "One question, then went quiet." },
+  { x: 166, y: 79, b: "warm", full: "Tom Okafor", doc: "Pricing overview 2026", reads: "1", dwell: "1m 40s", q: "0", why: "Long single read of the pricing page." },
+  { x: 106, y: 211, b: "warm", full: "Lena Fischer", doc: "Security questionnaire", reads: "2", dwell: "1m 02s", q: "0", why: "Skimmed, came back the next day." },
+  { x: 51, y: 199, b: "glance" }, { x: 244, y: 91, b: "glance" }, { x: 190, y: 258, b: "glance" },
+  { x: 66, y: 76, b: "glance" }, { x: 258, y: 170, b: "glance" }, { x: 131, y: 36, b: "glance" },
+  { x: 96, y: 262, b: "glance" }, { x: 232, y: 246, b: "glance" },
 ];
-const WARM = [[80, 121], [217, 184], [166, 79], [106, 211]];
-const GLANCE = [[51, 199], [244, 91], [190, 258], [66, 76], [258, 170], [131, 36], [96, 262], [232, 246]];
 const READERS = [
   ["DW", "Dana Whitfield", "Q3 proposal \u2014 Northwind", "12 reads"],
   ["AB", "Aisha Bello", "Pricing overview 2026", "9 reads"],
@@ -103,6 +111,27 @@ const SHOT_CSS = `
 .rp-shot .s-tl{font-size:10.5px;color:var(--mu);margin-top:2px}
 .rp-shot .s-ic{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex:none}
 .rp-shot .s-ic svg{width:12px;height:12px}
+.rp-shot .s-fieldwrap{position:relative}
+.rp-shot .s-node{cursor:pointer;transform-box:fill-box;transform-origin:center}
+.rp-shot .s-node.d0{animation:sDrift 13s ease-in-out infinite}
+.rp-shot .s-node.d1{animation:sDrift 17s ease-in-out infinite reverse}
+.rp-shot .s-node.d2{animation:sDrift 21s ease-in-out infinite}
+.rp-shot .s-node.d3{animation:sDrift 15s ease-in-out infinite reverse}
+.rp-shot .s-pulse{animation:sPulse 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes sDrift{0%,100%{transform:translate(0,0)}33%{transform:translate(3px,-4px)}66%{transform:translate(-3px,2px)}}
+@keyframes sPulse{0%,100%{opacity:.45;r:11}50%{opacity:.05;r:15}}
+.rp-shot .s-pop{position:absolute;width:186px;background:#FFFFFF;border:1px solid var(--bd);border-radius:8px;
+  box-shadow:0 12px 32px -12px rgba(16,24,40,.28);padding:11px 12px;z-index:5}
+.rp-shot .s-popn{font-size:12.5px;font-weight:600;color:var(--hd)}
+.rp-shot .s-popd{font-size:10.5px;color:var(--mu);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-shot .s-popk{display:flex;gap:12px;margin:9px 0}
+.rp-shot .s-popk span{font-size:10.5px;color:var(--mu)}
+.rp-shot .s-popk b{display:block;font-size:12.5px;color:var(--hd);font-weight:600}
+.rp-shot .s-popw{font-size:11px;color:var(--bo);line-height:1.45;border-top:1px solid var(--bs);padding-top:8px}
+.rp-shot .s-hint{text-align:center;font-size:10px;color:var(--fa);padding:0 0 10px}
+@media (prefers-reduced-motion: reduce){
+  .rp-shot .s-node,.rp-shot .s-pulse{animation:none}
+}
 @media (max-width:900px){
   .rp-shot .s-body{grid-template-columns:minmax(0,1fr)}
   .rp-shot .s-side{display:none}
@@ -114,7 +143,9 @@ const SHOT_CSS = `
   .rp-shot .s-top{flex-direction:column}
 }
 `;
-function Field() {
+function Field({ open, setOpen }: { open: number | null; setOpen: (i: number | null) => void }) {
+  const fill = (b: string) => (b === "ready" ? "#1F6F4A" : b === "warm" ? "#B54708" : "#98A2B3");
+  const size = (b: string) => (b === "ready" ? 7 : b === "warm" ? 5.5 : 4.5);
   return (
     <svg viewBox="0 0 300 300" style={{ display: "block", width: "100%", height: "auto" }} role="img" aria-label="Intent field">
       <circle cx="150" cy="150" r="45" fill="none" stroke="#1F6F4A" strokeOpacity="0.55" strokeWidth="1.4" strokeDasharray="6 6" />
@@ -124,29 +155,42 @@ function Field() {
         const rad = (a * Math.PI) / 180;
         return <line key={a} x1={150 - Math.cos(rad) * 123} y1={150 - Math.sin(rad) * 123} x2={150 + Math.cos(rad) * 123} y2={150 + Math.sin(rad) * 123} stroke="#1F6F4A" strokeOpacity="0.16" strokeWidth="1" />;
       })}
-      {GLANCE.map(([x, y], i) => <circle key={"g" + i} cx={x} cy={y} r="4.5" fill="#98A2B3" />)}
-      {WARM.map(([x, y], i) => <circle key={"w" + i} cx={x} cy={y} r="5.5" fill="#B54708" />)}
-      {READY.map((n) => (
-        <g key={n.n}>
-          <line x1="150" y1="150" x2={n.x} y2={n.y} stroke="#1F6F4A" strokeOpacity="0.26" strokeWidth="1" strokeDasharray="2 4" />
-          <circle cx={n.x} cy={n.y} r="11" fill="none" stroke="#1F6F4A" strokeOpacity="0.3" strokeWidth="1.2" />
-          <circle cx={n.x} cy={n.y} r="7" fill="#1F6F4A" />
-          <text x={n.x} y={n.y - 14} textAnchor="middle" fontSize="10" fontWeight="600" fill="#101828">{n.n}</text>
-        </g>
-      ))}
-      {[["Glanced", 31], ["Warming", 71], ["Ready", 109]].map(([label, y]) => (
-        <g key={label as string}>
-          <rect x={150 - 30} y={(y as number) - 9} width="60" height="13" fill="#FFFFFF" />
-          <text x="150" y={y as number} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#344054" letterSpacing="0.5">{(label as string).toUpperCase()}</text>
+      {NODES.map((nd, i) => {
+        const sel = open === i;
+        const clickable = !!nd.full;
+        return (
+          <g key={i} className={"s-node d" + (i % 4)} onClick={clickable ? () => setOpen(sel ? null : i) : undefined} style={{ cursor: clickable ? "pointer" : "default" }}>
+            {nd.b === "ready" && (
+              <>
+                <line x1="150" y1="150" x2={nd.x} y2={nd.y} stroke="#1F6F4A" strokeOpacity="0.26" strokeWidth="1" strokeDasharray="2 4" />
+                <circle className="s-pulse" cx={nd.x} cy={nd.y} r="11" fill="none" stroke="#1F6F4A" strokeWidth="1.2" />
+              </>
+            )}
+            {sel && <circle cx={nd.x} cy={nd.y} r={size(nd.b) + 6} fill="none" stroke="#1F6F4A" strokeWidth="2" />}
+            {clickable && <circle cx={nd.x} cy={nd.y} r="15" fill="transparent" />}
+            <circle cx={nd.x} cy={nd.y} r={size(nd.b)} fill={fill(nd.b)} />
+            {nd.n && <text x={nd.x} y={nd.y - 14} textAnchor="middle" fontSize="10" fontWeight="600" fill="#101828" style={{ pointerEvents: "none" }}>{nd.n}</text>}
+          </g>
+        );
+      })}
+      {[["GLANCED", 31], ["WARMING", 71], ["READY", 109]].map(([label, y]) => (
+        <g key={label as string} style={{ pointerEvents: "none" }}>
+          <rect x={150 - 32} y={(y as number) - 9} width="64" height="13" fill="#FFFFFF" />
+          <text x="150" y={y as number} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#344054" letterSpacing="0.5">{label as string}</text>
         </g>
       ))}
       <circle cx="150" cy="150" r="23" fill="#FFFFFF" stroke="#E4E7EC" strokeWidth="1" />
-      <text x="150" y="149" textAnchor="middle" fontSize="17" fontWeight="600" fill="#14603C">4</text>
-      <text x="150" y="162" textAnchor="middle" fontSize="8" fill="#667085" letterSpacing="0.4">READY</text>
+      <text x="150" y="149" textAnchor="middle" fontSize="17" fontWeight="600" fill="#14603C" style={{ pointerEvents: "none" }}>4</text>
+      <text x="150" y="162" textAnchor="middle" fontSize="8" fill="#667085" letterSpacing="0.4" style={{ pointerEvents: "none" }}>READY</text>
     </svg>
   );
 }
 export default function AppShot() {
+  const [open, setOpen] = useState<number | null>(null);
+  const sel = open === null ? null : NODES[open];
+  // Popover placement in percent, so it tracks the SVG as it scales.
+  const px = sel ? (sel.x > 150 ? { right: (300 - sel.x) / 3 + 6 + "%" } : { left: sel.x / 3 + 6 + "%" }) : {};
+  const py = sel ? { top: Math.min(sel.y / 3, 58) + "%" } : {};
   return (
     <div className="rp-shot">
       <style>{SHOT_CSS}</style>
@@ -200,7 +244,22 @@ export default function AppShot() {
                 </div>
                 <span className="s-cnt">4 / 16 readers</span>
               </div>
-              <div className="s-field"><Field /></div>
+              <div className="s-field s-fieldwrap">
+                <Field open={open} setOpen={setOpen} />
+                {sel && (
+                  <div className="s-pop" style={{ ...px, ...py }}>
+                    <div className="s-popn">{sel.full}</div>
+                    <div className="s-popd">{sel.doc}</div>
+                    <div className="s-popk">
+                      <span>reads<b>{sel.reads}</b></span>
+                      <span>dwell<b>{sel.dwell}</b></span>
+                      <span>questions<b>{sel.q}</b></span>
+                    </div>
+                    <div className="s-popw">{sel.why}</div>
+                  </div>
+                )}
+              </div>
+              <div className="s-hint">Click a reader</div>
               <div className="s-legend">
                 <span><i style={{ background: "#1F6F4A" }} />Ready</span>
                 <span><i style={{ background: "#B54708" }} />Warming</span>
