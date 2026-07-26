@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, label, first_name, last_name, opened_notified, document_id, documents ( id, title, owner_id )")
+    .select("id, label, first_name, last_name, opened_notified, last_open_notified_at, document_id, documents ( id, title, owner_id )")
     .eq("share_token", token)
     .single();
   if (!recipient) return NextResponse.json({ error: "Invalid link" }, { status: 404 });
@@ -26,17 +26,20 @@ export async function POST(req: NextRequest) {
   }
   await admin.from("signals").insert({ recipient_id: recipient.id, kind, page: page ?? null, value: stored });
   // Notify the owner the FIRST time this reader opens the document (in-app; best-effort).
-  if (kind === "opened" && !recipient.opened_notified) {
+  const lastNotified = (recipient as unknown as { last_open_notified_at: string | null }).last_open_notified_at;
+  const quietFor = lastNotified ? Date.now() - new Date(lastNotified).getTime() : Infinity;
+  const RENOTIFY_AFTER = 24 * 60 * 60 * 1000;
+  if (kind === "opened" && (!recipient.opened_notified || quietFor > RENOTIFY_AFTER)) {
     const doc = recipient.documents as unknown as { id: string; title: string; owner_id: string } | undefined;
     if (doc) {
-      await admin.from("recipients").update({ opened_notified: true }).eq("id", recipient.id);
+      await admin.from("recipients").update({ opened_notified: true, last_open_notified_at: new Date().toISOString() }).eq("id", recipient.id);
       const readerName = recipient.label || `${recipient.first_name ?? ""} ${recipient.last_name ?? ""}`.trim() || "A reader";
       notify({
         userId: doc.owner_id,
         type: "reader_opened",
-        title: `${readerName} opened ${doc.title}`,
-        body: "They have started reading. Open ReadProspects to read their read.",
-        params: { reader: readerName, doc: doc.title },
+        title: `${readerName} ${lastNotified ? "opened" : "opened"} ${doc.title}`,
+        body: lastNotified ? "They came back to it." : "They have started reading.",
+        params: { reader: readerName, doc: doc.title, again: lastNotified ? "1" : "" },
         link: `/documents/${doc.id}`,
         email: null,
       });
