@@ -26,7 +26,7 @@ export default async function ReferralsPage() {
     ? (await admin.from("referrers").select("id, code, display_name, payout_currency, status").eq("id", user.id).maybeSingle()).data
     : null;
 
-  const shell = (title: string, sub: string, body: React.ReactNode) => (
+  const shell = (title: string, sub: string, body: React.ReactNode, narrow = false) => (
     <div style={{ minHeight: "100vh", background: T.canvas, fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
       <header style={{ borderBottom: "1px solid " + T.border, background: T.card }}>
         <div style={{ maxWidth: 1000, margin: "0 auto", padding: "14px 20px", display: "flex", alignItems: "center", gap: 9 }}>
@@ -35,9 +35,10 @@ export default async function ReferralsPage() {
           </span>
           <span style={{ fontSize: 15.5, fontWeight: 600, color: T.heading }}>ReadProspects</span>
           <span style={{ fontSize: 13, color: T.muted, marginLeft: 4 }}>Referrals</span>
+          <a href="/referrals/terms" style={{ marginLeft: "auto", fontSize: 13, color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>Programme terms</a>
         </div>
       </header>
-      <main style={{ maxWidth: 1000, margin: "0 auto", padding: "34px 20px 100px" }}>
+      <main style={{ maxWidth: narrow ? 440 : 1000, margin: "0 auto", padding: "34px 20px 100px" }}>
         <h1 style={{ fontSize: 24, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0 }}>{title}</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 26px", maxWidth: 560, lineHeight: 1.55 }}>{sub}</p>
         {body}
@@ -49,14 +50,23 @@ export default async function ReferralsPage() {
     return shell(
       "Earn on every customer you send us",
       "25% of what each referral pays, for their first three months. Anyone you refer gets 5% off any paid plan. Sign in or create an account to begin.",
-      <ReferralAuth mode="auth" />
+      <ReferralAuth mode="auth" />,
+      true
     );
   }
   if (!referrer) {
     return shell(
       "Join the referral programme",
       "You are signed in. Choose your link and you are in.",
-      <ReferralAuth mode="join" />
+      <>
+        <ReferralAuth mode="join" />
+        <p style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.55, margin: "20px 0 0" }}>
+          By joining you accept the{" "}
+          <a href="/referrals/terms" style={{ color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>programme terms</a>,
+          including the 30 day hold on commission and the conditions under which it can be reversed.
+        </p>
+      </>,
+      true
     );
   }
 
@@ -81,7 +91,7 @@ export default async function ReferralsPage() {
   const available = sum(rowsL.filter((x) => x.status === "available" && !x.withdrawal_id));
   const pending = sum(rowsL.filter((x) => x.status === "pending"));
   const paid = sum(rowsL.filter((x) => x.status === "paid"));
-  const MIN_PAYOUT = 50;
+  const MIN_PAYOUT = 100;
   const canWithdraw = available >= MIN_PAYOUT;
   const money = (n: number) => r.payout_currency + " " + n.toFixed(2);
   const paying = rows.filter((x) => x.plan && x.plan !== "free");
