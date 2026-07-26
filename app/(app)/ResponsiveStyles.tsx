@@ -27,6 +27,9 @@ export default function ResponsiveStyles() {
         .tab-bar > span { margin-left: 0 !important; }
         .stat-grid { grid-template-columns: repeat(2, 1fr); }
         .stat-grid-3 { grid-template-columns: repeat(2, 1fr); }
+        /* Strips built during the sharp reskin. Same intent, different class. */
+        .stat-strip { grid-template-columns: repeat(2, 1fr) !important; }
+        .lim-grid { grid-template-columns: repeat(2, 1fr) !important; }
         .card-grid-3 { grid-template-columns: 1fr; }
         .two-col { grid-template-columns: 1fr; }
         .screen-pad { padding: 18px 16px; }
@@ -46,6 +49,7 @@ export default function ResponsiveStyles() {
           font-size: 12px; font-weight: 600; color: var(--rp-muted);
           text-transform: uppercase; letter-spacing: 0.03em;
         }
+        .sm-hide { display: none !important; }
         .dc-title {
           font-size: 15px !important; font-weight: 700 !important;
           padding-bottom: 8px !important; margin-bottom: 4px;
