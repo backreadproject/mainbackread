@@ -1,13 +1,11 @@
 "use client";
-import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n";
 
 // FR/EN toggle. Writes the locale cookie and refreshes so server components re-render.
 export default function LanguageSwitcher({ current, dark = true, compact = false }: { current: Locale; dark?: boolean; compact?: boolean }) {
-  const router = useRouter();
   const set = (loc: Locale) => {
     document.cookie = `locale=${loc}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
-    router.refresh();
+    window.location.reload();
   };
   if (compact) {
     const other: Locale = current === "en" ? "fr" : "en";
