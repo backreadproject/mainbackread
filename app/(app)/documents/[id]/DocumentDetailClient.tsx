@@ -84,11 +84,11 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   const variantCounts = recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>);  return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-b{cursor:pointer}.t-rec{transition:background .12s;cursor:pointer}.t-rec:hover{background:var(--rp-hover)}.t-in:focus{outline:none;border-color:var(--rp-green)}`}</style>
-      <div style={{ maxWidth: 1040, padding: "34px 28px 0" }}>
+      <div className="dd-wrap" style={{ maxWidth: 1040, padding: "34px 28px 0" }}>
         <a href="/documents" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}>
           <span>{"\u2039"}</span> {dd.back}
         </a>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+        <div className="dd-head" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{doc.title}</h1>
             <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{recs.length} {recs.length === 1 ? dd.recipientOne : dd.recipientMany}</p>
@@ -143,7 +143,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
               </div>
               <div style={{ padding: 18 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", background: T.soft, border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 20 }}>
-                  <span style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{readerOrigin.replace(/^https?:\/\//, "")}/read/{sel.share_token}</span>
+                  <span className="dd-link" style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{readerOrigin.replace(/^https?:\/\//, "")}/read/{sel.share_token}</span>
                   <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ flex: "none", marginLeft: "auto", height: 26, fontSize: 11, fontWeight: 500, background: T.card, border: "1px solid " + T.border, borderRadius: 4, padding: "0 8px", cursor: "pointer", fontFamily: T.font, color: copied === sel.share_token ? T.greenText : T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
                 </div>                {selSum && selSum.opens > 0 ? (
                   <>
@@ -152,7 +152,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                       {Object.keys(selSum.dwell).length === 0 ? <p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>{dd.openedNoDwell}</p> : Object.entries(selSum.dwell).sort((a, b) => Number(a[0]) - Number(b[0])).map(([page, ms]) => (
                         <div key={page} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 9 }}>
                           <span style={{ fontSize: 12.5, color: T.muted, width: 58, flex: "none" }}>{dd.page} {page}</span>
-                          <div style={{ flex: 1, height: 6, background: T.soft, border: "1px solid " + T.border, borderRadius: 2, overflow: "hidden", maxWidth: 340 }}><div style={{ width: ((Number(ms) / maxDwell) * 100) + "%", height: "100%", background: T.green }} /></div>
+                          <div className="dd-dwell" style={{ flex: 1, height: 6, background: T.soft, border: "1px solid " + T.border, borderRadius: 2, overflow: "hidden", maxWidth: 340, minWidth: 0 }}><div style={{ width: ((Number(ms) / maxDwell) * 100) + "%", height: "100%", background: T.green }} /></div>
                           <span title={Number(ms) >= DWELL_CAP_MS ? "Capped. A tab left open, not attention." : undefined} style={{ fontSize: 13, color: Number(ms) >= DWELL_CAP_MS ? T.faint : T.body, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{formatDwell(Number(ms))}</span>
                         </div>
                       ))}
@@ -197,7 +197,17 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           )}
         </div>
       </div>
-      <style>{`@media (max-width: 900px){ .dd-grid{ grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`
+        @media (max-width: 900px){ .dd-grid{ grid-template-columns: 1fr !important; } }
+        @media (max-width: 700px){
+          .dd-head{ flex-direction: column !important; align-items: stretch !important; }
+          .dd-head button{ width: 100%; }
+          .dd-wrap{ padding-left: 16px !important; padding-right: 16px !important; }
+          .dd-grid{ padding-left: 16px !important; padding-right: 16px !important; gap: 12px !important; }
+          .dd-link{ font-size: 11.5px !important; }
+          .dd-dwell{ max-width: none !important; }
+        }
+      `}</style>
       {importing && (
         <CsvImportModal
           documentId={doc.id}
