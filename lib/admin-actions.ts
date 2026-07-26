@@ -471,3 +471,68 @@ export async function closeSupportAction(conversationId: string): Promise<Action
   await writeAudit({ actorId: me.id, actorEmail: me.email, action: "support_close", detail: { conversationId } });
   return { ok: true };
 }
+
+export async function grantConsoleRoleAction(email: string, role: string, note: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!me.can("roles.manage")) return fail("Your role does not allow that.", 403);
+
+  const clean = (email ?? "").trim().toLowerCase();
+  if (!clean.includes("@")) return fail("Enter a valid email address.", 400);
+  const valid = ["owner", "support", "finance", "compliance", "engineering"];
+  if (!valid.includes(role)) return fail("Unknown role.", 400);
+
+  const admin = createAdminClient();
+  // The person must already have an account: console access is granted to a
+  // real login, never conjured. They can sign up at the app first.
+  const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+  const hit = (list?.users ?? []).find((u) => (u.email ?? "").toLowerCase() === clean);
+  if (!hit) return fail("No account with that email. Ask them to sign up first, then grant access.", 404);
+
+  const { error } = await admin.from("admin_users").upsert({
+    user_id: hit.id,
+    email: clean,
+    role,
+    note: (note ?? "").trim() || null,
+    created_by: me.id,
+    revoked_at: null,
+  }, { onConflict: "user_id" });
+  if (error) {
+    console.error("[grantConsoleRole]", error.message);
+    return fail("Could not grant access.", 500);
+  }
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email, action: "console_role_granted",
+    targetUserId: hit.id, detail: { email: clean, role, note: (note ?? "").trim() || null },
+  });
+  return { ok: true };
+}
+
+export async function revokeConsoleRoleAction(userId: string, confirmText: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!me.can("roles.manage")) return fail("Your role does not allow that.", 403);
+  if (userId === me.id) return fail("You cannot revoke your own access.", 400);
+
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("admin_users").select("email, role").eq("user_id", userId).maybeSingle();
+  const r = row as { email: string; role: string } | null;
+  if (!r) return fail("No such console member.", 404);
+  if ((confirmText ?? "").trim().toLowerCase() !== r.email.toLowerCase()) {
+    return fail("Type the email address exactly to confirm.", 400);
+  }
+
+  const { error } = await admin
+    .from("admin_users")
+    .update({ revoked_at: new Date().toISOString() })
+    .eq("user_id", userId);
+  if (error) {
+    console.error("[revokeConsoleRole]", error.message);
+    return fail("Could not revoke access.", 500);
+  }
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email, action: "console_role_revoked",
+    targetUserId: userId, detail: { email: r.email, role: r.role },
+  });
+  return { ok: true };
+}
