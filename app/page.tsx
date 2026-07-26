@@ -1,3 +1,4 @@
+import AppShot from "./AppShot";
 import { cookies } from "next/headers";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { createClient } from "@/lib/supabase/server";
@@ -355,33 +356,7 @@ export default async function LandingPage() {
         </div>
 
         <div className="rp-stage">
-          <div className="rp-panel lite">
-            <div className="rp-ptop"><span className="rp-dot3"><i /><i /><i /></span><span className="u">Q3 Proposal.pdf &middot; Dana Whitfield</span></div>
-            <div className="rp-dash">
-              <div className="rp-m4">
-                <div className="rp-mtile"><div className="mv">2</div><div className="ml">{c.panel.visits}</div></div>
-                <div className="rp-mtile"><div className="mv">6m 40s</div><div className="ml">{c.panel.time}</div></div>
-                <div className="rp-mtile"><div className="mv">3</div><div className="ml">{c.panel.q}</div></div>
-                <div className="rp-mtile"><div className="mv g">82</div><div className="ml">{c.panel.intent}</div></div>
-              </div>
-              <div className="rp-box">
-                <div className="rp-k" style={{ marginBottom: 12 }}>{c.panel.questions}</div>
-                <div className="rp-qrow">{c.caps.c1q1}</div>
-                <div className="rp-qrow">{c.caps.c1q2}</div>
-                <div className="rp-qrow last">{locale === "fr" ? "Peut-on commencer avant le prochain trimestre ?" : "Can we start before the new quarter?"}</div>
-              </div>
-              <div className="rp-box verdict">
-                <div className="rp-verdk">{c.panel.verdict}</div>
-                <div className="rp-verdv">{c.panel.ready}</div>
-                <div className="rp-bar"><i style={{ width: "82%" }} /></div>
-                <div className="rp-sig">
-                  <div className="rp-sigrow"><Tick /> {c.panel.sig1}</div>
-                  <div className="rp-sigrow"><Tick /> {c.panel.sig2}</div>
-                  <div className="rp-sigrow"><Tick /> {c.panel.sig3}</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AppShot />
         </div>
       </section>
 
