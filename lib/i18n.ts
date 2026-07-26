@@ -495,6 +495,7 @@ const en = {
     readingBusy: "Reading...",
     readTheReader: "Read the reader",
     couldntRead: "Couldn't read the reader.",
+    downloadReport: "Download this reader's report",
   },
   accountPage: {
     title: "Account",
@@ -1177,6 +1178,7 @@ const fr: Dict = {
     readingBusy: "Lecture...",
     readTheReader: "Lire le lecteur",
     couldntRead: "Impossible de lire le lecteur.",
+    downloadReport: "T\u00e9l\u00e9charger le rapport de ce lecteur",
   },
   accountPage: {
     title: "Compte",

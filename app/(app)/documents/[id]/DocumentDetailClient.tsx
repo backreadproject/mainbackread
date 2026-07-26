@@ -10,6 +10,7 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
 import CsvImportModal from "./CsvImportModal";
+import ReportButton from "@/app/(app)/ReportButton";
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
@@ -93,7 +94,10 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{doc.title}</h1>
             <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{recs.length} {recs.length === 1 ? dd.recipientOne : dd.recipientMany}</p>
           </div>
-          {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={ghost}>{dd.shareWithTeam}</button>}
+          <span style={{ display: "flex", gap: 8, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <ReportButton documentId={doc.id} />
+  {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={ghost}>{dd.shareWithTeam}</button>}
+          </span>
         </div>
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
       </div>

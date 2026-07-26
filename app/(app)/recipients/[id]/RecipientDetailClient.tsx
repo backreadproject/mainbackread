@@ -4,6 +4,7 @@ import { T } from "@/lib/theme";
 import { clampDwellMs, formatDwell, DWELL_CAP_MS } from "@/lib/dwell";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import ReportButton from "@/app/(app)/ReportButton";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
 type Rec = { id: string; label: string | null; shareToken: string; documentId: string; documentTitle: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -92,6 +93,9 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
           {recipient.label || rd.unnamedReader}
         </h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rd.onDoc} <a href={"/documents/" + recipient.documentId} style={{ color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>{recipient.documentTitle}</a></p>
+        <div style={{ marginTop: 16 }}>
+          <ReportButton documentId={recipient.documentId} recipientIds={[recipient.id]} label={rd.downloadReport} compact />
+        </div>
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
         <div style={{ marginTop: 26 }}>
           {/* Above everything. A reply is the only thing here that is not an

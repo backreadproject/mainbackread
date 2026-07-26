@@ -65,6 +65,22 @@ export async function POST(req: NextRequest) {
     const input = buildVerdictInput(recipient as RecipientLite, doc, rows);
     const { data, cost } = await runAI(verdictTask, input, { documentId: doc.title });
     await logUsage(admin, "verdict", { userId: user.id, orgId: ctx.orgId, documentId: doc.id });
+
+    // Non-fatal: a verdict the customer can see but we failed to store is a
+    // wasted call, not a broken feature.
+    const { error: saveErr } = await admin.from("verdicts").upsert({
+      recipient_id: recipientId,
+      document_id: doc.id,
+      headline: data.headline,
+      reasoning: data.reasoning,
+      next_action: data.nextAction,
+      confidence: data.confidence,
+      evidence: data.evidence ?? [],
+      signal_count: rows.length,
+      created_at: new Date().toISOString(),
+    }, { onConflict: "recipient_id" });
+    if (saveErr) console.error("[verdict-live] could not store verdict:", saveErr.message);
+
     return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
