@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import NotificationBell from "@/app/(app)/NotificationBell";
 import ThemeToggle from "@/app/(app)/ThemeToggle";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 type NavItem = { href: string; key: string; Icon: LucideIcon; orgOnly?: boolean };
 const NAV_MAIN: NavItem[] = [
   { href: "/overview", key: "overview", Icon: LayoutGrid },
@@ -80,6 +81,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10, minWidth: 0 }}>
           <div style={{ width: 30, height: 30, borderRadius: 5, background: T.green, color: T.onAccent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, flexShrink: 0, overflow: "hidden" }}>{avatarUrl ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initial}</div>
           <div style={{ fontSize: 11, color: T.sidebarSection, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
+          <LanguageSwitcher current={locale} compact />
           <ThemeToggle compact />
         </div>
         <div style={{ display: "flex", gap: 8 }}>
