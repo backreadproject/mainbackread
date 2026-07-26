@@ -1,4 +1,5 @@
 import AppShot from "./AppShot";
+import { MOCK_CSS, RecipientsShot, AskShot, DwellShot, VerdictShot, CompareShot } from "./MockShots";
 import { cookies } from "next/headers";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { createClient } from "@/lib/supabase/server";
@@ -323,6 +324,7 @@ export default async function LandingPage() {
   return (
     <div className="rp-page">
       <style>{CSS}</style>
+      <style>{MOCK_CSS}</style>
 
       <header className="rp-head">
         <div className="rp-wrap">
@@ -406,23 +408,7 @@ export default async function LandingPage() {
           <p className="rp-lead">{c.platform.lead}</p>
         </div>
         <div className="rp-wrap" style={{ position: "relative", zIndex: 1, marginTop: 44 }}>
-          <div className="rp-panel">
-            <div className="rp-ptop"><span className="rp-dot3"><i /><i /><i /></span><span className="u">ReadProspects &middot; {c.platform.readers}</span></div>
-            <div style={{ padding: 18 }}>
-              <div className="rp-box">
-                <div className="rp-k" style={{ marginBottom: 12 }}>{c.platform.readers}</div>
-                <div className="rp-tblwrap"><table className="rp-tbl">
-                  <thead><tr><th>{c.platform.cReader}</th><th>{c.platform.cDoc}</th><th>{c.platform.cReads}</th><th>{c.platform.cDwell}</th><th>{c.platform.cQ}</th><th>{c.platform.cVerdict}</th></tr></thead>
-                  <tbody>
-                    {READERS.map((r, i) => (
-                      <tr key={i}><td><b>{r.n}</b></td><td>{r.d}</td><td>{r.r}</td><td>{r.dw}</td><td>{r.q}</td>
-                        <td style={r.v === "ready" ? { color: "#33E6A2" } : undefined}>{vLabel(c, r.v)}</td></tr>
-                    ))}
-                  </tbody>
-                </table></div>
-              </div>
-            </div>
-          </div>
+          <RecipientsShot title={c.platform.readers} sub={c.platform.lead} />
         </div>
       </section>
 
@@ -436,57 +422,22 @@ export default async function LandingPage() {
         <div className="rp-wrap">
           <div className="rp-cap">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c1e}</span><h3>{c.caps.c1h}</h3><p>{c.caps.c1p}</p></div>
-            <div className="rp-card rp-mock">
-              <div className="rp-mhead"><span>Q3 Proposal.pdf</span><span>{c.caps.c1view}</span></div>
-              <div className="rp-bubble q">{c.caps.c1q1}</div>
-              <div className="rp-bubble a">{c.caps.c1a}</div>
-              <div className="rp-bubble q">{c.caps.c1q2}</div>
-            </div>
+            <AskShot doc="Q3 proposal" view={c.caps.c1view} q1={c.caps.c1q1} a1={c.caps.c1a} q2={c.caps.c1q2} />
           </div>
 
           <div className="rp-cap rev">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c2e}</span><h3>{c.caps.c2h}</h3><p>{c.caps.c2p}</p></div>
-            <div className="rp-card rp-mock">
-              <div className="rp-mhead"><span>{c.caps.c2title}</span><span>{c.caps.c2visits}</span></div>
-              {[["Page 1", "18%", "8s"], ["Page 2", "100%", "44s"], ["Page 3", "28%", "12s"], ["Page 4", "46%", "20s"], ["Page 5", "12%", "5s"]].map((p, i) => (
-                <div key={i} className="rp-pgrow"><span className="rp-pg">{p[0]}</span><span className="rp-pgbar"><i style={{ width: p[1] }} /></span><span className="rp-pgt">{p[2]}</span></div>
-              ))}
-            </div>
+            <DwellShot title={c.caps.c2title} visits={c.caps.c2visits} />
           </div>
 
           <div className="rp-cap">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c3e}</span><h3>{c.caps.c3h}</h3><p>{c.caps.c3p}</p></div>
-            <div className="rp-card rp-mock">
-              <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 14 }}>
-                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#33E6A2,#0B7A4B)", color: "#04120C", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14 }}>DW</div>
-                <div><div style={{ fontSize: 14, fontWeight: 700 }}>Dana Whitfield</div><div style={{ fontSize: 12, color: "#5F7168" }}>{c.caps.c3read}</div></div>
-              </div>
-              <div style={{ background: "rgba(51,230,162,0.08)", border: "1px solid rgba(51,230,162,0.2)", borderRadius: 12, padding: "14px 16px" }}>
-                <div className="rp-verdk">{c.panel.verdict}</div><div className="rp-verdv">{c.panel.ready}</div><div className="rp-bar"><i style={{ width: "82%" }} /></div>
-              </div>
-            </div>
+            <VerdictShot read={c.caps.c3read} verdict={c.panel.verdict} ready={c.panel.ready} />
           </div>
 
           <div className="rp-cap rev">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c4e}</span><h3>{c.caps.c4h}</h3><p>{c.caps.c4p}</p></div>
-            <div className="rp-card rp-mock">
-              <div className="rp-cmp">
-                <div className="col">
-                  <div className="nm">Dana Whitfield</div>
-                  <div className="kv"><span>{c.caps.c4visits}</span><b>2</b></div>
-                  <div className="kv"><span>{c.caps.c4time}</span><b>6m 40s</b></div>
-                  <div className="kv"><span>{c.caps.c4q}</span><b>3</b></div>
-                  <div style={{ marginTop: 10 }}><span className="rp-pill hot">{c.caps.c4ready}</span></div>
-                </div>
-                <div className="col">
-                  <div className="nm">Sam Rivera</div>
-                  <div className="kv"><span>{c.caps.c4visits}</span><b>1</b></div>
-                  <div className="kv"><span>{c.caps.c4time}</span><b>0m 22s</b></div>
-                  <div className="kv"><span>{c.caps.c4q}</span><b>0</b></div>
-                  <div style={{ marginTop: 10 }}><span className="rp-pill cold">{c.caps.c4glance}</span></div>
-                </div>
-              </div>
-            </div>
+            <CompareShot visits={c.caps.c4visits} time={c.caps.c4time} q={c.caps.c4q} ready={c.caps.c4ready} glance={c.caps.c4glance} />
           </div>
         </div>
       </section>
