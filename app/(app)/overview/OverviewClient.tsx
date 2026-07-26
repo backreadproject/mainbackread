@@ -118,6 +118,10 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let W = 0, H = 0, cx = 0, cy = 0, R = 0;
+    // Canvas resolves font families itself and cannot read CSS variables, so the
+    // real loaded family has to be named here. DM Sans is long gone.
+    const CANVAS_SANS = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
+    const CANVAS_MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     function resize() { const r = cv!.getBoundingClientRect(); if (!r.width) return; W = r.width; H = r.height; cv!.width = W * dpr; cv!.height = H * dpr; ctx!.setTransform(dpr, 0, 0, dpr, 0, 0); cx = W / 2; cy = H / 2; R = Math.min(W, H) / 2 - 16; }
     window.addEventListener("resize", resize);
@@ -182,7 +186,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
       ctx!.strokeStyle = rgba(P.green, 0.28); ctx!.lineWidth = 1;
       for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
       ctx!.restore();
-      ctx!.font = "600 10px 'DM Mono', monospace"; ctx!.textAlign = "center";
+      ctx!.font = "600 10px " + CANVAS_MONO; ctx!.textAlign = "center";
       const bands: [string, number][] = [
         [fr ? "PR\u00caT" : "READY", 0.34],
         [fr ? "INT\u00c9R\u00caT" : "WARMING", 0.62],
@@ -198,8 +202,8 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
       }
       const readyN = nodes.filter((x) => x.intent >= READY).length;
       ctx!.beginPath(); ctx!.arc(cx, cy, 23, 0, 7); ctx!.fillStyle = P.card; ctx!.fill(); ctx!.lineWidth = 1; ctx!.strokeStyle = P.border; ctx!.stroke();
-      ctx!.fillStyle = P.greenText; ctx!.font = "600 17px 'DM Sans'"; ctx!.fillText(String(readyN), cx, cy - 2);
-      ctx!.fillStyle = P.muted; ctx!.font = "8px 'DM Mono'"; ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy + 13);
+      ctx!.fillStyle = P.greenText; ctx!.font = "600 17px " + CANVAS_SANS; ctx!.fillText(String(readyN), cx, cy - 2);
+      ctx!.fillStyle = P.muted; ctx!.font = "8px " + CANVAS_MONO; ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy + 13);
       if (readyCountRef.current) readyCountRef.current.textContent = String(readyN);
       const boxes: Box[] = [{ x1: cx - 30, y1: cy - 30, x2: cx + 30, y2: cy + 30 }];
       const clash = (b: Box) => boxes.some((o2) => !(b.x2 < o2.x1 || b.x1 > o2.x2 || b.y2 < o2.y1 || b.y1 > o2.y2));
@@ -219,7 +223,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
         const d = Math.hypot(mx - n.x, my - n.y); n._h = d < 14;
         if (replied || ready || n._h) {
           const p = n.name.split(" "); const lab = p[0] + (p[1] ? " " + p[1][0] + "." : "");
-          ctx!.font = "600 " + (n._h ? 11 : 10) + "px 'DM Sans'"; ctx!.textAlign = "center";
+          ctx!.font = "600 " + (n._h ? 11 : 10) + "px " + CANVAS_SANS; ctx!.textAlign = "center";
           const w = ctx!.measureText(lab).width;
           // Try above the node, then below. If both collide with a label that is
           // already down, drop this one rather than stack unreadable text.
