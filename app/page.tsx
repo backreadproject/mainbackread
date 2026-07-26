@@ -155,7 +155,7 @@ const READERS = [
 ];
 
 const CSS = `
-  .rp-page{min-height:100vh;background:#050F0A;color:#F2F7F4;font-family:'DM Sans',system-ui,sans-serif;letter-spacing:-0.011em}
+  .rp-page{min-height:100vh;background:#050F0A;color:#F2F7F4;font-family:var(--font-dm-sans),system-ui,sans-serif;letter-spacing:-0.011em}
   .rp-page *{box-sizing:border-box}
   .rp-page a{text-decoration:none}
   .rp-wrap{max-width:1160px;margin:0 auto;padding:0 28px}
@@ -166,17 +166,17 @@ const CSS = `
   .rp-sec{padding:96px 0;position:relative;overflow:hidden}
   .rp-center{text-align:center}.rp-center .rp-lead{margin-left:auto;margin-right:auto}
   .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
-  .rp-glow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
+  .rp-glow{display:none}
   .rp-btn{background:#D8E84A;color:#082019;font-weight:600;font-size:14px;padding:9px 18px;border-radius:8px;display:inline-block;transition:background .15s}
   .rp-btn:hover{background:#CDDD3F}
   .rp-full{display:inline}.rp-short{display:none}
-  .rp-btnlg{background:#1FA971;color:#04120C;font-weight:700;font-size:15px;padding:14px 26px;border-radius:12px;display:inline-block;box-shadow:0 8px 30px rgba(31,169,113,0.35)}
+  .rp-btnlg{background:#1FA971;color:#04120C;font-weight:700;font-size:15px;padding:14px 26px;border-radius:12px;display:inline-block;box-shadow:0 8px 20px -8px rgba(0,0,0,0.5)}
   .rp-btnout{background:rgba(255,255,255,0.03);color:#F2F7F4;font-weight:600;font-size:15px;padding:14px 24px;border-radius:12px;border:1px solid rgba(255,255,255,0.09);display:inline-block}
   .rp-k{font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5F7168}
   .rp-head{position:sticky;top:0;z-index:50;background:rgba(5,15,10,0.72);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06)}
   .rp-nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
   .rp-brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:19px}
-  .rp-ring{width:19px;height:19px;border:2.4px solid #33E6A2;border-radius:50%;position:relative;box-shadow:0 0 14px rgba(51,230,162,0.6)}
+  .rp-ring{width:19px;height:19px;border:2.4px solid #33E6A2;border-radius:50%;position:relative}
   .rp-ring::after{content:"";position:absolute;inset:5px;background:#33E6A2;border-radius:50%}
   .rp-links{display:flex;gap:28px;font-size:14px}.rp-links a{color:#93A79C}
   .rp-navr{display:flex;align-items:center;gap:16px;font-size:14px}.rp-navr a.sign{color:#93A79C}
@@ -188,7 +188,7 @@ const CSS = `
   .rp-or{margin-top:16px;font-size:13.5px;color:#93A79C}.rp-or a{color:#33E6A2;font-weight:600}
   .rp-nocard{margin-top:12px;font-size:12.5px;color:#5F7168}
   .rp-stage{position:relative;z-index:1;max-width:1000px;margin:56px auto 0;padding:0 28px}
-  .rp-panel{background:linear-gradient(180deg,#0C1B14,#081410);border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.5)}
+  .rp-panel{background:#0A1710;border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.5)}
   .rp-ptop{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)}
   .rp-dot3{display:flex;gap:6px}.rp-dot3 i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.14)}
   .rp-ptop .u{font-size:12px;color:#5F7168}
@@ -202,7 +202,7 @@ const CSS = `
   .rp-verdk{font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#33E6A2}
   .rp-verdv{font-size:20px;font-weight:700;margin-top:4px}
   .rp-bar{height:7px;border-radius:5px;background:rgba(255,255,255,0.08);margin-top:12px;overflow:hidden}
-  .rp-bar i{display:block;height:100%;background:linear-gradient(90deg,#33E6A2,#1FA971)}
+  .rp-bar i{display:block;height:100%;background:#33E6A2}
   .rp-sig{margin-top:14px;display:flex;flex-direction:column;gap:9px}
   .rp-sigrow{display:flex;align-items:center;gap:9px;font-size:13px;color:#93A79C}
   .rp-tick{width:15px;height:15px;flex:none;color:#33E6A2}
@@ -228,7 +228,7 @@ const CSS = `
   .rp-pgrow{display:flex;align-items:center;gap:12px;margin:10px 0}
   .rp-pg{font-size:12px;color:#5F7168;width:46px;flex:none}
   .rp-pgbar{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,0.06);overflow:hidden}
-  .rp-pgbar i{display:block;height:100%;background:linear-gradient(90deg,#33E6A2,#0B7A4B)}
+  .rp-pgbar i{display:block;height:100%;background:#33E6A2}
   .rp-pgt{font-size:12px;color:#93A79C;width:34px;text-align:right;flex:none}
   .rp-cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .rp-cmp .col{border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px;background:rgba(255,255,255,0.02)}
@@ -242,13 +242,13 @@ const CSS = `
   .rp-tbl td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,0.06);color:#93A79C}.rp-tbl td b{color:#F2F7F4}
   .rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
   .rp-statb{padding:34px 24px;text-align:center}
-  .rp-statb .big{font-size:44px;font-weight:700;letter-spacing:-0.03em;background:linear-gradient(180deg,#fff,#33E6A2);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rp-statb .big{font-size:44px;font-weight:700;letter-spacing:-0.03em;color:#F2F7F4}
   .rp-statb .cap2{font-size:14px;color:#93A79C;margin-top:6px}
   .rp-plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
   .rp-plan{padding:22px}.rp-plan .pn{font-size:15px;font-weight:700}
   .rp-plan .pp{font-size:28px;font-weight:700;margin:8px 0 2px}.rp-plan .pp small{font-size:12px;color:#5F7168;font-weight:500}
   .rp-plan .pl{font-size:12.5px;color:#93A79C;margin-top:8px;line-height:1.5}
-  .rp-plan.hot{border-color:rgba(51,230,162,0.4);box-shadow:0 0 40px rgba(31,169,113,0.18)}
+  .rp-plan.hot{border-color:rgba(51,230,162,0.4)}
   .rp-faq{max-width:820px;margin:40px auto 0}
   .rp-faq details{border-top:1px solid rgba(255,255,255,0.06);padding:18px 4px}
   .rp-faq summary{list-style:none;cursor:pointer;font-size:16px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
@@ -256,7 +256,7 @@ const CSS = `
   .rp-faq summary .c{color:#33E6A2;font-size:20px;line-height:1;transition:transform .2s}
   .rp-faq details[open] summary .c{transform:rotate(45deg)}
   .rp-faq p{font-size:14.5px;line-height:1.6;color:#93A79C;margin:12px 0 0}
-  .rp-ctaband{position:relative;overflow:hidden;border:1px solid rgba(51,230,162,0.25);background:radial-gradient(600px 240px at 50% 0%,rgba(31,169,113,0.22),transparent 70%),#0A1712;border-radius:22px;padding:56px 32px;text-align:center}
+  .rp-ctaband{position:relative;overflow:hidden;border:1px solid rgba(51,230,162,0.25);background:#0A1712;border-radius:22px;padding:56px 32px;text-align:center}
   .rp-ctaband h2{font-size:34px;font-weight:700;letter-spacing:-0.03em;margin:0 0 12px}
   .rp-ctaband p{font-size:16px;color:#93A79C;margin:0 0 26px}
   .rp-foot{display:flex;justify-content:space-between;align-items:center;padding:30px 0;flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,0.06)}
@@ -386,7 +386,7 @@ export default async function LandingPage() {
       </section>
 
       {/* HOW */}
-      <section className="rp-sec" id="how" style={{ background: "linear-gradient(180deg,transparent,rgba(255,255,255,0.015),transparent)" }}>
+      <section className="rp-sec" id="how">
         <div className="rp-wrap rp-center">
           <span className="rp-eyebrow">{c.how.eyebrow}</span>
           <h2 className="rp-h2">{c.how.t1} <span className="g">{c.how.t2}</span></h2>
@@ -496,7 +496,7 @@ export default async function LandingPage() {
       </section>
 
       {/* STATS */}
-      <section className="rp-sec" style={{ background: "linear-gradient(180deg,transparent,rgba(255,255,255,0.015),transparent)" }}>
+      <section className="rp-sec">
         <div className="rp-wrap rp-center"><span className="rp-eyebrow">{c.stats.eyebrow}</span><h2 className="rp-h2">{c.stats.title}</h2></div>
         <div className="rp-wrap">
           <div className="rp-stats">
