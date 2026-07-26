@@ -169,12 +169,35 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
       const t = (now - t0) / 1000;
       ctx!.clearRect(0, 0, W, H);
       ctx!.save();
-      for (const rr of [0.34, 0.62, 0.92]) { ctx!.beginPath(); ctx!.arc(cx, cy, R * rr, 0, 7); ctx!.strokeStyle = rgba(P.green, 0.3); ctx!.setLineDash([3, 5]); ctx!.lineWidth = 1.2; ctx!.stroke(); }
-      ctx!.setLineDash([]); ctx!.strokeStyle = rgba(P.green, 0.14); ctx!.lineWidth = 1;
-      for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
+      const ringAlpha = [0.55, 0.4, 0.28];
+      [0.34, 0.62, 0.92].forEach((rr, ri) => {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, R * rr, 0, 7);
+        ctx!.strokeStyle = rgba(P.green, ringAlpha[ri]);
+        ctx!.setLineDash([6, 6]);
+        ctx!.lineWidth = 1.5;
+        ctx!.stroke();
+      });
+      ctx!.setLineDash([]);
+      if (W > 520) {
+        ctx!.strokeStyle = rgba(P.green, 0.22); ctx!.lineWidth = 1;
+        for (let k = 0; k < 8; k++) { const a = (k * Math.PI) / 4 + t * 0.03; ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke(); }
+      }
       ctx!.restore();
-      ctx!.fillStyle = P.muted; ctx!.font = "600 10px 'DM Mono', monospace"; ctx!.textAlign = "center";
-      ctx!.fillText(fr ? "PR\u00caT" : "READY", cx, cy - R * 0.34 + 13); ctx!.fillText(fr ? "INT\u00c9R\u00caT" : "WARMING", cx, cy - R * 0.62 + 13); ctx!.fillText(fr ? "COUP D\u2019\u0152IL" : "GLANCED", cx, cy - R * 0.92 + 13);
+      ctx!.font = "600 10px 'DM Mono', monospace"; ctx!.textAlign = "center";
+      const bands: [string, number][] = [
+        [fr ? "PR\u00caT" : "READY", 0.34],
+        [fr ? "INT\u00c9R\u00caT" : "WARMING", 0.62],
+        [fr ? "COUP D\u2019\u0152IL" : "GLANCED", 0.92],
+      ];
+      for (const [label, rr] of bands) {
+        const ly = cy - R * rr + 13;
+        const lw = ctx!.measureText(label).width;
+        ctx!.fillStyle = P.card;
+        ctx!.fillRect(cx - lw / 2 - 5, ly - 9, lw + 10, 13);
+        ctx!.fillStyle = P.body;
+        ctx!.fillText(label, cx, ly);
+      }
       const readyN = nodes.filter((x) => x.intent >= READY).length;
       ctx!.beginPath(); ctx!.arc(cx, cy, 23, 0, 7); ctx!.fillStyle = P.card; ctx!.fill(); ctx!.lineWidth = 1; ctx!.strokeStyle = P.border; ctx!.stroke();
       ctx!.fillStyle = P.greenText; ctx!.font = "600 17px 'DM Sans'"; ctx!.fillText(String(readyN), cx, cy - 2);
