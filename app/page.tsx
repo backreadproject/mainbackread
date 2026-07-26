@@ -167,6 +167,7 @@ const CSS = `
   .rp-center{text-align:center}.rp-center .rp-lead{margin-left:auto;margin-right:auto}
   .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
   .rp-glow{display:none}
+  .rp-heroglow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
   .rp-btn{background:#D8E84A;color:#082019;font-weight:600;font-size:14px;padding:9px 18px;border-radius:8px;display:inline-block;transition:background .15s}
   .rp-btn:hover{background:#CDDD3F}
   .rp-full{display:inline}.rp-short{display:none}
@@ -321,7 +322,7 @@ export default async function LandingPage() {
 
       {/* HERO */}
       <section className="rp-hero">
-        <div className="rp-glow" style={{ width: 760, height: 420, top: -120, left: "50%", transform: "translateX(-50%)", background: "rgba(31,169,113,0.20)" }} />
+        <div className="rp-heroglow" style={{ width: 760, height: 420, top: -120, left: "50%", transform: "translateX(-50%)", background: "rgba(31,169,113,0.20)" }} />
         <div className="rp-wrap">
           <span className="rp-eyebrow">{c.hero.eyebrow}</span>
           <h1 className="rp-h1">{c.hero.t1}<br /><span className="g">{c.hero.t2}</span></h1>
