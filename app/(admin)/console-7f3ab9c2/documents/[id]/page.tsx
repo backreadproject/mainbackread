@@ -7,7 +7,7 @@ import EraseReader from "./EraseReader";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export default async function AdminDocumentDetail({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdminPage("documents.read");
+  const me = await requireAdminPage("documents.read");
   const { id } = await params;
   const admin = createAdminClient();
   const { data: doc } = await admin.from("documents").select("id, title, owner_id, organization_id, project_id, created_at, archived_at, storage_path, page_count, extract_method, needs_page_ocr, extracted_text").eq("id", id).single();
@@ -152,7 +152,9 @@ export default async function AdminDocumentDetail({ params }: { params: Promise<
                           {m.escalate ? <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 6 }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber }} />escalated</span> : null}
                           <span style={{ color: T.faint, fontFamily: mono, marginLeft: 6 }}>{new Date(m.created_at).toLocaleString()}</span>
                         </div>
-                        <div style={{ fontSize: 13, color: T.heading, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{m.content}</div>
+                        {me.can("readerContent.read")
+                      ? <div style={{ fontSize: 13, color: T.heading, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>{m.content}</div>
+                      : <div style={{ fontSize: 12.5, color: T.faint, fontStyle: "italic" }}>Message content is restricted to compliance.</div>}
                       </div>
                     ))}
                   </div>
