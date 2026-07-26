@@ -7,7 +7,7 @@ import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { runAI, reportTask } from "@/lib/ai";
 import { assembleReport } from "@/lib/report-data";
-import { ReportDocument } from "@/lib/pdf/ReportDocument";
+import { ReportDocument, ALL_SECTIONS, type ReportSections } from "@/lib/pdf/ReportDocument";
 import { reportFingerprint, getCachedReport, putCachedReport, loadBrandingDefaults, type Branding } from "@/lib/report-cache";
 export const runtime = "nodejs";
 // One model call plus PDF rendering. Assembly is fast; the call is the cost.
@@ -28,6 +28,9 @@ type Body = {
   note?: string;
   /** Force a fresh synthesis even when the cache is valid. */
   refresh?: boolean;
+  /** Which sections to print. Presentation only: the analysis is unchanged, so
+   *  the cache is shared across every combination. */
+  sections?: Partial<ReportSections>;
 };
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -82,9 +85,33 @@ export async function POST(req: NextRequest) {
     }
 
     const saved = await loadBrandingDefaults(admin, user.id);
+
+    // Fetched and inlined rather than linked. The renderer decides format from
+    // the path, and our cache-buster leaves the URL ending in a query string,
+    // so a perfectly good PNG would still be dropped.
+    let logoData: string | null = null;
+    if (saved.logoUrl) {
+      try {
+        const res = await fetch(saved.logoUrl);
+        const type = res.headers.get("content-type") || "";
+        if (!res.ok) {
+          console.warn("[report] logo fetch returned", res.status);
+        } else if (!/image\/(png|jpe?g)/.test(type)) {
+          // WebP and friends are not supported by the PDF renderer. Skipping is
+          // better than emitting a document that fails to open.
+          console.warn("[report] logo is", type, "which a PDF cannot carry. Skipped.");
+        } else {
+          const buf = Buffer.from(await res.arrayBuffer());
+          if (buf.length < 2_000_000) logoData = "data:" + type + ";base64," + buf.toString("base64");
+          else console.warn("[report] logo too large, skipped:", buf.length);
+        }
+      } catch (e) {
+        console.warn("[report] logo fetch failed:", e instanceof Error ? e.message : String(e));
+      }
+    }
     const branding: Branding = {
       companyName: (body.companyName ?? "").trim() || saved.companyName,
-      logoUrl: saved.logoUrl,
+      logoUrl: logoData,
       reporter: (body.reporter ?? "").trim() || saved.defaultReporter || user.email || null,
       recipient: (body.recipient ?? "").trim() || null,
       recipientKind: body.recipientKind ?? null,
@@ -97,6 +124,7 @@ export async function POST(req: NextRequest) {
       generatedFor: user.email ?? "",
       generatedAt: new Date(),
       branding,
+      sections: { ...ALL_SECTIONS, ...(body.sections ?? {}) },
     }) as React.ReactElement<DocumentProps>;
     // renderToBuffer rather than a stream: the document is small, and a stream
     // that fails halfway produces a corrupt file the customer cannot diagnose.

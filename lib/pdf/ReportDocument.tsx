@@ -74,12 +74,19 @@ const Foot = ({ title }: { title: string }) => (
     <Text render={({ pageNumber, totalPages }) => pageNumber + " of " + totalPages} />
   </View>
 );
-export function ReportDocument({ report, data, generatedFor, generatedAt, branding }: {
+export type ReportSections = {
+  appendix: boolean;
+  pageAttention: boolean;
+  neverOpened: boolean;
+};
+export const ALL_SECTIONS: ReportSections = { appendix: true, pageAttention: true, neverOpened: true };
+export function ReportDocument({ report, data, generatedFor, generatedAt, branding, sections = ALL_SECTIONS }: {
   report: ReportOutput;
   data: AssembledReport;
   generatedFor: string;
   generatedAt: Date;
   branding?: Branding;
+  sections?: ReportSections;
 }) {
   const opened = data.detail.filter((d) => d.opens > 0).length;
   const totalQ = data.detail.reduce((n, d) => n + d.questions.length, 0);
@@ -194,7 +201,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
           </View>
         )}
 
-        {data.input.pageTotals.length > 0 && (
+        {sections.pageAttention && data.input.pageTotals.length > 0 && (
           <View style={{ marginBottom: 20 }}>
             <Text style={s.h2}>Where attention went</Text>
             {data.input.pageTotals.slice(0, 8).map((p) => {
@@ -225,6 +232,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
       </Page>
 
       {/* Every reader, in full. The evidence behind everything above. */}
+      {sections.appendix ? (
       <Page size="A4" style={s.page}>
         <Text style={s.eyebrow}>APPENDIX</Text>
         <Text style={[s.h1, { fontSize: 16 }]}>Every reader</Text>
@@ -232,6 +240,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         {data.detail
           .slice()
+          .filter((d) => sections.neverOpened || d.opens > 0)
           .sort((a, b) => (b.replies.length - a.replies.length) || (b.questions.length - a.questions.length) || (b.seconds - a.seconds))
           .map((d) => (
             <View key={d.id} style={s.card} wrap={false}>
@@ -261,6 +270,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
           ))}
         <Foot title={footTitle} />
       </Page>
+      ) : null}
     </Document>
   );
 }

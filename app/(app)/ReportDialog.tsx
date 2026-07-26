@@ -25,6 +25,9 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [refresh, setRefresh] = useState(false);
+  const [appendix, setAppendix] = useState(true);
+  const [pageAttention, setPageAttention] = useState(true);
+  const [neverOpened, setNeverOpened] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -47,6 +50,14 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
 
   async function uploadLogo(file: File) {
     setUploading(true); setMsg("");
+    // Checked here as well as in the picker: a customer can still drag in a file
+    // the accept attribute would have refused, and a silently missing logo is
+    // worse than a clear refusal.
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setMsg("PDFs can only carry PNG or JPEG. Save the logo in one of those and try again.");
+      setUploading(false);
+      return;
+    }
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -92,6 +103,7 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
           documentId,
           recipientIds: recipientIds ?? undefined,
           reporter, recipient, recipientKind: kind, companyName: company, note, refresh,
+          sections: { appendix, pageAttention, neverOpened },
         }),
       });
       if (!res.ok) {
@@ -158,12 +170,12 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
               <label style={label}>Your company</label>
               <input style={input} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Appears on the cover" />
 
-              <label style={label}>Logo</label>
+              <label style={label}>Logo <span style={{ color: T.faint, fontWeight: 400 }}>PNG or JPEG</span></label>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 {logoUrl && <img src={logoUrl} alt="" style={{ width: 34, height: 34, objectFit: "contain", border: "1px solid " + T.border, borderRadius: 4 }} />}
                 <label style={{ display: "inline-flex", alignItems: "center", height: 32, padding: "0 12px", border: "1px solid " + T.border, borderRadius: T.rBtn, fontSize: 12.5, color: T.heading, cursor: "pointer" }}>
                   {uploading ? "Uploading..." : logoUrl ? "Replace" : "Upload"}
-                  <input type="file" accept="image/png,image/jpeg,image/webp" style={{ display: "none" }}
+                  <input type="file" accept="image/png,image/jpeg" style={{ display: "none" }}
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f); }} />
                 </label>
                 {logoUrl && (
@@ -175,7 +187,23 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
               <label style={label}>Note on the cover</label>
               <input style={input} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional. One line of context." />
 
-              <label style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 16, cursor: "pointer" }}>
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid " + T.borderSoft }}>
+                <div style={{ fontSize: 12.5, color: T.body, marginBottom: 9 }}>Include</div>
+                {([
+                  ["The reader appendix", appendix, setAppendix, "Every reader with their questions and figures. Usually left out of a copy going upward."],
+                  ["Page attention", pageAttention, setPageAttention, "Where time went, page by page."],
+                  ["Readers who never opened it", neverOpened, setNeverOpened, "Silence is data, but it lengthens the appendix."],
+                ] as [string, boolean, (v: boolean) => void, string][]).map(([lbl, val, set, hint]) => (
+                  <label key={lbl} style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 9, cursor: "pointer" }}>
+                    <input type="checkbox" checked={val} onChange={(e) => set(e.target.checked)} style={{ marginTop: 3 }} />
+                    <span style={{ fontSize: 12.5, color: T.body, lineHeight: 1.5 }}>
+                      {lbl}<span style={{ color: T.muted }}> {"\u2014"} {hint}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 8, cursor: "pointer" }}>
                 <input type="checkbox" checked={refresh} onChange={(e) => setRefresh(e.target.checked)} style={{ marginTop: 3 }} />
                 <span style={{ fontSize: 12.5, color: T.body, lineHeight: 1.5 }}>
                   Read the signals again.
