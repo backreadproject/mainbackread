@@ -1,52 +1,65 @@
-// A faithful, code-built replica of the Documents screen for the marketing hero.
+// A faithful, code-built replica of the Overview screen for the marketing hero.
 //
-// Not a stylised mock: this is the real light theme, the real sidebar, the real
-// stat strip and the real table, at the real proportions. The only fiction is
-// the data. Built in code rather than as a screenshot so it tracks the app when
-// the app changes, and so it reflows on a phone.
+// Overview rather than Documents on purpose: a table of files looks like every
+// other SaaS, while the intent field is the thing only this product has. The
+// field is canvas in the real app; here it is SVG at the same geometry, same
+// three bands, same tokens, because a marketing page cannot run an animation
+// loop for a screenshot.
 //
-// The org is ReadProspects Inc, the account is support@readprospects.com, and
-// the avatar is initials. Nothing personal, nothing borrowed from a real tenant.
-const ROWS = [
-  { t: "Q3 proposal \u2014 Northwind", r: 4, o: 12, q: 3, p: "Enterprise", d: "24 Jul 2026", s: "active" },
-  { t: "Pricing overview 2026", r: 6, o: 9, q: 5, p: "Enterprise", d: "22 Jul 2026", s: "active" },
-  { t: "Security questionnaire", r: 2, o: 3, q: 1, p: "\u2014", d: "19 Jul 2026", s: "active" },
-  { t: "Master services agreement", r: 3, o: 0, q: 0, p: "Legal", d: "16 Jul 2026", s: "awaiting" },
-  { t: "Implementation plan v2", r: 0, o: 0, q: 0, p: "\u2014", d: "14 Jul 2026", s: "unshared" },
+// Org is ReadProspects Inc, account is support@readprospects.com, initials
+// avatar. Nothing personal, nothing from a real tenant.
+const READY = [
+  { x: 112, y: 168, n: "Dana W." },
+  { x: 181, y: 124, n: "Marcus C." },
+  { x: 157, y: 191, n: "Aisha B." },
+  { x: 126, y: 119, n: "Elena R." },
+];
+const WARM = [[80, 121], [217, 184], [166, 79], [106, 211]];
+const GLANCE = [[51, 199], [244, 91], [190, 258], [66, 76], [258, 170], [131, 36], [96, 262], [232, 246]];
+const READERS = [
+  ["DW", "Dana Whitfield", "Q3 proposal \u2014 Northwind", "12 reads"],
+  ["AB", "Aisha Bello", "Pricing overview 2026", "9 reads"],
+  ["ER", "Elena Ross", "Security questionnaire", "4 reads"],
+];
+const FEED = [
+  ["eye", "Dana Whitfield opened Q3 proposal", "9m"],
+  ["q", "Marcus Cole asked: \u201cIs the annual commit negotiable?\u201d", "1h"],
+  ["eye", "Aisha Bello opened Pricing overview 2026", "3h"],
 ];
 const NAV = [
-  ["Overview", "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z", false],
-  ["Documents", "M4 3h9l5 5v13H4zM13 3v5h5", true],
+  ["Overview", "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z", true],
+  ["Documents", "M4 3h9l5 5v13H4zM13 3v5h5", false],
   ["Projects", "M3 6h6l2 3h10v10H3z", false],
   ["Activity", "M3 12h4l3 8 4-16 3 8h4", false],
   ["Recipients", "M17 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9.5 8.5a3.5 3.5 0 107 0 3.5 3.5 0 10-7 0M22 20v-2a4 4 0 00-3-3.9", false],
 ] as const;
 const CFG = [
   ["Members", "M17 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9.5 8.5a3.5 3.5 0 107 0 3.5 3.5 0 10-7 0"],
-  ["Settings", "M12 15a3 3 0 100-6 3 3 0 000 6M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 003 13.7H3a2 2 0 110-4h.1A1.7 1.7 0 004.6 7l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.9.3H9.4a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.9-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.9v.1a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1"],
+  ["Settings", "M12 15a3 3 0 100-6 3 3 0 000 6M20 12l2-1-2-4-2 .6a8 8 0 00-2-1.2L15.5 4h-4l-.5 2.4a8 8 0 00-2 1.2L7 7l-2 4 2 1a8 8 0 000 2l-2 1 2 4 2-.6a8 8 0 002 1.2l.5 2.4h4l.5-2.4a8 8 0 002-1.2l2 .6 2-4-2-1a8 8 0 000-2"],
   ["Account", "M12 12a4 4 0 100-8 4 4 0 000 8M6 21v-1a4 4 0 014-4h4a4 4 0 014 4v1"],
 ] as const;
 const SHOT_CSS = `
-.rp-shot{--sb:#FFFFFF;--sl:#E4E7EC;--st:#475467;--sa:#ECF6F0;--sat:#14603C;
-  --ca:#FFFFFF;--bd:#E4E7EC;--bs:#EFF1F4;--sf:#F9FAFB;--hd:#101828;--bo:#344054;--mu:#667085;--fa:#98A2B3;
-  --gr:#1F6F4A;--gs:#ECF6F0;--gt:#14603C;--am:#B54708;--in:#3538CD;
+.rp-shot{--sl:#E4E7EC;--st:#475467;--sa:#ECF6F0;--sat:#14603C;--ca:#FFFFFF;--bd:#E4E7EC;--bs:#EFF1F4;
+  --sf:#F9FAFB;--hd:#101828;--bo:#344054;--mu:#667085;--fa:#98A2B3;--gr:#1F6F4A;--gs:#ECF6F0;--gt:#14603C;
+  --am:#B54708;--in:#3538CD;
   background:var(--ca);border-radius:14px;overflow:hidden;box-shadow:0 30px 80px -20px rgba(0,0,0,.75);
   font-family:var(--font-dm-sans),system-ui,sans-serif;letter-spacing:normal;text-align:left;color:var(--bo)}
 .rp-shot *{box-sizing:border-box}
 .rp-shot .s-chrome{display:flex;align-items:center;gap:7px;padding:9px 14px;background:var(--sf);border-bottom:1px solid var(--bd)}
 .rp-shot .s-chrome i{width:9px;height:9px;border-radius:50%;background:var(--bd);display:block}
 .rp-shot .s-url{font-size:11.5px;color:var(--fa);margin-left:10px}
-.rp-shot .s-body{display:grid;grid-template-columns:198px minmax(0,1fr)}
-.rp-shot .s-side{background:var(--sb);border-right:1px solid var(--sl);padding:14px 10px;display:flex;flex-direction:column;min-height:430px}
+.rp-shot .s-body{display:grid;grid-template-columns:206px minmax(0,1fr)}
+.rp-shot .s-side{background:var(--ca);border-right:1px solid var(--sl);padding:14px 10px;display:flex;flex-direction:column;min-height:470px}
 .rp-shot .s-brand{display:flex;align-items:center;gap:7px;padding:0 6px 12px;font-size:14px;font-weight:600;color:var(--hd)}
 .rp-shot .s-ring{width:15px;height:15px;border:2px solid var(--gr);border-radius:50%;position:relative;flex:none}
 .rp-shot .s-ring::after{content:"";position:absolute;inset:3.5px;background:var(--gr);border-radius:50%}
-.rp-shot .s-org{display:flex;align-items:center;gap:8px;border:1px solid var(--sl);border-radius:6px;padding:8px 9px;margin-bottom:14px}
-.rp-shot .s-orgm{width:22px;height:22px;border-radius:4px;background:var(--gr);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
-.rp-shot .s-orgk{font-size:8.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--fa);line-height:1.3}
-.rp-shot .s-orgn{font-size:12px;font-weight:600;color:var(--hd);line-height:1.3}
-.rp-shot .s-bell{margin-left:auto;position:relative;color:var(--fa);flex:none}
-.rp-shot .s-badge{position:absolute;top:-5px;right:-5px;min-width:14px;height:14px;border-radius:3px;background:#B42318;color:#fff;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px}
+.rp-shot .s-org{display:flex;align-items:center;gap:7px;border:1px solid var(--sl);border-radius:6px;padding:7px 8px;margin-bottom:14px}
+.rp-shot .s-orgm{width:21px;height:21px;border-radius:4px;background:var(--gr);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+.rp-shot .s-orgt{min-width:0;flex:1}
+.rp-shot .s-orgk{display:block;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--fa);line-height:1.3}
+.rp-shot .s-orgn{display:block;font-size:11.5px;font-weight:600;color:var(--hd);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-shot .s-bell{position:relative;color:var(--fa);flex:none;line-height:0}
+.rp-shot .s-badge{position:absolute;top:-5px;right:-5px;min-width:13px;height:13px;border-radius:3px;background:#B42318;color:#fff;font-size:8.5px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 3px}
 .rp-shot .s-k{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--fa);padding:0 6px;margin:6px 0 5px}
 .rp-shot .s-nav{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;font-size:12.5px;color:var(--st);margin-bottom:1px}
 .rp-shot .s-nav.on{background:var(--sa);color:var(--sat);font-weight:500}
@@ -54,67 +67,98 @@ const SHOT_CSS = `
 .rp-shot .s-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--sl)}
 .rp-shot .s-me{display:flex;align-items:center;gap:8px;margin-bottom:9px}
 .rp-shot .s-av{width:22px;height:22px;border-radius:4px;background:var(--gs);color:var(--gt);font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
-.rp-shot .s-em{font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rp-shot .s-em{font-size:10.5px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rp-shot .s-btns{display:flex;gap:6px}
 .rp-shot .s-btn{flex:1;text-align:center;border:1px solid var(--bd);border-radius:6px;padding:5px 0;font-size:11px;color:var(--hd)}
-.rp-shot .s-main{padding:20px 20px 22px;min-width:0}
-.rp-shot .s-h1{font-size:21px;font-weight:600;color:var(--hd);letter-spacing:-.021em;margin:0}
-.rp-shot .s-sub{font-size:12px;color:var(--mu);margin:5px 0 0}
-.rp-shot .s-tools{display:flex;gap:7px;align-items:center;margin:16px 0 12px;flex-wrap:wrap}
-.rp-shot .s-sel{border:1px solid var(--bd);border-radius:6px;padding:6px 9px;font-size:11.5px;color:var(--bo);display:flex;align-items:center;gap:14px;background:var(--ca)}
-.rp-shot .s-sel svg{width:11px;height:11px;color:var(--fa)}
-.rp-shot .s-search{border:1px solid var(--bd);border-radius:6px;padding:6px 9px;font-size:11.5px;color:var(--fa);flex:1;min-width:120px;background:var(--ca)}
-.rp-shot .s-out{border:1px solid var(--bd);border-radius:6px;padding:6px 11px;font-size:11.5px;color:var(--hd);background:var(--ca)}
-.rp-shot .s-cta{background:var(--gr);color:#fff;border-radius:6px;padding:6px 11px;font-size:11.5px;font-weight:500}
-.rp-shot .s-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--bd);border-radius:6px;overflow:hidden;background:var(--ca)}
-.rp-shot .s-cell{padding:11px 13px;border-left:3px solid var(--bd)}
-.rp-shot .s-cell.g{border-left-color:var(--gr)}
-.rp-shot .s-cell.a{border-left-color:var(--am)}
-.rp-shot .s-cell.i{border-left-color:var(--in)}
-.rp-shot .s-cv{font-size:19px;font-weight:600;color:var(--hd);letter-spacing:-.02em;line-height:1.15}
-.rp-shot .s-cl{font-size:10.5px;color:var(--mu);margin-top:2px}
-.rp-shot .s-tbl{border:1px solid var(--bd);border-radius:6px;margin-top:14px;overflow:hidden}
-.rp-shot .s-tr{display:grid;grid-template-columns:1.9fr .8fr .6fr .8fr .8fr .9fr .9fr 22px;gap:9px;padding:9px 13px;align-items:center}
-.rp-shot .s-th{background:var(--sf);border-bottom:1px solid var(--bd);font-size:10.5px;font-weight:600;color:var(--bo);white-space:nowrap}
-.rp-shot .s-td{border-bottom:1px solid var(--bs);font-size:11.5px;color:var(--bo)}
-.rp-shot .s-td:last-child{border-bottom:none}
-.rp-shot .s-name{color:var(--hd);font-weight:500;border-bottom:1px solid var(--bd);padding-bottom:1px;justify-self:start;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.rp-shot .s-dim{color:var(--fa)}
-.rp-shot .s-st{display:inline-flex;align-items:center;gap:6px;color:var(--hd);white-space:nowrap}
+.rp-shot .s-main{padding:18px;min-width:0}
+.rp-shot .s-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.rp-shot .s-live{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;letter-spacing:.09em;color:var(--gt);background:var(--gs);border:1px solid #CFE7DA;border-radius:4px;padding:3px 8px}
+.rp-shot .s-h1{font-size:20px;font-weight:600;color:var(--hd);letter-spacing:-.021em;margin:8px 0 0}
+.rp-shot .s-sub{font-size:11.5px;color:var(--mu);margin:4px 0 0}
+.rp-shot .s-new{background:var(--gr);color:#fff;border-radius:6px;padding:7px 11px;font-size:11.5px;font-weight:500;white-space:nowrap;flex:none}
+.rp-shot .s-two{display:grid;grid-template-columns:1.45fr minmax(0,1fr);gap:12px}
+.rp-shot .s-card{border:1px solid var(--bd);border-radius:6px;background:var(--ca);overflow:hidden}
+.rp-shot .s-ch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 13px}
+.rp-shot .s-eye{font-size:8.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--fa)}
+.rp-shot .s-ct{font-size:13px;font-weight:600;color:var(--hd);margin-top:2px}
+.rp-shot .s-cnt{font-size:10.5px;color:var(--mu);white-space:nowrap}
+.rp-shot .s-field{padding:0 10px 8px}
+.rp-shot .s-legend{display:flex;gap:14px;justify-content:center;padding:0 0 12px;font-size:10px;color:var(--mu)}
+.rp-shot .s-legend i{width:6px;height:6px;border-radius:2px;display:inline-block;margin-right:5px;vertical-align:1px}
+.rp-shot .s-chb{border-bottom:1px solid var(--bd)}
+.rp-shot .s-row{display:flex;align-items:center;gap:10px;padding:10px 13px;border-bottom:1px solid var(--bs)}
+.rp-shot .s-row:last-child{border-bottom:none}
+.rp-shot .s-ini{width:24px;height:24px;border-radius:4px;background:var(--gs);color:var(--gt);font-size:9.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+.rp-shot .s-rn{font-size:12px;color:var(--hd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rp-shot .s-rd{font-size:10.5px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.rp-shot .s-rr{font-size:10.5px;color:var(--fa);white-space:nowrap;flex:none}
+.rp-shot .s-st{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;color:var(--hd);white-space:nowrap;flex:none}
 .rp-shot .s-dot{width:6px;height:6px;border-radius:2px;flex:none}
-.rp-shot .s-kebab{color:var(--fa);justify-self:end;line-height:0}
+.rp-shot .s-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.rp-shot .s-tile{border:1px solid var(--bd);border-left:3px solid var(--bd);border-radius:6px;padding:10px 12px}
+.rp-shot .s-tile.g{border-left-color:var(--gr)}
+.rp-shot .s-tile.a{border-left-color:var(--am)}
+.rp-shot .s-tile.i{border-left-color:var(--in)}
+.rp-shot .s-tv{font-size:19px;font-weight:600;color:var(--hd);letter-spacing:-.02em;line-height:1.15}
+.rp-shot .s-tl{font-size:10.5px;color:var(--mu);margin-top:2px}
+.rp-shot .s-ic{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex:none}
+.rp-shot .s-ic svg{width:12px;height:12px}
 @media (max-width:900px){
   .rp-shot .s-body{grid-template-columns:minmax(0,1fr)}
   .rp-shot .s-side{display:none}
+  .rp-shot .s-two{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-width:640px){
-  .rp-shot .s-main{padding:14px}
-  .rp-shot .s-strip{grid-template-columns:1fr 1fr}
-  .rp-shot .s-tr{grid-template-columns:1.6fr .7fr .7fr 1fr}
-  .rp-shot .s-hide{display:none}
+  .rp-shot .s-main{padding:13px}
+  .rp-shot .s-tiles{grid-template-columns:1fr 1fr}
+  .rp-shot .s-top{flex-direction:column}
 }
 `;
-const kebab = (
-  <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><circle cx="12" cy="5" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="12" cy="19" r="1.6" /></svg>
-);
-const chev = (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 9l6 6 6-6" /></svg>
-);
+function Field() {
+  return (
+    <svg viewBox="0 0 300 300" style={{ display: "block", width: "100%", height: "auto" }} role="img" aria-label="Intent field">
+      <circle cx="150" cy="150" r="45" fill="none" stroke="#1F6F4A" strokeOpacity="0.55" strokeWidth="1.4" strokeDasharray="6 6" />
+      <circle cx="150" cy="150" r="83" fill="none" stroke="#1F6F4A" strokeOpacity="0.4" strokeWidth="1.4" strokeDasharray="6 6" />
+      <circle cx="150" cy="150" r="123" fill="none" stroke="#1F6F4A" strokeOpacity="0.28" strokeWidth="1.4" strokeDasharray="6 6" />
+      {[0, 45, 90, 135].map((a) => {
+        const rad = (a * Math.PI) / 180;
+        return <line key={a} x1={150 - Math.cos(rad) * 123} y1={150 - Math.sin(rad) * 123} x2={150 + Math.cos(rad) * 123} y2={150 + Math.sin(rad) * 123} stroke="#1F6F4A" strokeOpacity="0.16" strokeWidth="1" />;
+      })}
+      {GLANCE.map(([x, y], i) => <circle key={"g" + i} cx={x} cy={y} r="4.5" fill="#98A2B3" />)}
+      {WARM.map(([x, y], i) => <circle key={"w" + i} cx={x} cy={y} r="5.5" fill="#B54708" />)}
+      {READY.map((n) => (
+        <g key={n.n}>
+          <line x1="150" y1="150" x2={n.x} y2={n.y} stroke="#1F6F4A" strokeOpacity="0.26" strokeWidth="1" strokeDasharray="2 4" />
+          <circle cx={n.x} cy={n.y} r="11" fill="none" stroke="#1F6F4A" strokeOpacity="0.3" strokeWidth="1.2" />
+          <circle cx={n.x} cy={n.y} r="7" fill="#1F6F4A" />
+          <text x={n.x} y={n.y - 14} textAnchor="middle" fontSize="10" fontWeight="600" fill="#101828">{n.n}</text>
+        </g>
+      ))}
+      {[["Glanced", 31], ["Warming", 71], ["Ready", 109]].map(([label, y]) => (
+        <g key={label as string}>
+          <rect x={150 - 30} y={(y as number) - 9} width="60" height="13" fill="#FFFFFF" />
+          <text x="150" y={y as number} textAnchor="middle" fontSize="9.5" fontWeight="600" fill="#344054" letterSpacing="0.5">{(label as string).toUpperCase()}</text>
+        </g>
+      ))}
+      <circle cx="150" cy="150" r="23" fill="#FFFFFF" stroke="#E4E7EC" strokeWidth="1" />
+      <text x="150" y="149" textAnchor="middle" fontSize="17" fontWeight="600" fill="#14603C">4</text>
+      <text x="150" y="162" textAnchor="middle" fontSize="8" fill="#667085" letterSpacing="0.4">READY</text>
+    </svg>
+  );
+}
 export default function AppShot() {
-  const dot = (s: string) => (s === "active" ? "#1F6F4A" : s === "awaiting" ? "#B54708" : "#98A2B3");
-  const word = (s: string) => (s === "active" ? "Active" : s === "awaiting" ? "Awaiting" : "Not shared");
   return (
     <div className="rp-shot">
       <style>{SHOT_CSS}</style>
-      <div className="s-chrome"><i /><i /><i /><span className="s-url">app.readprospects.com/documents</span></div>
+      <div className="s-chrome"><i /><i /><i /><span className="s-url">app.readprospects.com/overview</span></div>
       <div className="s-body">
         <aside className="s-side">
           <div className="s-brand"><span className="s-ring" />ReadProspects</div>
           <div className="s-org">
             <span className="s-orgm">R</span>
-            <span style={{ minWidth: 0 }}>
-              <span className="s-orgk" style={{ display: "block" }}>Organization</span>
-              <span className="s-orgn" style={{ display: "block" }}>ReadProspects Inc</span>
+            <span className="s-orgt">
+              <span className="s-orgk">Organization</span>
+              <span className="s-orgn">ReadProspects Inc</span>
             </span>
             <span className="s-bell">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 01-3.4 0" /></svg>
@@ -124,15 +168,13 @@ export default function AppShot() {
           <div className="s-k">Main</div>
           {NAV.map(([label, d, on]) => (
             <div key={label} className={"s-nav" + (on ? " on" : "")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
-              {label}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{label}
             </div>
           ))}
           <div className="s-k" style={{ marginTop: 12 }}>Configure</div>
           {CFG.map(([label, d]) => (
             <div key={label} className="s-nav">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
-              {label}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{label}
             </div>
           ))}
           <div className="s-foot">
@@ -141,38 +183,62 @@ export default function AppShot() {
           </div>
         </aside>
         <main className="s-main">
-          <h3 className="s-h1">Documents</h3>
-          <p className="s-sub">Manage the documents you share and how they are read.</p>
-          <div className="s-tools">
-            <span className="s-sel">Active {chev}</span>
-            <span className="s-sel s-hide">All {chev}</span>
-            <span className="s-search">Search a document</span>
-            <span className="s-out s-hide">Upload A/B variants</span>
-            <span className="s-cta">+ Add document</span>
-          </div>
-          <div className="s-strip">
-            <div className="s-cell g"><div className="s-cv">24</div><div className="s-cl">Total reads &middot; 6 pending</div></div>
-            <div className="s-cell a"><div className="s-cv">9</div><div className="s-cl">Questions &middot; 2 escalated</div></div>
-            <div className="s-cell i"><div className="s-cv">15</div><div className="s-cl">Active readers</div></div>
-            <div className="s-cell"><div className="s-cv">5</div><div className="s-cl">Documents &middot; 4 shared</div></div>
-          </div>
-          <div className="s-tbl">
-            <div className="s-tr s-th">
-              <span>Document</span><span className="s-hide">Recipients</span><span>Reads</span><span className="s-hide">Questions</span>
-              <span className="s-hide">Project</span><span className="s-hide">Shared</span><span>Status</span><span />
+          <div className="s-top">
+            <div>
+              <span className="s-live"><i style={{ width: 6, height: 6, borderRadius: 2, background: "#1F6F4A", display: "inline-block" }} />LIVE</span>
+              <h3 className="s-h1">Good morning</h3>
+              <p className="s-sub">Here is how your documents are being read today.</p>
             </div>
-            {ROWS.map((r) => (
-              <div key={r.t} className="s-tr s-td">
-                <span className="s-name">{r.t}</span>
-                <span className="s-hide">{r.r}</span>
-                <span>{r.o}</span>
-                <span className={"s-hide" + (r.q ? "" : " s-dim")}>{r.q}</span>
-                <span className={"s-hide" + (r.p === "\u2014" ? " s-dim" : "")}>{r.p}</span>
-                <span className="s-hide s-dim">{r.d}</span>
-                <span className="s-st"><i className="s-dot" style={{ background: dot(r.s) }} />{word(r.s)}</span>
-                <span className="s-kebab s-hide">{kebab}</span>
+            <span className="s-new">+ New document</span>
+          </div>
+          <div className="s-two">
+            <div className="s-card">
+              <div className="s-ch">
+                <div>
+                  <div className="s-eye">Live &middot; intent field</div>
+                  <div className="s-ct">Your room, right now</div>
+                </div>
+                <span className="s-cnt">4 / 16 readers</span>
               </div>
-            ))}
+              <div className="s-field"><Field /></div>
+              <div className="s-legend">
+                <span><i style={{ background: "#1F6F4A" }} />Ready</span>
+                <span><i style={{ background: "#B54708" }} />Warming</span>
+                <span><i style={{ background: "#98A2B3" }} />Glanced</span>
+              </div>
+            </div>
+            <div className="s-card">
+              <div className="s-ch s-chb"><div className="s-ct">Ready to move</div><span className="s-cnt">See all</span></div>
+              {READERS.map(([ini, name, doc, reads]) => (
+                <div key={name} className="s-row">
+                  <span className="s-ini">{ini}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>
+                    <span className="s-rn" style={{ display: "block" }}>{name}</span>
+                    <span className="s-rd" style={{ display: "block" }}>{doc}</span>
+                  </span>
+                  <span className="s-st"><i className="s-dot" style={{ background: "#1F6F4A" }} />Ready</span>
+                  <span className="s-rr">{reads}</span>
+                </div>
+              ))}
+              <div className="s-ch s-chb" style={{ borderTop: "1px solid #E4E7EC" }}><div className="s-ct">Recent reads</div><span className="s-cnt">Activity</span></div>
+              {FEED.map(([kind, text, when]) => (
+                <div key={text} className="s-row">
+                  <span className="s-ic" style={{ background: kind === "q" ? "#EEF0FB" : "#ECF6F0", color: kind === "q" ? "#2D2FA6" : "#14603C" }}>
+                    {kind === "q"
+                      ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+                      : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
+                  </span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#101828", lineHeight: 1.4 }}>{text}</span>
+                  <span className="s-rr">{when}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="s-tiles">
+            <div className="s-tile g"><div className="s-tv">24</div><div className="s-tl">Reads</div></div>
+            <div className="s-tile a"><div className="s-tv">9</div><div className="s-tl">Questions</div></div>
+            <div className="s-tile i"><div className="s-tv">16</div><div className="s-tl">Recipients</div></div>
+            <div className="s-tile"><div className="s-tv">5</div><div className="s-tl">Documents</div></div>
           </div>
         </main>
       </div>
