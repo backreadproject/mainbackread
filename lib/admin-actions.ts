@@ -536,3 +536,62 @@ export async function revokeConsoleRoleAction(userId: string, confirmText: strin
   });
   return { ok: true };
 }
+
+export async function payoutAction(withdrawalId: string, action: "approve" | "paid" | "reject", reason: string): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!me.can("billing.manage")) return fail("Your role does not allow that.", 403);
+
+  const admin = createAdminClient();
+  const { data: wRow } = await admin
+    .from("withdrawals")
+    .select("id, referrer_id, amount, currency, status")
+    .eq("id", withdrawalId)
+    .maybeSingle();
+  const w = wRow as { id: string; referrer_id: string; amount: number; currency: string; status: string } | null;
+  if (!w) return fail("No such payout request.", 404);
+
+  if (action === "reject") {
+    if (w.status === "paid") return fail("That payout has already been sent.", 400);
+    await admin.from("commissions").update({ withdrawal_id: null }).eq("withdrawal_id", w.id);
+    await admin.from("withdrawals").update({ status: "rejected", failure_reason: (reason ?? "").trim() || null, settled_at: new Date().toISOString() }).eq("id", w.id);
+    await writeAudit({ actorId: me.id, actorEmail: me.email, action: "payout_rejected", targetUserId: w.referrer_id, detail: { withdrawalId: w.id, amount: w.amount, reason: (reason ?? "").trim() || null } });
+    return { ok: true };
+  }
+
+  if (action === "approve") {
+    if (w.status !== "requested") return fail("That request is not waiting for approval.", 400);
+    // Cleared, unclaimed rows, oldest first: a referrer's earliest earnings are
+    // paid out first, which is what anyone would expect of a queue.
+    const { data: rows } = await admin
+      .from("commissions")
+      .select("id, amount")
+      .eq("referrer_id", w.referrer_id)
+      .eq("status", "available")
+      .is("withdrawal_id", null)
+      .order("created_at", { ascending: true });
+    const list = (rows ?? []) as { id: string; amount: number }[];
+    const total = list.reduce((a, x) => a + Number(x.amount), 0);
+    if (total < Number(w.amount)) {
+      return fail("Their cleared balance is now " + total.toFixed(2) + ", below the " + Number(w.amount).toFixed(2) + " requested. Commission may have been reversed since they asked.", 400);
+    }
+    const claim: string[] = [];
+    let running = 0;
+    for (const row of list) {
+      if (running >= Number(w.amount)) break;
+      claim.push(row.id);
+      running += Number(row.amount);
+    }
+    await admin.from("commissions").update({ withdrawal_id: w.id }).in("id", claim);
+    await admin.from("withdrawals").update({ status: "approved" }).eq("id", w.id);
+    await writeAudit({ actorId: me.id, actorEmail: me.email, action: "payout_approved", targetUserId: w.referrer_id, detail: { withdrawalId: w.id, amount: w.amount, rowsClaimed: claim.length } });
+    return { ok: true };
+  }
+
+  // paid
+  if (w.status !== "approved" && w.status !== "processing") return fail("Approve the request before marking it paid.", 400);
+  await admin.from("commissions").update({ status: "paid" }).eq("withdrawal_id", w.id);
+  await admin.from("withdrawals").update({ status: "paid", settled_at: new Date().toISOString(), processor_ref: (reason ?? "").trim() || null }).eq("id", w.id);
+  await writeAudit({ actorId: me.id, actorEmail: me.email, action: "payout_paid", targetUserId: w.referrer_id, detail: { withdrawalId: w.id, amount: w.amount, processorRef: (reason ?? "").trim() || null } });
+  return { ok: true };
+}
