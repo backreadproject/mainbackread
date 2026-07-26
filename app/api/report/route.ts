@@ -8,6 +8,7 @@ import { hasFeature } from "@/lib/plans";
 import { runAI, reportTask } from "@/lib/ai";
 import { assembleReport } from "@/lib/report-data";
 import { ReportDocument } from "@/lib/pdf/ReportDocument";
+import { reportFingerprint, getCachedReport, putCachedReport, loadBrandingDefaults, type Branding } from "@/lib/report-cache";
 export const runtime = "nodejs";
 // One model call plus PDF rendering. Assembly is fast; the call is the cost.
 export const maxDuration = 60;
@@ -15,7 +16,19 @@ export const maxDuration = 60;
 //
 // Contract: { documentId, recipientIds?: string[] }
 // Omitting recipientIds means every reader of the document.
-type Body = { documentId?: string; recipientIds?: string[] };
+type Body = {
+  documentId?: string;
+  recipientIds?: string[];
+  /** Cover details. Reporter and recipient are per report; company name and
+   *  logo fall back to the saved settings when not given. */
+  reporter?: string;
+  recipient?: string;
+  recipientKind?: "person" | "department" | "organisation";
+  companyName?: string;
+  note?: string;
+  /** Force a fresh synthesis even when the cache is valid. */
+  refresh?: boolean;
+};
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -55,12 +68,35 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { data: report } = await runAI(reportTask, assembled.input, { documentId });
+    // The model call is the cost; rendering is nearly free. Caching the
+    // SYNTHESIS rather than the PDF means changing the logo or the recipient
+    // re-renders the same analysis for nothing, which is what lets reports go
+    // un-quota'd: we pay once per change in the underlying data, not per
+    // download.
+    const fingerprint = await reportFingerprint(admin, documentId, ids);
+    let report = body.refresh ? null : await getCachedReport(admin, documentId, fingerprint);
+    if (!report) {
+      const run = await runAI(reportTask, assembled.input, { documentId });
+      report = run.data;
+      await putCachedReport(admin, documentId, fingerprint, report, assembled.detail.length);
+    }
+
+    const saved = await loadBrandingDefaults(admin, user.id);
+    const branding: Branding = {
+      companyName: (body.companyName ?? "").trim() || saved.companyName,
+      logoUrl: saved.logoUrl,
+      reporter: (body.reporter ?? "").trim() || saved.defaultReporter || user.email || null,
+      recipient: (body.recipient ?? "").trim() || null,
+      recipientKind: body.recipientKind ?? null,
+      note: (body.note ?? "").trim() || null,
+    };
+
     const element = React.createElement(ReportDocument, {
       report,
       data: assembled,
       generatedFor: user.email ?? "",
       generatedAt: new Date(),
+      branding,
     }) as React.ReactElement<DocumentProps>;
     // renderToBuffer rather than a stream: the document is small, and a stream
     // that fails halfway produces a corrupt file the customer cannot diagnose.

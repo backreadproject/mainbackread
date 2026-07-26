@@ -1,7 +1,8 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import type { ReportOutput } from "@/lib/ai";
 import type { AssembledReport } from "@/lib/report-data";
+import type { Branding } from "@/lib/report-cache";
 // The report a customer forwards to their own boss.
 //
 // Built with the app's own tokens so it looks like the product rather than like
@@ -50,6 +51,14 @@ const s = StyleSheet.create({
   quote: { borderLeftWidth: 2, borderLeftColor: C.greenLine, paddingLeft: 8, marginBottom: 5, fontSize: 9, color: C.body, lineHeight: 1.5 },
   limits: { backgroundColor: C.soft, borderWidth: 1, borderColor: C.line, borderRadius: 4, padding: 12 },
   foot: { position: "absolute", bottom: 30, left: 48, right: 48, flexDirection: "row", justifyContent: "space-between", fontSize: 7.5, color: C.faint },
+  brandRow: { flexDirection: "row", alignItems: "center", marginBottom: 26 },
+  logo: { width: 34, height: 34, marginRight: 11, objectFit: "contain" },
+  brandName: { fontSize: 12, color: C.ink, fontFamily: "Helvetica-Bold" },
+  forBox: { borderTopWidth: 1, borderTopColor: C.line, marginTop: 26, paddingTop: 14, flexDirection: "row" },
+  forCell: { marginRight: 34 },
+  forK: { fontSize: 7.5, color: C.faint, letterSpacing: 0.8, marginBottom: 3 },
+  forV: { fontSize: 10, color: C.ink },
+  note: { backgroundColor: C.soft, borderLeftWidth: 2, borderLeftColor: C.greenLine, padding: 11, marginTop: 16, fontSize: 9.5, color: C.body, lineHeight: 1.55 },
 });
 function mins(sec: number): string {
   if (sec < 60) return sec + "s";
@@ -63,27 +72,34 @@ const Foot = ({ title }: { title: string }) => (
     <Text render={({ pageNumber, totalPages }) => pageNumber + " of " + totalPages} />
   </View>
 );
-export function ReportDocument({ report, data, generatedFor, generatedAt }: {
+export function ReportDocument({ report, data, generatedFor, generatedAt, branding }: {
   report: ReportOutput;
   data: AssembledReport;
   generatedFor: string;
   generatedAt: Date;
+  branding?: Branding;
 }) {
   const opened = data.detail.filter((d) => d.opens > 0).length;
   const totalQ = data.detail.reduce((n, d) => n + d.questions.length, 0);
   const totalR = data.detail.reduce((n, d) => n + d.replies.length, 0);
   const dateStr = generatedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-  const footTitle = data.documentTitle + "  \u00b7  " + dateStr;
+  const footTitle = data.documentTitle + "  \u00b7  " + dateStr + (generatedFor ? "  \u00b7  " + generatedFor : "");
 
   return (
     <Document title={"Reading report \u2014 " + data.documentTitle} author="ReadProspects">
       {/* Cover. One claim, the numbers behind it, and the prose. */}
       <Page size="A4" style={s.page}>
+        {(branding?.logoUrl || branding?.companyName) && (
+          <View style={s.brandRow}>
+            {branding?.logoUrl ? <Image style={s.logo} src={branding.logoUrl} /> : null}
+            {branding?.companyName ? <Text style={s.brandName}>{branding.companyName}</Text> : null}
+          </View>
+        )}
         <Text style={s.eyebrow}>READING REPORT</Text>
         <Text style={s.h1}>{data.documentTitle}</Text>
         <Text style={s.sub}>
           {data.input.scope === "document" ? "Every reader" : data.detail.length + " selected readers"}
-          {"  \u00b7  "}{dateStr}{"  \u00b7  "}for {generatedFor}
+          {"  \u00b7  "}{dateStr}
         </Text>
 
         <View style={s.statRow}>
@@ -96,6 +112,29 @@ export function ReportDocument({ report, data, generatedFor, generatedAt }: {
         <View style={s.rule} />
         <Text style={[s.h1, { fontSize: 15 }]}>{report.headline}</Text>
         <Text style={s.lead}>{report.summary}</Text>
+
+        {branding?.note ? <Text style={s.note}>{branding.note}</Text> : null}
+
+        {(branding?.reporter || branding?.recipient) && (
+          <View style={s.forBox}>
+            {branding?.reporter ? (
+              <View style={s.forCell}>
+                <Text style={s.forK}>PREPARED BY</Text>
+                <Text style={s.forV}>{branding.reporter}</Text>
+              </View>
+            ) : null}
+            {branding?.recipient ? (
+              <View style={s.forCell}>
+                <Text style={s.forK}>
+                  {branding.recipientKind === "department" ? "FOR THE TEAM"
+                    : branding.recipientKind === "organisation" ? "FOR"
+                    : "PREPARED FOR"}
+                </Text>
+                <Text style={s.forV}>{branding.recipient}</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         <Foot title={footTitle} />
       </Page>
