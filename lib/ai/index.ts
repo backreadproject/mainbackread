@@ -8,6 +8,7 @@ export { verdictTask, type VerdictInput, type VerdictOutput } from "./tasks/verd
 export { ocrTask, type OcrInput, type OcrOutput } from "./tasks/ocr";
 export { composeTask, type ComposeInput, type ComposeOutput } from "./tasks/compose";
 export { supportTask, type SupportInput, type SupportOutput, type SupportTurn } from "./tasks/support";
+export { reportTask, type ReportInput, type ReportOutput, type ReportReader } from "./tasks/report";
 const PROVIDERS: Record<ProviderName, Provider> = {
   mock: mockProvider,
   anthropic: anthropicProvider,
