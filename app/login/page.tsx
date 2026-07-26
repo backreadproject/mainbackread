@@ -19,9 +19,13 @@ export default function LoginPage() {
     setBusy(true); setMsg("");
     const supabase = createClient();
     if (mode === "signup") {
+      // Referral code, set as a cookie by middleware when someone arrived via ?ref=.
+      // It also goes into user_metadata below, because that is part of the auth
+      // record and cannot be lost the way the profile upsert can.
+      const refCode = (document.cookie.match(/(?:^|;\s*)rp_ref=([a-z0-9-]{3,32})/) || [])[1] || null;
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}` } },
+        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, ...(refCode ? { ref_code: refCode } : {}) } },
       });
       if (error) { setMsg(error.message); setBusy(false); return; }
       if (data.user) {
@@ -30,6 +34,18 @@ export default function LoginPage() {
           account_type: accountType, updated_at: new Date().toISOString(),
         };
         if (accountType === "company") profileRow.trial_started_at = new Date().toISOString();
+        // Attribution is resolved server-side: the code has to become a referrer id,
+        // and only the service role can read the referrers table. Best effort here,
+        // because user_metadata already carries the code as the durable record.
+        if (refCode) {
+          try {
+            await fetch("/api/referral/attribute", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ code: refCode, userId: data.user?.id ?? null, email: email.trim() }),
+            });
+          } catch { /* non-fatal: metadata is the fallback */ }
+        }
         await supabase.from("profiles").upsert(profileRow);
       }
       window.location.href = accountType === "company" ? "/members" : "/documents";
