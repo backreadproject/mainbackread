@@ -76,6 +76,27 @@ export const MOCK_CSS = `
   .rp-m .m-two{grid-template-columns:1fr}
 }
 `;
+type L = "en" | "fr";
+const T = {
+  en: {
+    reader: "Reader", document: "Document", reads: "Reads", dwell: "Dwell", questions: "Questions", verdict: "Verdict",
+    ready: "Ready to move", warming: "Warming", glanced: "Just glanced",
+    opened: "Opened", notYet: "not yet", escalated: "Escalated", totalReaders: "Total readers",
+    ask: "Ask about the document...", askBtn: "Ask",
+    page: "Page", conf: "high confidence", next: "Do this next",
+    why: "Re-read the pricing page three times, asked whether the annual commit is negotiable, then forwarded it to one colleague.",
+    action: "Send the annual terms in writing today and offer a call this week.",
+  },
+  fr: {
+    reader: "Lecteur", document: "Document", reads: "Lectures", dwell: "Temps", questions: "Questions", verdict: "Verdict",
+    ready: "Pr\u00eat \u00e0 avancer", warming: "En int\u00e9r\u00eat", glanced: "Simple coup d\u2019\u0153il",
+    opened: "Ouvert", notYet: "pas encore", escalated: "Escalad\u00e9es", totalReaders: "Lecteurs au total",
+    ask: "Posez une question sur le document...", askBtn: "Demander",
+    page: "Page", conf: "confiance \u00e9lev\u00e9e", next: "\u00c0 faire maintenant",
+    why: "A relu la page tarifs trois fois, a demand\u00e9 si l\u2019engagement annuel est n\u00e9gociable, puis l\u2019a transf\u00e9r\u00e9 \u00e0 un coll\u00e8gue.",
+    action: "Envoyez les conditions annuelles par \u00e9crit aujourd\u2019hui et proposez un appel cette semaine.",
+  },
+} as const;
 const dots = <><i /><i /><i /></>;
 const ROWS = [
   ["DW", "Dana Whitfield", "Q3 proposal", "12", "6m 40s", "3", "ready"],
@@ -84,9 +105,10 @@ const ROWS = [
   ["AB", "Aisha Bello", "Security questionnaire", "9", "5m 30s", "4", "ready"],
   ["ER", "Elena Ross", "Implementation plan", "3", "2m 08s", "1", "warm"],
 ];
-export function RecipientsShot({ title, sub }: { title: string; sub: string }) {
+export function RecipientsShot({ title, sub, locale = "en" }: { title: string; sub: string; locale?: L }) {
+  const x = T[locale];
   const dot = (v: string) => (v === "ready" ? S.gr : v === "warm" ? S.am : S.fa);
-  const word = (v: string) => (v === "ready" ? "Ready to move" : v === "warm" ? "Warming" : "Just glanced");
+  const word = (v: string) => (v === "ready" ? x.ready : v === "warm" ? x.warming : x.glanced);
   return (
     <div className="rp-m">
       <div className="m-top">{dots}<span className="m-url">app.readprospects.com/recipients</span></div>
@@ -94,15 +116,15 @@ export function RecipientsShot({ title, sub }: { title: string; sub: string }) {
         <p className="m-h">{title}</p>
         <p className="m-s">{sub}</p>
         <div className="m-strip" style={{ marginTop: 12 }}>
-          <div className="m-cell g"><div className="m-cv">13</div><div className="m-cl">Opened &middot; 10 not yet</div></div>
-          <div className="m-cell a"><div className="m-cv">2</div><div className="m-cl">Escalated</div></div>
-          <div className="m-cell i"><div className="m-cv">11</div><div className="m-cl">Questions</div></div>
-          <div className="m-cell"><div className="m-cv">23</div><div className="m-cl">Total readers</div></div>
+          <div className="m-cell g"><div className="m-cv">13</div><div className="m-cl">{x.opened} &middot; 10 {x.notYet}</div></div>
+          <div className="m-cell a"><div className="m-cv">2</div><div className="m-cl">{x.escalated}</div></div>
+          <div className="m-cell i"><div className="m-cv">11</div><div className="m-cl">{x.questions}</div></div>
+          <div className="m-cell"><div className="m-cv">23</div><div className="m-cl">{x.totalReaders}</div></div>
         </div>
         <div className="m-tbl">
           <div className="m-tr m-th">
-            <span>Reader</span><span className="m-hide">Document</span><span>Reads</span>
-            <span className="m-hide">Dwell</span><span className="m-hide">Questions</span><span>Verdict</span>
+            <span>{x.reader}</span><span className="m-hide">{x.document}</span><span>{x.reads}</span>
+            <span className="m-hide">{x.dwell}</span><span className="m-hide">{x.questions}</span><span>{x.verdict}</span>
           </div>
           {ROWS.map(([ini, name, doc, reads, dwell, q, v]) => (
             <div key={name} className="m-tr m-td">
@@ -119,7 +141,8 @@ export function RecipientsShot({ title, sub }: { title: string; sub: string }) {
     </div>
   );
 }
-export function AskShot({ doc, view, q1, a1, q2 }: { doc: string; view: string; q1: string; a1: string; q2: string }) {
+export function AskShot({ doc, view, q1, a1, q2, locale = "en" }: { doc: string; view: string; q1: string; a1: string; q2: string; locale?: L }) {
+  const x = T[locale];
   return (
     <div className="rp-m">
       <div className="m-top">{dots}<span className="m-url">relaydocuments.com/read &middot; {doc}</span></div>
@@ -129,12 +152,13 @@ export function AskShot({ doc, view, q1, a1, q2 }: { doc: string; view: string; 
         <div className="m-bub a">{a1}</div>
         <div className="m-bub q" style={{ marginBottom: 0 }}>{q2}</div>
       </div>
-      <div className="m-in"><span className="m-inb">Ask about the document...</span><span className="m-ing">Ask &rarr;</span></div>
+      <div className="m-in"><span className="m-inb">{x.ask}</span><span className="m-ing">{x.askBtn} &rarr;</span></div>
     </div>
   );
 }
-export function DwellShot({ title, visits }: { title: string; visits: string }) {
-  const pages: [string, string, string][] = [["Page 1", "18%", "8s"], ["Page 2", "100%", "44s"], ["Page 3", "28%", "12s"], ["Page 4", "46%", "20s"], ["Page 5", "12%", "5s"]];
+export function DwellShot({ title, visits, locale = "en" }: { title: string; visits: string; locale?: L }) {
+  const x = T[locale];
+  const pages: [string, string, string][] = [[x.page + " 1", "18%", "8s"], [x.page + " 2", "100%", "44s"], [x.page + " 3", "28%", "12s"], [x.page + " 4", "46%", "20s"], [x.page + " 5", "12%", "5s"]];
   return (
     <div className="rp-m">
       <div className="m-top">{dots}<span className="m-url">app.readprospects.com/recipients</span></div>
@@ -153,7 +177,8 @@ export function DwellShot({ title, visits }: { title: string; visits: string }) 
     </div>
   );
 }
-export function VerdictShot({ read, verdict, ready }: { read: string; verdict: string; ready: string }) {
+export function VerdictShot({ read, verdict, ready, locale = "en" }: { read: string; verdict: string; ready: string; locale?: L }) {
+  const x = T[locale];
   return (
     <div className="rp-m">
       <div className="m-top">{dots}<span className="m-url">app.readprospects.com/recipients</span></div>
@@ -168,12 +193,12 @@ export function VerdictShot({ read, verdict, ready }: { read: string; verdict: s
       </div>
       <div className="m-vhd">{verdict}</div>
       <div className="m-pad">
-        <span className="m-conf"><i className="m-dot" style={{ background: S.gr }} />high confidence</span>
+        <span className="m-conf"><i className="m-dot" style={{ background: S.gr }} />{x.conf}</span>
         <p className="m-vh">{ready}</p>
-        <p className="m-vr">Re-read the pricing page three times, asked whether the annual commit is negotiable, then forwarded it to one colleague.</p>
+        <p className="m-vr">{x.why}</p>
         <div className="m-next">
-          <div className="m-nk">Do this next</div>
-          <p className="m-nv">Send the annual terms in writing today and offer a call this week.</p>
+          <div className="m-nk">{x.next}</div>
+          <p className="m-nv">{x.action}</p>
         </div>
       </div>
     </div>

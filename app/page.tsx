@@ -358,7 +358,7 @@ export default async function LandingPage() {
         </div>
 
         <div className="rp-stage">
-          <AppShot />
+          <AppShot locale={locale} />
         </div>
       </section>
 
@@ -408,7 +408,7 @@ export default async function LandingPage() {
           <p className="rp-lead">{c.platform.lead}</p>
         </div>
         <div className="rp-wrap" style={{ position: "relative", zIndex: 1, marginTop: 44 }}>
-          <RecipientsShot title={c.platform.readers} sub={c.platform.lead} />
+          <RecipientsShot title={c.platform.readers} sub={c.platform.lead} locale={locale} />
         </div>
       </section>
 
@@ -422,17 +422,17 @@ export default async function LandingPage() {
         <div className="rp-wrap">
           <div className="rp-cap">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c1e}</span><h3>{c.caps.c1h}</h3><p>{c.caps.c1p}</p></div>
-            <AskShot doc="Q3 proposal" view={c.caps.c1view} q1={c.caps.c1q1} a1={c.caps.c1a} q2={c.caps.c1q2} />
+            <AskShot doc="Q3 proposal" view={c.caps.c1view} q1={c.caps.c1q1} a1={c.caps.c1a} q2={c.caps.c1q2} locale={locale} />
           </div>
 
           <div className="rp-cap rev">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c2e}</span><h3>{c.caps.c2h}</h3><p>{c.caps.c2p}</p></div>
-            <DwellShot title={c.caps.c2title} visits={c.caps.c2visits} />
+            <DwellShot title={c.caps.c2title} visits={c.caps.c2visits} locale={locale} />
           </div>
 
           <div className="rp-cap">
             <div className="txt"><span className="rp-eyebrow">{c.caps.c3e}</span><h3>{c.caps.c3h}</h3><p>{c.caps.c3p}</p></div>
-            <VerdictShot read={c.caps.c3read} verdict={c.panel.verdict} ready={c.panel.ready} />
+            <VerdictShot read={c.caps.c3read} verdict={c.panel.verdict} ready={c.panel.ready} locale={locale} />
           </div>
 
           <div className="rp-cap rev">

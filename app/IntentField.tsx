@@ -29,7 +29,12 @@ function rgba(hex: string, a: number) {
   const n = parseInt(hex.slice(1), 16);
   return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + a + ")";
 }
-export default function IntentField({ nodes, height = 340 }: { nodes: FieldNode[]; height?: number }) {
+const FT = {
+  en: { ready: "READY", warming: "WARMING", glanced: "GLANCED", reads: "reads", dwell: "dwell", q: "questions" },
+  fr: { ready: "PR\u00caT", warming: "INT\u00c9R\u00caT", glanced: "COUP D\u2019\u0152IL", reads: "lectures", dwell: "temps", q: "questions" },
+} as const;
+export default function IntentField({ nodes, height = 340, locale = "en" }: { nodes: FieldNode[]; height?: number; locale?: "en" | "fr" }) {
+  const ft = FT[locale];
   const cv = useRef<HTMLCanvasElement | null>(null);
   const [sel, setSel] = useState<number | null>(null);
   const selRef = useRef<number | null>(null);
@@ -102,7 +107,7 @@ export default function IntentField({ nodes, height = 340 }: { nodes: FieldNode[
         ctx!.beginPath(); ctx!.moveTo(cx, cy); ctx!.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx!.stroke();
       }
       ctx!.font = "600 9.5px " + FONT; ctx!.textAlign = "center";
-      ([["READY", 0.34], ["WARMING", 0.62], ["GLANCED", 0.92]] as [string, number][]).forEach(([label, rr]) => {
+      ([[ft.ready, 0.34], [ft.warming, 0.62], [ft.glanced, 0.92]] as [string, number][]).forEach(([label, rr]) => {
         const ly = cy - R * rr + 12;
         const lw = ctx!.measureText(label).width;
         ctx!.fillStyle = P.card; ctx!.fillRect(cx - lw / 2 - 5, ly - 9, lw + 10, 12);
@@ -112,7 +117,7 @@ export default function IntentField({ nodes, height = 340 }: { nodes: FieldNode[
       ctx!.beginPath(); ctx!.arc(cx, cy, 22, 0, 7);
       ctx!.fillStyle = P.card; ctx!.fill(); ctx!.lineWidth = 1; ctx!.strokeStyle = P.border; ctx!.stroke();
       ctx!.fillStyle = P.greenText; ctx!.font = "600 16px " + FONT; ctx!.fillText(String(readyN), cx, cy - 1);
-      ctx!.fillStyle = P.muted; ctx!.font = "8px " + FONT; ctx!.fillText("READY", cx, cy + 12);
+      ctx!.fillStyle = P.muted; ctx!.font = "8px " + FONT; ctx!.fillText(ft.ready, cx, cy + 12);
       live.forEach((n, i) => {
         const isSel = i === selRef.current;
         n.tr = targetR(n.intent);
@@ -149,7 +154,7 @@ export default function IntentField({ nodes, height = 340 }: { nodes: FieldNode[
       el.removeEventListener("click", onClick);
       el.removeEventListener("mousemove", move);
     };
-  }, [nodes]);
+  }, [nodes, ft]);
   const n = sel === null ? null : nodes[sel];
   return (
     <div style={{ position: "relative" }}>
@@ -159,9 +164,9 @@ export default function IntentField({ nodes, height = 340 }: { nodes: FieldNode[
           <div className="s-popn">{n.full}</div>
           <div className="s-popd">{n.doc}</div>
           <div className="s-popk">
-            <span>reads<b>{n.reads}</b></span>
-            <span>dwell<b>{n.dwell}</b></span>
-            <span>questions<b>{n.q}</b></span>
+            <span>{ft.reads}<b>{n.reads}</b></span>
+            <span>{ft.dwell}<b>{n.dwell}</b></span>
+            <span>{ft.q}<b>{n.q}</b></span>
           </div>
           <div className="s-popw">{n.why}</div>
         </div>

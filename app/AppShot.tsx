@@ -38,21 +38,56 @@ const NODES: Node[] = [
   { x: 96, y: 262, b: "glance" }, { x: 232, y: 246, b: "glance" },
 ];
 const READERS = [
-  ["DW", "Dana Whitfield", "Q3 proposal \u2014 Northwind", "12 reads"],
-  ["AB", "Aisha Bello", "Pricing overview 2026", "9 reads"],
-  ["ER", "Elena Ross", "Security questionnaire", "4 reads"],
+  ["DW", "Dana Whitfield", "Q3 proposal \u2014 Northwind", "12"],
+  ["AB", "Aisha Bello", "Pricing overview 2026", "9"],
+  ["ER", "Elena Ross", "Security questionnaire", "4"],
 ];
 const FEED = [
-  ["eye", "Dana Whitfield opened Q3 proposal", "9m"],
-  ["q", "Marcus Cole asked: \u201cIs the annual commit negotiable?\u201d", "1h"],
-  ["eye", "Aisha Bello opened Pricing overview 2026", "3h"],
+  ["eye", "Dana Whitfield", "Q3 proposal", "9m"],
+  ["q", "Marcus Cole", "\u201cIs the annual commit negotiable?\u201d", "1h"],
+  ["eye", "Aisha Bello", "Pricing overview 2026", "3h"],
 ];
+const ICONS = {
+  overview: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z",
+  documents: "M4 3h9l5 5v13H4zM13 3v5h5",
+  projects: "M3 6h6l2 3h10v10H3z",
+  activity: "M3 12h4l3 8 4-16 3 8h4",
+  recipients: "M17 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9.5 8.5a3.5 3.5 0 107 0 3.5 3.5 0 10-7 0M22 20v-2a4 4 0 00-3-3.9",
+};
+// Chrome translates; names and document titles do not, because a name is a name
+// and a sample filename reads as content rather than interface.
+const A = {
+  en: {
+    nav: ["Overview", "Documents", "Projects", "Activity", "Recipients"],
+    cfg: ["Members", "Settings", "Account"],
+    main: "Main", configure: "Configure", org: "Organization",
+    viewSite: "View site", signOut: "Sign out",
+    live: "LIVE", greet: "Good morning", sub: "Here is how your documents are being read today.",
+    newDoc: "+ New document", eyebrow: "Live \u00b7 intent field", room: "Your room, right now",
+    readers: "readers", readyTitle: "Ready to move", seeAll: "See all", ready: "Ready",
+    recent: "Recent reads", activity: "Activity", reads: "reads",
+    opened: "opened", asked: "asked",
+    tiles: ["Reads", "Questions", "Recipients", "Documents"],
+  },
+  fr: {
+    nav: ["Aper\u00e7u", "Documents", "Projets", "Activit\u00e9", "Destinataires"],
+    cfg: ["Membres", "Param\u00e8tres", "Compte"],
+    main: "Principal", configure: "Configurer", org: "Organisation",
+    viewSite: "Voir le site", signOut: "D\u00e9connexion",
+    live: "EN DIRECT", greet: "Bonjour", sub: "Voici comment vos documents sont lus aujourd\u2019hui.",
+    newDoc: "+ Nouveau document", eyebrow: "En direct \u00b7 champ d\u2019intention", room: "Votre salle, en ce moment",
+    readers: "lecteurs", readyTitle: "Pr\u00eats \u00e0 avancer", seeAll: "Voir tout", ready: "Pr\u00eat",
+    recent: "Lectures r\u00e9centes", activity: "Activit\u00e9", reads: "lectures",
+    opened: "a ouvert", asked: "a demand\u00e9",
+    tiles: ["Lectures", "Questions", "Destinataires", "Documents"],
+  },
+} as const;
 const NAV = [
-  ["Overview", "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z", true],
-  ["Documents", "M4 3h9l5 5v13H4zM13 3v5h5", false],
-  ["Projects", "M3 6h6l2 3h10v10H3z", false],
-  ["Activity", "M3 12h4l3 8 4-16 3 8h4", false],
-  ["Recipients", "M17 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9.5 8.5a3.5 3.5 0 107 0 3.5 3.5 0 10-7 0M22 20v-2a4 4 0 00-3-3.9", false],
+  ["Overview", ICONS.overview, true],
+  ["Documents", ICONS.documents, false],
+  ["Projects", ICONS.projects, false],
+  ["Activity", ICONS.activity, false],
+  ["Recipients", ICONS.recipients, false],
 ] as const;
 const CFG = [
   ["Members", "M17 20v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9.5 8.5a3.5 3.5 0 107 0 3.5 3.5 0 10-7 0"],
@@ -156,7 +191,8 @@ const SHOT_CSS = `
   .rp-shot .s-top{flex-direction:column}
 }
 `;
-export default function AppShot() {
+export default function AppShot({ locale = "en" }: { locale?: "en" | "fr" }) {
+  const a = A[locale];
   return (
     <div className="rp-shot">
       <style>{SHOT_CSS}</style>
@@ -167,7 +203,7 @@ export default function AppShot() {
           <div className="s-org">
             <span className="s-orgm">R</span>
             <span className="s-orgt">
-              <span className="s-orgk">Organization</span>
+              <span className="s-orgk">{a.org}</span>
               <span className="s-orgn">ReadProspects Inc</span>
             </span>
             <span className="s-bell">
@@ -175,53 +211,53 @@ export default function AppShot() {
               <span className="s-badge">2</span>
             </span>
           </div>
-          <div className="s-k">Main</div>
-          {NAV.map(([label, d, on]) => (
+          <div className="s-k">{a.main}</div>
+          {NAV.map(([label, d, on], i) => (
             <div key={label} className={"s-nav" + (on ? " on" : "")}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{label}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{a.nav[i]}
             </div>
           ))}
-          <div className="s-k" style={{ marginTop: 12 }}>Configure</div>
-          {CFG.map(([label, d]) => (
+          <div className="s-k" style={{ marginTop: 12 }}>{a.configure}</div>
+          {CFG.map(([label, d], i) => (
             <div key={label} className="s-nav">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{label}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>{a.cfg[i]}
             </div>
           ))}
           <div className="s-foot">
             <div className="s-me"><span className="s-av">RP</span><span className="s-em">support@readprospects.com</span></div>
-            <div className="s-btns"><span className="s-btn">View site</span><span className="s-btn">Sign out</span></div>
+            <div className="s-btns"><span className="s-btn">{a.viewSite}</span><span className="s-btn">{a.signOut}</span></div>
           </div>
         </aside>
         <main className="s-main">
           <div className="s-top">
             <div>
-              <span className="s-live"><i style={{ width: 6, height: 6, borderRadius: 2, background: "#1F6F4A", display: "inline-block" }} />LIVE</span>
-              <h3 className="s-h1">Good morning</h3>
-              <p className="s-sub">Here is how your documents are being read today.</p>
+              <span className="s-live"><i style={{ width: 6, height: 6, borderRadius: 2, background: "#1F6F4A", display: "inline-block" }} />{a.live}</span>
+              <h3 className="s-h1">{a.greet}</h3>
+              <p className="s-sub">{a.sub}</p>
             </div>
-            <span className="s-new">+ New document</span>
+            <span className="s-new">{a.newDoc}</span>
           </div>
           <div className="s-two">
             <div className="s-card">
               <div className="s-ch">
                 <div>
-                  <div className="s-eye">Live &middot; intent field</div>
-                  <div className="s-ct">Your room, right now</div>
+                  <div className="s-eye">{a.eyebrow}</div>
+                  <div className="s-ct">{a.room}</div>
                 </div>
-                <span className="s-cnt">4 / 16 readers</span>
+                <span className="s-cnt">4 / 16 {a.readers}</span>
               </div>
               <div className="s-field s-fieldwrap">
-                <IntentField nodes={FIELD} height={330} />
+                <IntentField nodes={FIELD} height={330} locale={locale} />
               </div>
               <div className="s-hint">Click a reader</div>
               <div className="s-legend">
-                <span><i style={{ background: "#1F6F4A" }} />Ready</span>
-                <span><i style={{ background: "#B54708" }} />Warming</span>
-                <span><i style={{ background: "#98A2B3" }} />Glanced</span>
+                <span><i style={{ background: "#1F6F4A" }} />{a.ready}</span>
+                <span><i style={{ background: "#B54708" }} />{locale === "fr" ? "En int\u00e9r\u00eat" : "Warming"}</span>
+                <span><i style={{ background: "#98A2B3" }} />{locale === "fr" ? "Coup d\u2019\u0153il" : "Glanced"}</span>
               </div>
             </div>
             <div className="s-card">
-              <div className="s-ch s-chb"><div className="s-ct">Ready to move</div><span className="s-cnt">See all</span></div>
+              <div className="s-ch s-chb"><div className="s-ct">{a.readyTitle}</div><span className="s-cnt">{a.seeAll}</span></div>
               {READERS.map(([ini, name, doc, reads]) => (
                 <div key={name} className="s-row">
                   <span className="s-ini">{ini}</span>
@@ -229,29 +265,29 @@ export default function AppShot() {
                     <span className="s-rn" style={{ display: "block" }}>{name}</span>
                     <span className="s-rd" style={{ display: "block" }}>{doc}</span>
                   </span>
-                  <span className="s-st"><i className="s-dot" style={{ background: "#1F6F4A" }} />Ready</span>
-                  <span className="s-rr">{reads}</span>
+                  <span className="s-st"><i className="s-dot" style={{ background: "#1F6F4A" }} />{a.ready}</span>
+                  <span className="s-rr">{reads} {a.reads}</span>
                 </div>
               ))}
-              <div className="s-ch s-chb" style={{ borderTop: "1px solid #E4E7EC" }}><div className="s-ct">Recent reads</div><span className="s-cnt">Activity</span></div>
-              {FEED.map(([kind, text, when]) => (
-                <div key={text} className="s-row">
+              <div className="s-ch s-chb" style={{ borderTop: "1px solid #E4E7EC" }}><div className="s-ct">{a.recent}</div><span className="s-cnt">{a.activity}</span></div>
+              {FEED.map(([kind, who, what, when]) => (
+                <div key={who + what} className="s-row">
                   <span className="s-ic" style={{ background: kind === "q" ? "#EEF0FB" : "#ECF6F0", color: kind === "q" ? "#2D2FA6" : "#14603C" }}>
                     {kind === "q"
                       ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
                       : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>}
                   </span>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#101828", lineHeight: 1.4 }}>{text}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 11.5, color: "#101828", lineHeight: 1.4 }}>{who} {kind === "q" ? a.asked + ": " : a.opened + " "}{what}</span>
                   <span className="s-rr">{when}</span>
                 </div>
               ))}
             </div>
           </div>
           <div className="s-tiles">
-            <div className="s-tile g"><div className="s-tv">24</div><div className="s-tl">Reads</div></div>
-            <div className="s-tile a"><div className="s-tv">9</div><div className="s-tl">Questions</div></div>
-            <div className="s-tile i"><div className="s-tv">16</div><div className="s-tl">Recipients</div></div>
-            <div className="s-tile"><div className="s-tv">5</div><div className="s-tl">Documents</div></div>
+            <div className="s-tile g"><div className="s-tv">24</div><div className="s-tl">{a.tiles[0]}</div></div>
+            <div className="s-tile a"><div className="s-tv">9</div><div className="s-tl">{a.tiles[1]}</div></div>
+            <div className="s-tile i"><div className="s-tv">16</div><div className="s-tl">{a.tiles[2]}</div></div>
+            <div className="s-tile"><div className="s-tv">5</div><div className="s-tl">{a.tiles[3]}</div></div>
           </div>
         </main>
       </div>
