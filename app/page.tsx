@@ -284,7 +284,7 @@ const CSS = `
   .rp-ctaband h2{font-size:34px;font-weight:700;letter-spacing:-0.03em;margin:0 0 12px}
   .rp-ctaband p{font-size:16px;color:#93A79C;margin:0 0 26px}
   .rp-foot{display:flex;justify-content:space-between;align-items:center;padding:30px 0;flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,0.06)}
-  .rp-foot .flinks{display:flex;gap:20px;font-size:13px}.rp-foot a{color:#93A79C}.rp-foot .tag{font-size:13px;color:#5F7168}
+  .rp-foot .flinks{display:flex;flex-wrap:wrap;gap:12px 20px;font-size:13px}.rp-foot a{color:#93A79C}.rp-foot .tag{font-size:13px;color:#5F7168}
   @media (max-width:900px){
     .rp-hero{padding:52px 0 30px}.rp-h1{font-size:40px}.rp-h2{font-size:30px}
     .rp-links{display:none}
