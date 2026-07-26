@@ -189,6 +189,26 @@ const CSS = `
   .rp-or{margin-top:16px;font-size:13.5px;color:#93A79C}.rp-or a{color:#33E6A2;font-weight:600}
   .rp-nocard{margin-top:12px;font-size:12.5px;color:#5F7168}
   .rp-stage{position:relative;z-index:1;max-width:1000px;margin:56px auto 0;padding:0 28px}
+  .rp-panel.lite{background:#FFFFFF;border:1px solid rgba(255,255,255,0.10);box-shadow:0 30px 80px -20px rgba(0,0,0,0.75)}
+  .rp-panel.lite .rp-ptop{background:#F9FAFB;border-bottom:1px solid #E4E7EC}
+  .rp-panel.lite .rp-dot3 i{background:#E4E7EC}
+  .rp-panel.lite .rp-ptop .u{color:#98A2B3}
+  .rp-panel.lite .rp-mtile{background:#FFFFFF;border:1px solid #E4E7EC;border-left:3px solid #E4E7EC}
+  .rp-panel.lite .rp-mtile:first-child{border-left-color:#1F6F4A}
+  .rp-panel.lite .rp-mtile .mv{color:#101828}
+  .rp-panel.lite .rp-mtile .mv.g{color:#1F6F4A}
+  .rp-panel.lite .rp-mtile .ml{color:#667085}
+  .rp-panel.lite .rp-box{background:#F9FAFB;border:1px solid #E4E7EC}
+  .rp-panel.lite .rp-k{color:#667085}
+  .rp-panel.lite .rp-qrow{color:#344054;border-bottom:1px solid #EFF1F4}
+  /* The verdict is the point of the panel, so it is the one card that lifts. */
+  .rp-panel.lite .rp-box.verdict{background:#FFFFFF;border:1px solid #CFE7DA;box-shadow:0 8px 22px -10px rgba(16,24,40,0.22)}
+  .rp-panel.lite .rp-verdk{color:#14603C}
+  .rp-panel.lite .rp-verdv{color:#101828}
+  .rp-panel.lite .rp-bar{background:#EFF1F4}
+  .rp-panel.lite .rp-bar i{background:#1F6F4A}
+  .rp-panel.lite .rp-sigrow{color:#344054}
+  .rp-panel.lite .rp-tick{color:#1F6F4A}
   .rp-panel{background:#0A1710;border:1px solid rgba(255,255,255,0.09);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.5)}
   .rp-ptop{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02)}
   .rp-dot3{display:flex;gap:6px}.rp-dot3 i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,0.14)}
@@ -335,7 +355,7 @@ export default async function LandingPage() {
         </div>
 
         <div className="rp-stage">
-          <div className="rp-panel">
+          <div className="rp-panel lite">
             <div className="rp-ptop"><span className="rp-dot3"><i /><i /><i /></span><span className="u">Q3 Proposal.pdf &middot; Dana Whitfield</span></div>
             <div className="rp-dash">
               <div className="rp-m4">
@@ -350,7 +370,7 @@ export default async function LandingPage() {
                 <div className="rp-qrow">{c.caps.c1q2}</div>
                 <div className="rp-qrow last">{locale === "fr" ? "Peut-on commencer avant le prochain trimestre ?" : "Can we start before the new quarter?"}</div>
               </div>
-              <div className="rp-box">
+              <div className="rp-box verdict">
                 <div className="rp-verdk">{c.panel.verdict}</div>
                 <div className="rp-verdv">{c.panel.ready}</div>
                 <div className="rp-bar"><i style={{ width: "82%" }} /></div>
