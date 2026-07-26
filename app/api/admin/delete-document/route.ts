@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { deleteDocumentAction, setDocumentArchivedAction } from "@/lib/admin-actions";
 
 export const runtime = "nodejs";

@@ -1,4 +1,4 @@
-﻿// Server-only. Every mutating admin action routes through here so the allowlist
+// Server-only. Every mutating admin action routes through here so the allowlist
 // re-check, the typed confirmation, and the audit write can never be skipped.
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getAdminUser, writeAudit } from "@/lib/admin";

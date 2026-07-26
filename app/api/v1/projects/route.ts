@@ -1,4 +1,4 @@
-﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { authenticateApi, apiError } from "@/lib/api-auth";
 import { ok, bad, page } from "@/lib/api-json";
 

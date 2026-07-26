@@ -1,4 +1,4 @@
-﻿import { runAI, ocrTask } from "@/lib/ai";
+import { runAI, ocrTask } from "@/lib/ai";
 export type ExtractResult = {
   text: string;
   method: "docx" | "pdf-text" | "image-ocr" | "empty";

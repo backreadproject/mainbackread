@@ -1,4 +1,4 @@
-﻿import { headers } from "next/headers";
+import { headers } from "next/headers";
 import SupportWidget from "./SupportWidget";
 
 /**

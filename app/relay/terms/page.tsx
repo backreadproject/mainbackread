@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
 // Terms of use for the reader-delivery domain (relaydocuments.com/terms, rewritten from
 // /relay/terms by middleware). Names the real operating entity, sets out what the service

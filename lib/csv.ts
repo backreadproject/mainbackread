@@ -1,4 +1,4 @@
-﻿export type CsvRow = Record<string, string>;
+export type CsvRow = Record<string, string>;
 
 /** Minimal RFC-4180 parser: quoted fields, embedded commas and newlines,
  *  doubled quotes, CRLF, and a stripped BOM. No dependency. */

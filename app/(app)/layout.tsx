@@ -1,4 +1,4 @@
-﻿import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "./Sidebar";
 import MobileShell from "./MobileShell";import { getOrgContext } from "@/lib/org-context";

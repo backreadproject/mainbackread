@@ -1,4 +1,4 @@
-﻿import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { readerLink, readerOrigin } from "@/lib/reader-origin";
 import { sendEmail, emailConfigured } from "@/lib/email";
 import { NextResponse } from "next/server";

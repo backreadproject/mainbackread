@@ -1,4 +1,4 @@
-﻿import crypto from "crypto";
+import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type WebhookEvent = "reader.opened" | "reader.question" | "reader.forwarded" | "reader.replied";

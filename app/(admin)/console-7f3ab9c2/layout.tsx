@@ -1,4 +1,4 @@
-﻿import { requireAdminPage } from "@/lib/admin";
+import { requireAdminPage } from "@/lib/admin";
 import MobileShell from "@/app/(app)/MobileShell";
 import AdminSidebar from "./AdminSidebar";
 
@@ -20,7 +20,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ];
   return (
     <MobileShell sidebar={<AdminSidebar email={s.email ?? ""} role={s.role} allowed={allowed} />}>
-      {children}
+      <main style={{ padding: "34px 28px 120px" }}>{children}</main>
     </MobileShell>
   );
 }

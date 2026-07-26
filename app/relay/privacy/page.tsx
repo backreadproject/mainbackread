@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
 // Privacy notice for the reader-delivery domain (relaydocuments.com/privacy, rewritten
 // from /relay/privacy by middleware). It names the real operating entity, and discloses

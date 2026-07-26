@@ -1,4 +1,4 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import MarketingNav from "../MarketingNav";
 
 // Locale-aware. Reads the same "locale" cookie the MarketingNav toggle writes, so

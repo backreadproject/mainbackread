@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { T } from "@/lib/theme";
 
 export default function Error({ reset }: { error: Error; reset: () => void }) {

@@ -1,4 +1,4 @@
-﻿import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const READER_HOST = (process.env.NEXT_PUBLIC_READER_HOST || "relaydocuments.com").toLowerCase();
 const APP_HOST = (process.env.NEXT_PUBLIC_APP_HOST || "app.readprospects.com").toLowerCase();

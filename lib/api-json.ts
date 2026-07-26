@@ -1,4 +1,4 @@
-﻿export function ok(body: unknown, status = 200): Response {
+export function ok(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 }
 export function bad(error: string, status = 400): Response {

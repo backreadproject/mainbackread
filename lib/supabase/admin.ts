@@ -1,4 +1,4 @@
-﻿import { createClient as createRawClient } from "@supabase/supabase-js";
+import { createClient as createRawClient } from "@supabase/supabase-js";
 
 // Admin client — uses the service_role key, bypasses RLS. Server-only.
 // Used for reader-side operations (resolving a share token, recording signals)

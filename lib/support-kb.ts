@@ -1,4 +1,4 @@
-﻿import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/plans";
+import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/plans";
 
 // The customer-facing name for each plan. lib/plans.ts still uses the internal
 // names (Company I, Company II) while the pricing page sells Team and Business.

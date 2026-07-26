@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { T } from "@/lib/theme";
 
 // Rendered in three places: the marketing site, the app, and the admin console

@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { setUserSuspendedAction, resetPasswordLinkAction, deleteUserAction } from "@/lib/admin-actions";
 
 export const runtime = "nodejs";
