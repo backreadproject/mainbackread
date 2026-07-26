@@ -63,7 +63,7 @@ export type ReportOutput = z.infer<typeof ReportOutput>;
 export const reportTask: Task<ReportInput, ReportOutput> = {
   id: "report",
   tier: "reason",
-  maxTokens: 2200,
+  maxTokens: 3500,
   schema: ReportOutput,
   cacheable: (i) => `DOCUMENT \u2014 "${i.documentTitle}"\n\n${i.documentText}`,
   system: () =>
@@ -93,7 +93,11 @@ export const reportTask: Task<ReportInput, ReportOutput> = {
       "",
       "HONESTY: if the cohort is small or the signals thin, say what this cannot support. The `limits` field is not a disclaimer, it is the part that makes the rest trustworthy. A report that overclaims on six readers and four opens will be believed once and never again.",
       "",
-      "Every action must be one concrete thing doable today. Not 'follow up'. Not 'nurture'.",
+      "Every action must be one concrete thing doable today. Never a vague instruction like following up or nurturing: name the specific thing to send or say.",
+      "",
+      "The reader questions and replies you are given may contain apostrophes, quotation marks and newlines. Escape them properly so your output is valid JSON. Prefer paraphrasing a long quote to reproducing it verbatim.",
+      "",
+      "Keep every field concise. A priority reason is one line, not a paragraph.",
       "",
       "Respond with ONLY a JSON object, no markdown fences:",
       '{"headline":"one sentence","summary":"3-5 sentences","priorities":[{"reader":"name","why":"one line","action":"one concrete move"}],"documentFindings":["..."],"patterns":["..."],"limits":"what this cannot tell you"}',
