@@ -18,7 +18,7 @@ export default async function TeamPage() {
   const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, fontSize: 12.5, fontWeight: 600, color: T.body } as const;
 
   return (
-    <div style={{ maxWidth: 940 }}>
+    <div style={{ maxWidth: 860 }}>
       <div className="page-header" style={{ marginBottom: 22 }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, display: "flex" }}>Console team</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>Who can reach this console and what each of them may do.</p>
@@ -28,12 +28,13 @@ export default async function TeamPage() {
         <div style={head}>Active access</div>
         {bootstrap.length > 0 && (
           <div style={{ padding: "12px 18px", borderBottom: "1px solid " + T.borderSoft, fontSize: 12.5, color: T.muted, lineHeight: 1.55 }}>
-            {bootstrap.length} owner{bootstrap.length === 1 ? "" : "s"} from ADMIN_USER_IDS, which cannot be revoked here.
-            That is deliberate: it is the way back in if this table is ever wrong.
+            {bootstrap.length} owner{bootstrap.length === 1 ? "" : "s"} come{bootstrap.length === 1 ? "s" : ""} from the
+            ADMIN_USER_IDS environment variable and {bootstrap.length === 1 ? "does" : "do"} not appear below.
+            That access cannot be revoked here, deliberately: it is the way back in if this table is ever wrong.
           </div>
         )}
         {active.length === 0 ? (
-          <p style={{ padding: 18, fontSize: 13.5, color: T.muted, margin: 0 }}>Nobody has been granted access yet.</p>
+          <p style={{ padding: 18, fontSize: 13.5, color: T.muted, margin: 0 }}>No roles granted yet. Use the form below.</p>
         ) : active.map((r) => (
           <div key={r.user_id} className="data-row" style={{ display: "grid", gridTemplateColumns: "1.6fr .8fr 1.2fr auto", gap: 12, padding: "12px 18px", borderBottom: "1px solid " + T.borderSoft, alignItems: "center" }}>
             <span style={{ fontSize: 13, color: T.heading, overflowWrap: "anywhere" }}>{r.email}</span>
@@ -47,19 +48,17 @@ export default async function TeamPage() {
         ))}
       </div>
 
-      <div style={card}>
-        <div style={head}>Grant access</div>
-        <div style={{ padding: 18 }}>
-          <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "0 0 14px" }}>
-            They need a ReadProspects account first. Granting a role here lets that same login reach the console.
-          </p>
-          <TeamForm mode="grant" />
-        </div>
-      </div>
+      <section style={{ marginBottom: 34 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 5px" }}>Grant access</h2>
+        <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.55, margin: "0 0 16px", maxWidth: 460 }}>
+          They need a ReadProspects account first. Granting a role here lets that same login reach the console.
+        </p>
+        <TeamForm mode="grant" />
+      </section>
 
-      <div style={card}>
-        <div style={head}>What each role can do</div>
-        <div style={{ padding: 18 }}>
+      <section style={{ marginBottom: 34 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 14px" }}>What each role can do</h2>
+        <div>
           {(Object.keys(ROLE_PERMISSIONS) as AdminRole[]).map((role) => (
             <div key={role} style={{ padding: "10px 0", borderBottom: "1px solid " + T.borderSoft }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: T.heading, marginBottom: 4 }}>{roleLabel(role)}</div>
@@ -68,12 +67,12 @@ export default async function TeamPage() {
               </div>
             </div>
           ))}
-          <p style={{ fontSize: 12, color: T.faint, lineHeight: 1.55, margin: "14px 0 0" }}>
+          <p style={{ fontSize: 12, color: T.faint, lineHeight: 1.55, margin: "14px 0 0", maxWidth: 620 }}>
             Only Owner holds destructive and roles.manage. Deleting an organization creator cascades and destroys
             the organization and every document in it, so no other role can reach it.
           </p>
         </div>
-      </div>
+      </section>
 
       {revoked.length > 0 && (
         <div style={card}>
