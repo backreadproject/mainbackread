@@ -3,6 +3,7 @@
 const READER_HOST = (process.env.NEXT_PUBLIC_READER_HOST || "relaydocuments.com").toLowerCase();
 const APP_HOST = (process.env.NEXT_PUBLIC_APP_HOST || "app.readprospects.com").toLowerCase();
 const MARKETING_HOST = (process.env.NEXT_PUBLIC_MARKETING_HOST || "readprospects.com").toLowerCase();
+const REFERRAL_HOST = (process.env.NEXT_PUBLIC_REFERRAL_HOST || "referrals.readprospects.com").toLowerCase();
 
 const APP_PREFIXES = ["/overview", "/documents", "/projects", "/activity", "/recipients", "/members", "/settings", "/account", "/login", "/signup", "/forgot-password", "/reset-password", "/check-email", "/onboarding"];
 const MARKETING_PREFIXES = ["/pricing", "/privacy", "/terms"];
@@ -18,6 +19,9 @@ const isMarketingPath = (p: string) => hasPrefix(p, MARKETING_PREFIXES);
 
 function isAllowedOnReaderDomain(pathname: string): boolean {
   return pathname.startsWith("/read/") || pathname === "/relay";
+}
+function isAllowedOnReferralDomain(pathname: string): boolean {
+  return pathname === "/referrals" || pathname.startsWith("/referrals/");
 }
 function hostOf(req: NextRequest): string {
   const h = req.headers.get("x-forwarded-host") || req.headers.get("host") || "";
@@ -46,6 +50,21 @@ function applyLocale(req: NextRequest, res: NextResponse): NextResponse {
   return res;
 }
 
+const REF_COOKIE = "rp_ref";
+const REF_MAX_AGE = 60 * 60 * 24 * 60;
+function captureRef(req: NextRequest, res: NextResponse): NextResponse {
+  const raw = req.nextUrl.searchParams.get("ref");
+  if (!raw) return res;
+  const code = raw.trim().toLowerCase();
+  // Same shape the referrer_code_format constraint enforces, so a junk value
+  // never reaches the database.
+  if (!/^[a-z0-9][a-z0-9-]{2,31}$/.test(code)) return res;
+  // First touch wins and is never overwritten: a subscriber must not be able to
+  // reattribute themselves by clicking a second link.
+  if (req.cookies.get(REF_COOKIE)?.value) return res;
+  res.cookies.set(REF_COOKIE, code, { path: "/", maxAge: REF_MAX_AGE, sameSite: "lax", httpOnly: false });
+  return res;
+}
 export function middleware(req: NextRequest) {
   const host = hostOf(req);
   const { pathname } = req.nextUrl;
@@ -65,9 +84,20 @@ export function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(pathname + req.nextUrl.search, `https://${APP_HOST}`), 307);
     }
     if (!basicAuthOk(req)) return needAuth();
-    return applyLocale(req, NextResponse.next());
+    return applyLocale(req, captureRef(req, NextResponse.next()));
   }
 
+  // 0.5) Referral console. Its own host so a referrer never needs an app
+  //      account. Only /referrals/* renders; everything else rewrites to the
+  //      console root rather than leaking an app or marketing page.
+  if (host === REFERRAL_HOST) {
+    if (!isAllowedOnReferralDomain(pathname)) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/referrals";
+      return applyLocale(req, captureRef(req, NextResponse.rewrite(url)));
+    }
+    return applyLocale(req, captureRef(req, NextResponse.next()));
+  }
   // 1) Reader domain: only /read/* and /relay may render.
   if (onReaderDomain) {
     if (pathname === "/privacy" || pathname === "/terms") {
@@ -98,7 +128,7 @@ export function middleware(req: NextRequest) {
       const url = req.nextUrl.clone(); url.pathname = "/overview";
       return NextResponse.redirect(url);
     }
-    return applyLocale(req, NextResponse.next());
+    return applyLocale(req, captureRef(req, NextResponse.next()));
   }
 
   // 3) Marketing host.
