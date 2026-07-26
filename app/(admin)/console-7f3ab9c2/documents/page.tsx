@@ -82,12 +82,12 @@ export default async function AdminDocuments() {
                   <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1 }}>{d.title}</span>
                   {d.needs_page_ocr && <span title="Needs OCR" style={{ flex: "none", fontSize: 11, color: T.muted, display: "inline-flex", alignItems: "center", gap: 5 }}><i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber }} />OCR</span>}
                 </span>
-                <span className="data-cell" data-label="Owner" style={{ fontSize: 12.5, color: T.muted, fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emailById.get(d.owner_id) || "unknown"}</span>
-                <span className="data-cell" data-label="Org / Project" style={{ fontSize: 13, color: org || proj ? T.body : T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[org, proj].filter(Boolean).join(" / ") || "personal"}</span>
+                <span className="data-cell sm-hide" data-label="Owner" style={{ fontSize: 12.5, color: T.muted, fontFamily: mono, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emailById.get(d.owner_id) || "unknown"}</span>
+                <span className="data-cell sm-hide" data-label="Org / Project" style={{ fontSize: 13, color: org || proj ? T.body : T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{[org, proj].filter(Boolean).join(" / ") || "personal"}</span>
                 <span className="data-cell" data-label="Recipients" style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{recByDoc.get(d.id) ?? 0}</span>
                 <span className="data-cell" data-label="Opens" style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{a.opens}</span>
                 <span className="data-cell" data-label="Questions" style={{ fontSize: 13.5, color: a.questions ? T.heading : T.faint, fontVariantNumeric: "tabular-nums" }}>{a.questions}</span>
-                <span className="data-cell" data-label="Forwards" style={{ fontSize: 13.5, color: a.forwards ? T.heading : T.faint, fontVariantNumeric: "tabular-nums" }}>{a.forwards}</span>
+                <span className="data-cell sm-hide" data-label="Forwards" style={{ fontSize: 13.5, color: a.forwards ? T.heading : T.faint, fontVariantNumeric: "tabular-nums" }}>{a.forwards}</span>
                 <span className="data-cell" data-label="Status">
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13.5, color: T.heading, whiteSpace: "nowrap" }}>
                     <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: statusDot }} />{statusText}

@@ -67,7 +67,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
         <a href={"/" + ADMIN_SLUG + "/accounts"} style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> All accounts</a>
         <div className="page-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
           <div style={{ minWidth: 0 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 10 }}>
               {banned && <i title="Suspended" style={{ width: 7, height: 7, borderRadius: 2, flex: "none", background: T.danger }} />}
               {name}
             </h1>

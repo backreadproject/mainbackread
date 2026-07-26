@@ -62,6 +62,7 @@ export default function ResponsiveStyles() {
           text-transform: uppercase; letter-spacing: 0.03em;
         }
         .sm-hide { display: none !important; }
+        .dc-title::before { display: none !important; }
         .dc-title {
           font-size: 15px !important; font-weight: 700 !important;
           padding-bottom: 8px !important; margin-bottom: 4px;

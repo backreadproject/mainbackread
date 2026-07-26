@@ -87,7 +87,7 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
         <a href="/recipients" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> {rd.back}</a>
-        <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "inline-flex", alignItems: "center", gap: 10 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 10 }}>
           {summary.replies.length > 0 && <i title={RP.title} style={{ width: 7, height: 7, borderRadius: 2, flex: "none", background: T.green }} />}
           {recipient.label || rd.unnamedReader}
         </h1>
