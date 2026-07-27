@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { createClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
+import HomeJsonLd from "./HomeJsonLd";
 
 export const metadata = {
   title: "Know how your proposal was actually read",
@@ -346,6 +347,7 @@ export default async function LandingPage() {
 
   return (
     <div className="rp-page">
+      <HomeJsonLd />
       <style>{CSS}</style>
       <style>{MOCK_CSS}</style>
 
