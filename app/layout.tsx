@@ -25,7 +25,13 @@ export async function generateMetadata(): Promise<Metadata> {
       default: "ReadProspects: Documents Intelligence Platform",
       template: "%s | ReadProspects",
     },
-    description: "ReadProspects: Documents Intelligence Platform",
+    description: "Know which proposals are still alive. Who to call today, and what to say when you do.",
+    openGraph: {
+      siteName: "ReadProspects",
+      type: "website",
+      images: [{ url: "/og.png", width: 1200, height: 630, alt: "ReadProspects" }],
+    },
+    twitter: { card: "summary_large_image", images: ["/og.png"] },
     icons: { icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwNzE4MTIiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzNFNkEyIiBzdHJva2Utd2lkdGg9IjUiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI3LjUiIGZpbGw9IiMzM0U2QTIiLz48L3N2Zz4=" },
   };
 }
