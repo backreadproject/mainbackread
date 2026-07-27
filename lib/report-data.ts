@@ -62,6 +62,10 @@ export type AssembledReport = {
     forwardedTo: string[];
     pages: { page: number; seconds: number; visits: number }[];
     lastSeen: string | null;
+    /** The stored verdict, where one has been run. The report prints it rather
+     *  than re-deriving: this is the product's own read of the reader and the
+     *  document should carry it. */
+    verdict: { headline: string; reasoning: string; nextAction: string; confidence: string } | null;
   }[];
   documentTitle: string;
   totalRecipients: number;
@@ -165,6 +169,7 @@ export async function assembleReport(
       forwardedTo,
       pages,
       lastSeen,
+      verdict: null,
     };
   });
 
@@ -173,12 +178,14 @@ export async function assembleReport(
   // one synthesis over the same evidence.
   const { data: vRows } = await admin
     .from("verdicts")
-    .select("recipient_id, headline, confidence")
+    .select("recipient_id, headline, reasoning, next_action, confidence")
     .in("recipient_id", ids);
-  const verdicts = new Map(
-    ((vRows ?? []) as { recipient_id: string; headline: string; confidence: string }[])
-      .map((v) => [v.recipient_id, { headline: v.headline, confidence: v.confidence }])
+  const full = new Map(
+    ((vRows ?? []) as { recipient_id: string; headline: string; reasoning: string; next_action: string; confidence: string }[])
+      .map((v) => [v.recipient_id, { headline: v.headline, reasoning: v.reasoning, nextAction: v.next_action, confidence: v.confidence }])
   );
+  for (const d of detail) d.verdict = full.get(d.id) ?? null;
+  const verdicts = new Map([...full].map(([k, v]) => [k, { headline: v.headline, confidence: v.confidence }]));
 
   const notOpened = detail.filter((d) => d.opens === 0).length;
 

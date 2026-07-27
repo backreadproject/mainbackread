@@ -5,9 +5,10 @@ import ReportDialog from "./ReportDialog";
 // Opens the report dialog. The download itself lives in the dialog, because a
 // report now carries who wrote it and who it is for, and asking for that after
 // the file has been built would be the wrong order.
-export default function ReportButton({ documentId, recipientIds, label, compact = false }: {
+export default function ReportButton({ documentId, recipientIds, recipients, label, compact = false }: {
   documentId: string;
   recipientIds?: string[];
+  recipients?: { id: string; label: string | null }[];
   label?: string;
   compact?: boolean;
 }) {
@@ -25,7 +26,7 @@ export default function ReportButton({ documentId, recipientIds, label, compact 
         }}>
         {label ?? "Download report"}
       </button>
-      {open && <ReportDialog documentId={documentId} recipientIds={recipientIds} onClose={() => setOpen(false)} />}
+      {open && <ReportDialog documentId={documentId} recipientIds={recipientIds} recipients={recipients} onClose={() => setOpen(false)} />}
     </>
   );
 }

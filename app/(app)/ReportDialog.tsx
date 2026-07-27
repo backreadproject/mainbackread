@@ -13,11 +13,17 @@ import { T } from "@/lib/theme";
 // a fresh read of unchanged data, and hiding that would feel like the product
 // was refusing to work.
 type Kind = "person" | "department" | "organisation";
-export default function ReportDialog({ documentId, recipientIds, onClose }: {
+export default function ReportDialog({ documentId, recipientIds, recipients, onClose }: {
   documentId: string;
+  /** Fixed selection, used from a single reader's page. */
   recipientIds?: string[];
+  /** Choosable list, used from the document page. */
+  recipients?: { id: string; label: string | null }[];
   onClose: () => void;
 }) {
+  // Everyone by default: the common case is the whole cohort, and starting
+  // empty would make the button look broken.
+  const [picked, setPicked] = useState<string[]>(() => (recipients ?? []).map((r) => r.id));
   const [reporter, setReporter] = useState("");
   const [recipient, setRecipient] = useState("");
   const [kind, setKind] = useState<Kind>("person");
@@ -104,7 +110,7 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           documentId,
-          recipientIds: recipientIds ?? undefined,
+          recipientIds: recipientIds ?? (recipients && picked.length < recipients.length ? picked : undefined),
           reporter, recipient, recipientKind: kind, companyName: company, note, refresh,
           sections: { appendix, pageAttention, neverOpened },
           headerText, footerText, signature,
@@ -153,6 +159,32 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
             <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>Loading your details...</p>
           ) : (
             <>
+              {recipients && recipients.length > 0 && (
+                <div style={{ marginBottom: 18, paddingBottom: 16, borderBottom: "1px solid " + T.borderSoft }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+                    <span style={{ fontSize: 12.5, color: T.body }}>
+                      Readers <span style={{ color: T.muted }}>{picked.length} of {recipients.length}</span>
+                    </span>
+                    <button
+                      onClick={() => setPicked(picked.length === recipients.length ? [] : recipients.map((r) => r.id))}
+                      style={{ background: "none", border: "none", padding: 0, fontSize: 12.5, color: T.greenText, cursor: "pointer" }}>
+                      {picked.length === recipients.length ? "Clear all" : "Select all"}
+                    </button>
+                  </div>
+                  <div style={{ maxHeight: 132, overflowY: "auto", border: "1px solid " + T.border, borderRadius: T.rInput }}>
+                    {recipients.map((r, i) => (
+                      <label key={r.id}
+                        style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 11px", cursor: "pointer",
+                          borderTop: i ? "1px solid " + T.borderSoft : "none" }}>
+                        <input type="checkbox" checked={picked.includes(r.id)}
+                          onChange={(e) => setPicked(e.target.checked ? [...picked, r.id] : picked.filter((x) => x !== r.id))} />
+                        <span style={{ fontSize: 12.5, color: T.heading }}>{r.label || "Unnamed reader"}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <label style={{ ...label, marginTop: 0 }}>Prepared by</label>
               <input style={input} value={reporter} onChange={(e) => setReporter(e.target.value)} placeholder="Your name" />
 
@@ -222,7 +254,7 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
                 </span>
               </label>
 
-              <button onClick={build} disabled={busy}
+              <button onClick={build} disabled={busy || (!!recipients && picked.length === 0)}
                 style={{ width: "100%", marginTop: 18, height: 38, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, fontSize: 14, fontWeight: 500, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
                 {busy ? "Building..." : "Build and download"}
               </button>

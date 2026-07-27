@@ -95,7 +95,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{recs.length} {recs.length === 1 ? dd.recipientOne : dd.recipientMany}</p>
           </div>
           <span style={{ display: "flex", gap: 8, alignItems: "flex-start", flexWrap: "wrap" }}>
-            <ReportButton documentId={doc.id} />
+            <ReportButton documentId={doc.id} recipients={recs.map((r) => ({ id: r.id, label: r.label }))} />
   {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={ghost}>{dd.shareWithTeam}</button>}
           </span>
         </div>

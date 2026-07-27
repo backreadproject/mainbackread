@@ -70,6 +70,10 @@ const s = StyleSheet.create({
   barK: { width: 42, fontSize: 8.5, color: C.muted },
   barTrack: { flex: 1, height: 4, backgroundColor: C.soft, borderWidth: 1, borderColor: C.line, borderRadius: 1, marginRight: 9 },
   barV: { width: 96, fontSize: 8, color: C.body, textAlign: "right" },
+  verdictBox: { backgroundColor: C.greenSoft, borderTopWidth: 1, borderTopColor: C.greenLine, paddingVertical: 9, paddingHorizontal: 13 },
+  verdictK: { fontSize: 7, color: C.greenText, letterSpacing: 0.7, marginBottom: 3 },
+  verdictH: { fontSize: 9.5, color: C.ink, fontFamily: "Helvetica-Bold", lineHeight: 1.4, marginBottom: 4 },
+  verdictR: { fontSize: 8.5, color: C.body, lineHeight: 1.5, marginBottom: 5 },
   quote: { borderLeftWidth: 1.5, borderLeftColor: C.greenLine, paddingLeft: 8, marginBottom: 4, fontSize: 8.5, color: C.body, lineHeight: 1.5 },
   foot: { position: "absolute", bottom: 26, left: 44, right: 44, flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", fontSize: 7, color: C.faint },
   note: { fontSize: 8, color: C.faint, paddingHorizontal: 13, paddingTop: 8, lineHeight: 1.5 },
@@ -284,6 +288,14 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               <Row k="Forwarded to" v={d.forwardedTo.length ? d.forwardedTo.join(", ") : "\u2014"} last={d.replies.length === 0 && d.questions.length === 0 && d.opens > 0} />
               {d.opens === 0 && (
                 <View style={s.rowLast}><Text style={s.rowK}>Status</Text><Text style={[s.rowV, { color: C.amber }]}>Never opened it</Text></View>
+              )}
+              {d.verdict && (
+                <View style={s.verdictBox}>
+                  <Text style={s.verdictK}>THE VERDICT {"\u00b7"} {d.verdict.confidence.toUpperCase()} CONFIDENCE</Text>
+                  <Text style={s.verdictH}>{d.verdict.headline}</Text>
+                  <Text style={s.verdictR}>{d.verdict.reasoning}</Text>
+                  <Text style={{ fontSize: 8.5, color: C.greenText }}>Next: {d.verdict.nextAction}</Text>
+                </View>
               )}
               {(d.replies.length > 0 || d.questions.length > 0) && (
                 <View style={{ paddingHorizontal: 13, paddingTop: 9, paddingBottom: 4 }}>
