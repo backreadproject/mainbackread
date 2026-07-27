@@ -85,6 +85,10 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
           <LanguageSwitcher current={locale} compact />
           <ThemeToggle compact />
         </div>
+        <a href="https://readprospects.com/concepts" target="_blank" rel="noopener noreferrer"
+          style={{ display: "block", fontSize: 11.5, color: T.sidebarSection, textDecoration: "none", marginBottom: 10 }}>
+          {label("whatWordsMean")}
+        </a>
         <div style={{ display: "flex", gap: 8 }}>
           <a href="https://readprospects.com" target="_blank" rel="noopener noreferrer" className="t-out" style={{ flex: 1, boxSizing: "border-box", textAlign: "center", whiteSpace: "nowrap", background: "transparent", border: "1px solid " + T.sidebarBorder, borderRadius: T.rBtn, padding: outPad, fontSize: outFont, fontFamily: T.font, color: T.sidebarText, textDecoration: "none" }}>{label("viewSite")}</a>
           <button onClick={signOut} className="t-out" style={{ flex: 1, textAlign: "center", whiteSpace: "nowrap", background: "transparent", border: "1px solid " + T.sidebarBorder, borderRadius: T.rBtn, padding: outPad, fontSize: outFont, fontFamily: T.font, color: T.sidebarText, cursor: "pointer" }}>{label("signOut")}</button>
