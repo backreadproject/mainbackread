@@ -28,7 +28,7 @@ type Copy = {
           c2e: string; c2h: string; c2p: string; c2title: string; c2visits: string;
           c3e: string; c3h: string; c3p: string; c3read: string;
           c4e: string; c4h: string; c4p: string; c4visits: string; c4time: string; c4q: string; c4ready: string; c4glance: string };
-  stats: { eyebrow: string; title: string; s1: string; s2: string; s3: string };
+  stats: { eyebrow: string; title: string; s1: string; s1b: string; s2: string; s2b: string; s3: string; s3b: string };
   pricing: { eyebrow: string; t1: string; t2: string; lead: string; plans: Plan[]; seeFull: string };
   faq: { eyebrow: string; title: string; items: Faq[] };
   cta: { title: string; sub: string; btn: string };
@@ -73,7 +73,7 @@ const COPY: Record<Locale, Copy> = {
       c3read: "Read Q3 Proposal.pdf twice",
       c4e: "Compare readers", c4h: "See who's serious, side by side.", c4p: "Put two readers of the same document next to each other and let the behaviour speak. One read once and left. One keeps coming back.",
       c4visits: "Visits", c4time: "Time on doc", c4q: "Questions", c4ready: "Ready to move", c4glance: "Just a glance" },
-    stats: { eyebrow: "No friction", title: "Your reader does nothing but read.", s1: "Accounts they have to create", s2: "Watermarks, on any plan", s3: "Link. That is the whole setup." },
+    stats: { eyebrow: "No friction", title: "Your reader does nothing but read.", s1: "No sign-up", s1b: "They click the link and the document opens. No account, no email gate.", s2: "No watermark", s2b: "Your document arrives looking like your document, on every plan.", s3: "One link", s3b: "Send it however you already send things. That is the whole setup." },
     pricing: { eyebrow: "Pricing", t1: "Start free.", t2: "Grow when it earns it.",
       lead: "Four plans, from a first look to a locked-down company workspace. No watermark on any of them, ever.",
       plans: [
@@ -128,7 +128,7 @@ const COPY: Record<Locale, Copy> = {
       c3read: "A lu Q3 Proposal.pdf deux fois",
       c4e: "Comparer les lecteurs", c4h: "Voyez qui est s\u00e9rieux, c\u00f4te \u00e0 c\u00f4te.", c4p: "Placez deux lecteurs d'un m\u00eame document c\u00f4te \u00e0 c\u00f4te et laissez le comportement parler. L'un a lu une fois et est parti. L'autre revient sans cesse.",
       c4visits: "Visites", c4time: "Temps sur le doc", c4q: "Questions", c4ready: "Pr\u00eat \u00e0 avancer", c4glance: "Un simple survol" },
-    stats: { eyebrow: "Sans friction", title: "Votre lecteur n\u2019a rien \u00e0 faire, sauf lire.", s1: "Compte \u00e0 cr\u00e9er", s2: "Filigrane, sur tous les forfaits", s3: "Lien. C\u2019est toute la configuration." },
+    stats: { eyebrow: "Sans friction", title: "Votre lecteur n\u2019a rien \u00e0 faire, sauf lire.", s1: "Aucune inscription", s1b: "Il clique et le document s\u2019ouvre. Pas de compte, pas de mur d\u2019e-mail.", s2: "Aucun filigrane", s2b: "Votre document arrive tel quel, sur tous les forfaits.", s3: "Un seul lien", s3b: "Envoyez-le comme vous envoyez d\u00e9j\u00e0 tout le reste." },
     pricing: { eyebrow: "Tarifs", t1: "Commencez gratuitement.", t2: "\u00c9voluez quand \u00e7a le m\u00e9rite.",
       lead: "Quatre forfaits, d'un premier aper\u00e7u \u00e0 un espace d'entreprise verrouill\u00e9. Aucun filigrane, jamais.",
       plans: [
@@ -273,7 +273,7 @@ const CSS = `
   .rp-tbl td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,0.06);color:#93A79C}.rp-tbl td b{color:#F2F7F4}
   .rp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:12px}
   .rp-statb{padding:34px 24px;text-align:center}
-  .rp-statb .big{font-size:44px;font-weight:700;letter-spacing:-0.03em;color:#F2F7F4}
+  .rp-statb .claim{font-size:23px;font-weight:600;letter-spacing:-0.02em;color:#F2F7F4;line-height:1.25}
   .rp-statb .cap2{font-size:14px;color:#93A79C;margin-top:6px}
   .rp-plans{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:44px}
   .rp-plan{padding:22px}.rp-plan .pn{font-size:15px;font-weight:700}
@@ -311,7 +311,7 @@ const CSS = `
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
     .rp-full{display:none}.rp-short{display:inline}
     .rp-btn-fr{font-size:11.5px;padding:8px 11px}
-    .rp-statb{padding:26px 20px}.rp-statb .big{font-size:36px}
+    .rp-statb{padding:26px 20px}.rp-statb .claim{font-size:20px}
     .rp-ctaband{padding:40px 20px}.rp-ctaband h2{font-size:24px}
     .rp-cmp{gap:10px}
     .rp-cta-row,.rp-ctarow{flex-direction:column}
@@ -467,9 +467,9 @@ export default async function LandingPage() {
         <div className="rp-wrap rp-center"><span className="rp-eyebrow">{c.stats.eyebrow}</span><h2 className="rp-h2">{c.stats.title}</h2></div>
         <div className="rp-wrap">
           <div className="rp-stats">
-            <div className="rp-card rp-statb"><div className="big">0</div><div className="cap2">{c.stats.s1}</div></div>
-            <div className="rp-card rp-statb"><div className="big">0</div><div className="cap2">{c.stats.s2}</div></div>
-            <div className="rp-card rp-statb"><div className="big">1</div><div className="cap2">{c.stats.s3}</div></div>
+            <div className="rp-card rp-statb"><div className="claim">{c.stats.s1}</div><div className="cap2">{c.stats.s1b}</div></div>
+            <div className="rp-card rp-statb"><div className="claim">{c.stats.s2}</div><div className="cap2">{c.stats.s2b}</div></div>
+            <div className="rp-card rp-statb"><div className="claim">{c.stats.s3}</div><div className="cap2">{c.stats.s3b}</div></div>
           </div>
         </div>
       </section>
