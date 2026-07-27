@@ -118,6 +118,9 @@ html.dark {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Inter, self-hosted via @fontsource-variable/inter. The variable keeps its
+     old name because the entire app reads it; only the source changed. */
+  --font-dm-sans: "Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-sans: var(--font-dm-sans);
 }
 

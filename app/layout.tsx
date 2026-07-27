@@ -1,15 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { Inter } from "next/font/google";
+import "@fontsource-variable/inter";
 import "./globals.css";
 import MarketingSupport from "./MarketingSupport";
 import ResponsiveStyles from "./(app)/ResponsiveStyles";
 import ThemeScript from "./ThemeScript";
-const dmSans = Inter({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -32,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${dmSans.variable} h-full`} suppressHydrationWarning>
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <body className="min-h-full flex flex-col" style={{ fontFamily: "var(--font-dm-sans), system-ui, sans-serif" }}>
         <ThemeScript />
         <ResponsiveStyles />
