@@ -47,6 +47,20 @@ export default function VariantsPanel({ documentId, variants, recipients, signal
       <div style={{ fontSize: 11.5, color: T.muted, marginTop: 1 }}>{l}</div>
     </div>
   );
+  // Nothing to compare yet. Explaining what a variant is here is the only
+  // place the feature introduces itself.
+  if (variants.length === 0) {
+    return (
+      <div style={{ maxWidth: 1040, padding: "20px 28px 0" }}>
+        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, padding: 18 }}>
+          <div style={{ fontSize: 13, color: T.body, marginBottom: 4 }}>No variants on this document.</div>
+          <div style={{ fontSize: 12.5, color: T.muted, lineHeight: 1.55, maxWidth: 520 }}>
+            Upload two or more versions and ReadProspects splits your readers between them, so you can see which wording holds attention and which loses it. Use Upload A/B variants above.
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ maxWidth: 1040, padding: "20px 28px 0" }}>
       <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow }}>

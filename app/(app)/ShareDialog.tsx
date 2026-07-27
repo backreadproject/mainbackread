@@ -85,10 +85,14 @@ export default function ShareDialog({ resourceType, resourceId, resourceName, me
               <option value="role">{sd.aRole}</option>
             </select>
             {granteeType === "user" ? (
-              <select value={userId} onChange={(e) => setUserId(e.target.value)} style={{ ...sel, flex: 1, minWidth: 140 }}>
-                <option value="">{sd.chooseMember}</option>
-                {members.map((m) => <option key={m.userId} value={m.userId}>{m.email ?? sd.memberFallback}</option>)}
-              </select>
+              members.length === 0 ? (
+                <span style={{ flex: 1, minWidth: 140, fontSize: 12.5, color: T.muted, lineHeight: 1.5, alignSelf: "center" }}>{sd.noOtherMembers}</span>
+              ) : (
+                <select value={userId} onChange={(e) => setUserId(e.target.value)} style={{ ...sel, flex: 1, minWidth: 140 }}>
+                  <option value="">{sd.chooseMember}</option>
+                  {members.map((m) => <option key={m.userId} value={m.userId}>{m.email ?? sd.memberFallback}</option>)}
+                </select>
+              )
             ) : (
               <select value={role} onChange={(e) => setRole(e.target.value as "admin" | "member")} style={{ ...sel, flex: 1, minWidth: 140 }}>
                 <option value="member">{sd.allMembers}</option>
