@@ -28,6 +28,9 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
   const [appendix, setAppendix] = useState(true);
   const [pageAttention, setPageAttention] = useState(true);
   const [neverOpened, setNeverOpened] = useState(true);
+  const [headerText, setHeaderText] = useState("");
+  const [footerText, setFooterText] = useState("");
+  const [signature, setSignature] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -104,6 +107,7 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
           recipientIds: recipientIds ?? undefined,
           reporter, recipient, recipientKind: kind, companyName: company, note, refresh,
           sections: { appendix, pageAttention, neverOpened },
+          headerText, footerText, signature,
         }),
       });
       if (!res.ok) {
@@ -187,12 +191,19 @@ export default function ReportDialog({ documentId, recipientIds, onClose }: {
               <label style={label}>Note on the cover</label>
               <input style={input} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional. One line of context." />
 
+              <label style={label}>Running header <span style={{ color: T.faint, fontWeight: 400 }}>every page, top right</span></label>
+              <input style={input} value={headerText} onChange={(e) => setHeaderText(e.target.value)} placeholder="Confidential, or a client name" />
+
+              <label style={label}>Running footer <span style={{ color: T.faint, fontWeight: 400 }}>every page, bottom left</span></label>
+              <input style={input} value={footerText} onChange={(e) => setFooterText(e.target.value)} placeholder="Defaults to the document title" />
+
               <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid " + T.borderSoft }}>
                 <div style={{ fontSize: 12.5, color: T.body, marginBottom: 9 }}>Include</div>
                 {([
                   ["The reader appendix", appendix, setAppendix, "Every reader with their questions and figures. Usually left out of a copy going upward."],
                   ["Page attention", pageAttention, setPageAttention, "Where time went, page by page."],
                   ["Readers who never opened it", neverOpened, setNeverOpened, "Silence is data, but it lengthens the appendix."],
+                  ["The ReadProspects line in the footer", signature, setSignature, "Leave it on and the people you send this to know where it came from."],
                 ] as [string, boolean, (v: boolean) => void, string][]).map(([lbl, val, set, hint]) => (
                   <label key={lbl} style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 9, cursor: "pointer" }}>
                     <input type="checkbox" checked={val} onChange={(e) => set(e.target.checked)} style={{ marginTop: 3 }} />

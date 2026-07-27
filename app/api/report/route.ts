@@ -31,6 +31,10 @@ type Body = {
   /** Which sections to print. Presentation only: the analysis is unchanged, so
    *  the cache is shared across every combination. */
   sections?: Partial<ReportSections>;
+  headerText?: string;
+  footerText?: string;
+  /** Remove the ReadProspects line from the footer. */
+  signature?: boolean;
 };
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -116,6 +120,9 @@ export async function POST(req: NextRequest) {
       recipient: (body.recipient ?? "").trim() || null,
       recipientKind: body.recipientKind ?? null,
       note: (body.note ?? "").trim() || null,
+      headerText: (body.headerText ?? "").trim() || null,
+      footerText: (body.footerText ?? "").trim() || null,
+      signature: body.signature !== false,
     };
 
     const element = React.createElement(ReportDocument, {

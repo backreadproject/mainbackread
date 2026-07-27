@@ -94,6 +94,15 @@ export type Branding = {
   recipient: string | null;
   recipientKind: "person" | "department" | "organisation" | null;
   note: string | null;
+  /** Runs opposite the section eyebrow on every page. Deliberately not full
+   *  width: a header spanning the page would compete with the section title. */
+  headerText: string | null;
+  /** Bottom left of every page. Falls back to the document title. */
+  footerText: string | null;
+  /** Our attribution in the footer. Default on, removable by anyone: a customer
+   *  who feels the report is not theirs stops sending it, which costs more than
+   *  the attribution earns. */
+  signature: boolean;
 };
 export async function loadBrandingDefaults(admin: Admin, userId: string): Promise<{ companyName: string | null; logoUrl: string | null; defaultReporter: string | null }> {
   const { data } = await admin
