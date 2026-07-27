@@ -45,8 +45,8 @@ const COPY: Record<Locale, Copy> = {
       sig1: "Reread the pricing three times", sig2: "Asked about the annual commit", sig3: "Forwarded to one colleague",
       visits: "Visits", time: "Time on doc", q: "Questions", intent: "Intent score" },
     trusted: "The document intelligence layer for teams who send to close",
-    problem: { eyebrow: "The problem", t1: "The moment you hit send,", t2: "you go blind.",
-      lead: "A read receipt tells you a file was opened. It can't tell you what mattered, what stalled, or whether to follow up. So you chase blind, or you wait, and lose the moment.",
+    problem: { eyebrow: "The problem", t1: "The moment you hit send,", t2: "you are guessing.",
+      lead: "A read receipt tells you a file was opened. It can't tell you what mattered, what stalled, or whether to follow up. So you chase on a hunch, or you wait and lose the moment.",
       cards: [
         { h: "Read receipts", p: "A green dot says it opened. It says nothing about who is serious.", s: "Opens are not answers" },
         { h: "Attention vs intent", p: "Clicks count eyeballs. They can't tell a skim from a deal-deciding read.", s: "Intent is what closes" },
@@ -73,7 +73,7 @@ const COPY: Record<Locale, Copy> = {
       c3read: "Read Q3 Proposal.pdf twice",
       c4e: "Compare readers", c4h: "See who's serious, side by side.", c4p: "Put two readers of the same document next to each other and let the behaviour speak. One read once and left. One keeps coming back.",
       c4visits: "Visits", c4time: "Time on doc", c4q: "Questions", c4ready: "Ready to move", c4glance: "Just a glance" },
-    stats: { eyebrow: "At scale", title: "Built to read every reader.", s1: "Reads followed", s2: "Senders on ReadProspects", s3: "Countries" },
+    stats: { eyebrow: "No friction", title: "Your reader does nothing but read.", s1: "Accounts they have to create", s2: "Watermarks, on any plan", s3: "Link. That is the whole setup." },
     pricing: { eyebrow: "Pricing", t1: "Start free.", t2: "Grow when it earns it.",
       lead: "Four plans, from a first look to a locked-down company workspace. No watermark on any of them, ever.",
       plans: [
@@ -100,8 +100,8 @@ const COPY: Record<Locale, Copy> = {
       sig1: "A relu les tarifs trois fois", sig2: "A pos\u00e9 une question sur l'engagement annuel", sig3: "A transf\u00e9r\u00e9 \u00e0 un coll\u00e8gue",
       visits: "Visites", time: "Temps sur le doc", q: "Questions", intent: "Score d'intention" },
     trusted: "La couche d'intelligence documentaire pour les \u00e9quipes qui envoient pour conclure",
-    problem: { eyebrow: "Le probl\u00e8me", t1: "D\u00e8s que vous cliquez sur envoyer,", t2: "vous \u00eates aveugle.",
-      lead: "Un accus\u00e9 de lecture indique qu'un fichier a \u00e9t\u00e9 ouvert. Il ne dit pas ce qui a compt\u00e9, ce qui a bloqu\u00e9, ni s'il faut relancer. Alors vous relancez \u00e0 l'aveugle, ou vous attendez et perdez le moment.",
+    problem: { eyebrow: "Le probl\u00e8me", t1: "D\u00e8s que vous cliquez sur envoyer,", t2: "vous devinez.",
+      lead: "Un accus\u00e9 de lecture indique qu'un fichier a \u00e9t\u00e9 ouvert. Il ne dit pas ce qui a compt\u00e9, ce qui a bloqu\u00e9, ni s'il faut relancer. Alors vous relancez au jug\u00e9, ou vous attendez et perdez le moment.",
       cards: [
         { h: "Accus\u00e9s de lecture", p: "Un point vert dit que c'est ouvert. Il ne dit pas qui est s\u00e9rieux.", s: "Ouvrir n'est pas r\u00e9pondre" },
         { h: "Attention contre intention", p: "Les clics comptent les regards. Ils ne distinguent pas un survol d'une lecture d\u00e9cisive.", s: "L'intention conclut" },
@@ -128,7 +128,7 @@ const COPY: Record<Locale, Copy> = {
       c3read: "A lu Q3 Proposal.pdf deux fois",
       c4e: "Comparer les lecteurs", c4h: "Voyez qui est s\u00e9rieux, c\u00f4te \u00e0 c\u00f4te.", c4p: "Placez deux lecteurs d'un m\u00eame document c\u00f4te \u00e0 c\u00f4te et laissez le comportement parler. L'un a lu une fois et est parti. L'autre revient sans cesse.",
       c4visits: "Visites", c4time: "Temps sur le doc", c4q: "Questions", c4ready: "Pr\u00eat \u00e0 avancer", c4glance: "Un simple survol" },
-    stats: { eyebrow: "\u00c0 grande \u00e9chelle", title: "Con\u00e7u pour lire chaque lecteur.", s1: "Lectures suivies", s2: "Exp\u00e9diteurs sur ReadProspects", s3: "Pays" },
+    stats: { eyebrow: "Sans friction", title: "Votre lecteur n\u2019a rien \u00e0 faire, sauf lire.", s1: "Compte \u00e0 cr\u00e9er", s2: "Filigrane, sur tous les forfaits", s3: "Lien. C\u2019est toute la configuration." },
     pricing: { eyebrow: "Tarifs", t1: "Commencez gratuitement.", t2: "\u00c9voluez quand \u00e7a le m\u00e9rite.",
       lead: "Quatre forfaits, d'un premier aper\u00e7u \u00e0 un espace d'entreprise verrouill\u00e9. Aucun filigrane, jamais.",
       plans: [
@@ -467,9 +467,9 @@ export default async function LandingPage() {
         <div className="rp-wrap rp-center"><span className="rp-eyebrow">{c.stats.eyebrow}</span><h2 className="rp-h2">{c.stats.title}</h2></div>
         <div className="rp-wrap">
           <div className="rp-stats">
-            <div className="rp-card rp-statb"><div className="big">1.2M</div><div className="cap2">{c.stats.s1}</div></div>
-            <div className="rp-card rp-statb"><div className="big">5,000+</div><div className="cap2">{c.stats.s2}</div></div>
-            <div className="rp-card rp-statb"><div className="big">40+</div><div className="cap2">{c.stats.s3}</div></div>
+            <div className="rp-card rp-statb"><div className="big">0</div><div className="cap2">{c.stats.s1}</div></div>
+            <div className="rp-card rp-statb"><div className="big">0</div><div className="cap2">{c.stats.s2}</div></div>
+            <div className="rp-card rp-statb"><div className="big">1</div><div className="cap2">{c.stats.s3}</div></div>
           </div>
         </div>
       </section>
