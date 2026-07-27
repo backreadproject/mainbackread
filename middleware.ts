@@ -6,7 +6,7 @@ const MARKETING_HOST = (process.env.NEXT_PUBLIC_MARKETING_HOST || "readprospects
 const REFERRAL_HOST = (process.env.NEXT_PUBLIC_REFERRAL_HOST || "referrals.readprospects.com").toLowerCase();
 
 const APP_PREFIXES = ["/overview", "/documents", "/projects", "/activity", "/recipients", "/members", "/settings", "/account", "/billing", "/login", "/signup", "/forgot-password", "/reset-password", "/check-email", "/onboarding"];
-const MARKETING_PREFIXES = ["/pricing", "/privacy", "/terms"];
+const MARKETING_PREFIXES = ["/pricing", "/privacy", "/terms", "/concepts"];
 
 // Hidden admin surface. Lives only on the app host; gated at the edge by Basic Auth,
 // then by session + allowlist inside the layout.
