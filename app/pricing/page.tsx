@@ -6,7 +6,7 @@ export const metadata = {
   description:
     "Plans for ReadProspects, from a single sender to a whole team. Reader questions, verdicts and reports on every paid plan. No account needed for the people you send to.",
   alternates: { canonical: "https://readprospects.com/pricing" },
-  openGraph: { title: "ReadProspects pricing", description: "Plans from a single sender to a whole team.", url: "https://readprospects.com/pricing", type: "website" },
+  openGraph: { title: "ReadProspects pricing", description: "Plans from a single sender to a whole team.", url: "https://readprospects.com/pricing", type: "website", images: [{ url: "/og.png", width: 1200, height: 630, alt: "ReadProspects" }] },
 };
 
 // Locale-aware. Reads the same "locale" cookie the MarketingNav toggle writes, so

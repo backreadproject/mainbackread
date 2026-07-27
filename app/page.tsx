@@ -17,6 +17,7 @@ export const metadata = {
     url: "https://readprospects.com",
     siteName: "ReadProspects",
     type: "website",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "ReadProspects" }],
   },
 };
 
