@@ -122,18 +122,38 @@ export async function deleteUserAction(targetUserId: string, confirmText: string
     return fail("The email you typed does not match.");
   }
 
-  // Storage does NOT cascade, so remove the files before the rows go.
-  const { data: docs } = await admin.from("documents").select("id, storage_path").eq("owner_id", targetUserId);
-  const documents = docs ?? [];
-  const paths = documents.map((d) => d.storage_path).filter(Boolean) as string[];
+  // Organisations this person created. Deleting one takes every document
+  // inside it, including documents owned by other members.
+  const { data: ownedOrgs } = await admin.from("organizations").select("id, name").eq("created_by", targetUserId);
+  const orgs = (ownedOrgs ?? []) as { id: string; name: string }[];
+  const orgIds = orgs.map((o) => o.id);
+
+  // Storage does NOT cascade, so files go first. This now covers documents the
+  // user owns AND documents inside their organisations, which may belong to
+  // colleagues: those were previously orphaned in the bucket forever.
+  const { data: ownDocs } = await admin.from("documents").select("id, storage_path").eq("owner_id", targetUserId);
+  const { data: orgDocs } = orgIds.length
+    ? await admin.from("documents").select("id, storage_path").in("organization_id", orgIds)
+    : { data: [] as { id: string; storage_path: string | null }[] };
+  const documents = [...(ownDocs ?? []), ...(orgDocs ?? [])];
+  const paths = [...new Set(documents.map((d) => d.storage_path).filter(Boolean) as string[])];
   if (paths.length) { try { await admin.storage.from("documents").remove(paths); } catch { /* ignore */ } }
 
-  // Everything else cascades from auth.users.
+  // Deliberate, not cascaded. organizations_created_by_fkey becomes RESTRICT so
+  // that no code path can destroy an organisation by forgetting to think about it.
+  for (const o of orgs) {
+    const { error: orgErr } = await admin.from("organizations").delete().eq("id", o.id);
+    if (orgErr) {
+      console.error("[deleteUser] could not remove organisation", o.id, orgErr.message);
+      return fail("Could not remove the organisation " + o.name + ". Nothing has been deleted.", 500);
+    }
+  }
+
   const { error } = await admin.auth.admin.deleteUser(targetUserId);
   if (error) return fail(error.message, 500);
 
   await writeAudit({ actorId: me.id, actorEmail: me.email, action: "delete_user", targetUserId,
-    detail: { email, documentsRemoved: documents.length, filesRemoved: paths.length } });
+    detail: { email, documentsRemoved: documents.length, filesRemoved: paths.length, organizationsRemoved: orgs.map((o) => o.name) } });
   return { ok: true };
 }
 

@@ -15,6 +15,31 @@ export async function POST() {
   // Storage does NOT cascade. Rows disappear when the auth user is deleted
   // (documents.owner_id and profiles.id are ON DELETE CASCADE), but the files
   // would be orphaned forever, so remove them first while we can still find them.
+  // Does this person's deletion take an organisation with it?
+  const { data: ownedOrgs } = await admin
+    .from("organizations")
+    .select("id, name")
+    .eq("created_by", user.id);
+  const orgs = (ownedOrgs ?? []) as { id: string; name: string }[];
+  if (orgs.length > 0) {
+    const ids = orgs.map((o) => o.id);
+    const { count } = await admin
+      .from("organization_members")
+      .select("id", { count: "exact", head: true })
+      .in("organization_id", ids);
+    // More than just them: refuse. The cascade would delete other people's
+    // documents and there is no way to undo it.
+    if ((count ?? 0) > 1) {
+      const name = orgs[0].name;
+      return NextResponse.json({
+        error:
+          "You created " + name + ", and deleting your account would delete the whole organisation with it, including documents belonging to everyone else in it. Remove the other members first, or ask us to transfer ownership, and then delete your account.",
+        blockedByOrg: true,
+        organization: name,
+      }, { status: 409 });
+    }
+  }
+
   const { data: docs } = await admin.from("documents").select("id, storage_path").eq("owner_id", user.id);
   const documents = docs ?? [];
   const paths = documents.map((d) => d.storage_path).filter(Boolean) as string[];
@@ -42,6 +67,17 @@ export async function POST() {
   if (avatar && avatar.includes("/avatars/")) {
     const key = avatar.split("/avatars/")[1]?.split("?")[0];
     if (key) { try { await admin.storage.from("avatars").remove([key]); } catch { /* non-fatal */ } }
+  }
+
+  // Only reached when the guard above found no other members, so this deletes
+  // an organisation of one: their own. Explicit, so the FK can refuse the
+  // accidental version.
+  for (const o of orgs) {
+    const { error: orgErr } = await admin.from("organizations").delete().eq("id", o.id);
+    if (orgErr) {
+      console.error("[delete-account] could not remove organisation", o.id, orgErr.message);
+      return NextResponse.json({ error: "Could not close your organisation. Nothing has been deleted." }, { status: 500 });
+    }
   }
 
   const { error } = await admin.auth.admin.deleteUser(user.id);

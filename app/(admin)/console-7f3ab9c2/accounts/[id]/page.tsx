@@ -22,6 +22,15 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
     const { data } = await admin.from("organizations").select("id, name, domain, plan, subscription_active").eq("id", p.active_org_id).single();
     org = (data as Org) ?? null;
   }
+  // Deleting this user cascades through organizations_created_by_fkey, so the
+  // console must say which organisation goes with them.
+  const { data: ownedOrgs } = await admin.from("organizations").select("id, name").eq("created_by", id);
+  const createdOrg = ((ownedOrgs ?? []) as { id: string; name: string }[])[0] ?? null;
+  const { data: orgMemberRows } = createdOrg
+    ? await admin.from("organization_members").select("id").eq("organization_id", createdOrg.id)
+    : { data: [] as { id: string }[] };
+  const createdOrgMembers = (orgMemberRows ?? []).length;
+
   const { data: docs } = await admin.from("documents").select("id, title, created_at, archived_at").eq("owner_id", id).order("created_at", { ascending: false });
   const documents = docs ?? [];
   const docIds = documents.map((d) => d.id);
@@ -77,7 +86,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
               {banned ? " \u00b7 suspended" : ""}
             </p>
           </div>
-          <AccountActions targetUserId={id} email={u?.email ?? ""} suspended={banned} />
+          <AccountActions targetUserId={id} email={u?.email ?? ""} suspended={banned} createdOrg={createdOrg?.name ?? null} createdOrgMembers={createdOrgMembers} />
         </div>
         <div className="stat-strip" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card, margin: "26px 0 14px" }}>
           {cells.map(([v, l], i) => (

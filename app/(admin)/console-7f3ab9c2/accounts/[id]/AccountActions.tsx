@@ -4,7 +4,7 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import ConfirmDialog from "../../ConfirmDialog";
 import { postJson, errMsg } from "@/lib/fetch-json";
-export default function AccountActions({ targetUserId, email, suspended }: { targetUserId: string; email: string; suspended: boolean }) {
+export default function AccountActions({ targetUserId, email, suspended, createdOrg = null, createdOrgMembers = 0 }: { targetUserId: string; email: string; createdOrg?: string | null; createdOrgMembers?: number; suspended: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState("");
@@ -44,7 +44,7 @@ export default function AccountActions({ targetUserId, email, suspended }: { tar
         <ConfirmDialog
           triggerLabel="Delete account"
           title="Delete this account?"
-          body="This permanently removes the user, every document they own, all recipients, signals and reader conversations, plus their profile and notifications. If this person created an organization, that organization and all of its data goes too. It cannot be undone."
+          body={(createdOrg ? "This also deletes the organization " + createdOrg + " and every document inside it, including documents owned by the other " + Math.max(0, createdOrgMembers - 1) + " member" + (createdOrgMembers === 2 ? "" : "s") + ". That is automatic and cannot be undone. " : "") + "This permanently removes the user, every document they own, all recipients, signals and reader conversations, plus their profile and notifications. It cannot be undone."}
           expected={email}
           confirmLabel="Delete permanently"
           onConfirm={doDelete}
