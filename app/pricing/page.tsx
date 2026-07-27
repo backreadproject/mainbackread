@@ -1,6 +1,14 @@
 import { cookies } from "next/headers";
 import MarketingNav from "../MarketingNav";
 
+export const metadata = {
+  title: "Pricing",
+  description:
+    "Plans for ReadProspects, from a single sender to a whole team. Reader questions, verdicts and reports on every paid plan. No account needed for the people you send to.",
+  alternates: { canonical: "https://readprospects.com/pricing" },
+  openGraph: { title: "ReadProspects pricing", description: "Plans from a single sender to a whole team.", url: "https://readprospects.com/pricing", type: "website" },
+};
+
 // Locale-aware. Reads the same "locale" cookie the MarketingNav toggle writes, so
 // FR/EN switching works here like the rest of the marketing site. All copy for both
 // languages lives in COPY below. Prices are placeholders you can edit freely.

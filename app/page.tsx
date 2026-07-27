@@ -5,6 +5,20 @@ import LanguageSwitcher from "@/lib/LanguageSwitcher";
 import { createClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/i18n";
 
+export const metadata = {
+  title: "Know how your proposal was actually read",
+  description:
+    "ReadProspects shows you which pages held your reader, what they asked the document, and who they forwarded it to. Then it tells you what to do about it.",
+  alternates: { canonical: "https://readprospects.com" },
+  openGraph: {
+    title: "Know how your proposal was actually read",
+    description: "Which pages held them, what they asked, who they forwarded it to, and what to do next.",
+    url: "https://readprospects.com",
+    siteName: "ReadProspects",
+    type: "website",
+  },
+};
+
 // ReadProspects marketing landing. Dark skin. Bilingual via the locale cookie
 // (same mechanism as the rest of the marketing site). All copy in COPY below.
 // French accents are \uXXXX escapes so the file can never mojibake.

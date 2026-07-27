@@ -20,7 +20,11 @@ export async function generateMetadata(): Promise<Metadata> {
     };
   }
   return {
-    title: "ReadProspects: Documents Intelligence Platform",
+    metadataBase: new URL("https://readprospects.com"),
+    title: {
+      default: "ReadProspects: Documents Intelligence Platform",
+      template: "%s | ReadProspects",
+    },
     description: "ReadProspects: Documents Intelligence Platform",
     icons: { icon: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwNzE4MTIiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSIxNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMzNFNkEyIiBzdHJva2Utd2lkdGg9IjUiLz48Y2lyY2xlIGN4PSIzMiIgY3k9IjMyIiByPSI3LjUiIGZpbGw9IiMzM0U2QTIiLz48L3N2Zz4=" },
   };

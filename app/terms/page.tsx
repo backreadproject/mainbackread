@@ -1,5 +1,11 @@
 import MarketingNav from "../MarketingNav";
 
+export const metadata = {
+  title: "Terms of use",
+  description: "The terms under which ReadProspects is provided, including acceptable use, liability limits, and what verdicts may not be used to decide.",
+  alternates: { canonical: "https://readprospects.com/terms" },
+};
+
 const NIGHT = "#082019", INK = "#0F1729", CANVAS = "#F8F9FA", GREEN = "#0B7A4B", GREEN_TEXT = "#067647", BRAND = "#1FA971", BODY = "#475467", MUTE = "#98A2B3", LINE = "#EAECEF", CLOUD = "rgba(255,255,255,0.72)";
 const LEMON = "#D8E84A";
 const DM = "var(--font-dm-sans), system-ui, sans-serif";

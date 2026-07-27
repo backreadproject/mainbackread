@@ -69,6 +69,15 @@ export function middleware(req: NextRequest) {
   const host = hostOf(req);
   const { pathname } = req.nextUrl;
 
+  // Crawler files must reach the route handler on EVERY host, before any of
+  // the host branches below. The reader domain rewrites anything it does not
+  // recognise to /relay and referrals rewrites to /referrals, so without this
+  // relaydocuments.com/robots.txt would serve a landing page and no crawler
+  // would ever be told to stay out of your customers' documents.
+  if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
+    return NextResponse.next();
+  }
+
   const onReaderDomain = host === READER_HOST || host === `www.${READER_HOST}`;
   const onAppDomain = host === APP_HOST;
   const onMarketingDomain = host === MARKETING_HOST || host === `www.${MARKETING_HOST}`;
