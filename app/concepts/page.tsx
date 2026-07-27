@@ -150,14 +150,26 @@ export default function ConceptsPage() {
           where the evidence behind it is strong and where it is not.
         </p>
 
-        <nav style={{ display: "flex", flexWrap: "wrap", gap: "8px 14px", margin: "26px 0 0", paddingTop: 20, borderTop: "1px solid " + T.border }}>
-          {SECTIONS.map((s) => (
-            <a key={s.id} href={"#" + s.id} style={{ fontSize: 13, color: T.muted, textDecoration: "none" }}>{s.h}</a>
-          ))}
+        <nav aria-label="On this page" style={{ margin: "30px 0 0", paddingTop: 22, borderTop: "1px solid " + T.border }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.09em", color: T.faint, marginBottom: 12 }}>ON THIS PAGE</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {SECTIONS.map((s, i) => (
+              <a key={s.id} href={"#" + s.id}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 7,
+                  border: "1px solid " + T.border, borderRadius: T.rBtn,
+                  padding: "6px 11px", fontSize: 13, color: T.body, textDecoration: "none",
+                  background: T.card,
+                }}>
+                <span style={{ fontSize: 11, color: T.faint, fontVariantNumeric: "tabular-nums" }}>{i + 1}</span>
+                {s.h}
+              </a>
+            ))}
+          </div>
         </nav>
 
         {SECTIONS.map((s) => (
-          <section key={s.id} id={s.id} style={{ marginTop: 34, scrollMarginTop: 20 }}>
+          <section key={s.id} id={s.id} style={{ marginTop: 38, paddingTop: 30, borderTop: "1px solid " + T.borderSoft, scrollMarginTop: 24 }}>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{s.h}</h2>
             {s.body.map((b, i) =>
               typeof b === "string" ? (
