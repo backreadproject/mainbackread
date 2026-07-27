@@ -289,6 +289,13 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               {d.opens === 0 && (
                 <View style={s.rowLast}><Text style={s.rowK}>Status</Text><Text style={[s.rowV, { color: C.amber }]}>Never opened it</Text></View>
               )}
+              {!d.verdict && d.opens > 0 && (
+                <View style={{ paddingVertical: 8, paddingHorizontal: 13, borderTopWidth: 1, borderTopColor: C.lineSoft }}>
+                  <Text style={{ fontSize: 8.5, color: C.muted, lineHeight: 1.5 }}>
+                    No verdict has been run for this reader. Open them in ReadProspects and choose Read the reader to have their behaviour interpreted.
+                  </Text>
+                </View>
+              )}
               {d.verdict && (
                 <View style={s.verdictBox}>
                   <Text style={s.verdictK}>THE VERDICT {"\u00b7"} {d.verdict.confidence.toUpperCase()} CONFIDENCE</Text>

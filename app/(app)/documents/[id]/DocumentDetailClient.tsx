@@ -161,7 +161,12 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                         </div>
                       ))}
                     </div>
-                    {selSum.questions.length > 0 && (
+                    {selSum.questions.length === 0 && (
+                <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.55 }}>
+                  No questions from this reader yet. They can ask the document anything while reading, and what they ask appears here.
+                </p>
+              )}
+              {selSum.questions.length > 0 && (
                       <>
                         <div style={{ fontSize: 12.5, fontWeight: 600, color: T.body, marginBottom: 12 }}>{dd.whatTheyAsked} &middot; {selSum.questions.length}</div>
                         <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 24 }}>

@@ -5,6 +5,7 @@ import { clampDwellMs, formatDwell, DWELL_CAP_MS } from "@/lib/dwell";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import ReportButton from "@/app/(app)/ReportButton";
+import Blank from "@/app/(app)/Blank";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
 type Rec = { id: string; label: string | null; shareToken: string; documentId: string; documentTitle: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -155,7 +156,13 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
                 </div>
               </div>
             )}
-            {summary.questions.length > 0 && (
+            {summary.questions.length === 0 && summary.opens > 0 && (
+            <div style={card}>
+              <div style={head}>{rd.whatTheyAsked}</div>
+              <Blank title="They have not asked anything." hint="Readers can ask the document a question while they read it. Anything they ask appears here, and it is the strongest signal of intent this product has." />
+            </div>
+          )}
+          {summary.questions.length > 0 && (
               <div style={card}>
                 <div style={head}>{rd.whatTheyAsked} &middot; {summary.questions.length}</div>
                 <div>
