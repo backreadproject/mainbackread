@@ -44,6 +44,7 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [count, setCount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [phase, setPhase] = useState<"" | "record" | "analysis">("");
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [msg, setMsg] = useState("");
 
@@ -131,16 +132,35 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
 
   // Takes an id because generate now runs on a COMPLETE row too, when
   // someone answers probes and asks for a sharper pass.
+  // Two requests, each with its own 60s budget. The record is saved server-side
+  // before the second starts, so a failed analysis never costs the generation
+  // that paid for it.
   async function generate(id: string) {
-    setBusy(true); setMsg("");
+    setBusy(true); setMsg(""); setPhase("record");
     try {
       await flush();
       const r = await postJson<{ profile: Row }>("/api/icp", { action: "generate", id }, 120000);
       setCurrent(r.profile);
       setDraft(null);
       setView("output");
+      setPhase("analysis");
+      try {
+        const a = await postJson<{ profile: Row }>("/api/icp", { action: "analyse", id }, 120000);
+        setCurrent(a.profile);
+      } catch (e) {
+        setMsg(errMsg(e, c.analysisFailed));
+      }
     } catch (e) { setMsg(errMsg(e, c.errBuild)); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setPhase(""); }
+  }
+
+  async function analyse(id: string) {
+    setBusy(true); setMsg(""); setPhase("analysis");
+    try {
+      const a = await postJson<{ profile: Row }>("/api/icp", { action: "analyse", id }, 120000);
+      setCurrent(a.profile);
+    } catch (e) { setMsg(errMsg(e, c.analysisFailed)); }
+    finally { setBusy(false); setPhase(""); }
   }
 
   async function enrich(probes: { id: string; q: string; a: string }[]) {
@@ -241,11 +261,11 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
           branch={branch} locale={locale} step={step} setStep={setStep}
           answers={answers} setAnswers={setAnswers}
           count={count} setCount={setCount}
-          savedAt={savedAt} busy={busy}
+          savedAt={savedAt} busy={busy} phase={phase}
           onFlush={flush} onGenerate={() => void generate(draft.id)} onDiscard={discard}
         />
       ) : current?.output ? (
-        <IcpOutputView row={current} locale={locale} busy={busy} onEnrich={enrich} onReanswer={() => void start(current.branch)} />
+        <IcpOutputView row={current} locale={locale} busy={busy} phase={phase} onEnrich={enrich} onAnalyse={() => void analyse(current.id)} onReanswer={() => void start(current.branch)} />
       ) : (
         <div style={{ marginTop: 28, fontSize: 13, color: T.muted }}>{c.nothingYet}</div>
       )}

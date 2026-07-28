@@ -7,7 +7,7 @@ import type { Locale } from "@/lib/i18n";
 
 export default function IcpForm({
   branch, locale, step, setStep, answers, setAnswers, count, setCount,
-  savedAt, busy, onFlush, onGenerate, onDiscard,
+  savedAt, busy, phase, onFlush, onGenerate, onDiscard,
 }: {
   branch: IcpBranchId;
   locale: Locale;
@@ -19,6 +19,7 @@ export default function IcpForm({
   setCount: (n: number | null) => void;
   savedAt: number | null;
   busy: boolean;
+  phase: "" | "record" | "analysis";
   onFlush: () => Promise<void>;
   onGenerate: () => void;
   onDiscard: () => void;
@@ -134,7 +135,7 @@ export default function IcpForm({
             </button>
           )}
           <span style={{ marginLeft: "auto", fontSize: 12.5, color: T.muted }}>
-            {busy && last ? c.takesAMinute : ago}
+            {busy ? (phase === "analysis" ? c.analysing : c.takesAMinute) : ago}
           </span>
         </div>
 

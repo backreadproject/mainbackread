@@ -58,10 +58,11 @@ function Chips({ xs }: { xs: string[] }) {
 const STANCE_COLOUR: Record<string, string> = { signs: T.heading, champions: T.green, blocks: T.amber };
 
 export default function IcpOutputView({
-  row, locale, busy, onEnrich, onReanswer,
+  row, locale, busy, phase, onEnrich, onAnalyse, onReanswer,
 }: {
-  row: Row; locale: Locale; busy: boolean;
+  row: Row; locale: Locale; busy: boolean; phase: "" | "record" | "analysis";
   onEnrich: (probes: { id: string; q: string; a: string }[]) => void;
+  onAnalyse: () => void;
   onReanswer: () => void;
 }) {
   const c = icpCopy(locale);
@@ -92,6 +93,20 @@ export default function IcpOutputView({
       <div style={{ marginTop: 22, fontSize: 20, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, lineHeight: 1.35, maxWidth: "30em" }}>
         {o.headline}
       </div>
+
+      {!o.analysed && (
+        <div style={{ marginTop: 26, borderLeft: "3px solid " + T.amber, padding: "2px 0 2px 14px", maxWidth: 640 }}>
+          <div style={{ fontSize: 13.5, color: T.body, lineHeight: 1.6, marginBottom: 10 }}>
+            {phase === "analysis" ? c.analysing : c.analysisFailed}
+          </div>
+          {phase !== "analysis" && (
+            <button onClick={onAnalyse} disabled={busy}
+              style={{ font: "inherit", fontSize: 13, fontWeight: 500, padding: "7px 14px", borderRadius: T.rBtn, border: "none", background: T.green, color: T.onAccent, cursor: busy ? "default" : "pointer", opacity: busy ? 0.6 : 1 }}>
+              {c.runAnalysis}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Findings first. The definition is a record; this is the reason to open the page. */}
       {o.findings?.length > 0 && (

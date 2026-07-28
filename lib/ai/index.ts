@@ -9,7 +9,8 @@ export { ocrTask, type OcrInput, type OcrOutput } from "./tasks/ocr";
 export { composeTask, type ComposeInput, type ComposeOutput } from "./tasks/compose";
 export { supportTask, type SupportInput, type SupportOutput, type SupportTurn } from "./tasks/support";
 export { reportTask, type ReportInput, type ReportOutput, type ReportReader } from "./tasks/report";
-export { icpTask, type IcpInput, type IcpOutput, type IcpBranch, type IcpAnswer } from "./tasks/icp";
+export { icpTask, IcpOutput as IcpOutputSchema, type IcpInput, type IcpOutput, type IcpBranch, type IcpAnswer, type IcpRecord } from "./tasks/icp";
+export { icpAnalysisTask, type IcpAnalysis, type IcpAnalysisInput } from "./tasks/icp-analysis";
 const PROVIDERS: Record<ProviderName, Provider> = {
   mock: mockProvider,
   anthropic: anthropicProvider,

@@ -67,6 +67,7 @@ export interface IcpCopy {
   hUnknowns: string; sUnknowns: string;
   hProbes: string; sProbes: string; probePlaceholder: string;
   rebuild: string; rebuilding: string; probesHint: string;
+  analysing: string; analysisFailed: string; runAnalysis: string;
   hLimits: string;
   limitsTail: string;
   noResult: string; noResultHint: string;
@@ -164,6 +165,9 @@ const en: IcpCopy = {
   rebuild: "Rebuild with these answers",
   rebuilding: "Rebuilding",
   probesHint: "Answer at least one, then rebuild. Rebuilding without new answers costs nothing and changes nothing.",
+  analysing: "Reading your answers for what follows from them",
+  analysisFailed: "The profile is saved. The analysis did not finish.",
+  runAnalysis: "Run the analysis",
   hLimits: "What this cannot tell you",
   limitsTail: "Nothing above has been checked against who actually reads your documents. That comparison starts once about twenty readers have gone past page three, and when it disagrees with this page, this page is the thing that was wrong.",
   noResult: "This profile has no result yet.",
@@ -267,6 +271,9 @@ const fr: IcpCopy = {
   rebuild: "Reconstruire avec ces r\u00e9ponses",
   rebuilding: "Reconstruction",
   probesHint: "R\u00e9pondez \u00e0 au moins une, puis reconstruisez. Reconstruire sans nouvelle r\u00e9ponse ne co\u00fbte rien et ne change rien.",
+  analysing: "Lecture de vos r\u00e9ponses pour en tirer ce qui en d\u00e9coule",
+  analysisFailed: "Le profil est enregistr\u00e9. L\u2019analyse n\u2019a pas abouti.",
+  runAnalysis: "Lancer l\u2019analyse",
   hLimits: "Ce que ceci ne peut pas vous dire",
   limitsTail: "Rien de ce qui pr\u00e9c\u00e8de n\u2019a \u00e9t\u00e9 confront\u00e9 \u00e0 ceux qui lisent r\u00e9ellement vos documents. Cette comparaison commence lorsque environ vingt lecteurs ont d\u00e9pass\u00e9 la troisi\u00e8me page, et lorsqu\u2019elle contredit cette page, c\u2019est cette page qui avait tort.",
   noResult: "Ce profil n\u2019a pas encore de r\u00e9sultat.",

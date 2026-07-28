@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
-import { runAI, icpTask, type IcpOutput } from "@/lib/ai";
+import { runAI, icpTask, icpAnalysisTask, type IcpOutput, type IcpRecord } from "@/lib/ai";
 import { getLocale } from "@/lib/locale-server";
 
 export const runtime = "nodejs";
@@ -30,6 +30,7 @@ const Body = z.discriminatedUnion("action", [
   // reset the divergence baseline.
   z.object({ action: z.literal("enrich"), id: z.string().uuid(), probes: z.array(Answer).max(6) }),
   z.object({ action: z.literal("generate"), id: z.string().uuid() }),
+  z.object({ action: z.literal("analyse"), id: z.string().uuid() }),
   z.object({ action: z.literal("discard"), id: z.string().uuid() }),
 ]);
 
@@ -105,7 +106,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Bad request: " + parsed.error.issues[0].message }, { status: 400 });
   const body = parsed.data;
 
-  if ((body.action === "start" || body.action === "generate") && isLocked(ctx)) {
+  if ((body.action === "start" || body.action === "generate" || body.action === "analyse") && isLocked(ctx)) {
     return NextResponse.json({ error: "Your trial has ended. Subscribe to build a new buyer profile.", upgrade: true }, { status: 402 });
   }
 
@@ -169,6 +170,38 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ profile: data as IcpRow });
   }
 
+  // Second pass, its own request and therefore its own 60s budget. The record
+  // is already saved by the time this runs, so a failure here costs the analysis
+  // and not the generation that paid for it.
+  if (body.action === "analyse") {
+    if (!row.output) return NextResponse.json({ error: "Build the profile first." }, { status: 409 });
+    if (row.output.analysed) return NextResponse.json({ profile: row, cached: true });
+
+    const locale2 = await getLocale();
+    const answered2 = stored.probes.filter((p) => p.a.trim());
+    const { findings, tensions, market, unknowns, probes, ...record } = row.output;
+    try {
+      const res = await runAI(icpAnalysisTask, {
+        branch: row.branch,
+        sells: stored.sells,
+        customerCount: row.branch === "startup" ? null : stored.customerCount,
+        answers: stored.items.map((x) => ({ q: x.q, a: x.a }))
+          .concat(answered2.map((p) => ({ q: "FOLLOW-UP: " + p.q, a: p.a }))),
+        locale: locale2,
+        record: record as IcpRecord,
+      });
+      const merged: IcpOutput = { ...row.output, ...res.data, analysed: true };
+      const { data, error } = await supabase.from("icp_profiles")
+        .update({ output: merged, updated_at: new Date().toISOString() })
+        .eq("id", row.id).select(COLS).single();
+      if (error) return NextResponse.json({ error: "Analysed it, but could not save it: " + error.message }, { status: 500 });
+      return NextResponse.json({ profile: data as IcpRow, cached: false });
+    } catch (e) {
+      console.error("[icp] analysis failed", { profileId: row.id, error: e instanceof Error ? e.message : e });
+      return NextResponse.json({ error: "Built the profile, but could not finish the analysis. Your answers are saved. Try the analysis again." }, { status: 502 });
+    }
+  }
+
   // generate
   if (!stored.sells.trim() || stored.items.filter((i) => i.a.trim()).length < 3) {
     return NextResponse.json({ error: "Answer at least three questions first. A profile built on less is guesswork wearing a format." }, { status: 400 });
@@ -192,7 +225,7 @@ export async function POST(req: NextRequest) {
         .concat(answered.map((p) => ({ q: "FOLLOW-UP: " + p.q, a: p.a }))),
       locale,
     });
-    out = res.data;
+    out = { ...res.data, findings: [], tensions: [], market: [], unknowns: [], probes: [], analysed: false };
   } catch (e) {
     console.error("[icp] generation failed", { profileId: row.id, branch, locale, error: e instanceof Error ? e.message : e });
     return NextResponse.json({ error: "Could not build the profile from these answers. Your answers are saved. Try again, and if it keeps failing, add a little more detail to the questions you answered briefly." }, { status: 502 });
