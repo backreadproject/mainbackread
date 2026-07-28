@@ -146,6 +146,50 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
 }
 
 /** Sends a sample payload so a customer can confirm their endpoint works. */
+/**
+ * Sends a stored delivery again.
+ *
+ * Replays the EXACT body that was sent, not a body rebuilt from current data:
+ * a reader may have been erased since, and a redelivery that quietly differs
+ * from the original is worse than none because it cannot be reconciled.
+ * Signed freshly, because the secret may have been rotated.
+ */
+export async function redeliver(deliveryId: string): Promise<{ ok: boolean; status?: number; error?: string }> {
+  const admin = createAdminClient();
+  const { data: d } = await admin
+    .from("webhook_deliveries")
+    .select("id, webhook_id, event, payload")
+    .eq("id", deliveryId)
+    .single();
+  if (!d) return { ok: false, error: "That delivery no longer exists." };
+  if (!d.payload) {
+    return { ok: false, error: "This delivery was recorded before payloads were kept, so it cannot be replayed." };
+  }
+
+  const { data: h } = await admin
+    .from("webhooks").select("id, url, secret, active").eq("id", d.webhook_id).single();
+  if (!h) return { ok: false, error: "That endpoint has been deleted." };
+
+  const isSlack = /hooks\.slack\.com/i.test(h.url as string);
+  const payload = d.payload as Payload;
+  const body = isSlack ? JSON.stringify({ text: slackBlurb(payload) }) : JSON.stringify(payload);
+  const headers: Record<string, string> = { "content-type": "application/json" };
+  if (!isSlack) {
+    headers["x-readprospects-event"] = String(d.event);
+    headers["x-readprospects-signature"] = sign(h.secret as string, body);
+    // Marked so a receiver can tell a replay from the original and skip it if
+    // their workflow is not idempotent.
+    headers["x-readprospects-redelivery"] = String(d.id);
+  }
+
+  const res = await postOnce(h.url as string, body, headers);
+  await admin.from("webhook_deliveries").insert({
+    webhook_id: h.id, event: d.event, ok: res.ok,
+    status_code: res.status ?? null, error: res.error ?? null, payload: d.payload,
+  });
+  return res;
+}
+
 export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean; status?: number; error?: string }> {
   const admin = createAdminClient();
   const { data: h } = await admin.from("webhooks").select("id, url, secret").eq("id", webhookId).single();

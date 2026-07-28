@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
-import { isSafeWebhookUrl, newWebhookSecret, sendTestDelivery, WEBHOOK_EVENTS } from "@/lib/webhooks";
+import { isSafeWebhookUrl, newWebhookSecret, sendTestDelivery, redeliver, WEBHOOK_EVENTS } from "@/lib/webhooks";
 
 export const runtime = "nodejs";
 
@@ -23,11 +23,36 @@ async function guard() {
   return { user, orgId: ctx.org.id, admin };
 }
 
+export async function GET(req: NextRequest) {
+  const g = await guard();
+  if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
+  const webhookId = new URL(req.url).searchParams.get("webhookId") ?? "";
+  if (!webhookId) return NextResponse.json({ error: "webhookId is required." }, { status: 400 });
+
+  const { data: hook } = await g.admin.from("webhooks").select("id, organization_id").eq("id", webhookId).single();
+  if (!hook || hook.organization_id !== g.orgId) return NextResponse.json({ error: "Not found." }, { status: 404 });
+
+  const { data } = await g.admin
+    .from("webhook_deliveries")
+    .select("id, event, ok, status_code, error, created_at, payload")
+    .eq("webhook_id", webhookId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  // payload can hold a reader's question or reply text, so it is reduced to a
+  // replayable flag rather than returned to the browser.
+  const rows = (data ?? []).map((d) => ({
+    id: d.id, event: d.event, ok: d.ok, status_code: d.status_code,
+    error: d.error, created_at: d.created_at, replayable: d.payload != null,
+  }));
+  return NextResponse.json({ deliveries: rows });
+}
+
 export async function POST(req: NextRequest) {
   const g = await guard();
   if ("error" in g) return NextResponse.json({ error: g.error }, { status: g.status });
 
-  const { action, url, webhookId, events } = await req.json();
+  const { action, url, webhookId, events, deliveryId } = await req.json();
 
   if (action === "create") {
     const safe = isSafeWebhookUrl(String(url ?? ""));
@@ -53,6 +78,13 @@ export async function POST(req: NextRequest) {
     const { error } = await g.admin.from("webhooks").update({ active: !hook.active }).eq("id", webhookId);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
+  }
+  if (action === "redeliver") {
+    const res = await redeliver(String(deliveryId));
+    return NextResponse.json(
+      res.ok ? { ok: true, status: res.status }
+             : { error: res.error || `Endpoint returned ${res.status}.` },
+      { status: res.ok ? 200 : 400 });
   }
   if (action === "test") {
     const res = await sendTestDelivery(String(webhookId));

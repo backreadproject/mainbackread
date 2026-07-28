@@ -19,6 +19,73 @@ function CopyButton({ value }: { value: string }) {
     </button>
   );
 }
+type Delivery = { id: string; event: string; ok: boolean; status_code: number | null; error: string | null; created_at: string; replayable: boolean };
+
+/** The delivery log for one endpoint. Fetched on expand rather than with the
+ *  page, because most visits to Settings are not about webhooks. */
+function DeliveryLog({ hookId, L, onMsg }: { hookId: string; L: Record<string, string>; onMsg: (ok: boolean, m: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<Delivery[] | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/webhooks?webhookId=" + encodeURIComponent(hookId));
+      const j = await res.json().catch(() => ({}));
+      setRows(res.ok ? (j.deliveries ?? []) : []);
+    } finally { setBusy(false); }
+  }
+
+  async function replay(id: string) {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/webhooks", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "redeliver", deliveryId: id }),
+      });
+      const j = await res.json().catch(() => ({}));
+      onMsg(res.ok, res.ok ? L.replayed : (j.error || "Failed."));
+      if (res.ok) await load();
+    } finally { setBusy(false); }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => { setOpen(true); void load(); }}
+        style={{ background: "none", border: "none", padding: 0, marginTop: 8, fontSize: 12.5, color: T.muted, cursor: "pointer", fontFamily: T.font }}>
+        {L.log}
+      </button>
+    );
+  }
+  return (
+    <div style={{ marginTop: 10, border: "1px solid " + T.borderSoft, borderRadius: T.rCard }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "7px 11px", background: T.soft, borderBottom: "1px solid " + T.borderSoft }}>
+        <span style={{ fontSize: 12, color: T.muted }}>{L.log}</span>
+        <button onClick={() => setOpen(false)} style={{ background: "none", border: "none", padding: 0, fontSize: 12, color: T.muted, cursor: "pointer", fontFamily: T.font }}>{L.hide}</button>
+      </div>
+      {rows === null && <div style={{ padding: "9px 11px", fontSize: 12.5, color: T.faint }}>...</div>}
+      {rows?.length === 0 && <div style={{ padding: "9px 11px", fontSize: 12.5, color: T.faint }}>{L.noLog}</div>}
+      {rows?.map((d, n) => (
+        <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 11px", borderTop: n === 0 ? "none" : "1px solid " + T.borderSoft }}>
+          <i style={{ width: 6, height: 6, flex: "none", background: d.ok ? T.green : T.danger, display: "inline-block" }} />
+          <span style={{ fontSize: 12.5, color: T.body, flex: "1 1 auto", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {d.event}
+            <span style={{ color: T.faint }}>{" \u00b7 " + new Date(d.created_at).toLocaleString()}</span>
+          </span>
+          <span style={{ fontSize: 12, color: d.ok ? T.muted : T.dangerText, flex: "none", maxWidth: 190, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {d.status_code ?? d.error ?? ""}
+          </span>
+          {!d.ok && (d.replayable
+            ? <button onClick={() => void replay(d.id)} disabled={busy} style={{ ...small, height: 24, fontSize: 12, flex: "none" }}>{L.replay}</button>
+            : <span style={{ fontSize: 12, color: T.faint, flex: "none" }}>{L.notReplayable}</span>)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function WebhooksCard({ enabled, canManage, hooks, planName }: { enabled: boolean; canManage: boolean; hooks: Hook[]; planName: string }) {
   const router = useRouter();
   const fr = useLocale() === "fr";
@@ -42,6 +109,12 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
     saved: fr ? "Endpoint ajout\u00e9." : "Endpoint added.",
     sent: fr ? "Test envoy\u00e9." : "Test delivered.",
     secretNote: fr ? "Conservez ce secret, il ne sera plus affich\u00e9 :" : "Save this signing secret, it will not be shown again:",
+    log: fr ? "Livraisons" : "Deliveries",
+    hide: fr ? "Masquer" : "Hide",
+    replay: fr ? "Renvoyer" : "Replay",
+    replayed: fr ? "Renvoy\u00e9." : "Replayed.",
+    noLog: fr ? "Aucune livraison pour l\u2019instant." : "No deliveries yet.",
+    notReplayable: fr ? "Trop ancien pour \u00eatre renvoy\u00e9" : "Too old to replay",
   };
   async function call(b: Record<string, unknown>) {
     setBusy(true); setMsg("");
@@ -67,13 +140,14 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
         <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 14px", lineHeight: 1.55 }}>{L.intro}</p>
         {hooks.length === 0 && <p style={{ fontSize: 13.5, color: T.faint, margin: "0 0 14px" }}>{L.none}</p>}
         {hooks.map((h, i) => (
-          <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i === 0 ? "1px solid " + T.border : "1px solid " + T.borderSoft }}>
+          <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: "11px 0", borderTop: i === 0 ? "1px solid " + T.border : "1px solid " + T.borderSoft }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 13.5, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 340 }}>{h.url}</div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.muted, marginTop: 3 }}>
                 <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: h.active ? T.green : T.faint }} />
                 {h.active ? L.on : L.off}{h.last_status ? " \u00b7 " + h.last_status : ""}{h.last_delivery_at ? " \u00b7 " + new Date(h.last_delivery_at).toLocaleDateString() : ""}
               </div>
+              <DeliveryLog hookId={h.id} L={L} onMsg={(o, m) => { setOk(o); setMsg(m); }} />
             </div>
             {canManage && (
               <div style={{ display: "flex", gap: 6, flex: "none" }}>
