@@ -119,6 +119,13 @@ export async function POST(req: NextRequest) {
     const { data: l1 } = await sq.order("revision", { ascending: false }).limit(1).maybeSingle();
     const last = l1 as { revision: number } | null;
 
+    const { data: p1 } = await base(supabase, scope, user.id)
+      .eq("status", "complete").order("revision", { ascending: false }).limit(1).maybeSingle();
+    const prev = p1 as IcpRow | null;
+    const seeded = prev && prev.branch === body.branch
+      ? { ...readAnswers(prev.answers), probes: [] }
+      : emptyAnswers();
+
     const { data, error } = await supabase.from("icp_profiles").insert({
       owner_id: scope.personal ? user.id : null,
       organization_id: scope.personal ? null : scope.orgId,
@@ -128,10 +135,10 @@ export async function POST(req: NextRequest) {
       refined_from: null,
       branch: body.branch,
       status: "draft",
-      answers: emptyAnswers(),
+      answers: seeded,
     }).select(COLS).single();
     if (error) return NextResponse.json({ error: "Could not start: " + error.message }, { status: 400 });
-    return NextResponse.json({ profile: data as IcpRow, resumed: false });
+    return NextResponse.json({ profile: data as IcpRow, resumed: false, seeded: seeded.items.length > 0 });
   }
 
   const { data: r1 } = await base(supabase, scope, user.id).eq("id", body.id).maybeSingle();

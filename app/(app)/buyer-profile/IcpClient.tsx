@@ -245,7 +245,7 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
           onFlush={flush} onGenerate={() => void generate(draft.id)} onDiscard={discard}
         />
       ) : current?.output ? (
-        <IcpOutputView row={current} locale={locale} busy={busy} onEnrich={enrich} onReanswer={() => setView("selector")} />
+        <IcpOutputView row={current} locale={locale} busy={busy} onEnrich={enrich} onReanswer={() => void start(current.branch)} />
       ) : (
         <div style={{ marginTop: 28, fontSize: 13, color: T.muted }}>{c.nothingYet}</div>
       )}
