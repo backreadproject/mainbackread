@@ -10,7 +10,12 @@ export { composeTask, type ComposeInput, type ComposeOutput } from "./tasks/comp
 export { supportTask, type SupportInput, type SupportOutput, type SupportTurn } from "./tasks/support";
 export { reportTask, type ReportInput, type ReportOutput, type ReportReader } from "./tasks/report";
 export { icpTask, IcpOutput as IcpOutputSchema, type IcpInput, type IcpOutput, type IcpBranch, type IcpAnswer, type IcpRecord } from "./tasks/icp";
-export { icpAnalysisTask, type IcpAnalysis, type IcpAnalysisInput } from "./tasks/icp-analysis";
+export { icpPeopleTask, IcpPeople as IcpPeopleSchema, type IcpPeople, type IcpPeopleInput } from "./tasks/icp-people";
+export { icpDemandTask, IcpDemand as IcpDemandSchema, type IcpDemand, type IcpDemandInput } from "./tasks/icp-demand";
+export { icpMarketTask, IcpMarket as IcpMarketSchema, type IcpMarket, type IcpMarketInput } from "./tasks/icp-market";
+export { icpActivationTask, IcpActivation as IcpActivationSchema, type IcpActivation, type IcpActivationInput } from "./tasks/icp-activation";
+export { icpSynthesisTask, IcpSynthesis as IcpSynthesisSchema, type IcpSynthesis, type IcpSynthesisInput } from "./tasks/icp-synthesis";
+export { Claim, Source, Band, PROVENANCE, HOUSE_STYLE } from "./tasks/icp-claim";
 const PROVIDERS: Record<ProviderName, Provider> = {
   mock: mockProvider,
   anthropic: anthropicProvider,

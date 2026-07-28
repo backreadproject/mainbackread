@@ -5,8 +5,16 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
-import { runAI, icpTask, icpAnalysisTask, type IcpOutput, type IcpRecord } from "@/lib/ai";
 import { getLocale } from "@/lib/locale-server";
+import { questionsFor } from "@/lib/icp-questions";
+import {
+  runAI, icpTask, icpPeopleTask, icpDemandTask, icpMarketTask,
+  icpActivationTask, icpSynthesisTask,
+} from "@/lib/ai";
+import {
+  PASSES, emptyProfile, nextPass, computeConfidence,
+  type IcpProfile, type Pass,
+} from "@/lib/icp-profile";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -14,33 +22,26 @@ export const maxDuration = 60;
 const MAX_ANSWER = 4000;
 const Answer = z.object({ id: z.string().min(1).max(40), q: z.string().min(1).max(300), a: z.string().max(MAX_ANSWER) });
 
-// No `source`, no `revision`, no `locale`. Anything the client could assert
-// about how the output is produced is something it could get wrong.
 const Body = z.discriminatedUnion("action", [
   z.object({ action: z.literal("start"), branch: z.enum(["operating", "startup"]) }),
   z.object({
-    action: z.literal("save"),
-    id: z.string().uuid(),
+    action: z.literal("save"), id: z.string().uuid(),
     sells: z.string().max(600).default(""),
     customerCount: z.number().int().min(0).max(1000000).nullable().default(null),
     answers: z.array(Answer).max(12),
   }),
-  // Probe answers. Allowed on a COMPLETE row: answering a follow-up enriches the
-  // revision the system asked it of. It is not a new assertion, so it must not
-  // reset the divergence baseline.
   z.object({ action: z.literal("enrich"), id: z.string().uuid(), probes: z.array(Answer).max(6) }),
-  z.object({ action: z.literal("generate"), id: z.string().uuid() }),
-  z.object({ action: z.literal("analyse"), id: z.string().uuid() }),
+  // One pass per request. `pass` omitted means "run whichever is next".
+  z.object({ action: z.literal("run"), id: z.string().uuid(), pass: z.enum(PASSES).optional() }),
   z.object({ action: z.literal("discard"), id: z.string().uuid() }),
 ]);
 
 type QA = { id: string; q: string; a: string };
 type Stored = { sells: string; customerCount: number | null; items: QA[]; probes: QA[] };
-
 type IcpRow = {
   id: string; branch: "operating" | "startup"; source: "asserted" | "refined";
   revision: number; refined_from: number | null; status: "draft" | "complete";
-  answers: unknown; answers_hash: string | null; output: IcpOutput | null;
+  answers: unknown; answers_hash: string | null; output: IcpProfile | null;
   created_at: string; completed_at: string | null;
 };
 
@@ -56,6 +57,11 @@ function readAnswers(v: unknown): Stored {
 }
 function hashOf(branch: string, locale: string, a: Stored): string {
   return createHash("sha256").update(JSON.stringify({ branch, locale, a })).digest("hex");
+}
+function readProfile(v: unknown): IcpProfile {
+  const o = v as IcpProfile | null;
+  if (!o || typeof o !== "object" || !Array.isArray(o.done)) return emptyProfile();
+  return o;
 }
 
 const COLS = "id, branch, source, revision, refined_from, status, answers, answers_hash, output, created_at, completed_at";
@@ -106,7 +112,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Bad request: " + parsed.error.issues[0].message }, { status: 400 });
   const body = parsed.data;
 
-  if ((body.action === "start" || body.action === "generate" || body.action === "analyse") && isLocked(ctx)) {
+  if ((body.action === "start" || body.action === "run") && isLocked(ctx)) {
     return NextResponse.json({ error: "Your trial has ended. Subscribe to build a new buyer profile.", upgrade: true }, { status: 402 });
   }
 
@@ -123,19 +129,14 @@ export async function POST(req: NextRequest) {
     const { data: p1 } = await base(supabase, scope, user.id)
       .eq("status", "complete").order("revision", { ascending: false }).limit(1).maybeSingle();
     const prev = p1 as IcpRow | null;
-    const seeded = prev && prev.branch === body.branch
-      ? { ...readAnswers(prev.answers), probes: [] }
-      : emptyAnswers();
+    const seeded = prev && prev.branch === body.branch ? { ...readAnswers(prev.answers), probes: [] } : emptyAnswers();
 
     const { data, error } = await supabase.from("icp_profiles").insert({
       owner_id: scope.personal ? user.id : null,
       organization_id: scope.personal ? null : scope.orgId,
       created_by: user.id,
       revision: (last?.revision ?? 0) + 1,
-      source: "asserted",
-      refined_from: null,
-      branch: body.branch,
-      status: "draft",
+      source: "asserted", refined_from: null, branch: body.branch, status: "draft",
       answers: seeded,
     }).select(COLS).single();
     if (error) return NextResponse.json({ error: "Could not start: " + error.message }, { status: 400 });
@@ -163,88 +164,116 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "enrich") {
+    // New probe answers invalidate everything downstream of the record: the
+    // analyses were reasoned from a smaller set of facts. Keep the record,
+    // clear the rest, and let the client re-run.
     const answers: Stored = { ...stored, probes: body.probes };
-    const { data, error } = await supabase.from("icp_profiles").update({ answers, updated_at: new Date().toISOString() })
+    const prof = readProfile(row.output);
+    const reset: IcpProfile = { ...prof, people: null, demand: null, market: null, activation: null, synthesis: null, done: prof.done.filter((d) => d === "record") };
+    const { data, error } = await supabase.from("icp_profiles")
+      .update({ answers, output: reset, updated_at: new Date().toISOString() })
       .eq("id", row.id).select(COLS).single();
     if (error) return NextResponse.json({ error: "Could not save: " + error.message }, { status: 400 });
     return NextResponse.json({ profile: data as IcpRow });
   }
 
-  // Second pass, its own request and therefore its own 60s budget. The record
-  // is already saved by the time this runs, so a failure here costs the analysis
-  // and not the generation that paid for it.
-  if (body.action === "analyse") {
-    if (!row.output) return NextResponse.json({ error: "Build the profile first." }, { status: 409 });
-    if (row.output.analysed) return NextResponse.json({ profile: row, cached: true });
-
-    const locale2 = await getLocale();
-    const answered2 = stored.probes.filter((p) => p.a.trim());
-    const { findings, tensions, market, unknowns, probes, ...record } = row.output;
-    try {
-      const res = await runAI(icpAnalysisTask, {
-        branch: row.branch,
-        sells: stored.sells,
-        customerCount: row.branch === "startup" ? null : stored.customerCount,
-        answers: stored.items.map((x) => ({ q: x.q, a: x.a }))
-          .concat(answered2.map((p) => ({ q: "FOLLOW-UP: " + p.q, a: p.a }))),
-        locale: locale2,
-        record: record as IcpRecord,
-      });
-      const merged: IcpOutput = { ...row.output, ...res.data, analysed: true };
-      const { data, error } = await supabase.from("icp_profiles")
-        .update({ output: merged, updated_at: new Date().toISOString() })
-        .eq("id", row.id).select(COLS).single();
-      if (error) return NextResponse.json({ error: "Analysed it, but could not save it: " + error.message }, { status: 500 });
-      return NextResponse.json({ profile: data as IcpRow, cached: false });
-    } catch (e) {
-      console.error("[icp] analysis failed", { profileId: row.id, error: e instanceof Error ? e.message : e });
-      return NextResponse.json({ error: "Built the profile, but could not finish the analysis. Your answers are saved. Try the analysis again." }, { status: 502 });
-    }
-  }
-
-  // generate
+  // ---- run one pass ----
   if (!stored.sells.trim() || stored.items.filter((i) => i.a.trim()).length < 3) {
     return NextResponse.json({ error: "Answer at least three questions first. A profile built on less is guesswork wearing a format." }, { status: 400 });
   }
 
   const locale = await getLocale();
   const hash = hashOf(row.branch, locale, stored);
-  if (row.answers_hash === hash && row.output) return NextResponse.json({ profile: row, cached: true });
+  let prof = readProfile(row.output);
 
-  const branch = row.branch;
+  // Answers changed since the last run: everything on the page describes a
+  // different set of facts and must be rebuilt.
+  if (row.answers_hash && row.answers_hash !== hash) prof = emptyProfile();
+
+  const pass: Pass | null = body.pass ?? nextPass(prof);
+  if (!pass) return NextResponse.json({ profile: row, done: true, cached: true });
+  if (prof.done.includes(pass)) return NextResponse.json({ profile: row, cached: true });
+
   const answered = stored.probes.filter((p) => p.a.trim());
-  let out: IcpOutput;
+  const shared = {
+    branch: row.branch,
+    sells: stored.sells,
+    customerCount: row.branch === "startup" ? null : stored.customerCount,
+    answers: stored.items.map((x) => ({ q: x.q, a: x.a }))
+      .concat(answered.map((p) => ({ q: "FOLLOW-UP: " + p.q, a: p.a }))),
+    locale,
+  };
+
+  // Later passes read earlier ones, so a missing prerequisite is a client bug,
+  // not something to paper over with an empty object.
+  const need = (x: unknown, name: string) => {
+    if (!x) throw new Error("PREREQ:" + name);
+    return x;
+  };
+
   try {
-    const res = await runAI(icpTask, {
-      branch,
-      sells: stored.sells,
-      customerCount: branch === "startup" ? null : stored.customerCount,
-      // Probe answers arrive as further questions, marked so the model knows
-      // they were asked after it had already seen the first pass.
-      answers: stored.items.map((x) => ({ q: x.q, a: x.a }))
-        .concat(answered.map((p) => ({ q: "FOLLOW-UP: " + p.q, a: p.a }))),
-      locale,
-    });
-    out = { ...res.data, findings: [], tensions: [], market: [], unknowns: [], probes: [], analysed: false };
+    let patch: Partial<IcpProfile>;
+    switch (pass) {
+      case "record":
+        patch = { record: (await runAI(icpTask, shared)).data };
+        break;
+      case "people":
+        patch = { people: (await runAI(icpPeopleTask, { ...shared, record: need(prof.record, "record") as never })).data };
+        break;
+      case "demand":
+        patch = { demand: (await runAI(icpDemandTask, { ...shared, record: need(prof.record, "record") as never })).data };
+        break;
+      case "market":
+        patch = { market: (await runAI(icpMarketTask, { ...shared, record: need(prof.record, "record") as never })).data };
+        break;
+      case "activation":
+        patch = { activation: (await runAI(icpActivationTask, {
+          ...shared,
+          record: need(prof.record, "record") as never,
+          people: need(prof.people, "people") as never,
+          demand: need(prof.demand, "demand") as never,
+          market: need(prof.market, "market") as never,
+        })).data };
+        break;
+      case "synthesis":
+        patch = { synthesis: (await runAI(icpSynthesisTask, {
+          ...shared,
+          record: need(prof.record, "record") as never,
+          people: need(prof.people, "people") as never,
+          demand: need(prof.demand, "demand") as never,
+          market: need(prof.market, "market") as never,
+          activation: need(prof.activation, "activation") as never,
+        })).data };
+        break;
+    }
+
+    const done = prof.done.includes(pass) ? prof.done : [...prof.done, pass];
+    const weightedIds = questionsFor(row.branch, locale).filter((q) => q.weight).map((q) => q.id);
+    const merged: IcpProfile = {
+      ...prof, ...patch, done,
+      confidence: computeConfidence(stored.items, weightedIds, stored.probes, stored.customerCount, row.branch),
+    };
+
+    const finished = done.length === PASSES.length;
+    const { data, error } = await supabase.from("icp_profiles").update({
+      output: merged,
+      answers_hash: hash,
+      status: "complete",
+      completed_at: row.completed_at ?? new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq("id", row.id).select(COLS).single();
+    if (error) return NextResponse.json({ error: "Built it, but could not save it: " + error.message }, { status: 500 });
+
+    return NextResponse.json({ profile: data as IcpRow, pass, next: nextPass(merged), done: finished });
   } catch (e) {
-    console.error("[icp] generation failed", { profileId: row.id, branch, locale, error: e instanceof Error ? e.message : e });
-    return NextResponse.json({ error: "Could not build the profile from these answers. Your answers are saved. Try again, and if it keeps failing, add a little more detail to the questions you answered briefly." }, { status: 502 });
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[icp] pass failed", { profileId: row.id, pass, branch: row.branch, locale, error: msg });
+    if (msg.startsWith("PREREQ:")) {
+      return NextResponse.json({ error: "That section needs an earlier one first. Reload the page and continue.", pass }, { status: 409 });
+    }
+    return NextResponse.json({
+      error: "Could not build the " + pass + " section. Everything already built is saved. Try that section again.",
+      pass,
+    }, { status: 502 });
   }
-
-  out.kind = branch === "operating" ? "definition" : "hypothesis";
-  if (branch === "startup") {
-    // Only the sections that would be false precision from a handful of
-    // conversations. Findings, tensions, market and probes stay: those are
-    // reasoning, not fabrication, and they are why this page exists.
-    out.committee = [];
-    out.angles = [];
-    out.find = { ...out.find, searchStrings: [] };
-  }
-
-  const { data, error } = await supabase.from("icp_profiles").update({
-    output: out, answers_hash: hash, status: "complete",
-    completed_at: new Date().toISOString(), updated_at: new Date().toISOString(),
-  }).eq("id", row.id).select(COLS).single();
-  if (error) return NextResponse.json({ error: "Built it, but could not save it: " + error.message }, { status: 500 });
-  return NextResponse.json({ profile: data as IcpRow, cached: false });
 }
