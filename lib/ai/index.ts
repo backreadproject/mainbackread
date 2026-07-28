@@ -88,6 +88,7 @@ export async function runAI<TIn, TOut>(
     system: task.system(input),
     user: task.user(input),
     maxTokens: task.maxTokens,
+    thinkingBudget: task.thinkingBudget,
     // Vision tasks (OCR) provide images; text tasks leave this undefined.
     images: task.images ? task.images(input) : undefined,
   };
@@ -108,7 +109,7 @@ export async function runAI<TIn, TOut>(
     } catch (err) {
       lastErr = err;
       // A malformed response is worth one retry. A 401 is not.
-      if (err instanceof Error && /Anthropic 4\d\d/.test(err.message)) break;
+      if (err instanceof Error && (/Anthropic 4\d\d/.test(err.message) || /stop_reason=max_tokens/.test(err.message) || /JSON truncated/.test(err.message))) break;
     }
   }
   throw new Error(`runAI[${task.id}] failed: ${lastErr instanceof Error ? lastErr.message : String(lastErr)}`);

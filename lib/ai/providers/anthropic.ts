@@ -49,6 +49,9 @@ export const anthropicProvider: Provider = {
       body: JSON.stringify({
         model,
         max_tokens: req.maxTokens,
+        ...(req.thinkingBudget && req.thinkingBudget > 0
+          ? { thinking: { type: "enabled", budget_tokens: req.thinkingBudget } }
+          : { thinking: { type: "disabled" } }),
         system,
         messages: [{ role: "user", content: userContent }],
       }),

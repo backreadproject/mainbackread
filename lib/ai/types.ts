@@ -25,6 +25,7 @@ export interface CompletionRequest {
   system: string;
   user: string;
   maxTokens: number;
+  thinkingBudget?: number;
   /** Optional images for vision tasks. Text-only requests leave this undefined. */
   images?: CompletionImage[];
 }
@@ -49,6 +50,10 @@ export interface Task<TInput, TOutput> {
   id: string;
   tier: ModelTier;
   maxTokens: number;
+  /** Extended thinking budget in tokens, drawn from the SAME maxTokens pool as
+   *  the output. Omit to disable thinking entirely, which is right for any task
+   *  whose value is a large structured document rather than a hard inference. */
+  thinkingBudget?: number;
   schema: z.ZodType<TOutput>;
   /** Stable content -- the document. Cached across every call for this doc. */
   cacheable(input: TInput): string;
