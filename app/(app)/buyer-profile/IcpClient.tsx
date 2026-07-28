@@ -129,17 +129,27 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
     finally { setBusy(false); }
   }
 
-  async function generate() {
-    if (!draft) return;
+  // Takes an id because generate now runs on a COMPLETE row too, when
+  // someone answers probes and asks for a sharper pass.
+  async function generate(id: string) {
     setBusy(true); setMsg("");
     try {
       await flush();
-      const r = await postJson<{ profile: Row }>("/api/icp", { action: "generate", id: draft.id }, 120000);
+      const r = await postJson<{ profile: Row }>("/api/icp", { action: "generate", id }, 120000);
       setCurrent(r.profile);
       setDraft(null);
       setView("output");
     } catch (e) { setMsg(errMsg(e, c.errBuild)); }
     finally { setBusy(false); }
+  }
+
+  async function enrich(probes: { id: string; q: string; a: string }[]) {
+    if (!current) return;
+    setBusy(true); setMsg("");
+    try {
+      await postJson("/api/icp", { action: "enrich", id: current.id, probes });
+      await generate(current.id);
+    } catch (e) { setMsg(errMsg(e, c.errBuild)); setBusy(false); }
   }
 
   async function discard() {
@@ -232,10 +242,10 @@ export default function IcpClient({ enabled, planName, locale }: { enabled: bool
           answers={answers} setAnswers={setAnswers}
           count={count} setCount={setCount}
           savedAt={savedAt} busy={busy}
-          onFlush={flush} onGenerate={generate} onDiscard={discard}
+          onFlush={flush} onGenerate={() => void generate(draft.id)} onDiscard={discard}
         />
       ) : current?.output ? (
-        <IcpOutputView row={current} locale={locale} onReanswer={() => setView("selector")} />
+        <IcpOutputView row={current} locale={locale} busy={busy} onEnrich={enrich} onReanswer={() => setView("selector")} />
       ) : (
         <div style={{ marginTop: 28, fontSize: 13, color: T.muted }}>{c.nothingYet}</div>
       )}

@@ -60,6 +60,13 @@ export interface IcpCopy {
   hDisq: string; sDisq: string;
   hAngles: string; sAngles: string;
   hTest: string; sTest: string;
+  hFindings: string; sFindings: string;
+  basisLabel: string; soWhatLabel: string;
+  hTensions: string; sTensions: string;
+  hMarket: string; sMarket: string; cautionLabel: string;
+  hUnknowns: string; sUnknowns: string;
+  hProbes: string; sProbes: string; probePlaceholder: string;
+  rebuild: string; rebuilding: string; probesHint: string;
   hLimits: string;
   limitsTail: string;
   noResult: string; noResultHint: string;
@@ -140,6 +147,23 @@ const en: IcpCopy = {
   sAngles: "What has to be true for each person to reply. Not subject lines.",
   hTest: "How to test this in two weeks",
   sTest: "The point of this page. Everything above is unverified until this is done.",
+  hFindings: "What follows from this",
+  sFindings: "Consequences of your answers that you did not state. Each one cites the answers it rests on, so you can check it.",
+  basisLabel: "Follows from",
+  soWhatLabel: "So",
+  hTensions: "Where your answers pull against each other",
+  sTensions: "Two things you said that cannot both be fully true. Worth resolving before you build outreach on either.",
+  hMarket: "Generally true of this market",
+  sMarket: "Not from your answers. What is usually true of the group you named, and what would make it not apply to you.",
+  cautionLabel: "Unless",
+  hUnknowns: "What is missing",
+  sUnknowns: "Not gaps for their own sake. Each one limits a conclusion this page would otherwise be able to draw.",
+  hProbes: "Answer these and this page gets sharper",
+  sProbes: "Short questions, answerable from memory. Each one names what it would unlock.",
+  probePlaceholder: "A sentence or two is enough",
+  rebuild: "Rebuild with these answers",
+  rebuilding: "Rebuilding",
+  probesHint: "Answer at least one, then rebuild. Rebuilding without new answers costs nothing and changes nothing.",
   hLimits: "What this cannot tell you",
   limitsTail: "Nothing above has been checked against who actually reads your documents. That comparison starts once about twenty readers have gone past page three, and when it disagrees with this page, this page is the thing that was wrong.",
   noResult: "This profile has no result yet.",
@@ -226,6 +250,23 @@ const fr: IcpCopy = {
   sAngles: "Ce qui doit \u00eatre vrai pour que chaque personne r\u00e9ponde. Pas des objets d\u2019e-mail.",
   hTest: "Comment tester cela en deux semaines",
   sTest: "Le c\u0153ur de cette page. Tout ce qui pr\u00e9c\u00e8de reste non v\u00e9rifi\u00e9 tant que ce n\u2019est pas fait.",
+  hFindings: "Ce qui en d\u00e9coule",
+  sFindings: "Des cons\u00e9quences de vos r\u00e9ponses que vous n\u2019avez pas formul\u00e9es. Chacune cite les r\u00e9ponses sur lesquelles elle repose, pour que vous puissiez v\u00e9rifier.",
+  basisLabel: "D\u00e9coule de",
+  soWhatLabel: "Donc",
+  hTensions: "L\u00e0 o\u00f9 vos r\u00e9ponses se contredisent",
+  sTensions: "Deux choses que vous avez dites qui ne peuvent pas \u00eatre enti\u00e8rement vraies en m\u00eame temps. \u00c0 trancher avant de b\u00e2tir une prospection sur l\u2019une ou l\u2019autre.",
+  hMarket: "G\u00e9n\u00e9ralement vrai de ce march\u00e9",
+  sMarket: "Ne vient pas de vos r\u00e9ponses. Ce qui est habituellement vrai du groupe que vous avez nomm\u00e9, et ce qui ferait que cela ne s\u2019applique pas \u00e0 vous.",
+  cautionLabel: "Sauf si",
+  hUnknowns: "Ce qui manque",
+  sUnknowns: "Pas des lacunes pour elles-m\u00eames. Chacune emp\u00eache une conclusion que cette page pourrait autrement tirer.",
+  hProbes: "R\u00e9pondez \u00e0 ceci et cette page s\u2019affine",
+  sProbes: "Des questions courtes, auxquelles on r\u00e9pond de m\u00e9moire. Chacune indique ce qu\u2019elle permettrait de d\u00e9bloquer.",
+  probePlaceholder: "Une ou deux phrases suffisent",
+  rebuild: "Reconstruire avec ces r\u00e9ponses",
+  rebuilding: "Reconstruction",
+  probesHint: "R\u00e9pondez \u00e0 au moins une, puis reconstruisez. Reconstruire sans nouvelle r\u00e9ponse ne co\u00fbte rien et ne change rien.",
   hLimits: "Ce que ceci ne peut pas vous dire",
   limitsTail: "Rien de ce qui pr\u00e9c\u00e8de n\u2019a \u00e9t\u00e9 confront\u00e9 \u00e0 ceux qui lisent r\u00e9ellement vos documents. Cette comparaison commence lorsque environ vingt lecteurs ont d\u00e9pass\u00e9 la troisi\u00e8me page, et lorsqu\u2019elle contredit cette page, c\u2019est cette page qui avait tort.",
   noResult: "Ce profil n\u2019a pas encore de r\u00e9sultat.",
