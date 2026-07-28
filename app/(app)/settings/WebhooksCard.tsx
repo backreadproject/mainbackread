@@ -143,7 +143,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
           <div key={h.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: "11px 0", borderTop: i === 0 ? "1px solid " + T.border : "1px solid " + T.borderSoft }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 13.5, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 340 }}>{h.url}</div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.muted, marginTop: 3 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.muted, marginTop: 3 }}>
                 <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: h.active ? T.green : T.faint }} />
                 {h.active ? L.on : L.off}{h.last_status ? " \u00b7 " + h.last_status : ""}{h.last_delivery_at ? " \u00b7 " + new Date(h.last_delivery_at).toLocaleDateString() : ""}
               </div>
@@ -151,7 +151,7 @@ export default function WebhooksCard({ enabled, canManage, hooks, planName }: { 
             </div>
             {canManage && (
               <div style={{ display: "flex", gap: 6, flex: "none" }}>
-                <button onClick={async () => { const r = await call({ action: "test", webhookId: h.id }); if (r) { setOk(true); setMsg(L.sent); } }} disabled={busy} style={small}>{L.test}</button>
+                <button onClick={async () => { const r = await call({ action: "test", webhookId: h.id }); if (r) { setOk(true); setMsg(L.sent); router.refresh(); } }} disabled={busy} style={small}>{L.test}</button>
                 <button onClick={async () => { if (await call({ action: "toggle", webhookId: h.id })) router.refresh(); }} disabled={busy} style={small}>{h.active ? L.pause : L.resume}</button>
                 <button onClick={async () => { if (await call({ action: "delete", webhookId: h.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: T.dangerText, borderColor: T.dangerBorder }}>{L.del}</button>
               </div>

@@ -212,5 +212,11 @@ export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean
   await admin.from("webhook_deliveries").insert({
     webhook_id: h.id, event: "test", ok: res.ok, status_code: res.status ?? null, error: res.error ?? null, payload,
   });
+  // A test is a real delivery: leaving the row showing last week's result makes
+  // a working endpoint look stale at the exact moment it was proven.
+  await admin.from("webhooks").update({
+    last_status: res.status ?? null,
+    last_delivery_at: new Date().toISOString(),
+  }).eq("id", h.id);
   return res;
 }
