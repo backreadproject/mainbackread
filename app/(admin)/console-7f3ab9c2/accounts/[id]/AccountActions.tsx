@@ -4,13 +4,19 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import ConfirmDialog from "../../ConfirmDialog";
 import { postJson, errMsg } from "@/lib/fetch-json";
-export default function AccountActions({ targetUserId, email, suspended, createdOrg = null, createdOrgMembers = 0 }: { targetUserId: string; email: string; createdOrg?: string | null; createdOrgMembers?: number; suspended: boolean }) {
+export default function AccountActions({ targetUserId, email, suspended, approved, createdOrg = null, createdOrgMembers = 0 }: { targetUserId: string; email: string; createdOrg?: string | null; createdOrgMembers?: number; suspended: boolean; approved: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState("");
   const [msg, setMsg] = useState("");
   async function call(action: string, extra: Record<string, unknown> = {}) {
     return postJson<{ link?: string }>("/api/admin/user-action", { targetUserId, action, ...extra });
+  }
+  async function toggleApprove() {
+    setBusy(true); setMsg("");
+    try { await call("approve", { approved: !approved }); router.refresh(); }
+    catch (e) { setMsg(errMsg(e, "Failed.")); }
+    finally { setBusy(false); }
   }
   async function toggleSuspend() {
     setBusy(true); setMsg("");
@@ -39,6 +45,9 @@ export default function AccountActions({ targetUserId, email, suspended, created
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flex: "none" }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
+        <button onClick={toggleApprove} disabled={busy} style={{ ...btn, opacity: busy ? 0.6 : 1, ...(approved ? {} : { background: T.green, color: T.onAccent, border: "none" }) }}>
+          {approved ? "Revoke access" : "Approve"}
+        </button>
         <button onClick={resetLink} disabled={busy} style={{ ...btn, opacity: busy ? 0.6 : 1 }}>Reset link</button>
         <button onClick={toggleSuspend} disabled={busy} style={{ ...btn, opacity: busy ? 0.6 : 1 }}>{suspended ? "Unsuspend" : "Suspend"}</button>
         <ConfirmDialog

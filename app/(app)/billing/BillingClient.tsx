@@ -1,4 +1,5 @@
 "use client";
+import type { AccessState } from "@/lib/plan-context";
 import { useState } from "react";
 import { T } from "@/lib/theme";
 import { PLANS, PLAN_ORDER, priceFor, formatPrice, annualSaving, type PlanId } from "@/lib/plans";
@@ -7,7 +8,7 @@ type Use = { used: number; limit: number | null };
 export default function BillingClient({
   currentPlan, scope, access, trialDaysLeft, discounted, configured, usage,
 }: {
-  currentPlan: PlanId; scope: "personal" | "org"; access: "active" | "trial" | "locked";
+  currentPlan: PlanId; scope: "personal" | "org"; access: AccessState;
   trialDaysLeft: number; discounted: boolean; configured: boolean;
   usage: { documents: Use; sends: Use; seats: Use | null };
 }) {
@@ -84,8 +85,8 @@ export default function BillingClient({
             <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
               <span style={{ fontSize: 21, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight }}>{plan.name}</span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: T.heading }}>
-                <i style={{ width: 6, height: 6, borderRadius: 2, background: access === "locked" ? T.danger : access === "trial" ? T.amber : T.green }} />
-                {access === "locked" ? "Ended" : access === "trial" ? "Trial" : "Active"}
+                <i style={{ width: 6, height: 6, borderRadius: 2, background: access === "locked" ? T.danger : access === "pending" ? T.amber : access === "trial" ? T.amber : T.green }} />
+                {access === "locked" ? "Ended" : access === "pending" ? "Waiting" : access === "trial" ? "Trial" : "Active"}
               </span>
             </div>
             <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 14px" }}>{plan.tagline}</p>

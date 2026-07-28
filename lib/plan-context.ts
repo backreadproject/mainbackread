@@ -17,7 +17,7 @@ import { trialInfo } from "@/lib/trial";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
-export type AccessState = "active" | "trial" | "locked";
+export type AccessState = "active" | "trial" | "locked" | "pending";
 export interface PlanContext {
   userId: string;
   scope: "personal" | "org";
@@ -35,16 +35,34 @@ export function monthStartISO(d: Date = new Date()): string {
 export async function resolvePlanForUser(admin: Admin, userId: string): Promise<PlanContext> {
   const { data: profile } = await admin
     .from("profiles")
-    .select("account_type, active_org_id, trial_started_at, plan")
+    .select("account_type, active_org_id, trial_started_at, plan, approved_at")
     .eq("id", userId)
     .single();
   const p = (profile ?? {}) as {
-    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null; plan?: string;
+    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null; plan?: string; approved_at?: string | null;
   };
   const isCompany = p.account_type === "company" || p.account_type === "organization";
 
   // Personal accounts: Free or Personal, always active, no trial.
   if (!isCompany) {
+    // The door. One row, read on every resolve. When invite_only is on, an
+    // account without approved_at is pending: it exists, it can sign in, and it
+    // can see nothing. This stays correct for accounts created later, which is
+    // what a bulk suspend could never do.
+    const { data: door } = await admin
+      .from("app_settings").select("invite_only").eq("id", true).maybeSingle();
+    if (door?.invite_only && !p.approved_at) {
+      const isCompanyPending = p.account_type === "company" || p.account_type === "organization";
+      return {
+        userId,
+        scope: isCompanyPending && p.active_org_id ? "org" : "personal",
+        orgId: isCompanyPending ? (p.active_org_id ?? null) : null,
+        plan: getPlan(p.plan),
+        access: "pending",
+        trialDaysLeft: 0,
+      };
+    }
+
     return { userId, scope: "personal", orgId: null, plan: getPlan(p.plan), access: "active", trialDaysLeft: 0 };
   }
 
@@ -84,7 +102,12 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
 
 /** True when create-actions must be refused (trial lapsed, unpaid). */
 export function isLocked(ctx: PlanContext): boolean {
-  return ctx.access === "locked";
+  return ctx.access === "locked" || ctx.access === "pending";
+}
+
+/** Signed up, not yet let in. Distinct from locked, which means a lapsed trial. */
+export function isPending(ctx: PlanContext): boolean {
+  return ctx.access === "pending";
 }
 
 export interface GateResult { allowed: boolean; limit: number | null; used: number; }

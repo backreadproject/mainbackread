@@ -92,6 +92,62 @@ export async function setUserSuspendedAction(targetUserId: string, suspended: bo
   return { ok: true };
 }
 
+/**
+ * Lets one account through the door.
+ *
+ * Also restamps the trial clock. trial_started_at is written at signup, so a
+ * person who waited three weeks in the queue would otherwise open the app to a
+ * trial that expired while they were waiting for us.
+ */
+export async function setUserApprovedAction(targetUserId: string, approved: boolean): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!me.can("support.handle")) return fail("Your role does not allow that.", 403);
+
+  const admin = createAdminClient();
+  const { data: target } = await admin.auth.admin.getUserById(targetUserId);
+  if (!target?.user) return fail("User not found.", 404);
+
+  const now = new Date().toISOString();
+  const { error } = await admin
+    .from("profiles")
+    .update(approved ? { approved_at: now, trial_started_at: now } : { approved_at: null })
+    .eq("id", targetUserId);
+  if (error) return fail(error.message, 500);
+
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email,
+    action: approved ? "approve_user" : "unapprove_user",
+    targetUserId, detail: { email: target.user.email },
+  });
+  return { ok: true };
+}
+
+/**
+ * The door itself. One row, so this is a state rather than an event: accounts
+ * created after it is closed are pending too, which a bulk suspend could never
+ * achieve. Opening it again needs no per-account work.
+ */
+export async function setInviteOnlyAction(on: boolean): Promise<ActionResult> {
+  const me = await getAdminUser();
+  if (!me) return fail("Not found.", 404);
+  if (!me.can("roles.manage")) return fail("Only an owner can change who may use the product.", 403);
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("app_settings")
+    .update({ invite_only: on, updated_at: new Date().toISOString(), updated_by: me.id })
+    .eq("id", true);
+  if (error) return fail(error.message, 500);
+
+  await writeAudit({
+    actorId: me.id, actorEmail: me.email,
+    action: on ? "close_signups" : "open_signups",
+    detail: { inviteOnly: on },
+  });
+  return { ok: true };
+}
+
 export async function resetPasswordLinkAction(targetUserId: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);

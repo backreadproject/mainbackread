@@ -5,7 +5,7 @@ import PlanForm from "./PlanForm";
 import AccountActions from "./AccountActions";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-type Prof = { first_name: string | null; last_name: string | null; workspace_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
+type Prof = { first_name: string | null; last_name: string | null; workspace_name: string | null; account_type: string | null; approved_at?: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
 type Org = { id: string; name: string | null; domain: string | null; plan: string | null; subscription_active: boolean | null };
 export default async function AccountDetail({ params }: { params: Promise<{ id: string }> }) {
   await requireAdminPage("accounts.detail");
@@ -14,7 +14,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
   const { data: authUser } = await admin.auth.admin.getUserById(id);
   const u = authUser?.user;
   const banned = !!(u as unknown as { banned_until?: string | null } | undefined)?.banned_until;
-  const { data: profile } = await admin.from("profiles").select("first_name, last_name, workspace_name, account_type, active_org_id, plan, trial_started_at").eq("id", id).single();
+  const { data: profile } = await admin.from("profiles").select("first_name, last_name, workspace_name, account_type, active_org_id, plan, trial_started_at, approved_at").eq("id", id).single();
   const p = (profile ?? {}) as Prof;
   const isOrg = p.account_type === "company" || p.account_type === "organization";
   let org: Org | null = null;
@@ -86,7 +86,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
               {banned ? " \u00b7 suspended" : ""}
             </p>
           </div>
-          <AccountActions targetUserId={id} email={u?.email ?? ""} suspended={banned} createdOrg={createdOrg?.name ?? null} createdOrgMembers={createdOrgMembers} />
+          <AccountActions targetUserId={id} email={u?.email ?? ""} suspended={banned} approved={!!p?.approved_at} createdOrg={createdOrg?.name ?? null} createdOrgMembers={createdOrgMembers} />
         </div>
         <div className="stat-strip" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card, margin: "26px 0 14px" }}>
           {cells.map(([v, l], i) => (

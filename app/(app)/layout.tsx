@@ -5,11 +5,20 @@ import MobileShell from "./MobileShell";import { getOrgContext } from "@/lib/or
 import { T } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 import SupportWidget from "@/app/SupportWidget";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resolvePlanForUser, isPending } from "@/lib/plan-context";
+import { getLocale } from "@/lib/locale-server";
+import Waiting from "./Waiting";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const planCtx = await resolvePlanForUser(createAdminClient(), user.id);
+  if (isPending(planCtx)) {
+    return <Waiting email={user.email ?? ""} locale={await getLocale()} />;
+  }
 
   const ctx = await getOrgContext();
   const trial = trialInfo(ctx.trialStartedAt);

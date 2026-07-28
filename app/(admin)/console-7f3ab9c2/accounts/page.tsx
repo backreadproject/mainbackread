@@ -1,9 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ADMIN_SLUG, requireAdminPage } from "@/lib/admin";
 import { T } from "@/lib/theme";
+import AccessToggle from "./AccessToggle";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null };
+type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; approved_at: string | null };
 export default async function AccountsPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   await requireAdminPage("accounts.read");
   const { q } = await searchParams;
@@ -12,8 +13,10 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
   const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
   const users = list?.users ?? [];
   const ids = users.map((u) => u.id);
-  const { data: profs } = ids.length ? await admin.from("profiles").select("id, first_name, last_name, account_type, active_org_id, plan").in("id", ids) : { data: [] };
+  const { data: profs } = ids.length ? await admin.from("profiles").select("id, first_name, last_name, account_type, active_org_id, plan, approved_at").in("id", ids) : { data: [] };
   const pmap = new Map(((profs ?? []) as Prof[]).map((p) => [p.id, p]));
+  const { data: doorRow } = await admin.from("app_settings").select("invite_only").eq("id", true).maybeSingle();
+  const inviteOnly = !!doorRow?.invite_only;
   const { data: orgs } = await admin.from("organizations").select("id, name, plan, subscription_active");
   const orgById = new Map((orgs ?? []).map((o) => [o.id, o]));
   const { data: docs } = await admin.from("documents").select("id, owner_id");
@@ -31,7 +34,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       plan: isOrg ? ((org?.plan as string | null) ?? "company_1") : (p?.plan ?? "free"),
       orgName: (org?.name as string | null) ?? null,
       docs: docCount.get(u.id) ?? 0,
-      created: u.created_at, lastSignIn: u.last_sign_in_at ?? null, banned,
+      created: u.created_at, lastSignIn: u.last_sign_in_at ?? null, banned, pending: inviteOnly && !p?.approved_at,
     };
   });
   if (term) rows = rows.filter((r) => r.email.toLowerCase().includes(term) || r.name.toLowerCase().includes(term) || (r.orgName ?? "").toLowerCase().includes(term));
@@ -49,6 +52,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
       <main style={{ maxWidth: 1120, padding: "34px 28px 120px" }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>Accounts</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rows.length} {term ? "matching" : "total"}. First 200 loaded.</p>
+        <AccessToggle inviteOnly={inviteOnly} pendingCount={rows.filter((r) => r.pending).length} />
         <form style={{ display: "flex", gap: 9, justifyContent: "flex-end", margin: "26px 0 16px" }}>
           <input name="q" defaultValue={q ?? ""} placeholder="Search email, name, org" style={{ ...sel, width: 260 }} />
           <button type="submit" style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer" }}>Search</button>
@@ -62,6 +66,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
             <a key={r.id} href={"/" + ADMIN_SLUG + "/accounts/" + r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: grid, gap: 10, padding: "13px 18px", borderBottom: i < rows.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center", textDecoration: "none" }}>
               <span className="data-cell dc-title" data-label="Email" style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                 {r.banned && <i title="Suspended" style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: T.danger }} />}
+                {!r.banned && r.pending && <i title="Waiting for approval" style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: T.amber }} />}
                 <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1 }}>{r.email}</span>
               </span>
               <span className="data-cell" data-label="Name" style={{ fontSize: 13.5, color: T.body, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
