@@ -40,7 +40,8 @@ export type FeatureFlag =
   | "abVersions"
   | "webhookAlerts"
   | "zapier"
-  | "reports";
+  | "reports"
+  | "icp";
 
 export interface PlanPrice {
   /** US cents. Integer arithmetic only. */
@@ -81,7 +82,7 @@ const ALL_OFF: Record<FeatureFlag, boolean> = {
   attachDraftContext: false, compoundingAcrossSends: false, weeklyDigest: false,
   exportData: false, organizations: false, compareReaders: false,
   accountAnalytics: false, granularPermissions: false, sso: false, auditLog: false,
-  customRetention: false, abVersions: false, webhookAlerts: false, zapier: false, reports: false,
+  customRetention: false, abVersions: false, webhookAlerts: false, zapier: false, reports: false, icp: false,
 };
 
 // Personal unlocks the individual power features (no org).
@@ -90,7 +91,7 @@ const PERSONAL_FEATURES: Record<FeatureFlag, boolean> = {
   emailSend: true, projects: true, linkCustomization: true,
   conversationPersistence: true, verdictHistory: true, composeWorkspace: true,
   attachDraftContext: true, compoundingAcrossSends: true, weeklyDigest: true,
-  exportData: true, reports: true,
+  exportData: true, reports: true, icp: true,
 };
 
 // Company I adds the organization layer + team analytics.

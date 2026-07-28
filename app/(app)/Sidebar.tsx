@@ -2,7 +2,7 @@
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
-import { LayoutGrid, FileText, Folder, Activity, Users, UsersRound, Settings, CreditCard, CircleUser, type LucideIcon } from "lucide-react";
+import { LayoutGrid, Target, FileText, Folder, Activity, Users, UsersRound, Settings, CreditCard, CircleUser, type LucideIcon } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import NotificationBell from "@/app/(app)/NotificationBell";
@@ -15,6 +15,7 @@ const NAV_MAIN: NavItem[] = [
   { href: "/projects", key: "projects", Icon: Folder },
   { href: "/activity", key: "activity", Icon: Activity },
   { href: "/recipients", key: "recipients", Icon: Users },
+  { href: "/buyer-profile", key: "buyerProfile", Icon: Target },
 ];
 const NAV_CONFIG: NavItem[] = [
   { href: "/members", key: "members", Icon: UsersRound, orgOnly: true },
