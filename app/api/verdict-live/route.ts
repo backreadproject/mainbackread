@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
 import { resolvePlanForUser, isLocked, checkVerdictQuota, logUsage } from "@/lib/plan-context";
 import { buildVerdictInput, type SignalRow, type RecipientLite } from "@/lib/verdict-signals";
+import { deliverForRecipient } from "@/lib/webhooks";
 
 export const runtime = "nodejs";
 // Model calls plus Supabase round trips exceed Vercel's 10s default,
@@ -80,6 +81,19 @@ export async function POST(req: NextRequest) {
       created_at: new Date().toISOString(),
     }, { onConflict: "recipient_id" });
     if (saveErr) console.error("[verdict-live] could not store verdict:", saveErr.message);
+
+    // The moment something is worth acting on, which makes it the most useful
+    // trigger for a CRM or an automation. Awaited so it cannot be frozen by the
+    // platform mid-flight, but with a short budget: the customer is waiting for
+    // the verdict, not the webhook, and a missed alert can be redelivered.
+    // No-ops on personal accounts, because webhooks are organization-scoped.
+    await deliverForRecipient(recipientId, "verdict.ready", {
+      headline: data.headline,
+      nextAction: data.nextAction,
+      confidence: data.confidence,
+      evidence: data.evidence ?? [],
+      signalCount: rows.length,
+    }, 4000);
 
     return NextResponse.json({ verdict: data, costUsd: cost.usd, signalCount: rows.length });
   } catch (e) {

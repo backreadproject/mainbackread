@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type WebhookEvent = "reader.opened" | "reader.question" | "reader.forwarded" | "reader.replied";
-export const WEBHOOK_EVENTS: WebhookEvent[] = ["reader.opened", "reader.question", "reader.forwarded", "reader.replied"];
+export type WebhookEvent = "reader.opened" | "reader.question" | "reader.forwarded" | "reader.replied" | "verdict.ready";
+export const WEBHOOK_EVENTS: WebhookEvent[] = ["reader.opened", "reader.question", "reader.forwarded", "reader.replied", "verdict.ready"];
 
 // SSRF guard. Customer-supplied URLs must not be able to reach our own network.
 const BLOCKED = /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.)/i;
@@ -47,13 +47,20 @@ function slackBlurb(p: Payload): string {
     const short = t.length > 400 ? t.slice(0, 400) + "\u2026" : t;
     return `*${who}* replied on _${p.document.title}_:` + (short ? `\n> ${short}` : "");
   }
+  if (p.event === "verdict.ready") {
+    const headline = String(p.data.headline ?? "").trim();
+    const next = String(p.data.nextAction ?? "").trim();
+    const conf = String(p.data.confidence ?? "").trim();
+    return `Verdict on *${who}* \u2014 _${p.document.title}_` + (conf ? ` (${conf} confidence)` : "")
+      + (headline ? `\n${headline}` : "") + (next ? `\n> ${next}` : "");
+  }
   if (p.event === "reader.forwarded") return `*${who}* forwarded _${p.document.title}_ to ${Number(p.data.colleagueCount ?? 0)} colleague(s).`;
   return `*${who}* opened _${p.document.title}_.`;
 }
 
-async function postOnce(url: string, body: string, headers: Record<string, string>): Promise<{ ok: boolean; status?: number; error?: string }> {
+async function postOnce(url: string, body: string, headers: Record<string, string>, timeoutMs = 10000): Promise<{ ok: boolean; status?: number; error?: string }> {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 2500);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(url, { method: "POST", headers, body, signal: ctrl.signal });
     return { ok: res.ok, status: res.status };
@@ -68,7 +75,7 @@ async function postOnce(url: string, body: string, headers: Record<string, strin
  *  Settings webhook AND every Zapier/Make REST Hook subscription. Personal
  *  accounts have no organization, so nothing fires for them.
  *  Never throws: a webhook problem must never break a reader's action. */
-export async function deliverForRecipient(recipientId: string, event: WebhookEvent, data: Record<string, unknown>): Promise<void> {
+export async function deliverForRecipient(recipientId: string, event: WebhookEvent, data: Record<string, unknown>, timeoutMs = 10000): Promise<void> {
   try {
     const admin = createAdminClient();
     const { data: rec } = await admin
@@ -106,8 +113,8 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
       .eq("event", event);
     await Promise.all((subs ?? []).map(async (s) => {
       const b = JSON.stringify(payload);
-      let r = await postOnce(s.target_url as string, b, { "content-type": "application/json" });
-      if (!r.ok) r = await postOnce(s.target_url as string, b, { "content-type": "application/json" });
+      let r = await postOnce(s.target_url as string, b, { "content-type": "application/json" }, timeoutMs);
+      if (!r.ok) r = await postOnce(s.target_url as string, b, { "content-type": "application/json" }, Math.min(4000, timeoutMs));
       // Zapier returns 410 Gone when a Zap is deleted: clean the subscription up.
       if (r.status === 410) await admin.from("api_subscriptions").delete().eq("id", s.id);
     }));
@@ -121,11 +128,11 @@ export async function deliverForRecipient(recipientId: string, event: WebhookEve
         headers["x-readprospects-signature"] = sign(h.secret as string, body);
       }
 
-      let res = await postOnce(h.url as string, body, headers);
-      if (!res.ok) res = await postOnce(h.url as string, body, headers);
+      let res = await postOnce(h.url as string, body, headers, timeoutMs);
+      if (!res.ok) res = await postOnce(h.url as string, body, headers, Math.min(4000, timeoutMs));
 
       await admin.from("webhook_deliveries").insert({
-        webhook_id: h.id, event, ok: res.ok, status_code: res.status ?? null, error: res.error ?? null,
+        webhook_id: h.id, event, ok: res.ok, status_code: res.status ?? null, error: res.error ?? null, payload,
       });
       await admin.from("webhooks").update({
         last_status: res.status ?? null,
@@ -145,10 +152,10 @@ export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean
   if (!h) return { ok: false, error: "Webhook not found." };
 
   const payload: Payload = {
-    event: "reader.opened", createdAt: new Date().toISOString(),
-    document: { id: "test", title: "Test document" },
-    reader: { id: "test", name: "Test reader", email: null },
-    data: { test: true },
+    event: "reader.question", createdAt: new Date().toISOString(),
+    document: { id: "00000000-0000-0000-0000-000000000000", title: "Q3 proposal (sample)" },
+    reader: { id: "00000000-0000-0000-0000-000000000001", name: "Sample Reader", email: "reader@example.com" },
+    data: { question: "Is the annual commitment negotiable?", answer: "That is a commercial question for the sender.", page: 4, escalate: true, test: true },
   };
   const isSlack = /hooks\.slack\.com/i.test(h.url as string);
   const body = isSlack ? JSON.stringify({ text: "ReadProspects test alert. Your webhook is connected." }) : JSON.stringify(payload);
@@ -159,7 +166,7 @@ export async function sendTestDelivery(webhookId: string): Promise<{ ok: boolean
   }
   const res = await postOnce(h.url as string, body, headers);
   await admin.from("webhook_deliveries").insert({
-    webhook_id: h.id, event: "test", ok: res.ok, status_code: res.status ?? null, error: res.error ?? null,
+    webhook_id: h.id, event: "test", ok: res.ok, status_code: res.status ?? null, error: res.error ?? null, payload,
   });
   return res;
 }
