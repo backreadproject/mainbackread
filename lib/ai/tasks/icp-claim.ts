@@ -66,6 +66,15 @@ export const PROVENANCE = [
 ].join("\n");
 
 export const HOUSE_STYLE = [
+  "LENGTH. This has to be readable AND it has to finish. Obey these limits:",
+  "- Every prose field is ONE sentence of at most 20 words. Two sentences only where",
+  "  the field genuinely carries two ideas.",
+  "- Return the FEWEST items that cover the ground. Three or four per array is normal.",
+  "  The schema maximum is a ceiling, not a target, and filling it is a failure.",
+  "- Three sharp items beat six where three are padding. Padding is the thing this",
+  "  product exists to avoid; a reader who hits one filler line distrusts the rest.",
+  "- Never restate something already written in another field or another section.",
+  "",
   "Use their nouns. If they said 'brand repositioning' never write 'marketing services'.",
   "Write plainly. No marketing register, no adjectives doing work a fact should do.",
   "Be specific enough to act on. 'LinkedIn' is not a channel, 'the r/ecommerce weekly",

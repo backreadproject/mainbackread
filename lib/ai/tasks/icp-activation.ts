@@ -146,7 +146,7 @@ const SYSTEM = [
 export const icpActivationTask: Task<IcpActivationInput, IcpActivation> = {
   id: "icp-activation",
   tier: "reason",
-  maxTokens: 5000,
+  maxTokens: 4500,
   schema: IcpActivation,
   cacheable: () => SYSTEM,
   system: (i) => SYSTEM + (i.locale === "fr" ? "\n\nWrite every string VALUE in French, EXCEPT job titles, product names, keywords and search strings, which stay in the language the market actually uses. Keys and enum values stay English." : ""),

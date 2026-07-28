@@ -125,7 +125,7 @@ const SYSTEM = [
 export const icpDemandTask: Task<IcpDemandInput, IcpDemand> = {
   id: "icp-demand",
   tier: "reason",
-  maxTokens: 4000,
+  maxTokens: 4500,
   schema: IcpDemand,
   cacheable: () => SYSTEM,
   system: (i) => SYSTEM + (i.locale === "fr" ? "\n\nWrite every string VALUE in French. Keys and enum values stay English." : ""),

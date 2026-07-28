@@ -142,7 +142,7 @@ const SYSTEM = [
 export const icpSynthesisTask: Task<IcpSynthesisInput, IcpSynthesis> = {
   id: "icp-synthesis",
   tier: "reason",
-  maxTokens: 5000,
+  maxTokens: 4500,
   schema: IcpSynthesis,
   cacheable: () => SYSTEM,
   system: (i) => SYSTEM + (i.locale === "fr" ? "\n\nWrite every string VALUE in French. Keys and enum values stay English." : ""),

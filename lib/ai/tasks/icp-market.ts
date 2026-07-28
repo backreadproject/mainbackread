@@ -110,7 +110,7 @@ const SYSTEM = [
 export const icpMarketTask: Task<IcpMarketInput, IcpMarket> = {
   id: "icp-market",
   tier: "reason",
-  maxTokens: 4000,
+  maxTokens: 4500,
   schema: IcpMarket,
   cacheable: () => SYSTEM,
   system: (i) => SYSTEM + (i.locale === "fr" ? "\n\nWrite every string VALUE in French, EXCEPT product names, community names and search queries, which stay in the language people actually use them in. Keys and enum values stay English." : ""),
