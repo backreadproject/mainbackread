@@ -210,7 +210,8 @@ export async function POST(req: NextRequest) {
     });
     out = res.data;
   } catch (e) {
-    return NextResponse.json({ error: "Could not build the profile. " + (e instanceof Error ? e.message : "") }, { status: 502 });
+    console.error("[icp] generation failed", { profileId: row.id, branch, locale, error: e instanceof Error ? e.message : e });
+    return NextResponse.json({ error: "Could not build the profile from these answers. Your answers are saved. Try again, and if it keeps failing, add a little more detail to the questions you answered briefly." }, { status: 502 });
   }
 
   // The prompt asks for this. The route enforces it. A model having a confident
