@@ -23,7 +23,7 @@ const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: "1. What you earn",
     p: [
-      "You earn 25% of the amount a referral actually pays us, not 25% of our list price. Because everyone who uses your link receives 5% off, the commission is calculated on the discounted amount they were charged.",
+      "You earn 25% of the amount a referral actually pays us, not 25% of our list price. Where a discount applied to their payment, the commission is calculated on the amount they were actually charged.",
       "On a monthly plan you earn on their first three monthly payments. On an annual plan you earn once, on that single payment.",
       "Commission is earned only when a payment succeeds. Nothing is earned in advance, and nothing is owed for a payment that does not happen.",
     ],
@@ -31,7 +31,7 @@ const SECTIONS: { h: string; p: string[] }[] = [
   {
     h: "2. What your referrals get",
     p: [
-      "Anyone who signs up through your link receives 5% off any paid plan, monthly or annual, for as long as they remain subscribed. The discount does not expire when your commission does.",
+      "Anyone who signs up through your link gets 10% off their first monthly payment. The discount applies to monthly plans only, and to the first payment only: every payment after that is at the standard price. Annual plans are not discounted.",
       "The Free plan carries no discount and earns no commission.",
     ],
   },

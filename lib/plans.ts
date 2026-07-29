@@ -58,11 +58,14 @@ export interface PlanConfig {
 }
 export const CURRENCY = "USD";
 /** Everyone referred by someone keeps 5% off, for the life of the subscription. */
-export const REFERRAL_DISCOUNT = 0.05;
+export const REFERRAL_DISCOUNT = 0.10;
+/** Monthly only, and one payment. On annual the same percentage is real money
+ *  (USD 110 on Business) for a line nobody would post anyway. */
+export const DISCOUNT_INTERVALS: readonly ("monthly" | "annual")[] = ["monthly"];
 /** What a plan costs a given customer, in cents. */
 export function priceFor(planId: PlanId, interval: "monthly" | "annual", discounted = false): number {
   const base = PLANS[planId].price[interval];
-  if (!discounted || base === 0) return base;
+  if (!discounted || base === 0 || !DISCOUNT_INTERVALS.includes(interval)) return base;
   return Math.round(base * (1 - REFERRAL_DISCOUNT));
 }
 export function formatPrice(cents: number): string {

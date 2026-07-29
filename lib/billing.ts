@@ -8,10 +8,10 @@ import { PLANS, priceFor, CURRENCY } from "@/lib/plans";
 // URL, and nothing else in the app changes.
 //
 // Written against Flutterwave v3. Two constraints from their docs shape it:
-//   1. Payment plans must be created WITHOUT an amount, so the amount set when
-//      charging becomes that customer's subscription amount for its whole life.
-//      That is the only way a persistent 5% referral discount works: the other
-//      documented option discounts the first payment only.
+//   1. Payment plans carry their own amount. The checkout sends an amount too,
+//      which Flutterwave charges once; renewals fall back to the plan price.
+//      That is what makes the referral discount a FIRST PAYMENT discount, which
+//      is what we want. Monthly only -- see DISCOUNT_INTERVALS in lib/plans.ts.
 //   2. A subscription is tied to the customer email and cannot be changed.
 //      Changing an email in Account means cancelling and recreating.
 export type Interval = "monthly" | "annual";
@@ -35,7 +35,7 @@ export interface CheckoutInput {
 export function billingConfigured(): boolean {
   return !!(process.env.FLW_SECRET_KEY && process.env.FLW_PLAN_PERSONAL_MONTHLY);
 }
-/** Plan code lookup. Codes are created in Flutterwave WITHOUT an amount. */
+/** Plan code lookup. Codes are created in Flutterwave WITH their amount. */
 function planCode(planId: PlanId, interval: Interval): string | null {
   const key = "FLW_PLAN_" + planId.toUpperCase() + "_" + interval.toUpperCase();
   return process.env[key] || null;
@@ -72,8 +72,8 @@ export async function startCheckout(input: CheckoutInput): Promise<CheckoutResul
       },
       body: JSON.stringify({
         tx_ref: reference,
-        // Flutterwave wants major units. The plan carries the amount because
-        // the plan itself was created without one.
+        // Flutterwave wants major units. This is the first charge only;
+        // renewals use the amount on the plan.
         amount: (amount / 100).toFixed(2),
         currency: CURRENCY,
         payment_plan: code,

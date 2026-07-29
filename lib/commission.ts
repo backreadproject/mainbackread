@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { PLANS, REFERRAL_DISCOUNT, type PlanId } from "@/lib/plans";
+import { PLANS, REFERRAL_DISCOUNT, DISCOUNT_INTERVALS, type PlanId } from "@/lib/plans";
 // Writing a commission row. One function, deliberately, so that swapping payment
 // processor later is an adapter around this rather than a rewrite of it.
 //
@@ -101,8 +101,9 @@ export async function clawBackCommission(processorRef: string): Promise<void> {
     .neq("status", "clawed_back");
   if (error) console.error("[commission] clawback failed:", error.message);
 }
-/** What the 5% costs us on a given charge, for reconciliation. Not used in the
- *  hot path; kept here so the discount and the commission stay in one file. */
+/** What the discount costs us on a given charge, for reconciliation. Not used
+ *  in the hot path; kept here so the discount and the commission stay together. */
 export function discountOn(planId: PlanId, interval: "monthly" | "annual"): number {
+  if (!DISCOUNT_INTERVALS.includes(interval)) return 0;
   return Math.round(PLANS[planId].price[interval] * REFERRAL_DISCOUNT);
 }

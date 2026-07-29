@@ -49,7 +49,7 @@ export default async function ReferralsPage() {
   if (!user) {
     return shell(
       "Earn on every customer you send us",
-      "25% of what each referral pays, for their first three months. Anyone you refer gets 5% off any paid plan. Sign in or create an account to begin.",
+      "25% of what each referral pays, for their first three months. Anyone you refer gets 10% off their first month on a monthly plan. Sign in or create an account to begin.",
       <ReferralAuth mode="auth" />,
       true
     );
@@ -169,7 +169,7 @@ export default async function ReferralsPage() {
         <div style={head}>How it works</div>
         <div style={{ padding: 18, fontSize: 13.5, lineHeight: 1.65, color: T.body }}>
           <p style={{ margin: "0 0 10px" }}>You earn 25% of what a referral actually pays, for their first three monthly payments, or once on an annual plan.</p>
-          <p style={{ margin: "0 0 10px" }}>Anyone using your link gets 5% off any paid plan, for as long as they stay subscribed.</p>
+          <p style={{ margin: "0 0 10px" }}>Anyone using your link gets 10% off their first month. Monthly plans only, and only that first payment.</p>
           <p style={{ margin: "0 0 10px" }}>Commission is held for 30 days before it can be withdrawn, and is reversed if a payment is refunded or charged back.</p>
           <p style={{ margin: 0 }}>If a referral cancels, no further commission is earned, even if they subscribe again later.</p>
         </div>

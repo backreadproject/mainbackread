@@ -45,8 +45,9 @@ export async function POST(req: NextRequest) {
     userId: user.id,
     email: user.email ?? "",
     name,
-    // The 5% is not a coupon: it is the amount this customer is charged, for
-    // the life of the subscription, because the plan carries no amount of its own.
+    // 10% off the first payment, monthly only. priceFor returns the list price
+    // for annual regardless of this flag, and the flag still rides along in meta
+    // because the webhook uses it to decide whether a commission is owed.
     discounted: !!profile?.referred_by,
     returnUrl: origin + "/billing?checkout=return",
   });
