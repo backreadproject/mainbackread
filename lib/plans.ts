@@ -171,18 +171,11 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 
 // ---- helpers ---------------------------------------------------------------
 
-/** Old ids, kept only until the data is migrated. Delete this map and the two
- *  lines that read it once `select plan from organizations` shows no company_*. */
-const LEGACY_PLAN_IDS: Record<string, PlanId> = {
-  company_1: "team",
-  company_2: "business",
-};
-
-/** Resolves an id that may be a legacy one. */
+/** Narrows an unknown value to a PlanId, or null. */
 export function canonicalPlanId(x: unknown): PlanId | null {
   if (typeof x !== "string") return null;
   if ((PLAN_ORDER as string[]).includes(x)) return x as PlanId;
-  return LEGACY_PLAN_IDS[x] ?? null;
+  return null;
 }
 
 export function isValidPlan(x: unknown): x is PlanId {
