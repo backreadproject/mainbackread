@@ -57,7 +57,7 @@ export interface PlanConfig {
   features: Record<FeatureFlag, boolean>;
 }
 export const CURRENCY = "USD";
-/** Everyone referred by someone keeps 5% off, for the life of the subscription. */
+/** 10% off the FIRST payment, monthly plans only. See DISCOUNT_INTERVALS below. */
 export const REFERRAL_DISCOUNT = 0.10;
 /** Monthly only, and one payment. On annual the same percentage is real money
  *  (USD 110 on Business) for a line nobody would post anyway. */
@@ -171,13 +171,28 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 
 // ---- helpers ---------------------------------------------------------------
 
+/** Old ids, kept only until the data is migrated. Delete this map and the two
+ *  lines that read it once `select plan from organizations` shows no company_*. */
+const LEGACY_PLAN_IDS: Record<string, PlanId> = {
+  company_1: "company_1",
+  company_2: "company_2",
+};
+
+/** Resolves an id that may be a legacy one. */
+export function canonicalPlanId(x: unknown): PlanId | null {
+  if (typeof x !== "string") return null;
+  if ((PLAN_ORDER as string[]).includes(x)) return x as PlanId;
+  return LEGACY_PLAN_IDS[x] ?? null;
+}
+
 export function isValidPlan(x: unknown): x is PlanId {
-  return typeof x === "string" && (PLAN_ORDER as string[]).includes(x);
+  return canonicalPlanId(x) !== null;
 }
 
 /** Never throws on a bad/missing value; unknown plans fall back to Free (safest). */
 export function getPlan(planId: string | null | undefined): PlanConfig {
-  return isValidPlan(planId) ? PLANS[planId] : PLANS.free;
+  const id = canonicalPlanId(planId);
+  return id ? PLANS[id] : PLANS.free;
 }
 
 export function hasFeature(planId: string | null | undefined, flag: FeatureFlag): boolean {
