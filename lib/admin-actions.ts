@@ -111,8 +111,10 @@ export async function setUserApprovedAction(targetUserId: string, approved: bool
   const now = new Date().toISOString();
   const { error } = await admin
     .from("profiles")
-    .update(approved ? { approved_at: now, trial_started_at: now } : { approved_at: null })
-    .eq("id", targetUserId);
+    .upsert(approved
+      ? { id: targetUserId, approved_at: now, trial_started_at: now, updated_at: now }
+      : { id: targetUserId, approved_at: null, updated_at: now });
+
   if (error) return fail(error.message, 500);
 
   await writeAudit({
