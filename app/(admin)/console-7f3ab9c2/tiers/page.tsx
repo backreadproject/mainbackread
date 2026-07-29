@@ -5,15 +5,17 @@ import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/plans";
 import { trialInfo } from "@/lib/trial";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
+type Prof = { id: string; first_name: string | null; last_name: string | null; account_type: string | null; approved_at?: string | null; active_org_id: string | null; plan: string | null; trial_started_at: string | null };
 export default async function TiersPage() {
   await requireAdminPage("billing.manage");
   const admin = createAdminClient();
   const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
   const users = list?.users ?? [];
   const ids = users.map((u) => u.id);
-  const { data: profs } = ids.length ? await admin.from("profiles").select("id, first_name, last_name, account_type, active_org_id, plan, trial_started_at").in("id", ids) : { data: [] };
+  const { data: profs } = ids.length ? await admin.from("profiles").select("id, first_name, last_name, account_type, active_org_id, plan, trial_started_at, approved_at").in("id", ids) : { data: [] };
   const pmap = new Map(((profs ?? []) as Prof[]).map((p) => [p.id, p]));
+  const { data: doorRow } = await admin.from("app_settings").select("invite_only").eq("id", true).maybeSingle();
+  const inviteOnly = !!doorRow?.invite_only;
   const { data: orgs } = await admin.from("organizations").select("id, name, plan, subscription_active");
   const orgById = new Map((orgs ?? []).map((o) => [o.id, o]));
   const rows = users.map((u) => {
@@ -23,10 +25,11 @@ export default async function TiersPage() {
     const planId = (isOrg ? ((org?.plan as string | null) ?? "company_1") : (p?.plan ?? "free")) as PlanId;
     const subscribed = !!org?.subscription_active;
     const t = trialInfo(p?.trial_started_at ?? null);
-    let access: "active" | "trial" | "locked" = "active";
+    let access: "active" | "trial" | "locked" | "pending" = "active";
     if (isOrg && !subscribed) {
       if (t.started) access = t.active ? "trial" : "locked";
     }
+    if (inviteOnly && !p?.approved_at) access = "pending";
     return { id: u.id, email: u.email ?? "unknown", name: [p?.first_name, p?.last_name].filter(Boolean).join(" ").trim() || "\u2014",
       planId, isOrg, orgName: (org?.name as string | null) ?? null, access, daysLeft: t.daysLeft, subscribed };
   });
@@ -38,7 +41,7 @@ export default async function TiersPage() {
   const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 } as const;
   const mono = "'DM Mono', ui-monospace, monospace";
   const cap = (v: number | null) => (v === null ? "unlimited" : String(v));
-  const accessDot = (a: string) => (a === "locked" ? T.danger : a === "trial" ? T.amber : T.green);
+  const accessDot = (a: string) => (a === "locked" ? T.danger : a === "pending" || a === "trial" ? T.amber : T.green);
   const limit = (l: string, v: string) => (
     <div>
       <div style={{ fontSize: 12.5, color: T.muted, marginBottom: 2 }}>{l}</div>

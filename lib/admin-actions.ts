@@ -288,6 +288,47 @@ export async function deleteOrgAction(orgId: string, confirmText: string): Promi
 
 /* ---------------- reader erasure (data subject requests) ---------------- */
 
+/**
+ * Removes a person from delivered webhook payloads.
+ *
+ * webhook_deliveries.payload holds the exact body sent to a customer's endpoint,
+ * which carries the reader's name, email and the text of their question or reply.
+ * An erasure that skips this table reports a completion it has not made.
+ *
+ * The ROW survives with its payload nulled. A delivery did happen and that is
+ * operational history the customer may need; only the person goes. The side
+ * effect is that the row becomes non-replayable, which is correct -- nobody
+ * should be able to re-send an erased person's data to a CRM.
+ */
+async function scrubDeliveries(
+  admin: ReturnType<typeof createAdminClient>,
+  opts: { recipientIds?: string[]; email?: string | null },
+): Promise<number> {
+  let n = 0;
+  for (const id of opts.recipientIds ?? []) {
+    const { data } = await admin
+      .from("webhook_deliveries")
+      .update({ payload: null })
+      .eq("payload->reader->>id", id)
+      .not("payload", "is", null)
+      .select("id");
+    n += (data ?? []).length;
+  }
+  const email = (opts.email ?? "").trim();
+  if (email) {
+    // Second pass catches deliveries whose reader id has since changed or
+    // whose row was already gone. Rows nulled above no longer match.
+    const { data } = await admin
+      .from("webhook_deliveries")
+      .update({ payload: null })
+      .ilike("payload->reader->>email", email)
+      .not("payload", "is", null)
+      .select("id");
+    n += (data ?? []).length;
+  }
+  return n;
+}
+
 export async function eraseReaderAction(recipientId: string, confirmText: string): Promise<ActionResult> {
   const me = await getAdminUser();
   if (!me) return fail("Not found.", 404);
@@ -318,6 +359,8 @@ export async function eraseReaderAction(recipientId: string, confirmText: string
   const { count: sigCount } = await admin.from("signals").select("id", { count: "exact", head: true }).eq("recipient_id", r.id);
   const { count: msgCount } = await admin.from("reader_messages").select("id", { count: "exact", head: true }).eq("recipient_id", r.id);
 
+  const deliveriesScrubbed = await scrubDeliveries(admin, { recipientIds: [r.id], email: r.email });
+
   // signals and reader_messages both cascade from recipients.
   const { error } = await admin.from("recipients").delete().eq("id", r.id);
   if (error) return fail(error.message, 500);
@@ -328,7 +371,7 @@ export async function eraseReaderAction(recipientId: string, confirmText: string
     detail: {
       recipientId: r.id, email: r.email, name: expected,
       documentId: r.document_id, documentTitle: r.documents?.title ?? null,
-      signalsRemoved: sigCount ?? 0, messagesRemoved: msgCount ?? 0,
+      signalsRemoved: sigCount ?? 0, messagesRemoved: msgCount ?? 0, deliveriesScrubbed,
     },
   });
   return { ok: true };
@@ -459,6 +502,8 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
     if (delErr) return fail(delErr.message, 500);
   }
 
+  const deliveriesScrubbed = await scrubDeliveries(admin, { recipientIds: rowIds, email: needle });
+
   // 2. The mention inside the forwarder's signal. The event stays so the sender's
   //    forward count remains truthful; only the person's details go.
   let changed = 0;
@@ -483,6 +528,7 @@ export async function eraseForwardMentionsAction(email: string, confirmText: str
       recipientRowsRemoved: rowIds.length,
       signalsRemoved,
       messagesRemoved,
+      deliveriesScrubbed,
     },
   });
   return { ok: true };
