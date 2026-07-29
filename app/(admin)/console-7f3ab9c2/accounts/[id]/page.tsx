@@ -99,7 +99,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
         <div style={card}>
           <div style={head}>Plan</div>
           <div style={{ padding: 18 }}>
-            <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "company_1") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
+            <PlanForm targetUserId={id} scope={isOrg ? "org" : "personal"} currentPlan={isOrg ? (org?.plan ?? "team") : (p.plan ?? "free")} subscriptionActive={!!org?.subscription_active} orgName={org?.name ?? null} />
             <div className="lim-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 16, marginTop: 18, paddingTop: 16, borderTop: "1px solid " + T.borderSoft }}>
               {meta("Trial started", p.trial_started_at ? new Date(p.trial_started_at).toLocaleDateString() : "not started")}
               {org && meta("Subscription", org.subscription_active ? "active" : "inactive", org.subscription_active ? T.greenText : T.body)}

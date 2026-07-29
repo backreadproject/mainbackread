@@ -122,7 +122,7 @@ export default async function ReferralsPage() {
       <div style={card}>
         <div style={head}>Paying referrals by plan</div>
         <div className="lim-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))" }}>
-          {([["Personal", "personal"], ["Team", "company_1"], ["Business", "company_2"]] as [string, string][]).map(([label, id], i) => (
+          {([["Personal", "personal"], ["Team", "team"], ["Business", "business"]] as [string, string][]).map(([label, id], i) => (
             <div key={id} style={{ padding: "14px 18px", borderLeft: i ? "1px solid " + T.borderSoft : "none" }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: T.heading, fontVariantNumeric: "tabular-nums" }}>{tier(id)}</div>
               <div style={{ fontSize: 12.5, color: T.muted, marginTop: 2 }}>{label}</div>

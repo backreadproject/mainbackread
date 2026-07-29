@@ -31,7 +31,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
     return {
       id: u.id, email: u.email ?? "unknown", name: name || "\u2014",
       type: isOrg ? "organization" : "personal",
-      plan: isOrg ? ((org?.plan as string | null) ?? "company_1") : (p?.plan ?? "free"),
+      plan: isOrg ? ((org?.plan as string | null) ?? "team") : (p?.plan ?? "free"),
       orgName: (org?.name as string | null) ?? null,
       docs: docCount.get(u.id) ?? 0,
       created: u.created_at, lastSignIn: u.last_sign_in_at ?? null, banned, pending: inviteOnly && !p?.approved_at,

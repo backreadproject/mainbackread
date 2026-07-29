@@ -5,7 +5,7 @@ import { T } from "@/lib/theme";
 import { postJson, errMsg } from "@/lib/fetch-json";
 import { PLANS } from "@/lib/plans";
 const PERSONAL_PLANS: [string, string][] = [["free", PLANS.free.name], ["personal", PLANS.personal.name]];
-const ORG_PLANS: [string, string][] = [["company_1", PLANS.company_1.name], ["company_2", PLANS.company_2.name]];
+const ORG_PLANS: [string, string][] = [["team", PLANS.team.name], ["business", PLANS.business.name]];
 export default function PlanForm({ targetUserId, scope, currentPlan, subscriptionActive, orgName }: {
   targetUserId: string; scope: "org" | "personal"; currentPlan: string; subscriptionActive: boolean; orgName: string | null;
 }) {

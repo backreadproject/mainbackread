@@ -67,7 +67,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
   }
 
   // Company account (may or may not have created its org yet).
-  let planId: string | undefined = "company_1";
+  let planId: string | undefined = "team";
   let subscribed = false;
   let orgId: string | null = null;
   if (p.active_org_id) {
@@ -79,7 +79,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     if (org) {
       const o = org as { id: string; plan?: string; subscription_active?: boolean };
       orgId = o.id;
-      planId = o.plan ?? "company_1";
+      planId = o.plan ?? "team";
       subscribed = o.subscription_active === true;
     }
   }

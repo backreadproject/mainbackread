@@ -36,11 +36,11 @@ export default async function ConsoleBilling() {
 
   // Personal plans sit on profiles; org plans on organizations. Counting both
   // from one table would double count an owner who also has a profile row.
-  const personalOn = (id: PlanId) => profiles.filter((p) => p.plan === id && id !== "company_1" && id !== "company_2").length;
+  const personalOn = (id: PlanId) => profiles.filter((p) => p.plan === id && id !== "team" && id !== "business").length;
   const orgOn = (id: PlanId) => organizations.filter((o) => o.plan === id).length;
-  const countOn = (id: PlanId) => (id === "company_1" || id === "company_2" ? orgOn(id) : personalOn(id));
+  const countOn = (id: PlanId) => (id === "team" || id === "business" ? orgOn(id) : personalOn(id));
   const activeOn = (id: PlanId) =>
-    id === "company_1" || id === "company_2"
+    id === "team" || id === "business"
       ? organizations.filter((o) => o.plan === id && o.subscription_active).length
       : profiles.filter((p) => p.plan === id && p.subscription_active).length;
 

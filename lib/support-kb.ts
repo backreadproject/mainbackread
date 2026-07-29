@@ -1,14 +1,5 @@
 import { PLANS, PLAN_ORDER, type PlanId } from "@/lib/plans";
 
-// The customer-facing name for each plan. lib/plans.ts still uses the internal
-// names (Company I, Company II) while the pricing page sells Team and Business.
-// Support must speak the customer's language, so map here.
-const DISPLAY: Record<PlanId, string> = {
-  free: "Free",
-  personal: "Personal",
-  company_1: "Team",
-  company_2: "Business",
-};
 
 const FEATURE_LABEL: Record<string, string> = {
   emailSend: "send documents by email",
@@ -44,7 +35,7 @@ function planFacts(): string {
     const l = p.limits;
     const on = Object.entries(p.features).filter(([, v]) => v).map(([k]) => FEATURE_LABEL[k] ?? k);
     return [
-      `PLAN: ${DISPLAY[id]}`,
+      `PLAN: ${PLANS[id].name}`,
       `  documents per month: ${cap(l.documentsPerMonth)}`,
       `  verdicts per document per month: ${cap(l.verdictsPerDocumentPerMonth)}`,
       `  recipients per document: ${cap(l.recipientsPerDocument)}`,

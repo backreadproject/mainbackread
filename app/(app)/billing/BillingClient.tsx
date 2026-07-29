@@ -123,7 +123,7 @@ export default function BillingClient({
             const list = priceFor(id, interval, false);
             const pay = priceFor(id, interval, discounted);
             const isCurrent = id === currentPlan;
-            const orgOnly = id === "company_1" || id === "company_2";
+            const orgOnly = id === "team" || id === "business";
             return (
               <div key={id} style={{ background: T.card, border: "1px solid " + (isCurrent ? T.greenBorder : T.border), borderRadius: T.rCard, padding: 16, display: "flex", flexDirection: "column" }}>
                 <div style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{p.name}</div>

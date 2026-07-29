@@ -3,9 +3,9 @@
 // reads from here. Billing later just sets which plan an account is on; it does
 // not change this file. Compiled from the approved plan structure.
 
-export type PlanId = "free" | "personal" | "company_1" | "company_2";
+export type PlanId = "free" | "personal" | "team" | "business";
 
-export const PLAN_ORDER: PlanId[] = ["free", "personal", "company_1", "company_2"];
+export const PLAN_ORDER: PlanId[] = ["free", "personal", "team", "business"];
 
 /** A limit of null means unlimited. */
 export interface PlanLimits {
@@ -98,14 +98,14 @@ const PERSONAL_FEATURES: Record<FeatureFlag, boolean> = {
 };
 
 // Company I adds the organization layer + team analytics.
-const COMPANY_1_FEATURES: Record<FeatureFlag, boolean> = {
+const TEAM_FEATURES: Record<FeatureFlag, boolean> = {
   ...PERSONAL_FEATURES,
   organizations: true, compareReaders: true, accountAnalytics: true,
 };
 
 // Company II adds the security set + the three integrations being built now.
-const COMPANY_2_FEATURES: Record<FeatureFlag, boolean> = {
-  ...COMPANY_1_FEATURES,
+const BUSINESS_FEATURES: Record<FeatureFlag, boolean> = {
+  ...TEAM_FEATURES,
   granularPermissions: true, sso: false, auditLog: true, customRetention: true,
   abVersions: true, webhookAlerts: true, zapier: true,
 };
@@ -139,8 +139,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     },
     features: { ...PERSONAL_FEATURES },
   },
-  company_1: {
-    id: "company_1",
+  team: {
+    id: "team",
     name: "Team",
     tagline: "Your whole team, reading together.",
     price: { monthly: 5900, annual: 65500 },
@@ -151,10 +151,10 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       sendsPerMonth: null,
       seats: 20,
     },
-    features: { ...COMPANY_1_FEATURES },
+    features: { ...TEAM_FEATURES },
   },
-  company_2: {
-    id: "company_2",
+  business: {
+    id: "business",
     name: "Business",
     tagline: "Unlimited seats, fully locked down.",
     price: { monthly: 9900, annual: 110000 },
@@ -165,7 +165,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       sendsPerMonth: null,
       seats: null,
     },
-    features: { ...COMPANY_2_FEATURES },
+    features: { ...BUSINESS_FEATURES },
   },
 };
 
@@ -174,8 +174,8 @@ export const PLANS: Record<PlanId, PlanConfig> = {
 /** Old ids, kept only until the data is migrated. Delete this map and the two
  *  lines that read it once `select plan from organizations` shows no company_*. */
 const LEGACY_PLAN_IDS: Record<string, PlanId> = {
-  company_1: "company_1",
-  company_2: "company_2",
+  company_1: "team",
+  company_2: "business",
 };
 
 /** Resolves an id that may be a legacy one. */

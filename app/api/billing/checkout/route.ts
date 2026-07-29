@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   // by its owner: the subscription is keyed to a single email forever, so an
   // admin buying it would tie the org's billing to their personal address.
   const ctx = await getOrgContext();
-  const isOrgPlan = planId === "company_1" || planId === "company_2";
+  const isOrgPlan = planId === "team" || planId === "business";
   if (isOrgPlan && ctx.accountType !== "organization") {
     return NextResponse.json({ error: "Create an organization first, then choose Team or Business." }, { status: 400 });
   }

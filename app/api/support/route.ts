@@ -56,11 +56,10 @@ export async function POST(req: NextRequest) {
   if (user) {
     const { data: prof } = await admin.from("profiles").select("first_name, last_name").eq("id", user.id).single();
     const ctx = await resolvePlanForUser(admin, user.id);
-    const display: Record<string, string> = { free: "Free", personal: "Personal", company_1: "Team", company_2: "Business" };
     who = {
       signedIn: true,
       name: (prof as { first_name?: string | null } | null)?.first_name ?? null,
-      plan: display[ctx.plan.id] ?? ctx.plan.name,
+      plan: ctx.plan.name,
       isOrg: ctx.scope === "org",
     };
   }

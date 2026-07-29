@@ -49,7 +49,7 @@ async function findUser(data: FlwData): Promise<{ id: string; email: string | nu
  *  one is decided by the plan bought, not by what the account looks like now. */
 async function applyPlan(userId: string, planId: PlanId, active: boolean): Promise<void> {
   const admin = createAdminClient();
-  const isOrgPlan = planId === "company_1" || planId === "company_2";
+  const isOrgPlan = planId === "team" || planId === "business";
   if (!isOrgPlan) {
     await admin.from("profiles").update({ plan: planId, subscription_active: active }).eq("id", userId);
     return;
