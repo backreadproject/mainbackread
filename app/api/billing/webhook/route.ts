@@ -47,29 +47,54 @@ async function findUser(data: FlwData): Promise<{ id: string; email: string | nu
 }
 /** Personal plans live on profiles, organization plans on organizations. Which
  *  one is decided by the plan bought, not by what the account looks like now. */
+/** Personal plans live on profiles, organization plans on organizations. Which
+ *  one is decided by the plan bought, not by what the account looks like now.
+ *
+ *  Every write is checked and THROWS on failure, so the route's catch returns
+ *  500 and Flutterwave retries. This function previously discarded its errors:
+ *  the profiles update named a column that did not exist, so it failed every
+ *  time while the route still answered ok with a plan name. A paying customer
+ *  would have stayed on Free with nothing in the logs to say why.
+ *  A payment that did not apply must fail loudly. */
 async function applyPlan(userId: string, planId: PlanId, active: boolean): Promise<void> {
   const admin = createAdminClient();
   const isOrgPlan = planId === "team" || planId === "business";
+
   if (!isOrgPlan) {
-    await admin.from("profiles").update({ plan: planId, subscription_active: active }).eq("id", userId);
+    const { error } = await admin
+      .from("profiles")
+      .update({ plan: planId, subscription_active: active })
+      .eq("id", userId);
+    if (error) throw new Error("applyPlan: profile " + userId + " -> " + error.message);
     return;
   }
+
   // Only the owner can buy an org plan (enforced at checkout), so the org to
   // update is the one they own.
-  const { data: org } = await admin
+  const { data: org, error: findErr } = await admin
     .from("organizations")
     .select("id")
     .eq("created_by", userId)
     .maybeSingle();
+  if (findErr) throw new Error("applyPlan: looking up organization -> " + findErr.message);
   if (!org) {
+    // Not thrown: retrying cannot conjure an organization. This one needs a
+    // human, and the log is the only place it will surface.
     console.error("[billing/webhook] org plan bought but no organization found for", userId);
     return;
   }
-  await admin
+
+  const { error: orgErr } = await admin
     .from("organizations")
     .update({ plan: planId, subscription_active: active })
     .eq("id", (org as { id: string }).id);
-  await admin.from("profiles").update({ subscription_active: active }).eq("id", userId);
+  if (orgErr) throw new Error("applyPlan: organization -> " + orgErr.message);
+
+  const { error: flagErr } = await admin
+    .from("profiles")
+    .update({ subscription_active: active })
+    .eq("id", userId);
+  if (flagErr) throw new Error("applyPlan: subscription flag -> " + flagErr.message);
 }
 export async function POST(req: NextRequest) {
   // 1. Authenticate the sender before reading anything else.
