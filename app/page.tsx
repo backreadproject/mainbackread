@@ -69,7 +69,7 @@ const COPY: Record<Locale, Copy> = {
         { h: "Timing", p: "By the time you act on a hunch, the reader has already moved on.", s: "The window is short" },
         { h: "Lost lessons", p: "Every send teaches what lands. Without capture, it evaporates.", s: "Nothing compounds" },
       ] },
-    how: { eyebrow: "How it works", t1: "From every signal", t2: "to one clear read.",
+    how: { eyebrow: "How ReadProspects works", t1: "From every signal", t2: "to one clear read.",
       lead: "Share a link and ReadProspects does the reading of the reader for you. No setup, no reader friction.",
       steps: [
         { h: "Share a link", p: "Upload a document and send a tracked link by email, or copy it yourself. Your reader clicks and reads. No account, no app." },
@@ -124,7 +124,7 @@ const COPY: Record<Locale, Copy> = {
         { h: "Le moment", p: "Le temps d'agir sur une intuition, le lecteur est d\u00e9j\u00e0 pass\u00e9 \u00e0 autre chose.", s: "La fen\u00eatre est courte" },
         { h: "Le\u00e7ons perdues", p: "Chaque envoi enseigne ce qui marche. Sans capture, cela s'\u00e9vapore.", s: "Rien ne se cumule" },
       ] },
-    how: { eyebrow: "Fonctionnement", t1: "De chaque signal", t2: "\u00e0 une lecture claire.",
+    how: { eyebrow: "Comment fonctionne ReadProspects", t1: "De chaque signal", t2: "\u00e0 une lecture claire.",
       lead: "Partagez un lien et ReadProspects lit le lecteur pour vous. Aucune configuration, aucune friction pour le lecteur.",
       steps: [
         { h: "Partagez un lien", p: "T\u00e9l\u00e9versez un document et envoyez un lien suivi par courriel, ou copiez-le vous-m\u00eame. Votre lecteur clique et lit. Aucun compte, aucune application." },
@@ -389,7 +389,7 @@ export default async function LandingPage() {
           <p className="rp-lead">{c.hero.sub}</p>
           <div className="rp-ctarow">
             <a className="rp-btnout" href="#how">{c.hero.ctaOut}</a>
-            <a className="rp-btnlg" href="/login">{c.hero.ctaLg}</a>
+            <a className="rp-btnlg" href="/pricing">{c.hero.ctaLg}</a>
           </div>
           <div className="rp-nocard">{c.hero.nocard}</div>
         </div>
@@ -529,7 +529,7 @@ export default async function LandingPage() {
         <div className="rp-wrap">
           <div className="rp-ctaband">
             <h2>{c.cta.title}</h2><p>{c.cta.sub}</p>
-            <a className="rp-btnlg" href="/login">{c.cta.btn}</a>
+            <a className="rp-btnlg" href="/pricing">{c.cta.btn}</a>
           </div>
         </div>
       </section>
