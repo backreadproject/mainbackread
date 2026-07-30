@@ -1,12 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
 import { T } from "@/lib/theme";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 // Wraps the sidebar. On desktop (>1024px) the sidebar is static.
 // On mobile/tablet (<=1024px) it becomes a slide-in drawer with a hamburger.
 //
 // The aurora is gone. Two blurred radial gradients sat fixed behind every
 // screen; at 90px blur they put a soft wash under every card edge and were the
 // single largest reason the UI read as hazy rather than sharp.
+  const M = getDict(useLocale()).chrome;
 export default function MobileShell({ sidebar, children }: { sidebar: React.ReactNode; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   // Close on browser back.
@@ -64,7 +67,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
         }
       `}</style>
       <div className="app-topbar">
-        <button onClick={() => setOpen(true)} aria-label="Open menu" style={{ background: "transparent", border: "1px solid " + T.sidebarBorder, borderRadius: T.rBtn, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.sidebarText, flexShrink: 0 }}>
+        <button onClick={() => setOpen(true)} aria-label={M.openMenu} style={{ background: "transparent", border: "1px solid " + T.sidebarBorder, borderRadius: T.rBtn, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: T.sidebarText, flexShrink: 0 }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
         </button>
         <span style={{ color: T.sidebarBrand, fontSize: 16, fontWeight: 600, letterSpacing: T.trackingTight, display: "flex", alignItems: "center", gap: 7 }}>
@@ -75,7 +78,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
       <div className="app-body">
         <div className="app-scrim" onClick={() => setOpen(false)} />
         <div className="app-sidebar-wrap">
-          <button className="drawer-close" onClick={() => setOpen(false)} aria-label="Close menu">
+          <button className="drawer-close" onClick={() => setOpen(false)} aria-label={M.closeMenu}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
           </button>
           <div onClick={() => setOpen(false)} style={{ height: "100%" }}>{sidebar}</div>

@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { T } from "@/lib/theme";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 import { MessageCircle, X, ArrowRight, ChevronRight } from "lucide-react";
 import { FAQ_ITEMS } from "@/lib/support-kb";
 import { fetchJson, postJson, errMsg } from "@/lib/fetch-json";
@@ -15,10 +17,10 @@ function getSession(): string {
   }
   return t;
 }
-function ago(iso?: string): string {
+function ago(iso: string | undefined, justNow: string): string {
   if (!iso) return "";
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "just now";
+  if (s < 60) return justNow;
   if (s < 3600) return Math.floor(s / 60) + "m";
   if (s < 86400) return Math.floor(s / 3600) + "h";
   return Math.floor(s / 86400) + "d";
@@ -28,6 +30,7 @@ function ago(iso?: string): string {
 // conversation is the product, so it is what opens, and the common questions sit
 // in the same panel behind one toggle instead of a second destination.
 export default function SupportWidget({ surface = "marketing", firstName }: { surface?: "marketing" | "app"; firstName?: string | null }) {
+  const S = getDict(useLocale()).support;
   const [open, setOpen] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
   const [session, setSession] = useState("");
@@ -69,21 +72,21 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
       if (j.answer) setMsgs((m) => [...m, { role: "assistant", content: j.answer as string }]);
       if (j.escalate) setStatus("escalated");
     } catch (e) {
-      setErr(errMsg(e, "That did not go through."));
+      setErr(errMsg(e, S.errSend));
     } finally {
       setBusy(false);
     }
   }
   async function saveEmail() {
     const e = email.trim();
-    if (!e || !e.includes("@")) { setErr("That does not look like an email address."); return; }
+    if (!e || !e.includes("@")) { setErr(S.errEmail); return; }
     setErr("");
     try {
       await postJson("/api/support", { sessionToken: session, message: "[contact] " + e, surface, email: e });
       setHasEmail(true);
       load();
     } catch (ex) {
-      setErr(errMsg(ex, "Could not save that address."));
+      setErr(errMsg(ex, S.errSave));
     }
   }
   const visible = msgs.filter((m) => !m.content.startsWith("[contact]"));
@@ -123,23 +126,23 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
               {waiting && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, flexShrink: 0 }} />}
               <span style={{ fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {showFaq ? "Questions" : waiting ? "With the team" : (
+                {showFaq ? S.questions : waiting ? S.withTeam : (
                   <>
-                    <span className="rp-sw-longtitle">ReadProspects support</span>
-                    <span className="rp-sw-shorttitle">Support</span>
+                    <span className="rp-sw-longtitle">{S.title}</span>
+                    <span className="rp-sw-shorttitle">{S.short}</span>
                   </>
                 )}
               </span>
             </span>
             <button onClick={() => setShowFaq((v) => !v)} style={{ ...linkBtn, marginLeft: "auto" }}>
-              {showFaq ? "Back to chat" : (
+              {showFaq ? S.backToChat : (
                 <>
-                  <span className="rp-sw-faqlong">Common questions</span>
-                  <span className="rp-sw-faqshort">Questions</span>
+                  <span className="rp-sw-faqlong">{S.common}</span>
+                  <span className="rp-sw-faqshort">{S.questions}</span>
                 </>
               )}
             </button>
-            <button onClick={() => setOpen(false)} aria-label="Close" title="Close" style={iconBtn}>
+            <button onClick={() => setOpen(false)} aria-label={S.close} title={S.close} style={iconBtn}>
               <X size={13} strokeWidth={2} />
             </button>
           </div>
@@ -161,7 +164,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                       <div style={{ padding: "0 12px 12px", fontSize: 13, color: T.muted, lineHeight: 1.6 }}>
                         {f.a}
                         <div style={{ marginTop: 10 }}>
-                          <button onClick={() => { setShowFaq(false); setDraft(f.q); }} style={linkBtn}>Ask about this instead</button>
+                          <button onClick={() => { setShowFaq(false); setDraft(f.q); }} style={linkBtn}>{S.askInstead}</button>
                         </div>
                       </div>
                     )}
@@ -174,10 +177,10 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
               {empty && (
                 <>
                   <p style={{ fontSize: 13.5, color: T.heading, margin: "0 0 4px", lineHeight: 1.55 }}>
-                    {firstName ? "Hi " + firstName + "." : "Hello."} Ask anything about ReadProspects.
+                    {firstName ? S.greetName + " " + firstName + "." : S.greetPlain} {S.askAnything}
                   </p>
                   <p style={{ fontSize: 13, color: T.muted, margin: "0 0 14px", lineHeight: 1.55 }}>
-                    Plans, how sharing works, what a verdict means. If I cannot answer it, a person will.
+                    {S.blurb}
                   </p>
                   <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard }}>
                     {FAQ_ITEMS.slice(0, 4).map((f, i) => (
@@ -192,7 +195,7 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
               )}
               {waiting && !empty && (
                 <div style={{ fontSize: 12.5, color: T.muted, textAlign: "center", margin: "0 0 12px", lineHeight: 1.5 }}>
-                  A person has this. They will reply here or by email.
+                  {S.personHas}
                 </div>
               )}
               {visible.map((m, i) =>
@@ -203,22 +206,22 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
                     <div style={{ ...bubble, background: m.role === "user" ? T.green : T.card, color: m.role === "user" ? T.onAccent : T.heading, border: m.role === "user" ? "none" : "1px solid " + T.border }}>
                       {m.role === "human" && (
                         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: T.muted, marginBottom: 4 }}>
-                          <i style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} />ReadProspects team
+                          <i style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} />{S.team}
                         </div>
                       )}
                       {m.content}
-                      {m.created_at && <div style={{ fontSize: 11, color: m.role === "user" ? "rgba(255,255,255,0.7)" : T.faint, marginTop: 4 }}>{ago(m.created_at)}</div>}
+                      {m.created_at && <div style={{ fontSize: 11, color: m.role === "user" ? "rgba(255,255,255,0.7)" : T.faint, marginTop: 4 }}>{ago(m.created_at, S.justNow)}</div>}
                     </div>
                   </div>
                 )
               )}
-              {busy && <div style={{ fontSize: 13, color: T.muted, padding: "2px 4px" }}>Thinking...</div>}
+              {busy && <div style={{ fontSize: 13, color: T.muted, padding: "2px 4px" }}>{S.thinking}</div>}
               {waiting && !hasEmail && surface === "marketing" && (
                 <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, padding: 12, marginTop: 6 }}>
-                  <div style={{ fontSize: 12.5, color: T.body, fontWeight: 600, marginBottom: 7 }}>Where should we reply?</div>
+                  <div style={{ fontSize: 12.5, color: T.body, fontWeight: 600, marginBottom: 7 }}>{S.whereReply}</div>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input className="rp-sw-in" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === "Enter" && saveEmail()} placeholder="you@company.com" style={field} />
-                    <button onClick={saveEmail} style={{ height: 32, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", flexShrink: 0 }}>Save</button>
+                    <button onClick={saveEmail} style={{ height: 32, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", flexShrink: 0 }}>{S.save}</button>
                   </div>
                 </div>
               )}
@@ -230,8 +233,8 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
           {!showFaq && (
             <div style={{ borderTop: "1px solid " + T.border, padding: 11, display: "flex", gap: 8, background: T.card, flexShrink: 0 }}>
               <input className="rp-sw-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()}
-                placeholder={waiting ? "Add anything else" : "Ask a question"} maxLength={600} style={field} />
-              <button onClick={() => send()} disabled={busy || !draft.trim()} aria-label="Send" title="Send"
+                placeholder={waiting ? S.addAnything : S.askQuestion} maxLength={600} style={field} />
+              <button onClick={() => send()} disabled={busy || !draft.trim()} aria-label={S.send} title={S.send}
                 style={{ height: 32, width: 32, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, opacity: busy || !draft.trim() ? 0.5 : 1 }}>
                 <ArrowRight size={15} strokeWidth={2} />
               </button>
@@ -242,10 +245,10 @@ export default function SupportWidget({ surface = "marketing", firstName }: { su
 
       {/* Not the universal glowing circle. A small labelled control that reads as
           part of the app rather than a bolted-on chatbot. */}
-      <button onClick={() => setOpen((v) => !v)} className="rp-sw-launch" aria-label="Support"
+      <button onClick={() => setOpen((v) => !v)} className="rp-sw-launch" aria-label={S.short}
         style={{ position: "fixed", right: 22, bottom: "calc(22px + env(safe-area-inset-bottom, 0px))", height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, fontFamily: T.font, cursor: "pointer", boxShadow: T.overlayShadow, zIndex: 9999 }}>
         {open ? <X size={15} strokeWidth={2} /> : <MessageCircle size={15} strokeWidth={2} />}
-        <span>{open ? "Close" : "Support"}</span>
+        <span>{open ? S.close : S.short}</span>
         {!open && waiting && <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, marginLeft: 1 }} />}
       </button>
     </>
