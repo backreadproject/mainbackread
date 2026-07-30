@@ -1,4 +1,5 @@
 import { T } from "@/lib/theme";
+import { getLocale } from "@/lib/locale-server";
 export const runtime = "nodejs";
 export const metadata = {
   title: "What the words mean \u2014 ReadProspects",
@@ -14,6 +15,10 @@ export const metadata = {
 // The honest sections are not a disclaimer. A product that claims to read minds
 // from page dwell gets believed once; saying plainly what a signal can and
 // cannot support is what makes the confident parts worth trusting.
+//
+// The French set is a real translation rather than a machine pass, but it is
+// explanatory copy, not the legal pages: a loose sentence here costs clarity,
+// not a legal position.
 type Section = { id: string; h: string; body: (string | { list: string[] })[] };
 const SECTIONS: Section[] = [
   {
@@ -127,7 +132,144 @@ const SECTIONS: Section[] = [
     ],
   },
 ];
-export default function ConceptsPage() {
+const SECTIONS_FR: Section[] = [
+  {
+    id: "signals",
+    h: "Les signaux",
+    body: [
+      "Tout ce que ReadProspects sait d\u2019un lecteur vient de six choses qu\u2019il fait. Class\u00e9es par ce que chacune vaut vraiment :",
+      { list: [
+        "Une r\u00e9ponse. Il a \u00e9crit en retour. Ce n\u2019est pas un indice \u00e0 peser, c\u2019est la r\u00e9ponse.",
+        "Une question. Il a interrog\u00e9 le document. Une intention exprim\u00e9e, qui vaut plus que tout ce qui suit r\u00e9uni.",
+        "Un transfert. Il l\u2019a envoy\u00e9 \u00e0 un coll\u00e8gue, ce qui vous dit que la conversation s\u2019est d\u00e9plac\u00e9e \u00e0 l\u2019int\u00e9rieur de son entreprise.",
+        "Une relecture. Il est revenu sur une page. Soit une friction, soit ce qu\u2019il est en train de peser.",
+        "Le temps pass\u00e9. Combien de temps sur une page. Un indicateur faible, trait\u00e9 comme tel.",
+        "Une ouverture. Il l\u2019a regard\u00e9. De l\u2019engagement, rien de plus.",
+      ] },
+      "Cet ordre est toute la th\u00e8se de ce produit. Un outil qui traite une ouverture comme une r\u00e9ponse compte, il ne lit pas.",
+    ],
+  },
+  {
+    id: "dwell",
+    h: "Le temps pass\u00e9, et pourquoi nous nous en m\u00e9fions",
+    body: [
+      "Le temps pass\u00e9 est la dur\u00e9e pendant laquelle une page est rest\u00e9e \u00e0 l\u2019\u00e9cran. C\u2019est la chose la plus facile \u00e0 mesurer et la plus facile \u00e0 surinterpr\u00e9ter.",
+      "Un lecteur qui a pass\u00e9 quatre-vingt-dix secondes sur votre page de prix l\u2019\u00e9tudiait peut-\u00eatre. Il allait peut-\u00eatre aussi chercher un caf\u00e9. Nous plafonnons le temps pass\u00e9 \u00e0 quinze minutes pour cette raison exacte, et un verdict ne repose jamais sur ce seul signal.",
+      "L\u00e0 o\u00f9 il devient utile, c\u2019est en agr\u00e9g\u00e9. Un lecteur qui s\u2019attarde page quatre, c\u2019est son habitude. Dix lecteurs qui s\u2019arr\u00eatent page quatre, c\u2019est un fait sur la page quatre.",
+    ],
+  },
+  {
+    id: "companion",
+    h: "Le compagnon du document",
+    body: [
+      "Votre lecteur peut poser une question \u00e0 votre document pendant qu\u2019il le lit, et obtenir une r\u00e9ponse tir\u00e9e du document lui-m\u00eame.",
+      "C\u2019est la partie vraiment diff\u00e9rente. Un prospect qui lit votre proposition \u00e0 vingt-trois heures peut demander si l\u2019engagement annuel est n\u00e9gociable, obtenir une r\u00e9ponse claire, et continuer. Vous d\u00e9couvrez le lendemain matin ce qu\u2019il a demand\u00e9.",
+      "Le compagnon r\u00e9pond \u00e0 partir de votre document et n\u2019invente pas de conditions que vous n\u2019avez pas propos\u00e9es. Quand une question sort de ce que dit le document, il le dit plut\u00f4t que de deviner.",
+    ],
+  },
+  {
+    id: "verdict",
+    h: "Le verdict",
+    body: [
+      "Un verdict porte sur l\u2019affaire, pas sur le document. Il r\u00e9pond \u00e0 ce que cette personne semble penser et \u00e0 ce qu\u2019il faut en faire.",
+      "Il est volontairement direct : un titre, un court raisonnement, et une action concr\u00e8te. Pas \u00ab relancer \u00bb. Quelque chose d\u2019assez pr\u00e9cis pour \u00eatre fait aujourd\u2019hui.",
+      "Quand un lecteur a r\u00e9pondu, le verdict rapporte ce qu\u2019il a dit au lieu d\u2019inf\u00e9rer autour. Une fois que quelqu\u2019un vous dit ce qu\u2019il pense, estimer ce qu\u2019il pense est pire qu\u2019inutile.",
+    ],
+  },
+  {
+    id: "confidence",
+    h: "La confiance",
+    body: [
+      "Chaque verdict porte une confiance haute, moyenne ou basse, et cela veut dire ce que cela dit.",
+      "Une confiance basse n\u2019est pas une pr\u00e9caution de langage. Elle signifie que les signaux sont minces \u2014 une ouverture, un peu de temps, aucune question \u2014 et que toute affirmation plus ferme serait une invention. Quand vous la voyez, le r\u00e9flexe honn\u00eate est g\u00e9n\u00e9ralement d\u2019attendre.",
+      "Un verdict assur\u00e9 sur des preuves minces est pire que pas de verdict du tout, parce que vous agiriez dessus.",
+    ],
+  },
+  {
+    id: "intent",
+    h: "L\u2019intention, et le champ",
+    body: [
+      "L\u2019intention est un nombre unique qui r\u00e9sume o\u00f9 en est un lecteur. Le champ d\u2019intention de votre aper\u00e7u place chaque lecteur selon ce nombre : plus il est proche du centre, plus il semble pr\u00eat.",
+      "Trois niveaux, et les noms sont la th\u00e8se :",
+      { list: [
+        "A jet\u00e9 un \u0153il. Il l\u2019a ouvert. C\u2019est tout ce que vous savez.",
+        "S\u2019\u00e9chauffe. Des visites r\u00e9p\u00e9t\u00e9es ou du temps r\u00e9el sur les pages qui comptent.",
+        "Pr\u00eat \u00e0 avancer. Des questions, un transfert, ou une lecture qui dit que le sujet est vivant.",
+      ] },
+      "Un lecteur qui r\u00e9pond appara\u00eet comme A r\u00e9pondu et passe au-dessus des trois, parce qu\u2019une r\u00e9ponse n\u2019est pas une estimation.",
+    ],
+  },
+  {
+    id: "neutral",
+    h: "Pourquoi votre lecteur voit un autre domaine",
+    body: [
+      "Les documents s\u2019ouvrent sur relaydocuments.com, pas sur ReadProspects. Votre lecteur voit un document net, sans notre marque et sans compte \u00e0 cr\u00e9er.",
+      "C\u2019est pour lui, pas pour dissimuler. Un prospect \u00e0 qui l\u2019on demande de s\u2019inscrire avant de lire votre proposition ne la lit tout simplement pas, et un document couvert du logo d\u2019un fournisseur se lit comme de la publicit\u00e9 plut\u00f4t que comme votre travail.",
+      "Ce qui est collect\u00e9, et le fait que l\u2019exp\u00e9diteur puisse le voir, est expos\u00e9 dans l\u2019avis de confidentialit\u00e9 li\u00e9 depuis la page de lecture.",
+    ],
+  },
+  {
+    id: "forwarding",
+    h: "Le transfert",
+    body: [
+      "Un lecteur peut transmettre votre document \u00e0 un coll\u00e8gue depuis la page de lecture. Le coll\u00e8gue re\u00e7oit alors son propre lien et sa lecture est suivie s\u00e9par\u00e9ment.",
+      "Le transfert est l\u2019un des signaux les plus forts qui existent, parce que c\u2019est le moment o\u00f9 votre document commence \u00e0 \u00eatre discut\u00e9 par des gens que vous n\u2019avez jamais rencontr\u00e9s.",
+    ],
+  },
+  {
+    id: "versions",
+    h: "Les versions A et B",
+    body: [
+      "T\u00e9l\u00e9versez deux versions ou plus du m\u00eame document et les lecteurs sont r\u00e9partis entre elles automatiquement.",
+      "Vous voyez ensuite quelle version retient l\u2019attention, laquelle suscite des questions, et laquelle perd les gens \u2014 mesur\u00e9 sur de vrais lecteurs plut\u00f4t que sur des avis.",
+      "En dessous d\u2019environ six lecteurs par version, l\u2019\u00e9cart est du bruit. Le panneau le dit plut\u00f4t que de d\u00e9signer un gagnant.",
+    ],
+  },
+  {
+    id: "reports",
+    h: "Les rapports",
+    body: [
+      "Un rapport, c\u2019est l\u2019ensemble du tableau sous forme de document \u00e0 transmettre : qui m\u00e9rite votre attention cette semaine, ce que les lecteurs engag\u00e9s ont en commun, et ce que votre document fait aux gens.",
+      "Ce n\u2019est pas une pile de verdicts individuels. Vingt-trois verdicts \u00e0 la suite, c\u2019est un tableur avec des adjectifs. La partie utile est la liste courte \u2014 lesquels des vingt-trois m\u00e9ritent votre mardi.",
+    ],
+  },
+  {
+    id: "limits",
+    h: "Ce que rien de tout cela ne peut vous dire",
+    body: [
+      "Cela ne peut pas vous dire ce que quelqu\u2019un a pens\u00e9. Cela peut vous dire ce qu\u2019il a fait, et argumenter prudemment sur ce que cela implique.",
+      "Cela ne voit pas les lectures qui ont lieu hors du lien. Une copie imprim\u00e9e, une capture transmise, une conversation en r\u00e9union : invisibles pour nous, et souvent d\u00e9cisives.",
+      "Cela ne peut pas faire dire quelque chose \u00e0 un lecteur silencieux. La plupart des gens qui n\u2019ouvrent jamais un document ne l\u2019ont simplement jamais ouvert.",
+      "L\u00e0 o\u00f9 les preuves sont minces, ReadProspects le dit. C\u2019est ce qui rend le reste digne d\u2019\u00eatre lu.",
+    ],
+  },
+];
+const COPY = {
+  en: {
+    h1: "What the words mean",
+    lead: "ReadProspects uses a handful of terms that are specific to it. This page defines each one, and says plainly where the evidence behind it is strong and where it is not.",
+    onThisPage: "ON THIS PAGE",
+    pricing: "Pricing",
+    stillUnclear: "Still unclear on something?",
+    seePlans: "See what each plan includes",
+    orWriteTo: ", or write to",
+    andAnswer: "and a person will answer.",
+  },
+  fr: {
+    h1: "Ce que signifient les mots",
+    lead: "ReadProspects emploie quelques termes qui lui sont propres. Cette page d\u00e9finit chacun d\u2019eux, et dit clairement o\u00f9 les preuves sont solides et o\u00f9 elles ne le sont pas.",
+    onThisPage: "SUR CETTE PAGE",
+    pricing: "Tarifs",
+    stillUnclear: "Un point reste flou ?",
+    seePlans: "Voir ce que comprend chaque forfait",
+    orWriteTo: ", ou \u00e9crivez \u00e0",
+    andAnswer: "et une personne vous r\u00e9pondra.",
+  },
+};
+export default async function ConceptsPage() {
+  const locale = await getLocale();
+  const c = COPY[locale];
+  const sections = locale === "fr" ? SECTIONS_FR : SECTIONS;
   const link = { color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder };
   return (
     <div style={{ minHeight: "100vh", background: T.canvas, fontFamily: T.font, letterSpacing: T.tracking, color: T.body }}>
@@ -137,23 +279,22 @@ export default function ConceptsPage() {
             <span style={{ position: "absolute", inset: 4, background: T.green, borderRadius: "50%" }} />
           </span>
           <a href="/" style={{ fontSize: 15.5, fontWeight: 600, color: T.heading, textDecoration: "none" }}>ReadProspects</a>
-          <a href="/pricing" style={{ marginLeft: "auto", fontSize: 13, color: T.muted, textDecoration: "none" }}>Pricing</a>
+          <a href="/pricing" style={{ marginLeft: "auto", fontSize: 13, color: T.muted, textDecoration: "none" }}>{c.pricing}</a>
         </div>
       </header>
 
       <main style={{ maxWidth: 780, margin: "0 auto", padding: "40px 20px 100px" }}>
         <h1 style={{ fontSize: 30, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>
-          What the words mean
+          {c.h1}
         </h1>
         <p style={{ fontSize: 15, color: T.muted, margin: "10px 0 0", lineHeight: 1.6, maxWidth: 580 }}>
-          ReadProspects uses a handful of terms that are specific to it. This page defines each one, and says plainly
-          where the evidence behind it is strong and where it is not.
+          {c.lead}
         </p>
 
-        <nav aria-label="On this page" style={{ margin: "30px 0 0", paddingTop: 22, borderTop: "1px solid " + T.border }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.09em", color: T.faint, marginBottom: 12 }}>ON THIS PAGE</div>
+        <nav aria-label={c.onThisPage} style={{ margin: "30px 0 0", paddingTop: 22, borderTop: "1px solid " + T.border }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.09em", color: T.faint, marginBottom: 12 }}>{c.onThisPage}</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {SECTIONS.map((s, i) => (
+            {sections.map((s, i) => (
               <a key={s.id} href={"#" + s.id}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 7,
@@ -168,7 +309,7 @@ export default function ConceptsPage() {
           </div>
         </nav>
 
-        {SECTIONS.map((s) => (
+        {sections.map((s) => (
           <section key={s.id} id={s.id} style={{ marginTop: 38, paddingTop: 30, borderTop: "1px solid " + T.borderSoft, scrollMarginTop: 24 }}>
             <h2 style={{ fontSize: 18, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 10px" }}>{s.h}</h2>
             {s.body.map((b, i) =>
@@ -189,8 +330,8 @@ export default function ConceptsPage() {
         ))}
 
         <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, margin: "40px 0 0", paddingTop: 20, borderTop: "1px solid " + T.border }}>
-          Still unclear on something? <a href="/pricing" style={link}>See what each plan includes</a>, or write to{" "}
-          <a href="mailto:support@readprospects.com" style={link}>support@readprospects.com</a> and a person will answer.
+          {c.stillUnclear} <a href="/pricing" style={link}>{c.seePlans}</a>{c.orWriteTo}{" "}
+          <a href="mailto:support@readprospects.com" style={link}>support@readprospects.com</a> {c.andAnswer}
         </p>
       </main>
     </div>
