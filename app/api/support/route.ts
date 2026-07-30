@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, supportTask, type SupportTurn } from "@/lib/ai";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { sendEmail } from "@/lib/email";
+import { getLocale } from "@/lib/locale-server";
 
 export const runtime = "nodejs";
 // Model calls plus Supabase round trips exceed Vercel's 10s default,
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
+  // The language of the person typing. The support KB stays English; only the
+  // reply is translated.
+  const locale = await getLocale();
+  const fr = locale === "fr";
+
   // Rate limit before any AI spend. This endpoint is reachable without a login,
   // so it is the same exposure the reader Ask endpoint has, and gets the same guard.
   const [h, d] = await Promise.all([
@@ -43,10 +49,10 @@ export async function POST(req: NextRequest) {
     admin.rpc("bump_rate_limit", { p_bucket: `support:${sessionToken}:d`, p_window: dayWindow() }),
   ]);
   if (!h.error && Number(h.data) > PER_SESSION_PER_HOUR) {
-    return NextResponse.json({ answer: "You have asked a lot in a short time. Give it an hour, or email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+    return NextResponse.json({ answer: fr ? "Vous avez pos\u00e9 beaucoup de questions en peu de temps. Attendez une heure, ou \u00e9crivez \u00e0 support@readprospects.com et une personne prendra le relais." : "You have asked a lot in a short time. Give it an hour, or email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
   }
   if (!d.error && Number(d.data) > PER_SESSION_PER_DAY) {
-    return NextResponse.json({ answer: "That is as much as I can help with today. Email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
+    return NextResponse.json({ answer: fr ? "C\u2019est tout ce que je peux faire aujourd\u2019hui. \u00c9crivez \u00e0 support@readprospects.com et une personne prendra le relais." : "That is as much as I can help with today. Email support@readprospects.com and a person will pick it up.", escalate: false, limited: true });
   }
 
   // Who is asking, when we can tell. Never used to unlock anything.
@@ -119,7 +125,7 @@ export async function POST(req: NextRequest) {
     await notifyHuman(conversationId, message.trim(), "they replied after our answer");
   }
 
-  const { data } = await runAI(supportTask, { question: message.trim(), history, who, humanWaiting });
+  const { data } = await runAI(supportTask, { question: message.trim(), history, who, humanWaiting, locale });
 
   await admin.from("support_messages").insert({ conversation_id: conversationId, role: "assistant", content: data.answer });
   const alreadyWaiting = existing?.status === "escalated" && !!existing?.escalated_at;

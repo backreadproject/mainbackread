@@ -12,6 +12,9 @@ export interface SupportInput {
   /** True when a person has already been brought in. The bot keeps helping,
    *  it just stops re-escalating and stops promising to resolve their issue. */
   humanWaiting?: boolean;
+  /** The customer's language. The reference material stays English; only the
+   *  answer is translated. */
+  locale: "en" | "fr";
 }
 
 export const SupportOutput = z.object({
@@ -60,6 +63,9 @@ export const supportTask: Task<SupportInput, SupportOutput> = {
       "",
       "Respond with ONLY a JSON object, no markdown fences:",
       '{"answer":"what you tell them","escalate":true or false,"reason":"why, for the person picking this up"}',
+      i.locale === "fr"
+        ? "\nLANGUAGE. The person is writing in French. Write `answer` in French. Keep `reason` in English -- it is an internal note for the operator, who works in English. The reference material above is in English; translate what you need from it rather than quoting it."
+        : "",
     ].join("\n");
   },
 
@@ -69,24 +75,25 @@ export const supportTask: Task<SupportInput, SupportOutput> = {
   },
 
   fixture: (i) => {
+    const fr = i.locale === "fr";
     const q = i.question.toLowerCase();
     const wantsHuman = /human|person|agent|speak to someone|refund|charge|billing|complain/.test(q);
     if (wantsHuman) {
       return {
-        answer: "That one needs a person. I have passed it on with your message.",
+        answer: fr ? "Cela demande une personne. Je l\u2019ai transmis avec votre message." : "That one needs a person. I have passed it on with your message.",
         escalate: true,
         reason: "[fixture] asked for a human or raised billing",
       };
     }
     if (/plan|price|cost|how much|limit/.test(q)) {
       return {
-        answer: "Free covers 2 documents a month with 2 verdicts each. Personal lifts the limits for one person. Team adds organizations and seats, and Business adds A/B versions, Slack and webhook alerts, and the API.",
+        answer: fr ? "Gratuit couvre 2 documents par mois avec 2 verdicts chacun. Personnel l\u00e8ve les limites pour une personne. \u00c9quipe ajoute les organisations et les si\u00e8ges, et Business ajoute les versions A/B, les alertes Slack et webhook, et l\u2019API." : "Free covers 2 documents a month with 2 verdicts each. Personal lifts the limits for one person. Team adds organizations and seats, and Business adds A/B versions, Slack and webhook alerts, and the API.",
         escalate: false,
         reason: "[fixture] plan question",
       };
     }
     return {
-      answer: "ReadProspects shares a document by private link and tells you how it was read: what held them, what they asked, and what to do next.",
+      answer: fr ? "ReadProspects partage un document par lien priv\u00e9 et vous dit comment il a \u00e9t\u00e9 lu : ce qui a retenu le lecteur, ce qu\u2019il a demand\u00e9, et quoi faire ensuite." : "ReadProspects shares a document by private link and tells you how it was read: what held them, what they asked, and what to do next.",
       escalate: false,
       reason: "[fixture] general",
     };
