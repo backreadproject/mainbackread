@@ -3,6 +3,7 @@ import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/render
 import type { ReportOutput } from "@/lib/ai";
 import type { AssembledReport } from "@/lib/report-data";
 import type { Branding } from "@/lib/report-cache";
+import { getDict, type Locale } from "@/lib/i18n";
 // The reading report.
 //
 // Built to the same rules as the erasure certificate, which is the densest
@@ -87,15 +88,17 @@ function mins(sec: number): string {
 }
 export type ReportSections = { appendix: boolean; pageAttention: boolean; neverOpened: boolean };
 export const ALL_SECTIONS: ReportSections = { appendix: true, pageAttention: true, neverOpened: true };
-export function ReportDocument({ report, data, generatedFor, generatedAt, branding, sections = ALL_SECTIONS }: {
+export function ReportDocument({ report, data, generatedFor, generatedAt, branding, sections = ALL_SECTIONS, locale = "en" }: {
   report: ReportOutput;
   data: AssembledReport;
   generatedFor: string;
   generatedAt: Date;
   branding?: Branding;
   sections?: ReportSections;
+  locale?: Locale;
 }) {
   const opened = data.detail.filter((d) => d.opens > 0).length;
+  const R = getDict(locale).reportPdf;
   const totalQ = data.detail.reduce((n, d) => n + d.questions.length, 0);
   const totalR = data.detail.reduce((n, d) => n + d.replies.length, 0);
   const dateStr = generatedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -127,7 +130,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
     <Document title={"Reading report \u2014 " + data.documentTitle} author={branding?.reporter || "ReadProspects"}>
       {/* Cover. Authored, then read. */}
       <Page size="A4" style={s.page}>
-        <Head label="READING REPORT" />
+        <Head label={R.kicker} />
 
         {(branding?.logoUrl || branding?.companyName) && (
           <View style={s.brandRow}>
@@ -138,7 +141,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         <View style={s.metaRow}>
           {branding?.reporter ? (
-            <View style={s.metaCol}><Text style={s.metaK}>PREPARED BY</Text><Text style={s.metaV}>{branding.reporter}</Text></View>
+            <View style={s.metaCol}><Text style={s.metaK}>{R.preparedBy}</Text><Text style={s.metaV}>{branding.reporter}</Text></View>
           ) : null}
           {branding?.recipient ? (
             <View style={s.metaCol}>
@@ -150,18 +153,18 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               <Text style={s.metaV}>{branding.recipient}</Text>
             </View>
           ) : null}
-          <View style={s.metaCol}><Text style={s.metaK}>DATE</Text><Text style={s.metaV}>{dateStr}</Text></View>
+          <View style={s.metaCol}><Text style={s.metaK}>{R.date}</Text><Text style={s.metaV}>{dateStr}</Text></View>
         </View>
 
-        <Text style={s.mono}>{data.input.scope === "document" ? "EVERY READER" : shown.length + " SELECTED READERS"}</Text>
+        <Text style={s.mono}>{data.input.scope === "document" ? R.everyReader : shown.length + " " + R.selectedReaders}</Text>
         <Text style={s.h1}>{data.documentTitle}</Text>
         <Text style={[s.sub, { marginBottom: 20 }]}>{data.totalRecipients} recipients</Text>
 
         <View style={s.figures}>
-          <View style={s.figFirst}><Text style={s.figV}>{data.totalRecipients}</Text><Text style={s.figK}>Recipients</Text></View>
-          <View style={s.fig}><Text style={s.figV}>{opened}</Text><Text style={s.figK}>Opened it</Text></View>
-          <View style={s.fig}><Text style={s.figV}>{totalQ}</Text><Text style={s.figK}>Questions</Text></View>
-          <View style={s.fig}><Text style={s.figV}>{totalR}</Text><Text style={s.figK}>Replied</Text></View>
+          <View style={s.figFirst}><Text style={s.figV}>{data.totalRecipients}</Text><Text style={s.figK}>{R.recipients}</Text></View>
+          <View style={s.fig}><Text style={s.figV}>{opened}</Text><Text style={s.figK}>{R.openedIt}</Text></View>
+          <View style={s.fig}><Text style={s.figV}>{totalQ}</Text><Text style={s.figK}>{R.questions}</Text></View>
+          <View style={s.fig}><Text style={s.figV}>{totalR}</Text><Text style={s.figK}>{R.replied}</Text></View>
         </View>
 
         <View style={{ marginTop: 24 }}>
@@ -171,7 +174,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         {branding?.note ? (
           <View style={[s.card, { marginTop: 22 }]}>
-            <Text style={s.cardHead}>Note</Text>
+            <Text style={s.cardHead}>{R.note}</Text>
             <View style={s.cardBody}><Text style={{ fontSize: 9, color: C.body, lineHeight: 1.55 }}>{branding.note}</Text></View>
           </View>
         ) : null}
@@ -181,7 +184,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
       {/* What to do. Written to survive being forwarded alone. */}
       <Page size="A4" style={s.page}>
-        <Head label="WHAT TO DO" />
+        <Head label={R.whatToDo} />
         <Text style={s.h1}>
           {report.priorities.length === 0
             ? "Nothing here warrants action yet"
@@ -192,7 +195,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
         </Text>
 
         {report.priorities.length === 0 ? (
-          <Text style={s.lead}>The signals do not support recommending a specific move. Acting on this would be guessing.</Text>
+          <Text style={s.lead}>{R.noMove}</Text>
         ) : report.priorities.map((p, i) => {
           const d = data.detail.find((x) => x.name === p.reader);
           const stat = d ? d.opens + " opens" + (d.questions.length ? "  \u00b7  " + d.questions.length + " questions" : "") + (d.forwardedTo.length ? "  \u00b7  forwarded" : "") : "";
@@ -204,7 +207,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               </View>
               <Text style={s.prioWhy}>{p.why}</Text>
               <View style={s.action}>
-                <Text style={s.actionK}>DO THIS</Text>
+                <Text style={s.actionK}>{R.doThis}</Text>
                 <Text style={s.actionV}>{p.action}</Text>
               </View>
             </View>
@@ -215,13 +218,13 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
       {/* The document itself. */}
       <Page size="A4" style={s.page}>
-        <Head label="THE DOCUMENT" />
-        <Text style={s.h1}>How it was read</Text>
+        <Head label={R.theDocument} />
+        <Text style={s.h1}>{R.howItWasRead}</Text>
         <Text style={[s.sub, { marginBottom: 20 }]}>{data.documentTitle} {"\u00b7"} {dateStr}</Text>
 
         {report.patterns.length > 0 && (
           <View style={s.card}>
-            <Text style={s.cardHead}>Patterns across readers</Text>
+            <Text style={s.cardHead}>{R.patterns}</Text>
             {report.patterns.map((p, i) => (
               <View key={i} style={i === report.patterns.length - 1 ? [s.bullet, { borderBottomWidth: 0 }] : s.bullet}>
                 <View style={s.dot} /><Text style={s.bulletText}>{p}</Text>
@@ -232,7 +235,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         {report.documentFindings.length > 0 && (
           <View style={s.card}>
-            <Text style={s.cardHead}>What the document is doing</Text>
+            <Text style={s.cardHead}>{R.whatItIsDoing}</Text>
             {report.documentFindings.map((f, i) => (
               <View key={i} style={i === report.documentFindings.length - 1 ? [s.bullet, { borderBottomWidth: 0 }] : s.bullet}>
                 <View style={s.dot} /><Text style={s.bulletText}>{f}</Text>
@@ -243,16 +246,16 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
 
         {sections.pageAttention && data.input.pageTotals.length > 0 && (
           <View style={s.card}>
-            <Text style={s.cardHead}>Where attention went</Text>
+            <Text style={s.cardHead}>{R.whereAttention}</Text>
             {data.input.pageTotals.slice(0, 8).map((p, i, arr) => {
               const max = data.input.pageTotals[0].seconds || 1;
               return (
                 <View key={p.page} style={i === arr.length - 1 ? [s.barRow, { borderBottomWidth: 0 }] : s.barRow}>
-                  <Text style={s.barK}>Page {p.page}</Text>
+                  <Text style={s.barK}>{R.page} {p.page}</Text>
                   <View style={s.barTrack}>
                     <View style={{ width: Math.max(2, Math.round((p.seconds / max) * 100)) + "%", height: "100%", backgroundColor: C.green }} />
                   </View>
-                  <Text style={s.barV}>{mins(p.seconds)} {"\u00b7"} {p.readers} reader{p.readers === 1 ? "" : "s"}</Text>
+                  <Text style={s.barV}>{mins(p.seconds)} {"\u00b7"} {p.readers} {p.readers === 1 ? R.reader : R.readers}</Text>
                 </View>
               );
             })}
@@ -263,7 +266,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
         )}
 
         <View style={s.card}>
-          <Text style={s.cardHead}>What this cannot tell you</Text>
+          <Text style={s.cardHead}>{R.cannotTell}</Text>
           <View style={s.cardBody}><Text style={{ fontSize: 9, color: C.body, lineHeight: 1.6 }}>{report.limits}</Text></View>
         </View>
         <Foot />
@@ -272,9 +275,9 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
       {/* Appendix. The evidence. */}
       {sections.appendix ? (
         <Page size="A4" style={s.page}>
-          <Head label="APPENDIX" />
-          <Text style={s.h1}>Every reader</Text>
-          <Text style={[s.sub, { marginBottom: 20 }]}>The evidence behind the findings, in full.</Text>
+          <Head label={R.appendix} />
+          <Text style={s.h1}>{R.everyReaderH}</Text>
+          <Text style={[s.sub, { marginBottom: 20 }]}>{R.appendixSub}</Text>
 
           {shown.map((d) => (
             <View key={d.id} style={s.card} wrap={false}>
@@ -287,7 +290,7 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               <Row k="Questions asked" v={String(d.questions.length)} />
               <Row k="Forwarded to" v={d.forwardedTo.length ? d.forwardedTo.join(", ") : "\u2014"} last={d.replies.length === 0 && d.questions.length === 0 && d.opens > 0} />
               {d.opens === 0 && (
-                <View style={s.rowLast}><Text style={s.rowK}>Status</Text><Text style={[s.rowV, { color: C.amber }]}>Never opened it</Text></View>
+                <View style={s.rowLast}><Text style={s.rowK}>{R.status}</Text><Text style={[s.rowV, { color: C.amber }]}>{R.neverOpened}</Text></View>
               )}
               {!d.verdict && d.opens > 0 && (
                 <View style={{ paddingVertical: 8, paddingHorizontal: 13, borderTopWidth: 1, borderTopColor: C.lineSoft }}>
@@ -298,17 +301,17 @@ export function ReportDocument({ report, data, generatedFor, generatedAt, brandi
               )}
               {d.verdict && (
                 <View style={s.verdictBox}>
-                  <Text style={s.verdictK}>THE VERDICT {"\u00b7"} {d.verdict.confidence.toUpperCase()} CONFIDENCE</Text>
+                  <Text style={s.verdictK}>{R.theVerdict} {"\u00b7"} {d.verdict.confidence.toUpperCase()} {R.confidence}</Text>
                   <Text style={s.verdictH}>{d.verdict.headline}</Text>
                   <Text style={s.verdictR}>{d.verdict.reasoning}</Text>
-                  <Text style={{ fontSize: 8.5, color: C.greenText }}>Next: {d.verdict.nextAction}</Text>
+                  <Text style={{ fontSize: 8.5, color: C.greenText }}>{R.next} {d.verdict.nextAction}</Text>
                 </View>
               )}
               {(d.replies.length > 0 || d.questions.length > 0) && (
                 <View style={{ paddingHorizontal: 13, paddingTop: 9, paddingBottom: 4 }}>
                   {d.replies.map((r, i) => (
                     <View key={"r" + i} style={{ marginBottom: 6 }}>
-                      <Text style={{ fontSize: 7, color: C.greenText, letterSpacing: 0.6, marginBottom: 2 }}>THEY REPLIED</Text>
+                      <Text style={{ fontSize: 7, color: C.greenText, letterSpacing: 0.6, marginBottom: 2 }}>{R.theyReplied}</Text>
                       <Text style={s.quote}>{r}</Text>
                     </View>
                   ))}

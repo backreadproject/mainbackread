@@ -138,6 +138,7 @@ export async function POST(req: NextRequest) {
       generatedAt: new Date(),
       branding,
       sections: { ...ALL_SECTIONS, ...(body.sections ?? {}) },
+      locale,
     }) as React.ReactElement<DocumentProps>;
     // renderToBuffer rather than a stream: the document is small, and a stream
     // that fails halfway produces a corrupt file the customer cannot diagnose.
