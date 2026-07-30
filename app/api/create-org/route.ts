@@ -1,11 +1,26 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolvePlanForUser } from "@/lib/plan-context";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  // Deliberately NOT an entitlement check. A company account whose trial lapsed
+  // must still be able to create its organisation, because checkout will not
+  // sell an org plan until one exists -- guarding on isLocked would lock them
+  // out of the only route to paying. The real rule here is account type.
+  const ctx = await resolvePlanForUser(createAdminClient(), user.id);
+  if (ctx.scope !== "org") {
+    return NextResponse.json({ error: "Personal accounts cannot create an organization. Choose Team or Business to run one." }, { status: 403 });
+  }
+  // One organisation per owner. endSubscription and applyPlan both look an org
+  // up by created_by, and applyPlan uses maybeSingle(), which throws on two.
+  if (ctx.orgId) {
+    return NextResponse.json({ error: "You already have an organization." }, { status: 409 });
+  }
 
   const { name, domain, migrateDocuments } = await req.json();
   if (!name || typeof name !== "string" || !name.trim()) {

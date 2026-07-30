@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requirePaidAccess } from "@/lib/plan-context";
 import { getOrgContext } from "@/lib/org-context";
 import { NextResponse } from "next/server";
 
@@ -8,6 +9,11 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  // The layout walls a browser out; nothing stopped a direct POST with a valid
+  // session, so a lapsed account could still work through the API.
+  const gate = await requirePaidAccess(createAdminClient(), user.id);
+  if (gate.refusal) return NextResponse.json(gate.refusal.body, { status: gate.refusal.status });
 
   const ctx = await getOrgContext();
 

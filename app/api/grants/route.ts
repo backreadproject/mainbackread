@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requirePaidAccess } from "@/lib/plan-context";
 import { getOrgContext } from "@/lib/org-context";
 import { notify, notifyEmail } from "@/lib/notify";
 import { NextResponse } from "next/server";
@@ -60,6 +61,9 @@ export async function POST(req: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
+  const gate = await requirePaidAccess(createAdminClient(), user.id);
+  if (gate.refusal) return NextResponse.json(gate.refusal.body, { status: gate.refusal.status });
+
   const ctx = await getOrgContext();
   if (!ctx.org) return NextResponse.json({ error: "Organization required." }, { status: 403 });
 
@@ -111,6 +115,9 @@ export async function DELETE(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+
+  const gate = await requirePaidAccess(createAdminClient(), user.id);
+  if (gate.refusal) return NextResponse.json(gate.refusal.body, { status: gate.refusal.status });
 
   const { grantId, resourceType, resourceId } = await req.json();
   if (!grantId) return NextResponse.json({ error: "Missing grant id." }, { status: 400 });
