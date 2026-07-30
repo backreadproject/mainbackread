@@ -16,6 +16,11 @@ export default function BillingClient({
   const [busy, setBusy] = useState<PlanId | null>(null);
   const [msg, setMsg] = useState("");
   const plan = PLANS[currentPlan];
+  // Locked means the subscription or trial ended. The plan record stays so a
+  // resubscribe restores what they had, which means every card must offer a
+  // button -- including the one they were on. Showing "Your plan" there left a
+  // lapsed Business customer able to buy only cheaper tiers.
+  const lapsed = access === "locked";
 
   async function choose(id: PlanId) {
     setBusy(id); setMsg("");
@@ -64,9 +69,9 @@ export default function BillingClient({
         {access === "locked" && (
           <div style={{ ...card, borderColor: T.dangerBorder, background: T.dangerSoft }}>
             <div style={{ padding: 18 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: T.dangerText, marginBottom: 4 }}>Your trial has ended</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: T.dangerText, marginBottom: 4 }}>{trialDaysLeft > 0 || currentPlan === "free" ? "Your trial has ended" : "Your subscription has ended"}</div>
               <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.55, margin: 0 }}>
-                Everything you have created is safe and still here. Choose a plan below to start sharing again.
+                Everything you have created is safe and still here, and the links you already sent still work. Choose a plan to see what your readers are doing again.
               </p>
             </div>
           </div>
@@ -112,7 +117,7 @@ export default function BillingClient({
           {discounted && (
             <span style={{ fontSize: 12.5, color: T.greenText, display: "inline-flex", alignItems: "center", gap: 7 }}>
               <i style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} />
-              5% referral discount applied to every price below
+              10% off your first month, from your referral. Monthly plans only.
             </span>
           )}
         </div>
@@ -122,7 +127,8 @@ export default function BillingClient({
             const p = PLANS[id];
             const list = priceFor(id, interval, false);
             const pay = priceFor(id, interval, discounted);
-            const isCurrent = id === currentPlan;
+            const isCurrent = id === currentPlan && !lapsed;
+            const isPrevious = id === currentPlan && lapsed;
             const orgOnly = id === "team" || id === "business";
             return (
               <div key={id} style={{ background: T.card, border: "1px solid " + (isCurrent ? T.greenBorder : T.border), borderRadius: T.rCard, padding: 16, display: "flex", flexDirection: "column" }}>
@@ -139,13 +145,13 @@ export default function BillingClient({
                 {isCurrent ? (
                   <span style={{ fontSize: 12.5, color: T.greenText, fontWeight: 500 }}>Your plan</span>
                 ) : list === 0 ? (
-                  <span style={{ fontSize: 12.5, color: T.faint }}>&mdash;</span>
+                  <span style={{ fontSize: 12.5, color: T.faint }}>{lapsed ? "Free is where you are now" : "\u2014"}</span>
                 ) : (
                   <button onClick={() => choose(id)} disabled={busy !== null}
                     title={orgOnly && scope !== "org" ? "Create an organization first" : undefined}
                     style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn,
                       fontSize: 13, fontWeight: 500, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
-                    {busy === id ? "Opening..." : "Choose " + p.name}
+                    {busy === id ? "Opening..." : isPrevious ? "Restart " + p.name : "Choose " + p.name}
                   </button>
                 )}
               </div>
