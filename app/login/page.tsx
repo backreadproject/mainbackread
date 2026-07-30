@@ -98,7 +98,7 @@ export default function LoginPage() {
         <div style={{ width: "100%", maxWidth: 356, boxSizing: "border-box", background: T.card, border: `1px solid ${T.border}`, borderRadius: T.rCard, padding: 26, boxShadow: T.shadow }}>
           <h1 style={{ fontSize: 23, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{mode === "signin" ? a.signinTitle : a.signupTitle}</h1>
           <p style={{ fontSize: 14, color: T.body, margin: "0 0 18px" }}>{mode === "signin" ? a.signinSub : a.signupSub}</p>
-          {mode === "signup" && (
+          {mode === "signup" && !knownPlan && (
             <div style={{ marginBottom: 12 }}>
               <span style={label}>{a.accountType}</span>
               <div style={{ display: "flex", gap: 8 }}>
@@ -108,6 +108,13 @@ export default function LoginPage() {
               </div>
               {accountType === "company" && <p style={{ fontSize: 12, color: T.greenText, margin: "8px 0 0", lineHeight: 1.5 }}>{a.trialNote}</p>}
             </div>
+          )}
+          {mode === "signup" && knownPlan && (
+            <p style={{ fontSize: 13, color: T.muted, margin: "0 0 14px", lineHeight: 1.5 }}>
+              {planIsOrg
+                ? "Starting your 7-day " + (knownPlan === "team" ? "Team" : "Business") + " trial. No card needed."
+                : knownPlan === "personal" ? "Setting up your Personal plan." : "Setting up your free account."}
+            </p>
           )}
           {mode === "signup" && (
             <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
@@ -119,6 +126,14 @@ export default function LoginPage() {
                 <span style={label}>{a.lastName}</span>
                 <input className="t-in" placeholder="Chen" value={lastName} onChange={(e) => setLastName(e.target.value)} style={input} />
               </div>
+            </div>
+          )}
+          {mode === "signup" && type === "company" && (
+            <div style={{ marginBottom: 12 }}>
+              <span style={label}>{a.workspaceName}</span>
+              <input className="t-in" placeholder={a.workspacePlaceholder} value={workspaceName}
+                onChange={(e) => setWorkspaceName(e.target.value)} style={input} />
+              <p style={{ fontSize: 12, color: T.muted, margin: "6px 0 0", lineHeight: 1.5 }}>{a.workspaceNote}</p>
             </div>
           )}
           <span style={label}>{a.email}</span>
