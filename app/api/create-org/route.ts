@@ -29,10 +29,15 @@ export async function POST(req: Request) {
 
   const admin = createAdminClient();
 
+  // The tier this account signed up for. Never trust the column default: it
+  // decides the price of the product and lives outside this file.
+  const claimed = String((user.user_metadata as Record<string, unknown> | null)?.plan ?? "");
+  const intendedPlan = claimed === "business" ? "business" : "team";
+
   // 1. Create the org.
   const { data: org, error: orgErr } = await admin
     .from("organizations")
-    .insert({ name: name.trim(), domain: domain?.trim() || null, created_by: user.id })
+    .insert({ name: name.trim(), domain: domain?.trim() || null, created_by: user.id, plan: intendedPlan, subscription_active: false })
     .select("id, name")
     .single();
   if (orgErr || !org) return NextResponse.json({ error: orgErr?.message ?? "Could not create organization." }, { status: 400 });
