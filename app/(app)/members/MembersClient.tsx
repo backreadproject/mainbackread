@@ -10,7 +10,7 @@ type Member = { id: string; userId: string; email: string | null; firstName?: st
 type Org = { id: string; name: string } | null;
 type Invite = { id: string; email: string; firstName: string; lastName: string; role: "admin" | "member"; createdAt: string; expiresAt: string };
 type Tone = "green" | "amber" | "indigo" | "neutral";
-export default function MembersClient({ org, role, members: initial, invites: initialInvites = [], accountType = "personal", trialStartedAt = null }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[]; invites?: Invite[]; accountType?: "personal" | "company" | "organization"; trialStartedAt?: string | null }) {
+export default function MembersClient({ org, role, members: initial, invites: initialInvites = [], accountType = "personal", trialStartedAt = null }: { org: Org; role: "owner" | "admin" | "member" | null; members: Member[]; invites?: Invite[]; accountType?: "personal" | "organization"; trialStartedAt?: string | null }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const mp = getDict(locale).membersPage;
@@ -89,7 +89,7 @@ export default function MembersClient({ org, role, members: initial, invites: in
   }
   // ---- No org yet ----
   if (!org) {
-    const isCompany = accountType === "company" || accountType === "organization";
+    const isCompany = accountType === "organization";
     const trial = trialInfo(trialStartedAt);
     if (!isCompany) {
       return (

@@ -16,7 +16,7 @@ export default async function AccountDetail({ params }: { params: Promise<{ id: 
   const banned = !!(u as unknown as { banned_until?: string | null } | undefined)?.banned_until;
   const { data: profile } = await admin.from("profiles").select("first_name, last_name, workspace_name, account_type, active_org_id, plan, trial_started_at, approved_at").eq("id", id).single();
   const p = (profile ?? {}) as Prof;
-  const isOrg = p.account_type === "company" || p.account_type === "organization";
+  const isOrg = p.account_type === "organization";
   let org: Org | null = null;
   if (isOrg && p.active_org_id) {
     const { data } = await admin.from("organizations").select("id, name, domain, plan, subscription_active").eq("id", p.active_org_id).single();

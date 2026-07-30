@@ -25,7 +25,7 @@ export default async function AccountsPage({ searchParams }: { searchParams: Pro
   let rows = users.map((u) => {
     const p = pmap.get(u.id);
     const org = p?.active_org_id ? orgById.get(p.active_org_id) : null;
-    const isOrg = p?.account_type === "company" || p?.account_type === "organization";
+    const isOrg = p?.account_type === "organization";
     const name = [p?.first_name, p?.last_name].filter(Boolean).join(" ").trim();
     const banned = !!(u as unknown as { banned_until?: string | null }).banned_until;
     return {

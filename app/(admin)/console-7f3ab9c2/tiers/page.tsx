@@ -20,7 +20,7 @@ export default async function TiersPage() {
   const orgById = new Map((orgs ?? []).map((o) => [o.id, o]));
   const rows = users.map((u) => {
     const p = pmap.get(u.id);
-    const isOrg = p?.account_type === "company" || p?.account_type === "organization";
+    const isOrg = p?.account_type === "organization";
     const org = p?.active_org_id ? orgById.get(p.active_org_id) : null;
     const planId = (isOrg ? ((org?.plan as string | null) ?? "team") : (p?.plan ?? "free")) as PlanId;
     const subscribed = !!org?.subscription_active;

@@ -11,7 +11,7 @@ function LoginForm() {
   const a = getDict(locale).auth;
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState("");
-  const [accountType, setAccountType] = useState<"personal" | "company">("personal");
+  const [accountType, setAccountType] = useState<"personal" | "organization">("personal");
   // ?plan= and ?signup=1 come from the pricing cards. A visitor who already
   // chose a tier should not be asked to choose again; one arriving cold at this
   // page still gets the personal-or-company choice.
@@ -21,12 +21,9 @@ function LoginForm() {
   const planIsOrg = knownPlan === "team" || knownPlan === "business";
   const [mode, setMode] = useState<"signin" | "signup">(params.get("signup") === "1" || knownPlan ? "signup" : "signin");
   const [workspaceName, setWorkspaceName] = useState("");
-  const type: "personal" | "company" = knownPlan ? (planIsOrg ? "company" : "personal") : accountType;
-  // What the database will accept. The UI says "company"; the column says
-  // "organization", and a CHECK constraint enforces it.
-  const dbAccountType = type === "company" ? "organization" : "personal";
+  const type: "personal" | "organization" = knownPlan ? (planIsOrg ? "organization" : "personal") : accountType;
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
-  const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim() && (type !== "company" || !!workspaceName.trim()));
+  const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim() && (type !== "organization" || !!workspaceName.trim()));
   async function submit() {
     if (!canSubmit) return;
     setBusy(true); setMsg("");
@@ -38,13 +35,13 @@ function LoginForm() {
       const refCode = (document.cookie.match(/(?:^|;\s*)rp_ref=([a-z0-9-]{3,32})/) || [])[1] || null;
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { emailRedirectTo: window.location.origin + "/login", data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, account_type: dbAccountType, plan: knownPlan || (type === "company" ? "team" : "free"), ...(type === "company" ? { workspace_name: workspaceName.trim() } : {}), ...(refCode ? { ref_code: refCode } : {}) } },
+        options: { emailRedirectTo: window.location.origin + "/login", data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, account_type: type, plan: knownPlan || (type === "organization" ? "team" : "free"), ...(type === "organization" ? { workspace_name: workspaceName.trim() } : {}), ...(refCode ? { ref_code: refCode } : {}) } },
       });
       if (error) { setMsg(error.message); setBusy(false); return; }
       if (data.user) {
         const profileRow: Record<string, unknown> = {
           id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(),
-          account_type: dbAccountType, updated_at: new Date().toISOString(),
+          account_type: type, updated_at: new Date().toISOString(),
         };
         // trial_started_at, plan, the organization and the membership are all set
         // by the on_auth_user_created trigger, atomically with the auth user.
@@ -110,11 +107,11 @@ function LoginForm() {
             <div style={{ marginBottom: 12 }}>
               <span style={label}>{a.accountType}</span>
               <div style={{ display: "flex", gap: 8 }}>
-                {([["personal", a.personal], ["company", a.company]] as const).map(([val, lbl]) => (
-                  <button key={val} type="button" onClick={() => setAccountType(val as "personal" | "company")} style={{ flex: 1, padding: "10px 12px", borderRadius: T.rInput, border: `1px solid ${accountType === val ? T.green : T.border}`, background: accountType === val ? T.greenSoft : T.card, color: accountType === val ? T.greenText : T.body, fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{lbl}</button>
+                {([["personal", a.personal], ["organization", a.company]] as const).map(([val, lbl]) => (
+                  <button key={val} type="button" onClick={() => setAccountType(val as "personal" | "organization")} style={{ flex: 1, padding: "10px 12px", borderRadius: T.rInput, border: `1px solid ${accountType === val ? T.green : T.border}`, background: accountType === val ? T.greenSoft : T.card, color: accountType === val ? T.greenText : T.body, fontSize: 14, fontWeight: 600, fontFamily: T.font, cursor: "pointer" }}>{lbl}</button>
                 ))}
               </div>
-              {accountType === "company" && <p style={{ fontSize: 12, color: T.greenText, margin: "8px 0 0", lineHeight: 1.5 }}>{a.trialNote}</p>}
+              {accountType === "organization" && <p style={{ fontSize: 12, color: T.greenText, margin: "8px 0 0", lineHeight: 1.5 }}>{a.trialNote}</p>}
             </div>
           )}
           {mode === "signup" && knownPlan && (
@@ -136,7 +133,7 @@ function LoginForm() {
               </div>
             </div>
           )}
-          {mode === "signup" && type === "company" && (
+          {mode === "signup" && type === "organization" && (
             <div style={{ marginBottom: 12 }}>
               <span style={label}>{a.workspaceName}</span>
               <input className="t-in" placeholder={a.workspacePlaceholder} value={workspaceName}

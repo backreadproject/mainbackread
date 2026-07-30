@@ -44,7 +44,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     plan?: string; approved_at?: string | null; subscribed_at?: string | null;
     subscription_active?: boolean;
   };
-  const isCompany = p.account_type === "company" || p.account_type === "organization";
+  const isCompany = p.account_type === "organization";
 
   // THE DOOR, FIRST, for every account type.
   //

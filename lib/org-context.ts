@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 export type OrgContext = {
-  accountType: "personal" | "company" | "organization";
+  accountType: "personal" | "organization";
   org: { id: string; name: string } | null;
   role: "owner" | "admin" | "member" | null;
   trialStartedAt: string | null;
