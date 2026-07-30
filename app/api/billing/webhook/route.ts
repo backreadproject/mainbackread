@@ -45,6 +45,28 @@ async function findUser(data: FlwData): Promise<{ id: string; email: string | nu
   const hit = list.users.find((u) => (u.email ?? "").toLowerCase() === email);
   return hit ? { id: hit.id, email: hit.email ?? null } : null;
 }
+/** Records the FIRST successful payment, once, and never again.
+ *
+ *  Only written when null. A renewal must not overwrite it, because the one
+ *  question this answers is "has this account ever paid us" -- which is what
+ *  separates a lapsed subscription from a trial that simply ran out. Telling a
+ *  customer who never paid that their subscription ended is both wrong and
+ *  slightly insulting. */
+async function stampFirstPayment(
+  admin: ReturnType<typeof createAdminClient>,
+  table: "profiles" | "organizations",
+  id: string,
+): Promise<void> {
+  const { error } = await admin
+    .from(table)
+    .update({ subscribed_at: new Date().toISOString() })
+    .eq("id", id)
+    .is("subscribed_at", null);
+  // Not thrown: the plan is already applied and the customer has what they paid
+  // for. A missing timestamp costs a banner nuance, not access.
+  if (error) console.error("[billing/webhook] could not stamp subscribed_at on " + table + ":", error.message);
+}
+
 /** Personal plans live on profiles, organization plans on organizations. Which
  *  one is decided by the plan bought, not by what the account looks like now. */
 /** Personal plans live on profiles, organization plans on organizations. Which
@@ -66,6 +88,8 @@ async function applyPlan(userId: string, planId: PlanId, active: boolean): Promi
       .update({ plan: planId, subscription_active: active })
       .eq("id", userId);
     if (error) throw new Error("applyPlan: profile " + userId + " -> " + error.message);
+
+    if (active) await stampFirstPayment(admin, "profiles", userId);
     return;
   }
 
@@ -89,6 +113,8 @@ async function applyPlan(userId: string, planId: PlanId, active: boolean): Promi
     .update({ plan: planId, subscription_active: active })
     .eq("id", (org as { id: string }).id);
   if (orgErr) throw new Error("applyPlan: organization -> " + orgErr.message);
+
+  if (active) await stampFirstPayment(admin, "organizations", (org as { id: string }).id);
 
   const { error: flagErr } = await admin
     .from("profiles")

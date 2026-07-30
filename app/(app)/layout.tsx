@@ -39,6 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           email={user.email ?? ""}
           orgName={ctx.org?.name ?? null}
           planName={planCtx.plan.name}
+          everPaid={planCtx.everPaid}
           locale={await getLocale()}
         />
       );

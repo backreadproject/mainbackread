@@ -11,29 +11,29 @@ import { T } from "@/lib/theme";
  * a proposal should not have it break because the sender's card expired.
  */
 export default function Lapsed({
-  email, orgName, planName, locale,
-}: { email: string; orgName: string | null; planName: string; locale: "en" | "fr" }) {
+  email, orgName, planName, locale, everPaid,
+}: { email: string; orgName: string | null; planName: string; locale: "en" | "fr"; everPaid: boolean }) {
   const fr = locale === "fr";
   const c = fr
     ? {
-        h: "Votre abonnement a pris fin",
+        h: everPaid ? "Votre abonnement a pris fin" : "Votre essai gratuit est termin\u00e9",
         p1: orgName
           ? "L\u2019acc\u00e8s \u00e0 " + orgName + " est suspendu, mais rien n\u2019a \u00e9t\u00e9 supprim\u00e9. Vos documents, vos lecteurs et tout ce qu\u2019ils ont r\u00e9v\u00e9l\u00e9 vous attendent."
           : "L\u2019acc\u00e8s est suspendu, mais rien n\u2019a \u00e9t\u00e9 supprim\u00e9. Vos documents, vos lecteurs et tout ce qu\u2019ils ont r\u00e9v\u00e9l\u00e9 vous attendent.",
         p2: "Les liens d\u00e9j\u00e0 envoy\u00e9s continuent de fonctionner : vos prospects peuvent toujours lire ce que vous leur avez adress\u00e9. Vous ne verrez simplement pas ce qu\u2019ils font, jusqu\u2019\u00e0 votre retour.",
-        cta: "Reprendre l\u2019abonnement",
-        was: "Formule pr\u00e9c\u00e9dente",
+        cta: everPaid ? "Reprendre l\u2019abonnement" : "Choisir une formule",
+        was: everPaid ? "Formule pr\u00e9c\u00e9dente" : "Essai sur",
         signed: "Connect\u00e9 en tant que",
         out: "Se d\u00e9connecter",
       }
     : {
-        h: "Your subscription has ended",
+        h: everPaid ? "Your subscription has ended" : "Your free trial has ended",
         p1: orgName
           ? "Access to " + orgName + " is paused, but nothing has been deleted. Your documents, your readers and everything they revealed are waiting."
           : "Access is paused, but nothing has been deleted. Your documents, your readers and everything they revealed are waiting.",
         p2: "Links you already sent still work: your prospects can read what you sent them. You simply will not see what they do with it until you are back.",
-        cta: "Restart your subscription",
-        was: "You were on",
+        cta: everPaid ? "Restart your subscription" : "Choose a plan",
+        was: everPaid ? "You were on" : "You were trialling",
         signed: "Signed in as",
         out: "Sign out",
       };

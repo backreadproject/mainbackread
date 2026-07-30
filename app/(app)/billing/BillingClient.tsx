@@ -6,10 +6,10 @@ import { PLANS, PLAN_ORDER, priceFor, formatPrice, annualSaving, type PlanId } f
 import { postJson, errMsg } from "@/lib/fetch-json";
 type Use = { used: number; limit: number | null };
 export default function BillingClient({
-  currentPlan, scope, access, trialDaysLeft, discounted, configured, usage,
+  currentPlan, scope, access, trialDaysLeft, discounted, configured, usage, everPaid,
 }: {
   currentPlan: PlanId; scope: "personal" | "org"; access: AccessState;
-  trialDaysLeft: number; discounted: boolean; configured: boolean;
+  trialDaysLeft: number; discounted: boolean; configured: boolean; everPaid: boolean;
   usage: { documents: Use; sends: Use; seats: Use | null };
 }) {
   const [interval, setInterval] = useState<"monthly" | "annual">("monthly");
@@ -69,7 +69,7 @@ export default function BillingClient({
         {access === "locked" && (
           <div style={{ ...card, borderColor: T.dangerBorder, background: T.dangerSoft }}>
             <div style={{ padding: 18 }}>
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: T.dangerText, marginBottom: 4 }}>{trialDaysLeft > 0 || currentPlan === "free" ? "Your trial has ended" : "Your subscription has ended"}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: T.dangerText, marginBottom: 4 }}>{everPaid ? "Your subscription has ended" : "Your free trial has ended"}</div>
               <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.55, margin: 0 }}>
                 Everything you have created is safe and still here, and the links you already sent still work. Choose a plan to see what your readers are doing again.
               </p>

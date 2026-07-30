@@ -39,6 +39,7 @@ export default async function BillingPage() {
       scope={ctx.scope}
       access={ctx.access}
       trialDaysLeft={ctx.trialDaysLeft}
+      everPaid={ctx.everPaid}
       discounted={!!profile?.referred_by}
       configured={billingConfigured()}
       usage={{

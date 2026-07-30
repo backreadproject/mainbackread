@@ -23,6 +23,9 @@ export interface PlanContext {
   plan: PlanConfig;
   access: AccessState;
   trialDaysLeft: number;
+  /** True once a payment has ever succeeded. Distinguishes a lapsed
+   *  subscription from a trial that ran out without one. */
+  everPaid: boolean;
 }
 
 /** First instant of the current month, UTC. Caps reset on the 1st. */
@@ -33,11 +36,11 @@ export function monthStartISO(d: Date = new Date()): string {
 export async function resolvePlanForUser(admin: Admin, userId: string): Promise<PlanContext> {
   const { data: profile } = await admin
     .from("profiles")
-    .select("account_type, active_org_id, trial_started_at, plan, approved_at")
+    .select("account_type, active_org_id, trial_started_at, plan, approved_at, subscribed_at")
     .eq("id", userId)
     .single();
   const p = (profile ?? {}) as {
-    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null; plan?: string; approved_at?: string | null;
+    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null; plan?: string; approved_at?: string | null; subscribed_at?: string | null;
   };
   const isCompany = p.account_type === "company" || p.account_type === "organization";
 
@@ -58,27 +61,30 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
         plan: getPlan(p.plan),
         access: "pending",
         trialDaysLeft: 0,
+        everPaid: !!p.subscribed_at,
       };
     }
 
-    return { userId, scope: "personal", orgId: null, plan: getPlan(p.plan), access: "active", trialDaysLeft: 0 };
+    return { userId, scope: "personal", orgId: null, plan: getPlan(p.plan), access: "active", trialDaysLeft: 0, everPaid: !!p.subscribed_at };
   }
 
   // Company account (may or may not have created its org yet).
   let planId: string | undefined = "team";
   let subscribed = false;
+  let everPaid = false;
   let orgId: string | null = null;
   if (p.active_org_id) {
     const { data: org } = await admin
       .from("organizations")
-      .select("id, plan, subscription_active")
+      .select("id, plan, subscription_active, subscribed_at")
       .eq("id", p.active_org_id)
       .single();
     if (org) {
-      const o = org as { id: string; plan?: string; subscription_active?: boolean };
+      const o = org as { id: string; plan?: string; subscription_active?: boolean; subscribed_at?: string | null };
       orgId = o.id;
       planId = o.plan ?? "team";
       subscribed = o.subscription_active === true;
+      everPaid = !!o.subscribed_at;
     }
   }
   const plan = getPlan(planId);
@@ -98,7 +104,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     access = "locked";
   }
 
-  return { userId, scope: "org", orgId, plan, access, trialDaysLeft };
+  return { userId, scope: "org", orgId, plan, access, trialDaysLeft, everPaid };
 }
 
 /** True when create-actions must be refused (trial lapsed, unpaid). */
