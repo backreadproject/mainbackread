@@ -12,6 +12,7 @@ const MARKETING_PREFIXES = ["/pricing", "/privacy", "/terms", "/concepts"];
 // then by session + allowlist inside the layout.
 const ADMIN_SLUG = "console-7f3ab9c2";
 const isAdminPath = (p: string) => p === `/${ADMIN_SLUG}` || p.startsWith(`/${ADMIN_SLUG}/`);
+const isAdminApiPath = (p: string) => p === "/api/admin" || p.startsWith("/api/admin/");
 
 const hasPrefix = (p: string, list: string[]) => list.some((x) => p === x || p.startsWith(x + "/"));
 const isAppPath = (p: string) => hasPrefix(p, APP_PREFIXES);
@@ -83,6 +84,13 @@ export function middleware(req: NextRequest) {
   // relaydocuments.com/robots.txt would serve a landing page and no crawler
   // would ever be told to stay out of your customers' documents.
   if (pathname === "/robots.txt" || pathname === "/sitemap.xml") {
+    return NextResponse.next();
+  }
+
+  // The admin API. Basic Auth at the edge, in front of the getAdminUser()
+  // check inside every action. Two layers, matching the console pages.
+  if (isAdminApiPath(pathname)) {
+    if (!basicAuthOk(req)) return needAuth();
     return NextResponse.next();
   }
 
@@ -169,5 +177,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api(?!/admin)).*)"],
 };
