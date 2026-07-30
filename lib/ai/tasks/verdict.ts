@@ -21,6 +21,9 @@ export interface VerdictInput {
   replies: string[];
   forwardedTo: string[];
   openCount: number;
+  /** The customer's language. The verdict is stored, so it is fixed in the
+   *  language it was generated in; switching later needs a regeneration. */
+  locale: "en" | "fr";
 }
 
 export const VerdictOutput = z.object({
@@ -58,7 +61,7 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
 
   cacheable: (i) => `DOCUMENT — "${i.documentTitle}"\n\n${i.documentText}`,
 
-  system: () =>
+  system: (i) =>
     [
       "You are ReadProspects's verdict engine. You are given behavioural signals from one reader of one document.",
       "",
@@ -80,7 +83,7 @@ export const verdictTask: Task<VerdictInput, VerdictOutput> = {
       "",
       "Respond with ONLY a JSON object, no markdown fences:",
       '{"headline":"one blunt sentence","reasoning":"2-3 sentences on what the reader is actually thinking","nextAction":"one concrete move","confidence":"high|medium|low","evidence":["short signal","short signal"]}',
-    ].join("\n"),
+    ].join("\n") + (i.locale === "fr" ? "\n\nWrite every string VALUE in French. JSON keys stay exactly as specified in English." : ""),
 
   user: (i) =>
     JSON.stringify(

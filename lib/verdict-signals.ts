@@ -11,7 +11,7 @@ export type DocLite = { title?: string | null; extracted_text?: string | null };
 //   question    -> questionsAsked (value.text)
 //   forwarded   -> forwardedTo    (value.colleagues[].email)
 //   page_dwell  -> per-page seconds + visits, and a backtrack trail
-export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: SignalRow[]): VerdictInput {
+export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: SignalRow[], locale: "en" | "fr" = "en"): VerdictInput {
   const dwellByPage: Record<number, { seconds: number; visits: number; capped: boolean }> = {};
   const questionsAsked: string[] = [];
   const replies: string[] = [];
@@ -64,5 +64,5 @@ export function buildVerdictInput(recipient: RecipientLite, doc: DocLite, rows: 
   const readerOrg = email.includes("@") ? email.split("@")[1] : "";
   const documentText = (doc.extracted_text ?? "").trim() || doc.title || "this document";
 
-  return { documentText, documentTitle: doc.title || "this document", readerName, readerOrg, pages, backtracks, questionsAsked, replies, forwardedTo, openCount };
+  return { documentText, documentTitle: doc.title || "this document", readerName, readerOrg, pages, backtracks, questionsAsked, replies, forwardedTo, openCount, locale };
 }

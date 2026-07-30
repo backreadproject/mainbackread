@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { runAI, verdictTask } from "@/lib/ai";
 import { resolvePlanForUser, isLocked, checkVerdictQuota, logUsage } from "@/lib/plan-context";
 import { buildVerdictInput, type SignalRow, type RecipientLite } from "@/lib/verdict-signals";
+import { getLocale } from "@/lib/locale-server";
 import { deliverForRecipient } from "@/lib/webhooks";
 
 export const runtime = "nodejs";
@@ -63,7 +64,9 @@ export async function POST(req: NextRequest) {
   // unhandled throw here becomes a bare 500 HTML page, which tells the sender
   // nothing and tells us nothing without digging through platform logs.
   try {
-    const input = buildVerdictInput(recipient as RecipientLite, doc, rows);
+    // A verdict is STORED, so it is fixed in the language it was generated in.
+    // Switching language later does not rewrite old verdicts; regenerating does.
+    const input = buildVerdictInput(recipient as RecipientLite, doc, rows, await getLocale());
     const { data, cost } = await runAI(verdictTask, input, { documentId: doc.title });
     await logUsage(admin, "verdict", { userId: user.id, orgId: ctx.orgId, documentId: doc.id });
 

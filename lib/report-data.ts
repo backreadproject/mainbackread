@@ -73,7 +73,8 @@ export type AssembledReport = {
 export async function assembleReport(
   admin: Admin,
   documentId: string,
-  recipientIds: string[] | null
+  recipientIds: string[] | null,
+  locale: "en" | "fr" = "en"
 ): Promise<AssembledReport | null> {
   const { data: docRow } = await admin
     .from("documents")
@@ -218,6 +219,7 @@ export async function assembleReport(
       readers,
       pageTotals,
       notOpened,
+      locale,
     },
     detail,
     documentTitle: doc.title,

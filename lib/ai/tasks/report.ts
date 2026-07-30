@@ -24,6 +24,9 @@ export interface ReportInput {
   pageTotals: { page: number; seconds: number; readers: number }[];
   /** How many were sent it but never opened. Silence is a finding. */
   notOpened: number;
+  /** The customer's language. A French customer sending this PDF to their own
+   *  client should not hand over English analysis under French headings. */
+  locale: "en" | "fr";
 }
 export const ReportOutput = z.object({
   /** The one thing to know. Read alone, this should still be worth the page. */
@@ -66,7 +69,7 @@ export const reportTask: Task<ReportInput, ReportOutput> = {
   maxTokens: 3500,
   schema: ReportOutput,
   cacheable: (i) => `DOCUMENT \u2014 "${i.documentTitle}"\n\n${i.documentText}`,
-  system: () =>
+  system: (i) =>
     [
       "You are ReadProspects's report engine. You are given the reading behaviour of everyone who received one document.",
       "",
@@ -101,7 +104,7 @@ export const reportTask: Task<ReportInput, ReportOutput> = {
       "",
       "Respond with ONLY a JSON object, no markdown fences:",
       '{"headline":"one sentence","summary":"3-5 sentences","priorities":[{"reader":"name","why":"one line","action":"one concrete move"}],"documentFindings":["..."],"patterns":["..."],"limits":"what this cannot tell you"}',
-    ].join("\n"),
+    ].join("\n") + (i.locale === "fr" ? "\n\nWrite every string VALUE in French. JSON keys stay exactly as specified in English." : ""),
   user: (i) =>
     JSON.stringify(
       {

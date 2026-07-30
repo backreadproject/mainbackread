@@ -7,6 +7,7 @@ import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { runAI, reportTask } from "@/lib/ai";
 import { assembleReport } from "@/lib/report-data";
+import { getLocale } from "@/lib/locale-server";
 import { ReportDocument, ALL_SECTIONS, type ReportSections } from "@/lib/pdf/ReportDocument";
 import { reportFingerprint, getCachedReport, putCachedReport, loadBrandingDefaults, type Branding } from "@/lib/report-cache";
 export const runtime = "nodejs";
@@ -69,7 +70,12 @@ export async function POST(req: NextRequest) {
   }
 
   const ids = Array.isArray(body.recipientIds) && body.recipientIds.length ? body.recipientIds : null;
-  const assembled = await assembleReport(admin, documentId, ids);
+  // The language of whoever pressed the button. A per-report language belongs
+  // in the dialog eventually -- a French customer may want a French report for
+  // their client while working in English -- but the cookie is the honest
+  // default and it is what every other surface uses.
+  const locale = await getLocale();
+  const assembled = await assembleReport(admin, documentId, ids, locale);
   if (!assembled) {
     return NextResponse.json({ error: "Nobody has been sent this document yet, so there is nothing to report on." }, { status: 400 });
   }
