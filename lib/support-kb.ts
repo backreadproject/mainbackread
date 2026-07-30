@@ -87,8 +87,8 @@ your file, fix anything flagged inline, then choose to create links only or send
 
 TRIALS AND BILLING
 Company accounts get a 7-day trial. When a trial ends without a subscription, actions
-that create new content are blocked while existing data stays accessible. Paid billing
-is not live yet, so nobody can be charged today.
+that create new content are blocked while existing data stays accessible. Reader links
+already sent keep working. Subscriptions are paid by card, monthly or annually.
 
 PRIVACY
 The privacy policy at readprospects.com/privacy explains what is collected. Readers have
@@ -122,7 +122,7 @@ A: Yes. Deleting a document removes its recipients, their signals and their conv
 
 Q: How do I cancel?
 A: You can cancel at any time and it takes effect at the end of your current period.
-   Billing is not live yet.
+   You keep everything you have created, and reader links already sent keep working.
 `.trim();
 
 export function supportKnowledge(): string {
@@ -170,6 +170,56 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "How do I cancel?",
-    a: "You can cancel at any time and it takes effect at the end of your current period. Billing is not live yet, so nobody can be charged today.",
+    a: "You can cancel at any time and it takes effect at the end of your current period. You keep everything you have created, and reader links you already sent keep working.",
   },
 ];
+
+/** The same questions in French. Rendered verbatim in the widget, so unlike the
+ *  knowledge base these cannot be left to the model to translate at runtime. */
+export const FAQ_ITEMS_FR: { q: string; a: string }[] = [
+  {
+    q: "Comment fonctionne le partage d\u2019un document ?",
+    a: "T\u00e9l\u00e9versez un document, puis partagez-le avec un destinataire nomm\u00e9. Il re\u00e7oit un lien priv\u00e9 sur relaydocuments.com, un domaine de livraison neutre, afin que la page de lecture ne porte aucune marque ReadProspects. Chaque destinataire a son propre lien. Vous pouvez l\u2019envoyer par e-mail depuis ReadProspects, ou copier le lien et l\u2019envoyer vous-m\u00eame.",
+  },
+  {
+    q: "Qu\u2019est-ce qu\u2019un verdict ?",
+    a: "Un verdict lit le comportement d\u2019une personne sur un document : ce qui l\u2019a retenue, ce qu\u2019elle a relu, ce qu\u2019elle a demand\u00e9, si elle l\u2019a transf\u00e9r\u00e9. Il rend une courte appr\u00e9ciation de ce qu\u2019elle semble penser et une chose concr\u00e8te \u00e0 faire ensuite. En dessous de six lecteurs ou avec des signaux faibles, il le dit plut\u00f4t que d\u2019inventer une histoire.",
+  },
+  {
+    q: "Quels types de fichiers puis-je t\u00e9l\u00e9verser ?",
+    a: "Des PDF et des images (JPEG, PNG, WebP, GIF). Word et PowerPoint ne sont pas encore pris en charge. Exportez-les d\u2019abord en PDF, ce qui garantit aussi que votre lecteur voit le document exactement tel que vous l\u2019avez con\u00e7u.",
+  },
+  {
+    q: "Le lecteur sait-il qu\u2019il est suivi ?",
+    a: "La page de lecture est neutre et ne porte aucune marque ReadProspects. Un avis de confidentialit\u00e9 y est li\u00e9, qui explique clairement ce qui est enregistr\u00e9 et ce que voit l\u2019exp\u00e9diteur. En tant qu\u2019exp\u00e9diteur, il vous revient de donner l\u2019information exig\u00e9e par la loi dans votre pays.",
+  },
+  {
+    q: "Y a-t-il un filigrane sur mon document ?",
+    a: "Non, sur aucun forfait. Votre document part tel qu\u2019il est.",
+  },
+  {
+    q: "Que se passe-t-il quand j\u2019atteins une limite du forfait Gratuit ?",
+    a: "L\u2019action s\u2019interrompt et vous indique le forfait qui l\u00e8ve cette limite. Rien de ce que vous avez d\u00e9j\u00e0 envoy\u00e9 ou captur\u00e9 n\u2019est touch\u00e9.",
+  },
+  {
+    q: "Puis-je utiliser un verdict pour prendre une d\u00e9cision concernant quelqu\u2019un ?",
+    a: "Pas pour quoi que ce soit de cons\u00e9quent. Nos conditions interdisent d\u2019utiliser les verdicts pour des d\u00e9cisions d\u2019emploi, de cr\u00e9dit, d\u2019assurance, de logement ou tout ce qui a un effet comparable sur une personne. Un verdict est une inf\u00e9rence commerciale tir\u00e9e de preuves limit\u00e9es et peut se tromper.",
+  },
+  {
+    q: "Comment fonctionnent les versions A/B ?",
+    a: "Avec Business, t\u00e9l\u00e9versez deux \u00e0 quatre versions du m\u00eame document. Les lecteurs sont r\u00e9partis automatiquement, ou vous pouvez attribuer une version par destinataire. La page du document compare lecteurs, taux d\u2019ouverture, questions et transferts par version.",
+  },
+  {
+    q: "Puis-je supprimer les donn\u00e9es d\u2019un lecteur ?",
+    a: "Oui. Supprimer un document supprime ses destinataires, leurs signaux et leurs conversations. Un lecteur peut aussi \u00e9crire \u00e0 privacy@readprospects.com pour demander son effacement.",
+  },
+  {
+    q: "Comment r\u00e9silier ?",
+    a: "Vous pouvez r\u00e9silier \u00e0 tout moment, avec effet \u00e0 la fin de la p\u00e9riode en cours. Vous conservez tout ce que vous avez cr\u00e9\u00e9, et les liens de lecture d\u00e9j\u00e0 envoy\u00e9s continuent de fonctionner.",
+  },
+];
+
+/** The set for a given language. */
+export function faqFor(locale: "en" | "fr") {
+  return locale === "fr" ? FAQ_ITEMS_FR : FAQ_ITEMS;
+}

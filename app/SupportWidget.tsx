@@ -4,7 +4,7 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import { MessageCircle, X, ArrowRight, ChevronRight } from "lucide-react";
-import { FAQ_ITEMS } from "@/lib/support-kb";
+import { faqFor } from "@/lib/support-kb";
 import { fetchJson, postJson, errMsg } from "@/lib/fetch-json";
 type Msg = { role: string; content: string; created_at?: string };
 const KEY = "rp_support_session";
@@ -30,7 +30,9 @@ function ago(iso: string | undefined, justNow: string): string {
 // conversation is the product, so it is what opens, and the common questions sit
 // in the same panel behind one toggle instead of a second destination.
 export default function SupportWidget({ surface = "marketing", firstName }: { surface?: "marketing" | "app"; firstName?: string | null }) {
-  const S = getDict(useLocale()).support;
+  const locale = useLocale();
+  const S = getDict(locale).support;
+  const FAQ_ITEMS = faqFor(locale);
   const [open, setOpen] = useState(false);
   const [showFaq, setShowFaq] = useState(false);
   const [session, setSession] = useState("");
