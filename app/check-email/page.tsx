@@ -1,4 +1,6 @@
 import { T } from "@/lib/theme";
+import { getLocale } from "@/lib/locale-server";
+import { getDict } from "@/lib/i18n";
 
 /**
  * Where an unconfirmed signup lands.
@@ -11,6 +13,7 @@ export default async function CheckEmailPage({
   searchParams,
 }: { searchParams: Promise<{ email?: string }> }) {
   const { email } = await searchParams;
+  const C = getDict(await getLocale()).chrome;
   const addr = (email ?? "").trim();
 
   return (
@@ -41,7 +44,7 @@ export default async function CheckEmailPage({
         </p>
 
         <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid " + T.border, display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13 }}>
-          <a href="/login" style={{ color: T.greenText, fontWeight: 500, textDecoration: "none" }}>Back to sign in</a>
+          <a href="/login" style={{ color: T.greenText, fontWeight: 500, textDecoration: "none" }}>{C.backToSignIn}</a>
           <a href="https://readprospects.com" style={{ marginLeft: "auto", color: T.muted, textDecoration: "none" }}>readprospects.com</a>
         </div>
       </div>

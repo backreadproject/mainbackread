@@ -9,6 +9,7 @@ import SupportWidget from "@/app/SupportWidget";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, isPending } from "@/lib/plan-context";
 import { getLocale } from "@/lib/locale-server";
+import { getDict } from "@/lib/i18n";
 import Waiting from "./Waiting";
 import Lapsed from "./Lapsed";
 import { headers } from "next/headers";
@@ -19,9 +20,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Resolved once here rather than awaited at each use.
+  const locale = await getLocale();
+  const C = getDict(locale).chrome;
   const planCtx = await resolvePlanForUser(createAdminClient(), user.id);
   if (isPending(planCtx)) {
-    return <Waiting email={user.email ?? ""} locale={await getLocale()} />;
+    return <Waiting email={user.email ?? ""} locale={locale} />;
   }
 
   // The wall. A lapsed subscription blocks every page except /billing, which
@@ -40,7 +44,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           orgName={ctx.org?.name ?? null}
           planName={planCtx.plan.name}
           everPaid={planCtx.everPaid}
-          locale={await getLocale()}
+          locale={locale}
         />
       );
     }
@@ -66,8 +70,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {trial.started && trial.active && (
         <div style={{ background: "var(--rp-amber-soft)", borderBottom: "1px solid var(--rp-amber-border)", padding: "8px 20px", fontSize: 13, color: "var(--rp-amber-text)", display: "flex", alignItems: "center", gap: 8 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--rp-amber-text)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 2" /></svg>
-          <span>Free trial: <strong>{trial.daysLeft} day{trial.daysLeft === 1 ? "" : "s"}</strong> left.</span>
-          <a href="/billing" style={{ marginLeft: "auto", color: "var(--rp-amber-text)", fontWeight: 600, textDecoration: "underline" }}>See plans</a>
+            <span>{C.freeTrial} <strong>{trial.daysLeft} {trial.daysLeft === 1 ? C.day : C.days}</strong> {C.leftSuffix}</span>
+          <a href="/billing" style={{ marginLeft: "auto", color: "var(--rp-amber-text)", fontWeight: 600, textDecoration: "underline" }}>{C.seePlans}</a>
         </div>
       )}
       {children}
