@@ -1,11 +1,12 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
-export default function LoginPage() {
+function LoginForm() {
   const locale = useLocale();
   const a = getDict(locale).auth;
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [showPassword, setShowPassword] = useState(false);
@@ -14,11 +15,11 @@ export default function LoginPage() {
   // ?plan= and ?signup=1 come from the pricing cards. A visitor who already
   // chose a tier should not be asked to choose again; one arriving cold at this
   // page still gets the personal-or-company choice.
-  const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-  const urlPlan = params?.get("plan") ?? "";
+  const params = useSearchParams();
+  const urlPlan = params.get("plan") ?? "";
   const knownPlan = ["free", "personal", "team", "business"].includes(urlPlan) ? urlPlan : "";
   const planIsOrg = knownPlan === "team" || knownPlan === "business";
-  const [mode, setMode] = useState<"signin" | "signup">(params?.get("signup") === "1" || knownPlan ? "signup" : "signin");
+  const [mode, setMode] = useState<"signin" | "signup">(params.get("signup") === "1" || knownPlan ? "signup" : "signin");
   const [workspaceName, setWorkspaceName] = useState("");
   const type: "personal" | "company" = knownPlan ? (planIsOrg ? "company" : "personal") : accountType;
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
@@ -156,5 +157,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
