@@ -3,7 +3,7 @@ import { createHash } from "crypto";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
+import { resolvePlanForUser, isLocked, requirePaidAccess } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { getLocale } from "@/lib/locale-server";
 import { questionsFor } from "@/lib/icp-questions";
@@ -112,8 +112,9 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Bad request: " + parsed.error.issues[0].message }, { status: 400 });
   const body = parsed.data;
 
-  if ((body.action === "start" || body.action === "run") && isLocked(ctx)) {
-    return NextResponse.json({ error: "Your trial has ended. Subscribe to build a new buyer profile.", upgrade: true }, { status: 402 });
+  if (body.action === "start" || body.action === "run") {
+    const gate = await requirePaidAccess(createAdminClient(), user.id);
+    if (gate.refusal) return NextResponse.json(gate.refusal.body, { status: gate.refusal.status });
   }
 
   if (body.action === "start") {
