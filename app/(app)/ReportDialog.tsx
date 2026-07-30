@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 // The report dialog.
 //
 // Reporter and recipient are per report. Company name and logo are settings,
@@ -23,6 +25,7 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
 }) {
   // Everyone by default: the common case is the whole cohort, and starting
   // empty would make the button look broken.
+  const D = getDict(useLocale()).reportDialog;
   const [picked, setPicked] = useState<string[]>(() => (recipients ?? []).map((r) => r.id));
   const [reporter, setReporter] = useState("");
   const [recipient, setRecipient] = useState("");
@@ -63,21 +66,21 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
     // the accept attribute would have refused, and a silently missing logo is
     // worse than a clear refusal.
     if (!["image/png", "image/jpeg"].includes(file.type)) {
-      setMsg("PDFs can only carry PNG or JPEG. Save the logo in one of those and try again.");
+      setMsg(D.errType);
       setUploading(false);
       return;
     }
     try {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { setMsg("Sign in again."); setUploading(false); return; }
+      if (!user) { setMsg(D.errSignIn); setUploading(false); return; }
       const ext = file.name.split(".").pop()?.toLowerCase() || "png";
       // The avatars bucket is public, which is what @react-pdf/renderer needs:
       // it fetches the URL at render time and cannot use a signed one that may
       // expire mid-render.
       const path = user.id + "/report-logo." + ext;
       const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-      if (error) { setMsg("Could not upload: " + error.message); setUploading(false); return; }
+      if (error) { setMsg(D.errUpload + error.message); setUploading(false); return; }
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
       // Cache-bust, or a replaced logo keeps rendering the old one.
       const url = pub.publicUrl + "?v=" + Date.now();
@@ -87,7 +90,7 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
         body: JSON.stringify({ companyName: company, logoUrl: url, defaultReporter: reporter }),
       });
     } catch {
-      setMsg("Could not upload the logo.");
+      setMsg(D.errLogo);
     }
     setUploading(false);
   }
@@ -118,7 +121,7 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setMsg(j.error || "Could not build the report.");
+        setMsg(j.error || D.errBuild);
         setBusy(false);
         return;
       }
@@ -126,14 +129,14 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "reading report.pdf";
+      a.download = D.filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
       onClose();
     } catch {
-      setMsg("Could not reach the server.");
+      setMsg(D.errReach);
       setBusy(false);
     }
   }
@@ -150,25 +153,25 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
       <div onClick={(e) => e.stopPropagation()}
         style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, width: "100%", maxWidth: 460, marginTop: 40, fontFamily: T.font }}>
         <div style={{ padding: "14px 18px", borderBottom: "1px solid " + T.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>Build the report</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: T.heading }}>{D.title}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: T.muted, fontSize: 18, cursor: "pointer", lineHeight: 1, padding: 0 }}>&times;</button>
         </div>
 
         <div style={{ padding: 18 }}>
           {!loaded ? (
-            <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>Loading your details...</p>
+            <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>{D.loading}</p>
           ) : (
             <>
               {recipients && recipients.length > 0 && (
                 <div style={{ marginBottom: 18, paddingBottom: 16, borderBottom: "1px solid " + T.borderSoft }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
                     <span style={{ fontSize: 12.5, color: T.body }}>
-                      Readers <span style={{ color: T.muted }}>{picked.length} of {recipients.length}</span>
+                      {D.readers} <span style={{ color: T.muted }}>{picked.length} {D.of} {recipients.length}</span>
                     </span>
                     <button
                       onClick={() => setPicked(picked.length === recipients.length ? [] : recipients.map((r) => r.id))}
                       style={{ background: "none", border: "none", padding: 0, fontSize: 12.5, color: T.greenText, cursor: "pointer" }}>
-                      {picked.length === recipients.length ? "Clear all" : "Select all"}
+                      {picked.length === recipients.length ? D.clearAll : D.selectAll}
                     </button>
                   </div>
                   <div style={{ maxHeight: 132, overflowY: "auto", border: "1px solid " + T.border, borderRadius: T.rInput }}>
@@ -178,18 +181,18 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
                           borderTop: i ? "1px solid " + T.borderSoft : "none" }}>
                         <input type="checkbox" checked={picked.includes(r.id)}
                           onChange={(e) => setPicked(e.target.checked ? [...picked, r.id] : picked.filter((x) => x !== r.id))} />
-                        <span style={{ fontSize: 12.5, color: T.heading }}>{r.label || "Unnamed reader"}</span>
+                        <span style={{ fontSize: 12.5, color: T.heading }}>{r.label || D.unnamed}</span>
                       </label>
                     ))}
                   </div>
                 </div>
               )}
 
-              <label style={{ ...label, marginTop: 0 }}>Prepared by</label>
-              <input style={input} value={reporter} onChange={(e) => setReporter(e.target.value)} placeholder="Your name" />
+              <label style={{ ...label, marginTop: 0 }}>{D.preparedBy}</label>
+              <input style={input} value={reporter} onChange={(e) => setReporter(e.target.value)} placeholder={D.yourName} />
 
-              <label style={label}>Prepared for</label>
-              <input style={input} value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Name, team, or company" />
+              <label style={label}>{D.preparedFor}</label>
+              <input style={input} value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder={D.forPlaceholder} />
               <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
                 {(["person", "department", "organisation"] as Kind[]).map((k) => (
                   <button key={k} onClick={() => setKind(k)}
@@ -197,45 +200,45 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
                       background: kind === k ? T.greenSoft : "transparent",
                       color: kind === k ? T.greenText : T.muted,
                       border: "1px solid " + (kind === k ? T.greenBorder : T.border),
-                      borderRadius: T.rBtn, textTransform: "capitalize" }}>
-                    {k}
+                      borderRadius: T.rBtn }}>
+                    {k === "person" ? D.kPerson : k === "department" ? D.kDepartment : D.kOrganisation}
                   </button>
                 ))}
               </div>
 
-              <label style={label}>Your company</label>
-              <input style={input} value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Appears on the cover" />
+              <label style={label}>{D.yourCompany}</label>
+              <input style={input} value={company} onChange={(e) => setCompany(e.target.value)} placeholder={D.coverPlaceholder} />
 
-              <label style={label}>Logo <span style={{ color: T.faint, fontWeight: 400 }}>PNG or JPEG</span></label>
+              <label style={label}>{D.logo} <span style={{ color: T.faint, fontWeight: 400 }}>{D.logoHint}</span></label>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                 {logoUrl && <img src={logoUrl} alt="" style={{ width: 34, height: 34, objectFit: "contain", border: "1px solid " + T.border, borderRadius: 4 }} />}
                 <label style={{ display: "inline-flex", alignItems: "center", height: 32, padding: "0 12px", border: "1px solid " + T.border, borderRadius: T.rBtn, fontSize: 12.5, color: T.heading, cursor: "pointer" }}>
-                  {uploading ? "Uploading..." : logoUrl ? "Replace" : "Upload"}
+                  {uploading ? D.uploading : logoUrl ? D.replace : D.upload}
                   <input type="file" accept="image/png,image/jpeg" style={{ display: "none" }}
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadLogo(f); }} />
                 </label>
                 {logoUrl && (
                   <button onClick={() => { setLogoUrl(null); fetch("/api/report-settings", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ companyName: company, logoUrl: null, defaultReporter: reporter }) }); }}
-                    style={{ background: "none", border: "none", color: T.muted, fontSize: 12.5, cursor: "pointer", padding: 0 }}>Remove</button>
+                    style={{ background: "none", border: "none", color: T.muted, fontSize: 12.5, cursor: "pointer", padding: 0 }}>{D.remove}</button>
                 )}
               </div>
 
-              <label style={label}>Note on the cover</label>
-              <input style={input} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional. One line of context." />
+              <label style={label}>{D.note}</label>
+              <input style={input} value={note} onChange={(e) => setNote(e.target.value)} placeholder={D.notePlaceholder} />
 
-              <label style={label}>Running header <span style={{ color: T.faint, fontWeight: 400 }}>every page, top right</span></label>
-              <input style={input} value={headerText} onChange={(e) => setHeaderText(e.target.value)} placeholder="Confidential, or a client name" />
+              <label style={label}>{D.header} <span style={{ color: T.faint, fontWeight: 400 }}>{D.headerHint}</span></label>
+              <input style={input} value={headerText} onChange={(e) => setHeaderText(e.target.value)} placeholder={D.headerPlaceholder} />
 
-              <label style={label}>Running footer <span style={{ color: T.faint, fontWeight: 400 }}>every page, bottom left</span></label>
-              <input style={input} value={footerText} onChange={(e) => setFooterText(e.target.value)} placeholder="Defaults to the document title" />
+              <label style={label}>{D.footer} <span style={{ color: T.faint, fontWeight: 400 }}>{D.footerHint}</span></label>
+              <input style={input} value={footerText} onChange={(e) => setFooterText(e.target.value)} placeholder={D.footerPlaceholder} />
 
               <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid " + T.borderSoft }}>
-                <div style={{ fontSize: 12.5, color: T.body, marginBottom: 9 }}>Include</div>
+                <div style={{ fontSize: 12.5, color: T.body, marginBottom: 9 }}>{D.include}</div>
                 {([
-                  ["The reader appendix", appendix, setAppendix, "Every reader with their questions and figures. Usually left out of a copy going upward."],
-                  ["Page attention", pageAttention, setPageAttention, "Where time went, page by page."],
-                  ["Readers who never opened it", neverOpened, setNeverOpened, "Silence is data, but it lengthens the appendix."],
-                  ["The ReadProspects line in the footer", signature, setSignature, "Leave it on and the people you send this to know where it came from."],
+                  [D.incAppendix, appendix, setAppendix, D.incAppendixHint],
+                  [D.incPages, pageAttention, setPageAttention, D.incPagesHint],
+                  [D.incNever, neverOpened, setNeverOpened, D.incNeverHint],
+                  [D.incSignature, signature, setSignature, D.incSignatureHint],
                 ] as [string, boolean, (v: boolean) => void, string][]).map(([lbl, val, set, hint]) => (
                   <label key={lbl} style={{ display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 9, cursor: "pointer" }}>
                     <input type="checkbox" checked={val} onChange={(e) => set(e.target.checked)} style={{ marginTop: 3 }} />
@@ -249,14 +252,14 @@ export default function ReportDialog({ documentId, recipientIds, recipients, onC
               <label style={{ display: "flex", alignItems: "flex-start", gap: 9, marginTop: 8, cursor: "pointer" }}>
                 <input type="checkbox" checked={refresh} onChange={(e) => setRefresh(e.target.checked)} style={{ marginTop: 3 }} />
                 <span style={{ fontSize: 12.5, color: T.body, lineHeight: 1.5 }}>
-                  Read the signals again.
-                  <span style={{ color: T.muted }}> Reports are reused while nothing has changed, so this is only needed if you want a fresh interpretation of the same data.</span>
+                  {D.reread}
+                  <span style={{ color: T.muted }}> {D.rereadHint}</span>
                 </span>
               </label>
 
               <button onClick={build} disabled={busy || (!!recipients && picked.length === 0)}
                 style={{ width: "100%", marginTop: 18, height: 38, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, fontSize: 14, fontWeight: 500, fontFamily: T.font, cursor: "pointer", opacity: busy ? 0.6 : 1 }}>
-                {busy ? "Building..." : "Build and download"}
+                {busy ? D.building : D.build}
               </button>
               {msg && <p style={{ fontSize: 13, color: T.dangerText, lineHeight: 1.5, margin: "12px 0 0" }}>{msg}</p>}
             </>
