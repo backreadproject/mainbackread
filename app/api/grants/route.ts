@@ -29,6 +29,8 @@ export async function GET(req: Request) {
   if (!resourceType || !resourceId) return NextResponse.json({ error: "Missing params." }, { status: 400 });
 
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   const { data: grants } = await supabase
     .from("access_grants")
     .select("id, grantee_type, grantee_id, permission, created_at")
