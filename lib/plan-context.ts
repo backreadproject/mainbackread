@@ -60,9 +60,11 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     // does not affect entitlement -- pending blocks everything -- but the waiting
     // page and the console tiers count both name it.
     let pendingPlan = p.plan;
+    let pendingEverPaid = !!p.subscribed_at;
     if (isCompany && p.active_org_id) {
-      const { data: o } = await admin.from("organizations").select("plan").eq("id", p.active_org_id).maybeSingle();
+      const { data: o } = await admin.from("organizations").select("plan, subscribed_at").eq("id", p.active_org_id).maybeSingle();
       if (o?.plan) pendingPlan = o.plan as string;
+      if (o?.subscribed_at) pendingEverPaid = true;
     }
     return {
       userId,
@@ -71,7 +73,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
       plan: getPlan(pendingPlan),
       access: "pending",
       trialDaysLeft: 0,
-      everPaid: !!p.subscribed_at,
+      everPaid: pendingEverPaid,
     };
   }
 
