@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Sidebar from "./Sidebar";
-import MobileShell from "./MobileShell";import { getOrgContext } from "@/lib/org-context";
+import MobileShell from "./MobileShell";
+import { getOrgContext } from "@/lib/org-context";
 import { T } from "@/lib/theme";
 import { trialInfo } from "@/lib/trial";
 import SupportWidget from "@/app/SupportWidget";
@@ -9,6 +10,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, isPending } from "@/lib/plan-context";
 import { getLocale } from "@/lib/locale-server";
 import Waiting from "./Waiting";
+import Lapsed from "./Lapsed";
+import { headers } from "next/headers";
+import { isLocked } from "@/lib/plan-context";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -20,7 +24,27 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     return <Waiting email={user.email ?? ""} locale={await getLocale()} />;
   }
 
+  // The wall. A lapsed subscription blocks every page except /billing, which
+  // must stay reachable or there is no way to pay and the lock is permanent.
+  //
+  // A layout cannot see the pathname, so middleware passes it as a header.
+  // If that header is ever missing the wall still holds -- an empty pathname
+  // does not match /billing, so the safe outcome is the walled one.
   const ctx = await getOrgContext();
+  if (isLocked(planCtx) && !isPending(planCtx)) {
+    const path = (await headers()).get("x-rp-pathname") ?? "";
+    if (!path.startsWith("/billing")) {
+      return (
+        <Lapsed
+          email={user.email ?? ""}
+          orgName={ctx.org?.name ?? null}
+          planName={planCtx.plan.name}
+          locale={await getLocale()}
+        />
+      );
+    }
+  }
+
   const trial = trialInfo(ctx.trialStartedAt);
 
   let workspaceName: string | undefined;

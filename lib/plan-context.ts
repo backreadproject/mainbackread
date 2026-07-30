@@ -2,14 +2,12 @@
 // from lib/plans.ts and the 7-day trial from lib/trial.ts.
 //
 // Access states:
-//   active  - subscribed, OR a personal account, OR a grandfathered company
-//             account with no trial clock set (e.g. legacy accounts).
+//   active  - subscribed, OR a personal account.
 //   trial   - company account inside its 7-day window.
-//   locked  - company account whose trial lapsed without a subscription.
-//             Soft lock: create-actions are blocked; existing data/readers stay.
-//
-// Only Free carries volume limits (documents, verdicts, recipients, sends);
-// only the company plans carry seat limits. Counting uses the admin client.
+//   locked  - company account whose trial lapsed, or whose subscription ended.
+//             Data and reader links stay live; the app itself is walled off
+//             except /billing, so they can see what happened and restart it.
+//   pending - signed up while the door is invite-only, not yet approved.
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPlan, type PlanConfig } from "@/lib/plans";
@@ -94,7 +92,10 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     trialDaysLeft = info.daysLeft;
     access = info.active ? "trial" : "locked";
   } else {
-    access = "active"; // grandfathered: company account with no trial clock (e.g. legacy)
+    // No subscription and no clock is not an entitlement. Every account gets a
+    // trial clock at signup, so reaching here means the subscription ended or
+    // the record is incomplete. Either way there is nothing to grant.
+    access = "locked";
   }
 
   return { userId, scope: "org", orgId, plan, access, trialDaysLeft };

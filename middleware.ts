@@ -65,6 +65,14 @@ function captureRef(req: NextRequest, res: NextResponse): NextResponse {
   res.cookies.set(REF_COOKIE, code, { path: "/", maxAge: REF_MAX_AGE, sameSite: "lax", httpOnly: false });
   return res;
 }
+/** Passes the pathname to server components, which cannot otherwise see it.
+ *  app/(app)/layout.tsx needs it to wall a locked account out of every page
+ *  except /billing, and a layout receives no route information of its own. */
+function withPath(req: NextRequest, res: NextResponse): NextResponse {
+  res.headers.set("x-rp-pathname", req.nextUrl.pathname);
+  return res;
+}
+
 export function middleware(req: NextRequest) {
   const host = hostOf(req);
   const { pathname } = req.nextUrl;
@@ -137,7 +145,7 @@ export function middleware(req: NextRequest) {
       const url = req.nextUrl.clone(); url.pathname = "/overview";
       return NextResponse.redirect(url);
     }
-    return applyLocale(req, captureRef(req, NextResponse.next()));
+    return withPath(req, applyLocale(req, captureRef(req, NextResponse.next())));
   }
 
   // 3) Marketing host.

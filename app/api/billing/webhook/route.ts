@@ -96,6 +96,42 @@ async function applyPlan(userId: string, planId: PlanId, active: boolean): Promi
     .eq("id", userId);
   if (flagErr) throw new Error("applyPlan: subscription flag -> " + flagErr.message);
 }
+/** Ends a subscription wherever it lives.
+ *
+ *  Deliberately not applyPlan: that function chooses its table from the plan
+ *  being applied, and "free" is not an org plan, so it wrote to profiles and
+ *  never touched organizations. A cancelled Business account kept every
+ *  feature. This looks the account up instead of inferring it.
+ *
+ *  The plan RECORD is left alone on purpose. Entitlement comes from
+ *  subscription_active, and keeping the old plan means a resubscribe restores
+ *  what they had without asking. Data and reader links stay live. */
+async function endSubscription(userId: string): Promise<void> {
+  const admin = createAdminClient();
+
+  const { error: pErr } = await admin
+    .from("profiles")
+    .update({ subscription_active: false })
+    .eq("id", userId);
+  if (pErr) throw new Error("endSubscription: profile " + userId + " -> " + pErr.message);
+
+  // Any organization they created. Only an owner can buy an org plan, so this
+  // is the one that carries the subscription.
+  const { data: orgs, error: findErr } = await admin
+    .from("organizations")
+    .select("id")
+    .eq("created_by", userId);
+  if (findErr) throw new Error("endSubscription: looking up organizations -> " + findErr.message);
+
+  for (const org of orgs ?? []) {
+    const { error } = await admin
+      .from("organizations")
+      .update({ subscription_active: false })
+      .eq("id", (org as { id: string }).id);
+    if (error) throw new Error("endSubscription: organization -> " + error.message);
+  }
+}
+
 export async function POST(req: NextRequest) {
   // 1. Authenticate the sender before reading anything else.
   const expected = process.env.FLW_SECRET_HASH;
@@ -155,7 +191,7 @@ export async function POST(req: NextRequest) {
     if (event.includes("cancel") || event.includes("subscription.disable")) {
       const user = await findUser(data);
       if (user) {
-        await applyPlan(user.id, "free", false);
+        await endSubscription(user.id);
         // Permanently. If they subscribe again later they returned on their
         // own, not through the referral.
         await closeCommissionWindow(user.id);
