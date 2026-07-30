@@ -22,6 +22,9 @@ function LoginForm() {
   const [mode, setMode] = useState<"signin" | "signup">(params.get("signup") === "1" || knownPlan ? "signup" : "signin");
   const [workspaceName, setWorkspaceName] = useState("");
   const type: "personal" | "company" = knownPlan ? (planIsOrg ? "company" : "personal") : accountType;
+  // What the database will accept. The UI says "company"; the column says
+  // "organization", and a CHECK constraint enforces it.
+  const dbAccountType = type === "company" ? "organization" : "personal";
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
   const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim() && (type !== "company" || !!workspaceName.trim()));
   async function submit() {
@@ -35,13 +38,13 @@ function LoginForm() {
       const refCode = (document.cookie.match(/(?:^|;\s*)rp_ref=([a-z0-9-]{3,32})/) || [])[1] || null;
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { emailRedirectTo: window.location.origin + "/login", data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, account_type: type, plan: knownPlan || (type === "company" ? "team" : "free"), ...(type === "company" ? { workspace_name: workspaceName.trim() } : {}), ...(refCode ? { ref_code: refCode } : {}) } },
+        options: { emailRedirectTo: window.location.origin + "/login", data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, account_type: dbAccountType, plan: knownPlan || (type === "company" ? "team" : "free"), ...(type === "company" ? { workspace_name: workspaceName.trim() } : {}), ...(refCode ? { ref_code: refCode } : {}) } },
       });
       if (error) { setMsg(error.message); setBusy(false); return; }
       if (data.user) {
         const profileRow: Record<string, unknown> = {
           id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(),
-          account_type: type, updated_at: new Date().toISOString(),
+          account_type: dbAccountType, updated_at: new Date().toISOString(),
         };
         // trial_started_at, plan, the organization and the membership are all set
         // by the on_auth_user_created trigger, atomically with the auth user.
@@ -57,7 +60,11 @@ function LoginForm() {
             });
           } catch { /* non-fatal: metadata is the fallback */ }
         }
-        await supabase.from("profiles").upsert(profileRow);
+        const { error: upErr } = await supabase.from("profiles").upsert(profileRow);
+        // Not fatal: the trigger has already created the row, so this only fills
+        // in details. But a silent failure here is what concealed a broken
+        // account_type for months, so it is at least logged now.
+        if (upErr) console.warn("[signup] profile detail upsert failed:", upErr.message);
       }
       // With email confirmation enabled, signUp returns a user but no session.
       // Going into the app would bounce off the auth check and read as a failed
