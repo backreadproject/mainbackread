@@ -1,75 +1,58 @@
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { resolvePlanForUser } from "@/lib/plan-context";
 import { NextResponse } from "next/server";
 
+// Creating an organisation is four writes: the org, the owner membership, the
+// profile pointer, and optionally migrating existing documents. As four separate
+// calls, a failure on the second left an organisation with NO owner -- nobody
+// could administer it, and endSubscription would still find it by created_by.
+//
+// So the work happens inside public.create_organization, a security-definer
+// function that Postgres runs as one transaction: any failure rolls back all of
+// it. The rules live in there too, because a rule checked out here and enforced
+// in there could be raced by two requests.
+//
+// Deliberately NOT entitlement-gated. A company account whose trial lapsed must
+// still be able to create its organisation, because checkout will not sell an
+// org plan until one exists -- guarding on isLocked would lock them out of the
+// only route to paying.
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
-  // Deliberately NOT an entitlement check. A company account whose trial lapsed
-  // must still be able to create its organisation, because checkout will not
-  // sell an org plan until one exists -- guarding on isLocked would lock them
-  // out of the only route to paying. The real rule here is account type.
-  const ctx = await resolvePlanForUser(createAdminClient(), user.id);
-  if (ctx.scope !== "org") {
-    return NextResponse.json({ error: "Personal accounts cannot create an organization. Choose Team or Business to run one." }, { status: 403 });
-  }
-  // One organisation per owner. endSubscription and applyPlan both look an org
-  // up by created_by, and applyPlan uses maybeSingle(), which throws on two.
-  if (ctx.orgId) {
-    return NextResponse.json({ error: "You already have an organization." }, { status: 409 });
-  }
+  let body: { name?: string; domain?: string; migrateDocuments?: boolean };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Bad request." }, { status: 400 }); }
 
-  const { name, domain, migrateDocuments } = await req.json();
-  if (!name || typeof name !== "string" || !name.trim()) {
-    return NextResponse.json({ error: "Organization name is required." }, { status: 400 });
-  }
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  if (!name) return NextResponse.json({ error: "Organization name is required." }, { status: 400 });
+  if (name.length > 120) return NextResponse.json({ error: "That name is too long." }, { status: 400 });
 
-  const admin = createAdminClient();
-
-  // The tier this account signed up for. Never trust the column default: it
-  // decides the price of the product and lives outside this file.
+  // The tier this account signed up for. user_metadata is the durable record --
+  // the same value the signup trigger reads -- and it is validated inside the
+  // function as well, because it originally came from a URL parameter.
   const claimed = String((user.user_metadata as Record<string, unknown> | null)?.plan ?? "");
-  const intendedPlan = claimed === "business" ? "business" : "team";
 
-  // 1. Create the org.
-  const { data: org, error: orgErr } = await admin
-    .from("organizations")
-    .insert({ name: name.trim(), domain: domain?.trim() || null, created_by: user.id, plan: intendedPlan, subscription_active: false })
-    .select("id, name")
-    .single();
-  if (orgErr || !org) return NextResponse.json({ error: orgErr?.message ?? "Could not create organization." }, { status: 400 });
+  // The session client, so auth.uid() inside the function is this caller.
+  const { data, error } = await supabase.rpc("create_organization", {
+    p_name: name,
+    p_domain: typeof body.domain === "string" ? body.domain : null,
+    p_plan: claimed,
+    p_migrate: !!body.migrateDocuments,
+  });
 
-  // 2. Seed the caller as owner.
-  const { error: memErr } = await admin
-    .from("organization_members")
-    .insert({ organization_id: org.id, user_id: user.id, role: "owner", email: user.email });
-  if (memErr) return NextResponse.json({ error: memErr.message }, { status: 400 });
-
-  // 3. Flip the caller's profile to organization account.
-  const { error: profErr } = await admin
-    .from("profiles")
-    .upsert({ id: user.id, account_type: "organization", active_org_id: org.id, updated_at: new Date().toISOString() });
-  if (profErr) return NextResponse.json({ error: profErr.message }, { status: 400 });
-
-  // 4. Optionally migrate the user's existing personal documents into the org.
-  //    owner_id stays the user; they just become org-scoped (project_id stays null).
-  let migratedCount = 0;
-  if (migrateDocuments) {
-    const { data: moved, error: migErr } = await admin
-      .from("documents")
-      .update({ organization_id: org.id })
-      .eq("owner_id", user.id)
-      .is("organization_id", null)
-      .select("id");
-    if (migErr) {
-      // Non-fatal: org is created; just report that migration didn't complete.
-      return NextResponse.json({ ok: true, org, migrated: 0, migrateWarning: migErr.message });
-    }
-    migratedCount = moved?.length ?? 0;
+  if (error) {
+    // The function raises with SQLSTATEs chosen so this maps cleanly.
+    const map: Record<string, number> = { "28000": 401, "42501": 403, "23505": 409 };
+    const status = map[error.code ?? ""] ?? 400;
+    return NextResponse.json({ error: error.message.replace(/^.*?:\s*/, "") }, { status });
   }
 
-  return NextResponse.json({ ok: true, org, migrated: migratedCount });
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) return NextResponse.json({ error: "Could not create organization." }, { status: 400 });
+
+  return NextResponse.json({
+    ok: true,
+    org: { id: row.org_id, name: row.org_name },
+    migrated: row.migrated ?? 0,
+  });
 }
