@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
+import { useLocale } from "@/lib/useLocale";
+import { getDict } from "@/lib/i18n";
 type Key = { id: string; name: string; key_prefix: string; scopes: string[]; last_used_at: string | null; revoked_at: string | null; created_at: string };
 const card = { background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.shadow, marginBottom: 14 };
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
@@ -20,6 +22,7 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 export default function ApiKeysCard({ enabled, canManage, keys, planName }: { enabled: boolean; canManage: boolean; keys: Key[]; planName: string }) {
+  const K = getDict(useLocale()).apiKeys;
   const router = useRouter();
   const [name, setName] = useState("");
   const [write, setWrite] = useState(false);
@@ -31,26 +34,26 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
     const res = await fetch("/api/api-keys", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) });
     const j = await res.json().catch(() => ({}));
     setBusy(false);
-    if (!res.ok) { setMsg(j.error || "Failed."); return null; }
+    if (!res.ok) { setMsg(j.error || K.failed); return null; }
     return j as { key?: string };
   }
   const input = { width: "100%", height: 34, boxSizing: "border-box" as const, border: "1px solid " + T.border, borderRadius: T.rInput, padding: "0 11px", fontSize: 13.5, fontFamily: T.font, background: T.card, color: T.heading, marginBottom: 10 };
   if (!enabled) {
     return (
       <div style={card}>
-        <div style={head}>API and Zapier</div>
-        <div style={body}><p style={{ fontSize: 13.5, color: T.muted, margin: 0, lineHeight: 1.55 }}>Connect ReadProspects to Zapier, Make or your own systems. <span style={{ color: T.faint }}>Not included in the {planName} plan.</span></p></div>
+        <div style={head}>{K.title}</div>
+        <div style={body}><p style={{ fontSize: 13.5, color: T.muted, margin: 0, lineHeight: 1.55 }}>{K.locked} <span style={{ color: T.faint }}>{K.notIncluded} {planName} {K.planSuffix}</span></p></div>
       </div>
     );
   }
   return (
     <div style={card}>
-      <div style={head}>API and Zapier</div>
+      <div style={head}>{K.title}</div>
       <div style={body}>
         <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 14px", lineHeight: 1.7 }}>
-          Use these keys with Zapier, Make, or your own code. Base URL <code style={code}>/api/v1</code>. Send the key as <code style={code}>Authorization: Bearer rp_...</code>
+          {K.intro} <code style={code}>/api/v1</code>{K.andSend} <code style={code}>Authorization: Bearer rp_...</code>
         </p>
-        {keys.length === 0 && <p style={{ fontSize: 13.5, color: T.faint, margin: "0 0 14px" }}>No API keys yet.</p>}
+        {keys.length === 0 && <p style={{ fontSize: 13.5, color: T.faint, margin: "0 0 14px" }}>{K.none}</p>}
         {keys.map((k, i) => (
           <div key={k.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "11px 0", borderTop: i === 0 ? "1px solid " + T.border : "1px solid " + T.borderSoft }}>
             <div style={{ minWidth: 0 }}>
@@ -58,31 +61,31 @@ export default function ApiKeysCard({ enabled, canManage, keys, planName }: { en
                 <span style={{ fontSize: 13.5, color: T.heading, fontWeight: 500 }}>{k.name}</span>
                 <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: T.muted }}>
                   <i style={{ width: 6, height: 6, borderRadius: 2, background: k.scopes.includes("write") ? T.amber : T.faint }} />
-                  {k.scopes.includes("write") ? "read and write" : "read only"}
+                  {k.scopes.includes("write") ? K.readWrite : K.readOnly}
                 </span>
                 {k.revoked_at && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: T.dangerText }}>
-                    <i style={{ width: 6, height: 6, borderRadius: 2, background: T.danger }} />revoked
+                    <i style={{ width: 6, height: 6, borderRadius: 2, background: T.danger }} />{K.revoked}
                   </span>
                 )}
               </div>
               <div style={{ fontSize: 12.5, color: T.faint, fontFamily: "ui-monospace, monospace", marginTop: 3 }}>
-                {k.key_prefix}... {k.last_used_at ? "\u00b7 last used " + new Date(k.last_used_at).toLocaleDateString() : "\u00b7 never used"}
+                {k.key_prefix}... {k.last_used_at ? "\u00b7 " + K.lastUsed + " " + new Date(k.last_used_at).toLocaleDateString() : "\u00b7 " + K.neverUsed}
               </div>
             </div>
             {canManage && (
               <div style={{ display: "flex", gap: 6, flex: "none" }}>
-                {!k.revoked_at && <button onClick={async () => { if (await call({ action: "revoke", keyId: k.id })) router.refresh(); }} disabled={busy} style={small}>Revoke</button>}
-                <button onClick={async () => { if (await call({ action: "delete", keyId: k.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: T.dangerText, borderColor: T.dangerBorder }}>Delete</button>
+                {!k.revoked_at && <button onClick={async () => { if (await call({ action: "revoke", keyId: k.id })) router.refresh(); }} disabled={busy} style={small}>{K.revoke}</button>}
+                <button onClick={async () => { if (await call({ action: "delete", keyId: k.id })) router.refresh(); }} disabled={busy} style={{ ...small, color: T.dangerText, borderColor: T.dangerBorder }}>{K.del}</button>
               </div>
             )}
           </div>
         ))}
         {canManage && (
           <div style={{ marginTop: 16 }}>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Key name, for example Zapier" style={input} />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={K.namePlaceholder} style={input} />
             <label style={{ fontSize: 13.5, color: T.body, display: "flex", gap: 8, alignItems: "center", marginBottom: 12 }}>
-              <input type="checkbox" checked={write} onChange={(e) => setWrite(e.target.checked)} /> Allow write access, meaning create and delete
+              <input type="checkbox" checked={write} onChange={(e) => setWrite(e.target.checked)} /> {K.allowWrite}
             </label>
             <button
               onClick={async () => { const r = await call({ action: "create", name, scopes: write ? ["read", "write"] : ["read"] }); if (r) { setFresh(r.key ?? ""); setName(""); setWrite(false); router.refresh(); } }}
