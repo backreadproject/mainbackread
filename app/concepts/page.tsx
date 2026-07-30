@@ -1,5 +1,6 @@
 import { T } from "@/lib/theme";
 import { getLocale } from "@/lib/locale-server";
+import LanguageSwitcher from "@/lib/LanguageSwitcher";
 export const runtime = "nodejs";
 export const metadata = {
   title: "What the words mean \u2014 ReadProspects",
@@ -280,6 +281,7 @@ export default async function ConceptsPage() {
           </span>
           <a href="/" style={{ fontSize: 15.5, fontWeight: 600, color: T.heading, textDecoration: "none" }}>ReadProspects</a>
           <a href="/pricing" style={{ marginLeft: "auto", fontSize: 13, color: T.muted, textDecoration: "none" }}>{c.pricing}</a>
+          <LanguageSwitcher current={locale} dark={false} />
         </div>
       </header>
 
