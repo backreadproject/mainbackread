@@ -9,8 +9,8 @@ import { getDict } from "@/lib/i18n";
 // The aurora is gone. Two blurred radial gradients sat fixed behind every
 // screen; at 90px blur they put a soft wash under every card edge and were the
 // single largest reason the UI read as hazy rather than sharp.
-  const M = getDict(useLocale()).chrome;
 export default function MobileShell({ sidebar, children }: { sidebar: React.ReactNode; children: React.ReactNode }) {
+  const M = getDict(useLocale()).chrome;
   const [open, setOpen] = useState(false);
   // Close on browser back.
   useEffect(() => {
