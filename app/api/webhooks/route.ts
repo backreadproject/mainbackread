@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrgContext } from "@/lib/org-context";
-import { resolvePlanForUser } from "@/lib/plan-context";
+import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { isSafeWebhookUrl, newWebhookSecret, sendTestDelivery, redeliver, WEBHOOK_EVENTS } from "@/lib/webhooks";
 
@@ -17,6 +17,13 @@ async function guard() {
   if (!(ctx.role === "owner" || ctx.role === "admin")) return { error: "Only an owner or admin can manage webhooks.", status: 403 as const };
   const admin = createAdminClient();
   const plan = await resolvePlanForUser(admin, user.id);
+  // The layout walls a browser; it does not stop a direct call.
+  if (isLocked(plan)) {
+    const msg = plan.everPaid
+      ? "Your subscription has ended. Restart it to continue."
+      : "Your free trial has ended. Choose a plan to continue.";
+    return { error: msg, status: 402 as const };
+  }
   if (!hasFeature(plan.plan.id, "webhookAlerts")) {
     return { error: `Webhook alerts are not included in the ${plan.plan.name} plan.`, status: 402 as const };
   }

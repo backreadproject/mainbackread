@@ -11,9 +11,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState(""); const [lastName, setLastName] = useState("");
   const [accountType, setAccountType] = useState<"personal" | "company">("personal");
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  // ?plan= and ?signup=1 come from the pricing cards. A visitor who already
+  // chose a tier should not be asked to choose again; one arriving cold at this
+  // page still gets the personal-or-company choice.
+  const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+  const urlPlan = params?.get("plan") ?? "";
+  const knownPlan = ["free", "personal", "team", "business"].includes(urlPlan) ? urlPlan : "";
+  const planIsOrg = knownPlan === "team" || knownPlan === "business";
+  const [mode, setMode] = useState<"signin" | "signup">(params?.get("signup") === "1" || knownPlan ? "signup" : "signin");
+  const [workspaceName, setWorkspaceName] = useState("");
+  const type: "personal" | "company" = knownPlan ? (planIsOrg ? "company" : "personal") : accountType;
   const [msg, setMsg] = useState(""); const [busy, setBusy] = useState(false);
-  const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim());
+  const canSubmit = mode === "signin" ? (!!email && !!password) : (!!email && !!password && !!firstName.trim() && !!lastName.trim() && (type !== "company" || !!workspaceName.trim()));
   async function submit() {
     if (!canSubmit) return;
     setBusy(true); setMsg("");
@@ -25,15 +34,16 @@ export default function LoginPage() {
       const refCode = (document.cookie.match(/(?:^|;\s*)rp_ref=([a-z0-9-]{3,32})/) || [])[1] || null;
       const { data, error } = await supabase.auth.signUp({
         email, password,
-        options: { data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, ...(refCode ? { ref_code: refCode } : {}) } },
+        options: { emailRedirectTo: window.location.origin + "/login", data: { first_name: firstName.trim(), last_name: lastName.trim(), full_name: `${firstName.trim()} ${lastName.trim()}`, account_type: type, plan: knownPlan || (type === "company" ? "team" : "free"), ...(type === "company" ? { workspace_name: workspaceName.trim() } : {}), ...(refCode ? { ref_code: refCode } : {}) } },
       });
       if (error) { setMsg(error.message); setBusy(false); return; }
       if (data.user) {
         const profileRow: Record<string, unknown> = {
           id: data.user.id, first_name: firstName.trim(), last_name: lastName.trim(),
-          account_type: accountType, updated_at: new Date().toISOString(),
+          account_type: type, updated_at: new Date().toISOString(),
         };
-        if (accountType === "company") profileRow.trial_started_at = new Date().toISOString();
+        // trial_started_at, plan, the organization and the membership are all set
+        // by the on_auth_user_created trigger, atomically with the auth user.
         // Attribution is resolved server-side: the code has to become a referrer id,
         // and only the service role can read the referrers table. Best effort here,
         // because user_metadata already carries the code as the durable record.
@@ -48,7 +58,14 @@ export default function LoginPage() {
         }
         await supabase.from("profiles").upsert(profileRow);
       }
-      window.location.href = accountType === "company" ? "/members" : "/documents";
+      // With email confirmation enabled, signUp returns a user but no session.
+      // Going into the app would bounce off the auth check and read as a failed
+      // signup, so an unconfirmed account is told where the link went instead.
+      if (!data.session) {
+        window.location.href = "/check-email?email=" + encodeURIComponent(email.trim());
+        return;
+      }
+      window.location.href = "/documents";
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) { setMsg(error.message); }

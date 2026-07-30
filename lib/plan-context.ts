@@ -55,11 +55,20 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
   const { data: door } = await admin
     .from("app_settings").select("invite_only").eq("id", true).maybeSingle();
   if (door?.invite_only && !p.approved_at) {
+    // A company account's plan lives on the organization, so reading the profile
+    // column would report Free to someone waiting on a Business workspace. It
+    // does not affect entitlement -- pending blocks everything -- but the waiting
+    // page and the console tiers count both name it.
+    let pendingPlan = p.plan;
+    if (isCompany && p.active_org_id) {
+      const { data: o } = await admin.from("organizations").select("plan").eq("id", p.active_org_id).maybeSingle();
+      if (o?.plan) pendingPlan = o.plan as string;
+    }
     return {
       userId,
       scope: isCompany ? "org" : "personal",
       orgId: isCompany ? (p.active_org_id ?? null) : null,
-      plan: getPlan(p.plan),
+      plan: getPlan(pendingPlan),
       access: "pending",
       trialDaysLeft: 0,
       everPaid: !!p.subscribed_at,
@@ -137,6 +146,35 @@ export function isLocked(ctx: PlanContext): boolean {
 /** Signed up, not yet let in. Distinct from locked, which means a lapsed trial. */
 export function isPending(ctx: PlanContext): boolean {
   return ctx.access === "pending";
+}
+
+/**
+ * The entitlement check every write route needs.
+ *
+ * Returns null when the caller may proceed, or a ready-made 402 body when they
+ * may not. Written as one function because the alternative -- six lines repeated
+ * in every route -- is how seven routes came to have no check at all while five
+ * had one. A new route that calls this inherits the guard.
+ *
+ * The message distinguishes the three refusals, because a person who never paid,
+ * a person whose subscription ended, and a person waiting for approval need to
+ * be told different things.
+ */
+export async function requirePaidAccess(
+  admin: Admin,
+  userId: string,
+): Promise<{ ctx: PlanContext; refusal: null } | { ctx: PlanContext; refusal: { error: string; status: number; body: Record<string, unknown> } }> {
+  const ctx = await resolvePlanForUser(admin, userId);
+  if (!isLocked(ctx)) return { ctx, refusal: null };
+
+  if (isPending(ctx)) {
+    return { ctx, refusal: { status: 403, error: "Your account is not open yet.",
+      body: { error: "Your account is not open yet. We will write to you the moment it is.", pending: true } } };
+  }
+  const msg = ctx.everPaid
+    ? "Your subscription has ended. Restart it to continue."
+    : "Your free trial has ended. Choose a plan to continue.";
+  return { ctx, refusal: { status: 402, error: msg, body: { error: msg, trialEnded: !ctx.everPaid, subscriptionEnded: ctx.everPaid } } };
 }
 
 export interface GateResult { allowed: boolean; limit: number | null; used: number; }
