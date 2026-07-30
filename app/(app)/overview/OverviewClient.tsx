@@ -84,7 +84,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   };
   function greeting() { const h = new Date().getHours(); if (h < 12) return o.goodMorning; if (h < 18) return o.goodAfternoon; return o.goodEvening; }
   function ago(iso: string) { if (!iso) return "\u2014"; const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000); if (s < 60) return o.justNow; if (s < 3600) return Math.floor(s / 60) + "m"; if (s < 86400) return Math.floor(s / 3600) + "h"; return Math.floor(s / 86400) + "d"; }
-  const today = new Date().toLocaleDateString(fr ? "fr-FR" : undefined, { weekday: "long", month: "short", day: "numeric" });
+  const today = new Date().toLocaleDateString(fr ? "fr-FR" : "en-GB", { weekday: "long", month: "short", day: "numeric" });
   const initials = (n: string) => n.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
   function verdict(intent: number, replied?: boolean) { if (replied) return { label: L.vReplied, cls: "replied" }; if (intent >= READY) return { label: L.vReady, cls: "ready" }; if (intent >= WARM) return { label: L.vWarm, cls: "warm" }; return { label: L.vGlance, cls: "glanced" }; }
   function whyOf(op: number, q: number, replied?: boolean) {
@@ -261,11 +261,11 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
             <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, color: T.greenText, fontFamily: mono, border: "1px solid " + T.greenBorder, background: T.greenSoft, padding: "3px 9px", borderRadius: T.rPill, marginBottom: 9 }}>
               <span style={{ width: 6, height: 6, borderRadius: 2, background: T.green }} /> {L.live}
             </span>
-            <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{greeting()}</h1>
+            <h1 suppressHydrationWarning style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 3px" }}>{greeting()}</h1>
             <p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{o.subtitle}</p>
           </div>
           <div className="ov-head-r" style={{ textAlign: "right", flexShrink: 0 }}>
-            <div style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>{today}</div>
+            <div suppressHydrationWarning style={{ fontSize: 12, color: T.muted, fontFamily: mono }}>{today}</div>
             <a href="/documents" style={{ marginTop: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, background: T.green, color: T.onAccent, fontSize: 14, fontWeight: 500, padding: "9px 15px", borderRadius: T.rBtn, textDecoration: "none", boxShadow: T.shadow, whiteSpace: "nowrap" }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg> {L.newDoc}
             </a>
@@ -356,7 +356,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                         {e.kind === "question" ? <MessageSquare size={14} strokeWidth={1.9} /> : <Eye size={14} strokeWidth={1.9} />}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 14, color: T.heading, lineHeight: 1.45, overflowWrap: "anywhere" }}>{e.text}</div></div>
-                      <span style={{ fontSize: 11, color: T.muted, fontFamily: mono, flexShrink: 0 }}>{ago(e.at)}</span>
+                      <span suppressHydrationWarning style={{ fontSize: 11, color: T.muted, fontFamily: mono, flexShrink: 0 }}>{ago(e.at)}</span>
                     </div>
                   ))}
                 </div>
