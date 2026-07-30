@@ -36,39 +36,63 @@ export function monthStartISO(d: Date = new Date()): string {
 export async function resolvePlanForUser(admin: Admin, userId: string): Promise<PlanContext> {
   const { data: profile } = await admin
     .from("profiles")
-    .select("account_type, active_org_id, trial_started_at, plan, approved_at, subscribed_at")
+    .select("account_type, active_org_id, trial_started_at, plan, approved_at, subscribed_at, subscription_active")
     .eq("id", userId)
     .single();
   const p = (profile ?? {}) as {
-    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null; plan?: string; approved_at?: string | null; subscribed_at?: string | null;
+    account_type?: string; active_org_id?: string | null; trial_started_at?: string | null;
+    plan?: string; approved_at?: string | null; subscribed_at?: string | null;
+    subscription_active?: boolean;
   };
   const isCompany = p.account_type === "company" || p.account_type === "organization";
 
-  // Personal accounts: Free or Personal, always active, no trial.
-  if (!isCompany) {
-    // The door. One row, read on every resolve. When invite_only is on, an
-    // account without approved_at is pending: it exists, it can sign in, and it
-    // can see nothing. This stays correct for accounts created later, which is
-    // what a bulk suspend could never do.
-    const { data: door } = await admin
-      .from("app_settings").select("invite_only").eq("id", true).maybeSingle();
-    if (door?.invite_only && !p.approved_at) {
-      const isCompanyPending = p.account_type === "company" || p.account_type === "organization";
-      return {
-        userId,
-        scope: isCompanyPending && p.active_org_id ? "org" : "personal",
-        orgId: isCompanyPending ? (p.active_org_id ?? null) : null,
-        plan: getPlan(p.plan),
-        access: "pending",
-        trialDaysLeft: 0,
-        everPaid: !!p.subscribed_at,
-      };
-    }
-
-    return { userId, scope: "personal", orgId: null, plan: getPlan(p.plan), access: "active", trialDaysLeft: 0, everPaid: !!p.subscribed_at };
+  // THE DOOR, FIRST, for every account type.
+  //
+  // This used to sit inside the personal branch, so a COMPANY account signing up
+  // while invite-only skipped it entirely and was handed a seven-day Business
+  // trial without approval. The door has to be the outermost check or it does
+  // not hold against the accounts that matter most.
+  const { data: door } = await admin
+    .from("app_settings").select("invite_only").eq("id", true).maybeSingle();
+  if (door?.invite_only && !p.approved_at) {
+    return {
+      userId,
+      scope: isCompany ? "org" : "personal",
+      orgId: isCompany ? (p.active_org_id ?? null) : null,
+      plan: getPlan(p.plan),
+      access: "pending",
+      trialDaysLeft: 0,
+      everPaid: !!p.subscribed_at,
+    };
   }
 
-  // Company account (may or may not have created its org yet).
+  // ---- personal accounts: Free or Personal, no trial ----
+  if (!isCompany) {
+    // Clamped. A personal profile holding an org plan would otherwise be handed
+    // org features; only bad data reaches that, and it should not be rewarded.
+    const personalPlan = p.plan === "personal" ? "personal" : "free";
+
+    // A cancelled Personal subscriber used to stay active forever: this branch
+    // hardcoded "active" and never read subscription_active, while the webhook
+    // dutifully set it false. Twenty dollars a month, indefinitely, for free.
+    //
+    // Free is always active -- there is nothing to lapse. Personal is active
+    // only while the subscription is live, and locked once it is not.
+    const access: AccessState = personalPlan === "free" ? "active"
+      : p.subscription_active === true ? "active" : "locked";
+
+    return {
+      userId,
+      scope: "personal",
+      orgId: null,
+      plan: getPlan(personalPlan),
+      access,
+      trialDaysLeft: 0,
+      everPaid: !!p.subscribed_at,
+    };
+  }
+
+  // ---- company accounts: trial-aware, plan lives on the organization ----
   let planId: string | undefined = "team";
   let subscribed = false;
   let everPaid = false;
@@ -89,7 +113,7 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
   }
   const plan = getPlan(planId);
 
-  let access: AccessState = "active";
+  let access: AccessState = "locked";
   let trialDaysLeft = 0;
   if (subscribed) {
     access = "active";
@@ -97,12 +121,10 @@ export async function resolvePlanForUser(admin: Admin, userId: string): Promise<
     const info = trialInfo(p.trial_started_at);
     trialDaysLeft = info.daysLeft;
     access = info.active ? "trial" : "locked";
-  } else {
-    // No subscription and no clock is not an entitlement. Every account gets a
-    // trial clock at signup, so reaching here means the subscription ended or
-    // the record is incomplete. Either way there is nothing to grant.
-    access = "locked";
   }
+  // No subscription and no clock is not an entitlement. Every account is given a
+  // clock at signup, so reaching the default means the subscription ended or the
+  // record is incomplete. Either way there is nothing to grant.
 
   return { userId, scope: "org", orgId, plan, access, trialDaysLeft, everPaid };
 }
