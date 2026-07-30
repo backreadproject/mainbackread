@@ -74,7 +74,7 @@ export default function MarketingNav({ activePricing = false, locale = "en", lab
           ) : (
             <>
               <a href="/login" className="mn-signin" style={{ color: "#fff", fontSize: 14, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none", border: "1px solid rgba(255,255,255,0.25)" }}>{t.signin}</a>
-              <a href="/login" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>{t.start}</a>
+              <a href="/pricing" className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 14, fontWeight: 700, padding: "9px 18px", borderRadius: 8, textDecoration: "none" }}>{t.start}</a>
             </>
           )}
         </div>
@@ -101,7 +101,7 @@ export default function MarketingNav({ activePricing = false, locale = "en", lab
           <a href="/#why" onClick={() => setMenuOpen(false)} style={{ color: CLOUD, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>{t.why}</a>
           <a href="/pricing" onClick={() => setMenuOpen(false)} style={{ color: activePricing ? "#fff" : CLOUD, fontWeight: activePricing ? 600 : 400, fontSize: 16, textDecoration: "none", padding: "12px 0" }}>{t.pricing}</a>
           <div style={{ padding: "12px 0" }}><LanguageSwitcher current={locale} dark /></div>
-          {!authed && <a href="/login" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>{t.start}</a>}
+          {!authed && <a href="/pricing" onClick={() => setMenuOpen(false)} className="mn-cta" style={{ background: LEMON, color: "#08301F", fontSize: 15, fontWeight: 700, padding: "12px", borderRadius: 8, textDecoration: "none", textAlign: "center", marginTop: 8 }}>{t.start}</a>}
         </div>
       )}
     </div>
