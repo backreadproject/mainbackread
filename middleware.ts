@@ -169,11 +169,16 @@ export function middleware(req: NextRequest) {
   }
 
   // 4) Localhost / previews / other.
+  // Previews answer on *.vercel.app and match no configured host, so they land
+  // here. They get the SAME treatment as the app domain -- withPath for the
+  // lapsed-wall exemption, captureRef for referral attribution -- because a
+  // staging environment that behaves differently from production is worse than
+  // no staging at all.
   if (pathname === "/relay") {
     const url = req.nextUrl.clone(); url.pathname = "/";
     return NextResponse.redirect(url);
   }
-  return applyLocale(req, NextResponse.next());
+  return withPath(req, applyLocale(req, captureRef(req, NextResponse.next())));
 }
 
 export const config = {
