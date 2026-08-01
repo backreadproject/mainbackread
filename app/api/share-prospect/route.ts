@@ -53,7 +53,9 @@ export async function POST(req: Request) {
       label,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      email: mode === "email" ? email.trim() : null,
+        // Stored in BOTH modes. In link mode nothing is sent to it; it exists so
+        // readers can be grouped by company. Null when not supplied.
+        email: email?.trim() || null,
       delivery: mode === "email" ? "email" : "link",
     })
     .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id")

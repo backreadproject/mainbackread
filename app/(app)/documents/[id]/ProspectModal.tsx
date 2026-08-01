@@ -22,6 +22,10 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
   const notePlaceholder = fr ? "Une ligne ou deux pour votre destinataire\u2026" : "A line or two so your recipient understands\u2026";
   const noteHint = fr ? "Laissez vide pour envoyer l'e-mail standard." : "Leave blank to send the standard email.";
   const salutationHint = fr ? "Pas besoin d'ajouter de salutation. Nous les saluons d\u00e9j\u00e0 par leur nom en haut." : "No need to add a greeting. We already address them by name at the top.";
+  const emailForGrouping = fr ? "E-mail (facultatif)" : "Email (optional)";
+  const groupingHint = fr
+    ? "Rien ne lui sera envoy\u00e9. L\u2019adresse sert \u00e0 regrouper les lecteurs d\u2019une m\u00eame entreprise."
+    : "Nothing is sent to it. The address is used to group readers from the same company.";
   const [step, setStep] = useState<"type" | "link" | "email">("type");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -44,7 +48,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
     try {
       const res = await fetch("/api/share-prospect", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ documentId, mode, firstName, lastName, email: mode === "email" ? email : undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined }),
+        body: JSON.stringify({ documentId, mode, firstName, lastName, email: email.trim() || undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined }),
       });
       const text = await res.text();
       let json: { recipient?: NewRec; readUrl?: string; emailSent?: boolean; emailWarning?: string; error?: string } = {};
@@ -100,10 +104,11 @@ export default function ProspectModal({ documentId, onClose, onCreated, variants
               <div style={{ flex: 1 }}><span style={label}>{pm.firstName}</span><input className="t-in" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Sarah" style={input} /></div>
               <div style={{ flex: 1 }}><span style={label}>{pm.lastName}</span><input className="t-in" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Chen" style={input} /></div>
             </div>
+            <span style={label}>{step === "email" ? pm.emailLabel : emailForGrouping}</span>
+            <input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={step === "email" ? input : { ...input, marginBottom: 6 }} />
+            {step === "link" && <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 12px", lineHeight: 1.45 }}>{groupingHint}</p>}
             {step === "email" && (
               <>
-                <span style={label}>{pm.emailLabel}</span>
-                <input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={input} />
                 <span style={label}>{noteLabel}</span>
                 <textarea className="t-in" value={note} onChange={(e) => setNote(e.target.value)} placeholder={notePlaceholder} rows={3} maxLength={2000} style={textareaStyle} />
                 <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 3px", lineHeight: 1.45 }}>{salutationHint}</p>
