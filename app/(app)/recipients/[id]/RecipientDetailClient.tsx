@@ -110,7 +110,6 @@ export default function RecipientDetailClient({ recipient, signals, outcome }: {
         <div style={{ marginTop: 26 }}>
           <OutcomeCard
             recipientId={recipient.id}
-            readerName={recipient.label || rd.unnamedReader}
             outcome={outcome.value}
             outcomeAt={outcome.at}
             quietDays={outcome.quietDays}

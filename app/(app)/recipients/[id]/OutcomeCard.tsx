@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
-import { getDict } from "@/lib/i18n";
 
 // Two surfaces for one piece of information.
 //
@@ -20,10 +19,9 @@ import { getDict } from "@/lib/i18n";
 export type OutcomeValue = "won" | "lost" | "no_decision" | null;
 
 export default function OutcomeCard({
-  recipientId, readerName, outcome: initial, outcomeAt, quietDays, evidence, snoozed,
+  recipientId, outcome: initial, outcomeAt, quietDays, evidence, snoozed,
 }: {
   recipientId: string;
-  readerName: string;
   outcome: OutcomeValue;
   outcomeAt: string | null;
   /** Days since the newest signal. Null when they have never done anything. */

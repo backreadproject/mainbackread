@@ -13,7 +13,7 @@ export default async function OverviewPage() {
   const documents = docs ?? [];
   const docIds = documents.map((d) => d.id);
   const { data: recips } = docIds.length
-    ? await supabase.from("recipients").select("id, document_id, label").in("document_id", docIds)
+    ? await supabase.from("recipients").select("id, document_id, label, outcome").in("document_id", docIds)
     : { data: [] };
   const recipients = recips ?? [];
   const recIds = recipients.map((r) => r.id);
@@ -80,7 +80,11 @@ export default async function OverviewPage() {
     return Math.max(opens + questions > 0 ? 0.12 : 0.04, Math.min(0.98, v));
   }
 
-  const readers = recipients.map((r) => {
+  // Won and lost leave the field. no_decision means still open, so it stays.
+  const CLOSED = new Set(["won", "lost"]);
+  const live = recipients.filter((r) => !CLOSED.has(String(r.outcome ?? "")));
+
+  const readers = live.map((r) => {
     const a = agg.get(r.id) ?? { opens: 0, questions: 0, lastAt: "", replied: false, handled: false };
     return {
       id: r.id,

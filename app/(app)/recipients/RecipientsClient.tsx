@@ -3,31 +3,38 @@ import { useState, useMemo } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-type Row = { id: string; label: string | null; documentTitle: string; createdAt: string; opened: boolean; questions: number };
-type Stats = { total: number; opened: number; unopened: number; questions: number; escalated: number };
+type Row = { id: string; label: string | null; documentTitle: string; createdAt: string; opened: boolean; questions: number; outcome: string | null };
+type Stats = { total: number; opened: number; unopened: number; questions: number; escalated: number; won: number };
 type Tone = "green" | "amber" | "indigo" | "neutral";
 const COLS = "1.5fr 1.5fr 0.8fr 0.9fr 1fr";
 export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: Stats }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const rp = getDict(locale).recipientsPage;
-  const [filter, setFilter] = useState<"all" | "opened" | "unopened">("all");
+  const [filter, setFilter] = useState<"all" | "opened" | "unopened" | "won">("all");
   const [q, setQ] = useState("");
   const filtered = useMemo(() => {
     let r = rows;
     if (filter === "opened") r = r.filter((x) => x.opened);
     if (filter === "unopened") r = r.filter((x) => !x.opened);
+    if (filter === "won") r = r.filter((x) => x.outcome === "won");
     const t = q.trim().toLowerCase();
     if (t) r = r.filter((x) => (x.label ?? "unnamed reader").toLowerCase().includes(t) || x.documentTitle.toLowerCase().includes(t));
     return r;
   }, [rows, filter, q]);
+  // Concluded states, shown in place of opened/new.
+  const OUT: Record<string, { label: string; tone: string }> = {
+    won: { label: fr ? "Gagn\u00e9" : "Won", tone: T.green },
+    lost: { label: fr ? "Perdu" : "Lost", tone: T.faint },
+    no_decision: { label: fr ? "Sans suite" : "No decision", tone: T.amber },
+  };
   const toneRule: Record<Tone, string> = { green: T.green, amber: T.amber, indigo: T.indigo, neutral: T.border };
   const sel = { height: 34, boxSizing: "border-box" as const, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 10px", fontSize: 13.5, fontFamily: T.font, background: T.card, color: T.body };
   const cells: [number, string, Tone][] = [
     [stats.opened, rp.statOpened + " \u00b7 " + stats.unopened + " " + rp.statNotYet, "green"],
     [stats.escalated, rp.statEscalated + " \u00b7 " + rp.statNeedReply, "amber"],
     [stats.questions, rp.statQuestions, "indigo"],
-    [stats.total, rp.statTotalReaders, "neutral"],
+    [stats.won, fr ? "gagn\u00e9s" : "won", "green"],
   ];
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -40,6 +47,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
             <option value="all">{rp.filterAll}</option>
             <option value="opened">{rp.filterOpened}</option>
             <option value="unopened">{rp.filterUnopened}</option>
+            <option value="won">{fr ? "Gagn\u00e9s" : "Won"}</option>
           </select>
           <input className="rc-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={rp.searchReaders} style={{ ...sel, width: 240 }} />
         </div>
@@ -64,10 +72,17 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
               <span className="data-cell" data-label={rp.colQuestions} style={{ fontSize: 13.5, color: r.questions > 0 ? T.heading : T.faint, fontWeight: r.questions > 0 ? 500 : 400, fontVariantNumeric: "tabular-nums" }}>{r.questions}</span>
               <span className="data-cell" data-label={rp.colShared} style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(r.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
               <span className="data-cell" data-label={rp.colStatus}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading }}>
-                  <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: r.opened ? T.green : T.faint }} />
-                  {r.opened ? rp.statusOpened : rp.statusNew}
-                </span>
+                {r.outcome && OUT[r.outcome] ? (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading }}>
+                    <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: OUT[r.outcome].tone }} />
+                    {OUT[r.outcome].label}
+                  </span>
+                ) : (
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading }}>
+                    <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: r.opened ? T.green : T.faint }} />
+                    {r.opened ? rp.statusOpened : rp.statusNew}
+                  </span>
+                )}
               </span>
             </a>
           ))}

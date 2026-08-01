@@ -276,7 +276,11 @@ create table if not exists public.recipients (
   delivery text,
   opened_notified boolean not null default false,
   variant_id uuid,
-  last_open_notified_at timestamp with time zone
+  last_open_notified_at timestamp with time zone,
+  outcome text,
+  outcome_at timestamp with time zone,
+  outcome_note text,
+  outcome_snoozed_at timestamp with time zone
 );
 
 create table if not exists public.referrer_code_history (
