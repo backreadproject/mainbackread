@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     const lastName = parts.slice(1).join(" ") || "";
     const { data: rec, error } = await admin
       .from("recipients")
-      .insert({ document_id: origin.document_id, label: c.name, first_name: firstName, last_name: lastName, email: c.email, delivery: "email" })
+      .insert({ document_id: origin.document_id, label: c.name, first_name: firstName, last_name: lastName, email: c.email, delivery: "email", forwarded_by: origin.id })
       .select("share_token")
       .single();
     if (error || !rec) { sent.push({ email: c.email, ok: false }); continue; }

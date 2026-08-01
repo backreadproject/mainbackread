@@ -280,7 +280,8 @@ create table if not exists public.recipients (
   outcome text,
   outcome_at timestamp with time zone,
   outcome_note text,
-  outcome_snoozed_at timestamp with time zone
+  outcome_snoozed_at timestamp with time zone,
+  forwarded_by uuid
 );
 
 create table if not exists public.referrer_code_history (
