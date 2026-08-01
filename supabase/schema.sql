@@ -35,6 +35,12 @@
 -- TABLES  (31)
 -- ======================================================================
 
+-- Function bodies are not validated during this load: the functions are
+-- emitted alphabetically, so one can reference another that does not exist
+-- yet. pg_dump does the same thing for the same reason. Re-enabled at the
+-- bottom of the file, so anything created AFTER this load is still checked.
+set check_function_bodies = off;
+
 create table if not exists public.access_grants (
   id uuid not null default gen_random_uuid(),
   organization_id uuid not null,
@@ -757,235 +763,130 @@ $function$
 -- ======================================================================
 -- CONSTRAINTS  (113)
 -- ======================================================================
-
-alter table public.access_grants add constraint access_grants_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.access_grants add constraint access_grants_grantee_type_check CHECK ((grantee_type = ANY (ARRAY['user'::text, 'role'::text])));
-
-alter table public.access_grants add constraint access_grants_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
-alter table public.access_grants add constraint access_grants_permission_check CHECK ((permission = ANY (ARRAY['view'::text, 'edit'::text, 'manage'::text])));
+-- Primary and unique keys FIRST: a foreign key cannot be added until the
+-- constraint it references exists, and these were previously interleaved
+-- alphabetically, so a FK to organizations landed before organizations' PK.
 
 alter table public.access_grants add constraint access_grants_pkey PRIMARY KEY (id);
-
-alter table public.access_grants add constraint access_grants_resource_type_check CHECK ((resource_type = ANY (ARRAY['project'::text, 'document'::text])));
-
-alter table public.admin_audit add constraint admin_audit_kind_check CHECK ((kind = ANY (ARRAY['mutation'::text, 'read'::text])));
-
 alter table public.admin_audit add constraint admin_audit_pkey PRIMARY KEY (id);
-
-alter table public.admin_users add constraint admin_users_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
-
 alter table public.admin_users add constraint admin_users_pkey PRIMARY KEY (user_id);
-
-alter table public.admin_users add constraint admin_users_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'support'::text, 'finance'::text, 'compliance'::text, 'engineering'::text])));
-
-alter table public.admin_users add constraint admin_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.api_keys add constraint api_keys_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.api_keys add constraint api_keys_pkey PRIMARY KEY (id);
-
-alter table public.api_subscriptions add constraint api_subscriptions_api_key_id_fkey FOREIGN KEY (api_key_id) REFERENCES api_keys(id) ON DELETE CASCADE;
-
-alter table public.api_subscriptions add constraint api_subscriptions_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.api_subscriptions add constraint api_subscriptions_pkey PRIMARY KEY (id);
-
-alter table public.app_settings add constraint app_settings_id_check CHECK (id);
-
 alter table public.app_settings add constraint app_settings_pkey PRIMARY KEY (id);
-
-alter table public.app_settings add constraint app_settings_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-alter table public.commissions add constraint commissions_cycle_check CHECK (((cycle >= 1) AND (cycle <= 3)));
-
-alter table public.commissions add constraint commissions_interval_check CHECK (("interval" = ANY (ARRAY['monthly'::text, 'annual'::text])));
-
 alter table public.commissions add constraint commissions_pkey PRIMARY KEY (id);
-
 alter table public.commissions add constraint commissions_processor_ref_key UNIQUE (processor_ref);
-
-alter table public.commissions add constraint commissions_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES referrers(id) ON DELETE RESTRICT;
-
-alter table public.commissions add constraint commissions_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'available'::text, 'paid'::text, 'clawed_back'::text])));
-
-alter table public.commissions add constraint commissions_subscriber_id_fkey FOREIGN KEY (subscriber_id) REFERENCES auth.users(id) ON DELETE SET NULL;
-
 alter table public.commissions add constraint commissions_subscriber_id_interval_cycle_key UNIQUE (subscriber_id, "interval", cycle);
-
-alter table public.commissions add constraint commissions_withdrawal_fk FOREIGN KEY (withdrawal_id) REFERENCES withdrawals(id) ON DELETE SET NULL;
-
-alter table public.document_variants add constraint document_variants_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
-
 alter table public.document_variants add constraint document_variants_document_id_label_key UNIQUE (document_id, label);
-
 alter table public.document_variants add constraint document_variants_pkey PRIMARY KEY (id);
-
-alter table public.documents add constraint documents_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
-alter table public.documents add constraint documents_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 alter table public.documents add constraint documents_pkey PRIMARY KEY (id);
-
-alter table public.documents add constraint documents_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL;
-
-alter table public.referrer_code_history add constraint history_code_format CHECK ((code ~ '^[a-z0-9][a-z0-9-]{2,31}$'::text));
-
-alter table public.icp_profiles add constraint icp_complete_has_output CHECK (((status <> 'complete'::text) OR (output IS NOT NULL)));
-
-alter table public.icp_profiles add constraint icp_one_scope CHECK (((owner_id IS NULL) <> (organization_id IS NULL)));
-
-alter table public.icp_profiles add constraint icp_profiles_branch_check CHECK ((branch = ANY (ARRAY['operating'::text, 'startup'::text])));
-
-alter table public.icp_profiles add constraint icp_profiles_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
-
-alter table public.icp_profiles add constraint icp_profiles_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
-alter table public.icp_profiles add constraint icp_profiles_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 alter table public.icp_profiles add constraint icp_profiles_pkey PRIMARY KEY (id);
-
-alter table public.icp_profiles add constraint icp_profiles_source_check CHECK ((source = ANY (ARRAY['asserted'::text, 'refined'::text])));
-
-alter table public.icp_profiles add constraint icp_profiles_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'complete'::text])));
-
-alter table public.icp_profiles add constraint icp_refined_names_parent CHECK (((source = 'refined'::text) = (refined_from IS NOT NULL)));
-
-alter table public.invitations add constraint invitations_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.invitations add constraint invitations_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.invitations add constraint invitations_pkey PRIMARY KEY (id);
-
-alter table public.invitations add constraint invitations_role_check CHECK ((role = ANY (ARRAY['admin'::text, 'member'::text])));
-
-alter table public.invitations add constraint invitations_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'revoked'::text])));
-
 alter table public.invitations add constraint invitations_token_key UNIQUE (token);
-
 alter table public.notifications add constraint notifications_pkey PRIMARY KEY (id);
-
-alter table public.notifications add constraint notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.organization_members add constraint organization_members_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.organization_members add constraint organization_members_organization_id_user_id_key UNIQUE (organization_id, user_id);
-
 alter table public.organization_members add constraint organization_members_pkey PRIMARY KEY (id);
-
-alter table public.organization_members add constraint organization_members_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text])));
-
-alter table public.organization_members add constraint organization_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.organizations add constraint organizations_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE RESTRICT;
-
 alter table public.organizations add constraint organizations_pkey PRIMARY KEY (id);
-
-alter table public.profiles add constraint profiles_account_type_check CHECK ((account_type = ANY (ARRAY['personal'::text, 'organization'::text])));
-
-alter table public.profiles add constraint profiles_active_org_id_fkey FOREIGN KEY (active_org_id) REFERENCES organizations(id) ON DELETE SET NULL;
-
-alter table public.profiles add constraint profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 alter table public.profiles add constraint profiles_pkey PRIMARY KEY (id);
-
-alter table public.profiles add constraint profiles_referred_by_fkey FOREIGN KEY (referred_by) REFERENCES referrers(id) ON DELETE SET NULL;
-
-alter table public.projects add constraint projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
-
-alter table public.projects add constraint projects_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.projects add constraint projects_pkey PRIMARY KEY (id);
-
 alter table public.rate_limits add constraint rate_limits_bucket_window_start_key UNIQUE (bucket, window_start);
-
 alter table public.rate_limits add constraint rate_limits_pkey PRIMARY KEY (id);
-
-alter table public.reader_messages add constraint reader_messages_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
-
 alter table public.reader_messages add constraint reader_messages_pkey PRIMARY KEY (id);
-
-alter table public.reader_messages add constraint reader_messages_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
-
-alter table public.reader_messages add constraint reader_messages_role_check CHECK ((role = ANY (ARRAY['user'::text, 'doc'::text])));
-
-alter table public.recipients add constraint recipients_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
-
 alter table public.recipients add constraint recipients_pkey PRIMARY KEY (id);
-
 alter table public.recipients add constraint recipients_share_token_key UNIQUE (share_token);
-
-alter table public.recipients add constraint recipients_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES document_variants(id) ON DELETE SET NULL;
-
-alter table public.referrers add constraint referrer_code_format CHECK ((code ~ '^[a-z0-9][a-z0-9-]{2,31}$'::text));
-
 alter table public.referrer_code_history add constraint referrer_code_history_pkey PRIMARY KEY (code);
-
-alter table public.referrer_code_history add constraint referrer_code_history_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES referrers(id) ON DELETE CASCADE;
-
-alter table public.referrers add constraint referrer_code_reserved CHECK ((code <> ALL (ARRAY['admin'::text, 'api'::text, 'app'::text, 'support'::text, 'privacy'::text, 'terms'::text, 'help'::text, 'login'::text, 'signup'::text, 'readprospects'::text, 'relay'::text, 'relaydocuments'::text, 'referrals'::text, 'console'::text, 'billing'::text, 'account'::text, 'settings'::text, 'dashboard'::text, 'www'::text, 'mail'::text, 'docs'::text, 'status'::text, 'pricing'::text])));
-
 alter table public.referrers add constraint referrers_code_key UNIQUE (code);
-
-alter table public.referrers add constraint referrers_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 alter table public.referrers add constraint referrers_pkey PRIMARY KEY (id);
-
-alter table public.referrers add constraint referrers_status_check CHECK ((status = ANY (ARRAY['active'::text, 'suspended'::text, 'closed'::text])));
-
 alter table public.report_cache add constraint report_cache_document_id_fingerprint_key UNIQUE (document_id, fingerprint);
-
-alter table public.report_cache add constraint report_cache_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
-
 alter table public.report_cache add constraint report_cache_pkey PRIMARY KEY (id);
-
 alter table public.report_settings add constraint report_settings_pkey PRIMARY KEY (user_id);
-
-alter table public.report_settings add constraint report_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
-
 alter table public.signals add constraint signals_pkey PRIMARY KEY (id);
-
-alter table public.signals add constraint signals_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
-
 alter table public.support_conversations add constraint support_conversations_pkey PRIMARY KEY (id);
-
-alter table public.support_messages add constraint support_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES support_conversations(id) ON DELETE CASCADE;
-
 alter table public.support_messages add constraint support_messages_pkey PRIMARY KEY (id);
-
-alter table public.usage_events add constraint usage_events_kind_check CHECK ((kind = ANY (ARRAY['verdict'::text, 'send'::text])));
-
 alter table public.usage_events add constraint usage_events_pkey PRIMARY KEY (id);
-
-alter table public.verdicts add constraint verdicts_confidence_check CHECK ((confidence = ANY (ARRAY['high'::text, 'medium'::text, 'low'::text])));
-
-alter table public.verdicts add constraint verdicts_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
-
 alter table public.verdicts add constraint verdicts_pkey PRIMARY KEY (id);
-
-alter table public.verdicts add constraint verdicts_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
-
 alter table public.verdicts add constraint verdicts_recipient_id_key UNIQUE (recipient_id);
-
 alter table public.webhook_deliveries add constraint webhook_deliveries_pkey PRIMARY KEY (id);
-
-alter table public.webhook_deliveries add constraint webhook_deliveries_webhook_id_fkey FOREIGN KEY (webhook_id) REFERENCES webhooks(id) ON DELETE CASCADE;
-
-alter table public.webhooks add constraint webhooks_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 alter table public.webhooks add constraint webhooks_pkey PRIMARY KEY (id);
-
-alter table public.withdrawals add constraint withdrawals_amount_check CHECK ((amount > (0)::numeric));
-
 alter table public.withdrawals add constraint withdrawals_pkey PRIMARY KEY (id);
 
+-- Foreign keys and checks, which may now reference any table above.
+
+-- Primary and unique keys FIRST: a foreign key cannot be added until the
+-- constraint it references exists, and these were previously interleaved
+-- alphabetically, so a FK to organizations landed before organizations' PK.
+-- Foreign keys and checks, which may now reference any table above.
+alter table public.access_grants add constraint access_grants_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.access_grants add constraint access_grants_grantee_type_check CHECK ((grantee_type = ANY (ARRAY['user'::text, 'role'::text])));
+alter table public.access_grants add constraint access_grants_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.access_grants add constraint access_grants_permission_check CHECK ((permission = ANY (ARRAY['view'::text, 'edit'::text, 'manage'::text])));
+alter table public.access_grants add constraint access_grants_resource_type_check CHECK ((resource_type = ANY (ARRAY['project'::text, 'document'::text])));
+alter table public.admin_audit add constraint admin_audit_kind_check CHECK ((kind = ANY (ARRAY['mutation'::text, 'read'::text])));
+alter table public.admin_users add constraint admin_users_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+alter table public.admin_users add constraint admin_users_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'support'::text, 'finance'::text, 'compliance'::text, 'engineering'::text])));
+alter table public.admin_users add constraint admin_users_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.api_keys add constraint api_keys_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.api_subscriptions add constraint api_subscriptions_api_key_id_fkey FOREIGN KEY (api_key_id) REFERENCES api_keys(id) ON DELETE CASCADE;
+alter table public.api_subscriptions add constraint api_subscriptions_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.app_settings add constraint app_settings_id_check CHECK (id);
+alter table public.app_settings add constraint app_settings_updated_by_fkey FOREIGN KEY (updated_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+alter table public.commissions add constraint commissions_cycle_check CHECK (((cycle >= 1) AND (cycle <= 3)));
+alter table public.commissions add constraint commissions_interval_check CHECK (("interval" = ANY (ARRAY['monthly'::text, 'annual'::text])));
+alter table public.commissions add constraint commissions_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES referrers(id) ON DELETE RESTRICT;
+alter table public.commissions add constraint commissions_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'available'::text, 'paid'::text, 'clawed_back'::text])));
+alter table public.commissions add constraint commissions_subscriber_id_fkey FOREIGN KEY (subscriber_id) REFERENCES auth.users(id) ON DELETE SET NULL;
+alter table public.commissions add constraint commissions_withdrawal_fk FOREIGN KEY (withdrawal_id) REFERENCES withdrawals(id) ON DELETE SET NULL;
+alter table public.document_variants add constraint document_variants_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+alter table public.documents add constraint documents_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.documents add constraint documents_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.documents add constraint documents_project_id_fkey FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL;
+alter table public.referrer_code_history add constraint history_code_format CHECK ((code ~ '^[a-z0-9][a-z0-9-]{2,31}$'::text));
+alter table public.icp_profiles add constraint icp_complete_has_output CHECK (((status <> 'complete'::text) OR (output IS NOT NULL)));
+alter table public.icp_profiles add constraint icp_one_scope CHECK (((owner_id IS NULL) <> (organization_id IS NULL)));
+alter table public.icp_profiles add constraint icp_profiles_branch_check CHECK ((branch = ANY (ARRAY['operating'::text, 'startup'::text])));
+alter table public.icp_profiles add constraint icp_profiles_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE SET NULL;
+alter table public.icp_profiles add constraint icp_profiles_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.icp_profiles add constraint icp_profiles_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.icp_profiles add constraint icp_profiles_source_check CHECK ((source = ANY (ARRAY['asserted'::text, 'refined'::text])));
+alter table public.icp_profiles add constraint icp_profiles_status_check CHECK ((status = ANY (ARRAY['draft'::text, 'complete'::text])));
+alter table public.icp_profiles add constraint icp_refined_names_parent CHECK (((source = 'refined'::text) = (refined_from IS NOT NULL)));
+alter table public.invitations add constraint invitations_invited_by_fkey FOREIGN KEY (invited_by) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.invitations add constraint invitations_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.invitations add constraint invitations_role_check CHECK ((role = ANY (ARRAY['admin'::text, 'member'::text])));
+alter table public.invitations add constraint invitations_status_check CHECK ((status = ANY (ARRAY['pending'::text, 'accepted'::text, 'revoked'::text])));
+alter table public.notifications add constraint notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.organization_members add constraint organization_members_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.organization_members add constraint organization_members_role_check CHECK ((role = ANY (ARRAY['owner'::text, 'admin'::text, 'member'::text])));
+alter table public.organization_members add constraint organization_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.organizations add constraint organizations_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE RESTRICT;
+alter table public.profiles add constraint profiles_account_type_check CHECK ((account_type = ANY (ARRAY['personal'::text, 'organization'::text])));
+alter table public.profiles add constraint profiles_active_org_id_fkey FOREIGN KEY (active_org_id) REFERENCES organizations(id) ON DELETE SET NULL;
+alter table public.profiles add constraint profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.profiles add constraint profiles_referred_by_fkey FOREIGN KEY (referred_by) REFERENCES referrers(id) ON DELETE SET NULL;
+alter table public.projects add constraint projects_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.projects add constraint projects_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.reader_messages add constraint reader_messages_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+alter table public.reader_messages add constraint reader_messages_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
+alter table public.reader_messages add constraint reader_messages_role_check CHECK ((role = ANY (ARRAY['user'::text, 'doc'::text])));
+alter table public.recipients add constraint recipients_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+alter table public.recipients add constraint recipients_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES document_variants(id) ON DELETE SET NULL;
+alter table public.referrers add constraint referrer_code_format CHECK ((code ~ '^[a-z0-9][a-z0-9-]{2,31}$'::text));
+alter table public.referrer_code_history add constraint referrer_code_history_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES referrers(id) ON DELETE CASCADE;
+alter table public.referrers add constraint referrer_code_reserved CHECK ((code <> ALL (ARRAY['admin'::text, 'api'::text, 'app'::text, 'support'::text, 'privacy'::text, 'terms'::text, 'help'::text, 'login'::text, 'signup'::text, 'readprospects'::text, 'relay'::text, 'relaydocuments'::text, 'referrals'::text, 'console'::text, 'billing'::text, 'account'::text, 'settings'::text, 'dashboard'::text, 'www'::text, 'mail'::text, 'docs'::text, 'status'::text, 'pricing'::text])));
+alter table public.referrers add constraint referrers_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.referrers add constraint referrers_status_check CHECK ((status = ANY (ARRAY['active'::text, 'suspended'::text, 'closed'::text])));
+alter table public.report_cache add constraint report_cache_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+alter table public.report_settings add constraint report_settings_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+alter table public.signals add constraint signals_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
+alter table public.support_messages add constraint support_messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES support_conversations(id) ON DELETE CASCADE;
+alter table public.usage_events add constraint usage_events_kind_check CHECK ((kind = ANY (ARRAY['verdict'::text, 'send'::text])));
+alter table public.verdicts add constraint verdicts_confidence_check CHECK ((confidence = ANY (ARRAY['high'::text, 'medium'::text, 'low'::text])));
+alter table public.verdicts add constraint verdicts_document_id_fkey FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE;
+alter table public.verdicts add constraint verdicts_recipient_id_fkey FOREIGN KEY (recipient_id) REFERENCES recipients(id) ON DELETE CASCADE;
+alter table public.webhook_deliveries add constraint webhook_deliveries_webhook_id_fkey FOREIGN KEY (webhook_id) REFERENCES webhooks(id) ON DELETE CASCADE;
+alter table public.webhooks add constraint webhooks_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+alter table public.withdrawals add constraint withdrawals_amount_check CHECK ((amount > (0)::numeric));
 alter table public.withdrawals add constraint withdrawals_referrer_id_fkey FOREIGN KEY (referrer_id) REFERENCES referrers(id) ON DELETE RESTRICT;
-
 alter table public.withdrawals add constraint withdrawals_status_check CHECK ((status = ANY (ARRAY['requested'::text, 'approved'::text, 'processing'::text, 'paid'::text, 'failed'::text, 'rejected'::text])));
-
-
-
 -- ======================================================================
 -- INDEXES  (36)
 -- ======================================================================
@@ -1269,3 +1170,7 @@ create policy "update own or org documents" on public.documents for update using
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 CREATE TRIGGER trg_enforce_document_quota BEFORE INSERT ON public.documents FOR EACH ROW EXECUTE FUNCTION enforce_document_quota();
+
+
+-- Back on, so a function created by hand after this load is still validated.
+set check_function_bodies = on;

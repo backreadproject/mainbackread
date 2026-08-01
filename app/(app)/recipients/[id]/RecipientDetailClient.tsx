@@ -6,11 +6,20 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import ReportButton from "@/app/(app)/ReportButton";
 import Blank from "@/app/(app)/Blank";
+import OutcomeCard, { type OutcomeValue } from "./OutcomeCard";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
 type Rec = { id: string; label: string | null; shareToken: string; documentId: string; documentTitle: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
 type Reply = { text: string; email: string; at: string };
-export default function RecipientDetailClient({ recipient, signals }: { recipient: Rec; signals: Sig[] }) {
+type OutcomeState = {
+  value: OutcomeValue;
+  at: string | null;
+  quietDays: number | null;
+  snoozed: boolean;
+  evidenceEn: string;
+  evidenceFr: string;
+};
+export default function RecipientDetailClient({ recipient, signals, outcome }: { recipient: Rec; signals: Sig[]; outcome: OutcomeState }) {
   const locale = useLocale();
   const rd = getDict(locale).recipientDetailPage;
   const fr = locale === "fr";
@@ -99,6 +108,15 @@ export default function RecipientDetailClient({ recipient, signals }: { recipien
         </div>
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
         <div style={{ marginTop: 26 }}>
+          <OutcomeCard
+            recipientId={recipient.id}
+            readerName={recipient.label || rd.unnamedReader}
+            outcome={outcome.value}
+            outcomeAt={outcome.at}
+            quietDays={outcome.quietDays}
+            evidence={fr ? outcome.evidenceFr : outcome.evidenceEn}
+            snoozed={outcome.snoozed}
+          />
           {/* Above everything. A reply is the only thing here that is not an
               inference, so it should not sit below charts that estimate what a
               reply already answers. */}
