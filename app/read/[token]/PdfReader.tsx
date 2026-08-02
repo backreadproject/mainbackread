@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import SigningPanel from "./SigningPanel";
 
 const INK = "#0F1729", CANVAS = "#F7F8F7", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_HOVER = "#0A6A41", BRAND = "#1FA971", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", ANSWER_INK = "#0B3D2A", NEUTRAL_BUBBLE = "#F4F5F4", SLATE = "#8A9299", BODY = "#475467", LINE = "#E3E7E4", HEAT_MID = "#3FB587", HEAT_OFF = "#DDE2DE";
 const AEON = "var(--font-dm-sans), system-ui, sans-serif";
@@ -85,9 +86,20 @@ function installModernPolyfills() {
   }
 }
 
+type SigningState = {
+  name: string;
+  sentToEmail: string | null;
+  alreadySigned: { name: string; at: string }[];
+  awaiting: number;
+  mySignedAt: string | null;
+  myDeclinedAt: string | null;
+  fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
+  documentDeclined: boolean;
+};
+
 type Msg = { role: "user" | "doc"; text: string };
 
-export default function PdfReader({ title, fileUrl, token, greeting, initialThread = [], senderName = "", senderFirst = "", readerEmail = "" }: { title: string; fileUrl: string; token: string; greeting: string; initialThread?: Msg[]; senderName?: string; senderFirst?: string; readerEmail?: string }) {
+export default function PdfReader({ title, fileUrl, token, greeting, initialThread = [], senderName = "", senderFirst = "", readerEmail = "", signing = null }: { title: string; fileUrl: string; token: string; greeting: string; initialThread?: Msg[]; senderName?: string; senderFirst?: string; readerEmail?: string; signing?: SigningState | null }) {
   const locale = useLocale();
   const r = getDict(locale).readerPage;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -121,6 +133,8 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   const [replyBusy, setReplyBusy] = useState(false);
   const [replyErr, setReplyErr] = useState("");
   const [replyDone, setReplyDone] = useState(false);
+  const [signedNow, setSignedNow] = useState(false);
+  const [declinedNow, setDeclinedNow] = useState(false);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -215,6 +229,16 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           textParts.push(`[Page ${n}]\n` + tc.items.map((it) => ("str" in it ? it.str : "")).join(" "));
         }
         docText.current = textParts.join("\n\n").slice(0, 20000);
+        if (signing && signing.fields.length && !signing.mySignedAt) {
+          for (const fld of signing.fields) {
+            const w = wrappers[fld.page - 1];
+            if (!w) continue;
+            const box = document.createElement("div");
+            box.style.cssText = `position:absolute;left:${fld.x * 100}%;top:${fld.y * 100}%;width:${fld.w * 100}%;height:${fld.h * 100}%;border:1.5px dashed ${GREEN};background:${GREEN_SOFT};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:${GREEN_TEXT};pointer-events:none;box-sizing:border-box;text-align:center;padding:2px`;
+            box.textContent = fld.kind === "signature" ? r.youSignHere : fld.kind === "date" ? r.dateHere : r.textHere;
+            w.appendChild(box);
+          }
+        }
         const observer = new IntersectionObserver((entries) => {
           const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
           if (!visible) return;
@@ -385,6 +409,32 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
 
         <aside className={`rdr-aside${sheetOpen ? " is-open" : ""}`} style={{ position: "sticky", top: 92, background: CARD, border: `1px solid ${LINE}`, borderRadius: 6, boxShadow: SHADOW_PANEL, display: "flex", flexDirection: "column", height: "78vh", overflow: "hidden" }}>
           <div className="rdr-handle" onClick={toggleSheet} />
+          {signing && (
+            <div style={{ padding: 16, borderBottom: `1px solid ${LINE}` }}>
+              {signing.myDeclinedAt || declinedNow ? (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: INK, marginBottom: 4 }}>{r.declinedTitle}</div>
+                  <div style={{ fontSize: 13, color: BODY, lineHeight: 1.5 }}>{r.declinedBody}</div>
+                </>
+              ) : signing.mySignedAt || signedNow ? (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: GREEN_TEXT, marginBottom: 4 }}>{r.signedTitle}</div>
+                  <div style={{ fontSize: 13, color: BODY, lineHeight: 1.5 }}>
+                    {signing.awaiting > 0 ? r.signedWaiting : r.signedComplete}
+                  </div>
+                </>
+              ) : signing.documentDeclined ? (
+                <div style={{ fontSize: 13, color: BODY, lineHeight: 1.5 }}>{r.docDeclined}</div>
+              ) : (
+                <SigningPanel
+                  token={token}
+                  state={{ name: signing.name, sentToEmail: signing.sentToEmail, alreadySigned: signing.alreadySigned, awaiting: signing.awaiting }}
+                  onSigned={() => setSignedNow(true)}
+                  onDeclined={() => setDeclinedNow(true)}
+                />
+              )}
+            </div>
+          )}
           <div className="rdr-askhead" onClick={toggleSheet} style={{ padding: "15px 16px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 9 }}>
             <span style={{ width: 6, height: 6, borderRadius: 2, background: BRAND, flexShrink: 0 }} />
             <span style={{ fontSize: 14, fontWeight: 600, color: INK, lineHeight: 1.25 }}>{r.askTitle}</span>

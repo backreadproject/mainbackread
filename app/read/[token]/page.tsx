@@ -46,7 +46,7 @@ export default async function ReadPage({
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, first_name, email, document_id, expires_at, revoked_at, documents ( owner_id, organization_id )")
+    .select("id, label, first_name, email, document_id, expires_at, revoked_at, is_signer, signed_at, declined_at, documents ( owner_id, organization_id, title, signing_enabled, signing_completed_at )")
     .eq("share_token", token)
     .single();
   const doc = recipient ? await sourceForRecipient(admin, recipient.id as string) : null;
@@ -118,6 +118,34 @@ export default async function ReadPage({
   const firstName = (recipient.first_name as string | null)?.trim() || "";
   const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
 
+  const recDocFull = recipient.documents as unknown as { title?: string; signing_enabled?: boolean; signing_completed_at?: string | null } | undefined;
+  const iSign = !!recipient.is_signer && !!recDocFull?.signing_enabled;
+  let signing: {
+    name: string; sentToEmail: string | null;
+    alreadySigned: { name: string; at: string }[];
+    awaiting: number;
+    mySignedAt: string | null; myDeclinedAt: string | null;
+    fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
+    documentDeclined: boolean;
+  } | null = null;
+  if (iSign) {
+    const [{ data: co }, { data: myFields }] = await Promise.all([
+      admin.from("recipients").select("id, label, signed_at, declined_at").eq("document_id", recipient.document_id as string).eq("is_signer", true),
+      admin.from("signature_fields").select("page, x, y, w, h, kind").eq("recipient_id", recipient.id as string),
+    ]);
+    const others = (co ?? []).filter((s) => s.id !== recipient.id);
+    signing = {
+      name: (recipient.label as string) || (recipient.first_name as string) || "",
+      sentToEmail: (recipient.email as string | null) ?? null,
+      alreadySigned: others.filter((s) => s.signed_at).map((s) => ({ name: (s.label as string) || "", at: s.signed_at as string })),
+      awaiting: others.filter((s) => !s.signed_at && !s.declined_at).length,
+      mySignedAt: (recipient.signed_at as string | null) ?? null,
+      myDeclinedAt: (recipient.declined_at as string | null) ?? null,
+      fields: (myFields ?? []).map((x) => ({ page: Number(x.page), x: Number(x.x), y: Number(x.y), w: Number(x.w), h: Number(x.h), kind: String(x.kind) })),
+      documentDeclined: (co ?? []).some((s) => s.declined_at),
+    };
+  }
+
   const { data: signed } = await admin.storage
     .from("documents")
     .createSignedUrl(doc.storagePath, 3600);
@@ -144,6 +172,7 @@ export default async function ReadPage({
       senderName={senderName}
       senderFirst={senderFirst}
       readerEmail={readerEmail}
+      signing={signing}
     />
   );
 }
