@@ -11,11 +11,12 @@ import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
 import AccountsPanel from "./AccountsPanel";
 import GapsPanel from "./GapsPanel";
+import LinkControls from "./LinkControls";
 import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
 type Doc = { id: string; title: string; created_at: string };
-type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null };
+type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -117,11 +118,12 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             </div>
             {recs.length === 0 ? <p style={{ fontSize: 13.5, color: T.faint, margin: "8px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
               const s = summary[r.id]; const active = r.id === selected; const opened = !!(s && s.opens > 0);
+              const dead = !!r.revoked_at || (!!r.expires_at && new Date(r.expires_at) < new Date());
               const v = r.variant_id ? variants.find((x) => x.id === r.variant_id) : null;
               return (
                 <div key={r.id} className="t-rec" onClick={() => setSelected(r.id)} style={{ padding: "9px 10px", borderRadius: 4, marginBottom: 2, background: active ? T.greenSoft : "transparent", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                    <i style={dot(opened ? T.green : T.faint)} />
+                    <i title={dead ? (fr ? "Lien inactif" : "Link is closed") : undefined} style={dot(dead ? T.danger : opened ? T.green : T.faint)} />
                     <span style={{ fontSize: 13.5, fontWeight: active ? 600 : 400, color: active ? T.greenText : T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label || dd.unnamedReader}</span>
                   </span>
                   {v && (
@@ -154,7 +156,16 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                 <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 11px", background: T.soft, border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 20 }}>
                   <span className="dd-link" style={{ fontSize: 12.5, color: T.muted, fontFamily: "ui-monospace, monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{readerOrigin.replace(/^https?:\/\//, "")}/read/{sel.share_token}</span>
                   <button onClick={() => copyLink(sel.share_token)} className="t-b" style={{ flex: "none", marginLeft: "auto", height: 26, fontSize: 11, fontWeight: 500, background: T.card, border: "1px solid " + T.border, borderRadius: 4, padding: "0 8px", cursor: "pointer", fontFamily: T.font, color: copied === sel.share_token ? T.greenText : T.heading }}>{copied === sel.share_token ? dd.copied : dd.copy}</button>
-                </div>                {selSum && selSum.opens > 0 ? (
+                </div>
+                <div style={{ marginBottom: 20 }}>
+                  <LinkControls
+                    recipientId={sel.id}
+                    expiresAt={sel.expires_at ?? null}
+                    revokedAt={sel.revoked_at ?? null}
+                    onChange={(next) => setRecs((prev) => prev.map((x) => (x.id === sel.id ? { ...x, ...(next.expiresAt !== undefined ? { expires_at: next.expiresAt } : {}), ...(next.revokedAt !== undefined ? { revoked_at: next.revokedAt } : {}) } : x)))}
+                  />
+                </div>
+                {selSum && selSum.opens > 0 ? (
                   <>
                     <div style={{ fontSize: 12.5, fontWeight: 600, color: T.body, marginBottom: 12 }}>{dd.howTheyRead}</div>
                     <div style={{ marginBottom: 24 }}>

@@ -4,6 +4,7 @@ import PdfReader from "./PdfReader";
 import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
 import { sourceForRecipient } from "@/lib/variants";
+
 // Neutral, un-branded metadata for the reader surface. This runs on relaydocuments.com
 // and must never fall back to the marketing default title (which names ReadProspects). We show
 // the document's own name in the tab and mark the page no-index so nothing branded leaks.
@@ -33,6 +34,7 @@ export async function generateMetadata({
     openGraph: { title: name, description: "You have received a document." },
   };
 }
+
 export default async function ReadPage({
   params,
 }: {
@@ -44,21 +46,13 @@ export default async function ReadPage({
   const admin = createAdminClient();
   const { data: recipient } = await admin
     .from("recipients")
-    .select("id, first_name, email, document_id, documents ( owner_id, organization_id )")
+    .select("id, first_name, email, document_id, expires_at, revoked_at, documents ( owner_id, organization_id )")
     .eq("share_token", token)
     .single();
   const doc = recipient ? await sourceForRecipient(admin, recipient.id as string) : null;
-  if (!recipient || !doc || !doc.storagePath) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#E9EAEC", fontFamily: "system-ui, sans-serif" }}>
-        <p style={{ color: "#6E7480" }}>{r.invalidLink}</p>
-      </div>
-    );
-  }
-  const firstName = (recipient.first_name as string | null)?.trim() || "";
-  const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
-  const readerEmail = ((recipient.email as string | null) ?? "").trim();
-  const recDoc = recipient.documents as unknown as { owner_id: string; organization_id: string | null } | undefined;
+
+  const readerEmail = ((recipient?.email as string | null) ?? "").trim();
+  const recDoc = recipient?.documents as unknown as { owner_id: string; organization_id: string | null } | undefined;
 
   // Was this reader forwarded the document by another reader? If so we must not
   // name the sender: a forwarded colleague was told "Hero shared this with you"
@@ -69,8 +63,11 @@ export default async function ReadPage({
   // one, so a link-mode reader can never be forwarded and this never runs for
   // them. Scoped to this document: being forwarded document A says nothing
   // about how you received document B.
+  //
+  // RESOLVED BEFORE the failure branch, because an expired link should be able
+  // to say who to ask -- under exactly the same rule.
   let wasForwarded = false;
-  if (readerEmail) {
+  if (recipient && readerEmail) {
     const { data: fwd } = await admin
       .from("signals")
       .select("id, recipients!inner ( document_id )")
@@ -95,9 +92,36 @@ export default async function ReadPage({
     senderName = personName || orgName;
   }
   const senderFirst = senderName.split(/\s+/)[0] || "";
+
+  const revoked = !!recipient?.revoked_at;
+  const expired = !!recipient?.expires_at && new Date(recipient.expires_at as string) < new Date();
+
+  if (!recipient || !doc || !doc.storagePath || revoked || expired) {
+    // Three situations, not one. A link that never existed gets the old vague
+    // line, because there is nothing honest to add. A withdrawn or expired one
+    // can say what happened and who to ask -- and names that person only when
+    // this reader was told the name already.
+    const headline = revoked ? r.linkRevoked : expired ? r.linkExpired : r.invalidLink;
+    const followUp = (revoked || expired)
+      ? (senderFirst ? `${r.askSenderNamed} ${senderFirst}.` : r.askSenderAnon)
+      : "";
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#E9EAEC", fontFamily: "system-ui, sans-serif", padding: 24 }}>
+        <div style={{ textAlign: "center", maxWidth: 380 }}>
+          <p style={{ color: "#3C4450", fontSize: 15, margin: 0, lineHeight: 1.5 }}>{headline}</p>
+          {followUp && <p style={{ color: "#6E7480", fontSize: 14, margin: "8px 0 0", lineHeight: 1.55 }}>{followUp}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  const firstName = (recipient.first_name as string | null)?.trim() || "";
+  const greeting = firstName ? `${r.hiName} ${firstName}` : r.hiThere;
+
   const { data: signed } = await admin.storage
     .from("documents")
     .createSignedUrl(doc.storagePath, 3600);
+
   // Load the saved conversation (server-side, service-role only) so it restores on any
   // device that opens this link. reader_messages is invisible to account holders.
   const { data: messages } = await admin
@@ -109,6 +133,7 @@ export default async function ReadPage({
     role: (m.role === "doc" ? "doc" : "user") as "user" | "doc",
     text: (m.content as string) ?? "",
   }));
+
   return (
     <PdfReader
       title={doc.title}

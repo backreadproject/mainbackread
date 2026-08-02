@@ -555,6 +555,10 @@ const en = {
     colAdded: "Added",
   },
   readerPage: {
+    linkExpired: "This link has expired.",
+    linkRevoked: "This link has been withdrawn.",
+    askSenderNamed: "Ask for a new one from",
+    askSenderAnon: "Ask whoever sent you this document for a new link.",
     invalidLink: "This link is invalid or has expired.",
     hiName: "Hi",
     hiThere: "Hi there",
@@ -1407,6 +1411,10 @@ const fr: Dict = {
     colAdded: "Ajouté",
   },
   readerPage: {
+    linkExpired: "Ce lien a expir\u00e9.",
+    linkRevoked: "Ce lien a \u00e9t\u00e9 retir\u00e9.",
+    askSenderNamed: "Demandez-en un nouveau \u00e0",
+    askSenderAnon: "Demandez un nouveau lien \u00e0 la personne qui vous a envoy\u00e9 ce document.",
     invalidLink: "Ce lien est invalide ou a expiré.",
     hiName: "Bonjour",
     hiThere: "Bonjour",

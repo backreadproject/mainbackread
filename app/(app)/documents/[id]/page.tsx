@@ -23,7 +23,7 @@ export default async function DocumentDetailPage({
 
   const { data: recipients } = await supabase
     .from("recipients")
-    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome")
+    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome, expires_at, revoked_at")
     .eq("document_id", id)
     .order("created_at", { ascending: false });
 
