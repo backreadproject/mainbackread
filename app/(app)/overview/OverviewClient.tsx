@@ -340,6 +340,29 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
                 </div>
               </section>
             </div>
+            {coolingList.length > 0 && (
+              <section style={{ ...card, marginBottom: 16 }}>
+                <div style={ch}>
+                  <h2 style={{ fontSize: 15, fontWeight: 600, color: T.heading, margin: 0 }}>{L.coolingTitle}</h2>
+                  <span style={{ fontSize: 13, color: T.muted }}>{L.coolingSub}</span>
+                </div>
+                <div>
+                  {coolingList.map((r, i) => (
+                    <a key={r.id} href={"/recipients/" + r.id} className="ov-r" style={{ display: "flex", gap: 11, alignItems: "center", padding: "12px 18px", borderTop: i > 0 ? "1px solid " + T.borderSoft : "none", textDecoration: "none", color: "inherit" }}>
+                      <span style={{ width: 26, height: 26, borderRadius: 4, flex: "none", background: T.soft, color: T.muted, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600 }}>{initials(r.name)}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</span>
+                        <span style={{ display: "block", fontSize: 12, color: T.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginTop: 1 }}>{r.doc}</span>
+                      </span>
+                      <span style={{ flex: "none", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, color: T.heading, whiteSpace: "nowrap" }}>
+                        <i style={{ width: 6, height: 6, borderRadius: 2, background: T.amber, flex: "none" }} />
+                        {r.cooling} {L.quietFor}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
             {/* Stat tiles. The tone is a rule down the left edge, not a wash, and
                 the label is a real muted colour rather than faded ink. */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }} className="ov-tiles">
