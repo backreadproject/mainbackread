@@ -113,6 +113,7 @@ async function extractPdfText(bytes: Uint8Array): Promise<{ text: string; pages:
 async function extractImage(bytes: Uint8Array, mime: string, title: string): Promise<string> {
   const base64 = Buffer.from(bytes).toString("base64");
   const mediaType = mime && IMAGE_TYPES.includes(mime) ? mime : "image/png";
+        console.log("[extract] sending pdf to model:", bytes.length, "bytes");
   const { data } = await runAI(ocrTask, {
     images: [{ mediaType, data: base64 }],
     documentTitle: title,
@@ -145,11 +146,17 @@ export async function extractText(
       // that worked perfectly at rendering and never produced a usable result.
       try {
         const { data } = await runAI(ocrTask, {
+        // How big the file actually is, in case it is not arriving at all.
           pdfData: Buffer.from(bytes).toString("base64"),
+        // eslint-disable-next-line no-console
           documentTitle: name,
         }, { documentId: name });
         const ocr = (data.text ?? "").trim();
+        // No error was thrown and no text survived the filter, so log what the
+        // model ACTUALLY said. Reasoning about this has failed three times.
+        console.log("[extract] ocr returned", ocr.length, "chars:", JSON.stringify(ocr.slice(0, 300)));
         const real = ocr.replace(/\[Page \d+\]/g, "").replace(/\(no readable text\)/g, "").replace(/\s+/g, "").length;
+        console.log("[extract] after filtering:", real, "chars, threshold is", SCANNED_PDF_THRESHOLD);
         if (real >= SCANNED_PDF_THRESHOLD) {
           return { text: ocr, method: "image-ocr", needsPageOcr: false, chars: ocr.length, pages };
         }
