@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
+import UploadModal from "./UploadModal";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
@@ -20,7 +21,8 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   const [filter, setFilter] = useState<"all" | "opened" | "unopened">("all");
   const [q, setQ] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [step, setStep] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [progress, setProgress] = useState<{ name: string; size: number; step: string } | null>(null);
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
@@ -37,26 +39,18 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     return out;
   }, [inView, filter, view, q]);
   const archivedCount = rows.filter((r) => r.archived).length;
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (!file) return;
-    // Word and PowerPoint are rejected on purpose: the reader renders PDFs and images,
-    // so a .docx would upload cleanly and then fail to open for the recipient.
-    const isOffice = /\.(docx?|pptx?)$/i.test(file.name) ||
-      file.type.includes("officedocument") || file.type.includes("msword") || file.type.includes("ms-powerpoint");
-    if (isOffice) {
-      setError("Word and PowerPoint files cannot be shared yet. Export as PDF first, so your reader sees the document exactly as you designed it.");
-      return;
-    }
-    const okType = file.type === "application/pdf" || file.type.startsWith("image/") || /\.(pdf|jpe?g|png|webp|gif)$/i.test(file.name);
-    if (!okType) { setError(dp.chooseSupported); return; }
+  // The modal has already checked the type and explained any refusal, so
+  // this only has to do the work.
+  async function onFile(file: File) {
     setUploading(true); setError("");
+    setProgress({ name: file.name, size: file.size, step: dp.uploading });
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError(dp.sessionExpired); setUploading(false); return; }
+    if (!user) { setError(dp.sessionExpired); setUploading(false); setProgress(null); return; }
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const path = user.id + "/" + Date.now() + "-" + safeName;
     const { error: upErr } = await supabase.storage.from("documents").upload(path, file);
-    if (upErr) { setError(dp.uploadFailed + upErr.message); setUploading(false); return; }
+    if (upErr) { setError(dp.uploadFailed + upErr.message); setUploading(false); setProgress(null); return; }
     const cleanTitle = file.name.replace(/\.(pdf|docx|jpe?g|png|webp|gif)$/i, "");
     const insertRow: Record<string, unknown> = { owner_id: user.id, title: cleanTitle, storage_path: path };
     if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
@@ -64,9 +58,10 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     if (dbErr || !inserted) {
       // The file is already in storage. Remove it so a failed insert does not orphan it.
       try { await supabase.storage.from("documents").remove([path]); } catch { /* best effort */ }
-      setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); return;
+      setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); setProgress(null); return;
     }
     try {
+      setProgress({ name: file.name, size: file.size, step: dp.readingPages });
       const res = await fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: inserted.id }) });
       const ext = await res.json().catch(() => ({}));
       // A scanned PDF has no text layer, so the server can extract nothing.
@@ -150,10 +145,9 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             <input className="dc-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={fr ? "Rechercher un document" : "Search a document"} style={{ ...sel, width: 240 }} />
             {view === "active" && abEnabled && <VariantUpload isOrg={isOrg} orgId={orgId} projects={projects} />}
             {view === "active" && (
-              <label style={{ height: 34, boxSizing: "border-box", display: "inline-flex", alignItems: "center", background: T.green, color: T.onAccent, fontSize: 13.5, fontWeight: 500, padding: "0 13px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
-                <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
-                {uploading ? (step || dp.uploading) : dp.addDocument}
-              </label>
+              <button onClick={() => setAdding(true)} style={{ height: 34, boxSizing: "border-box", display: "inline-flex", alignItems: "center", background: T.green, color: T.onAccent, fontSize: 13.5, fontWeight: 500, padding: "0 13px", borderRadius: T.rBtn, cursor: "pointer", border: "none", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
+                {dp.addDocument}
+              </button>
             )}
           </div>
         </div>
@@ -222,6 +216,14 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
           )}
         </div>
       </main>
+        {adding && (
+          <UploadModal
+            onClose={() => { setAdding(false); setProgress(null); }}
+            onPick={(file) => { onFile(file); }}
+            busy={uploading}
+            progress={progress}
+          />
+        )}
       {confirmDelete && (
         <div onClick={() => !busy && setConfirmDelete(null)} style={{ position: "fixed", inset: 0, background: T.scrim, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, padding: 26, width: 400, maxWidth: "100%" }}>
