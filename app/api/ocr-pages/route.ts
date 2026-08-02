@@ -55,15 +55,20 @@ export async function POST(req: NextRequest) {
     // Accept a data URL or bare base64, and reject anything that is neither
     // rather than sending nonsense to the model.
     const data = raw.startsWith("data:") ? raw.split(",")[1] ?? "" : raw;
-    if (data.length < 100) { failed++; continue; }
+    if (data.length < 100) {
+      console.error("[ocr-pages] page", n + 1, "arrived with only", data.length, "chars of image data");
+      failed++; continue;
+    }
     try {
       const { data: out } = await runAI(ocrTask, {
         images: [{ mediaType: "image/jpeg", data }],
         documentTitle: `${doc.title} (page ${n + 1})`,
       }, { documentId });
       const text = (out.text ?? "").trim();
+      console.log("[ocr-pages] page", n + 1, "image", data.length, "chars ->", text.length, "chars of text");
       if (text) parts.push(`[Page ${n + 1}]\n${text}`);
-    } catch {
+    } catch (e) {
+      console.error("[ocr-pages] page", n + 1, "failed:", e instanceof Error ? e.message : e);
       // One unreadable page should not lose the rest of the document.
       failed++;
     }
@@ -71,6 +76,7 @@ export async function POST(req: NextRequest) {
 
   const text = parts.join("\n\n").trim();
   if (!text) {
+    console.error("[ocr-pages] nothing readable from", capped.length, "pages,", failed, "failed");
     return NextResponse.json({ ok: false, error: "Nothing readable was found on these pages.", failed }, { status: 200 });
   }
 
