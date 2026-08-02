@@ -13,6 +13,7 @@
   --rp-card: #FFFFFF;
   --rp-border: #E4E7EC;
   --rp-border-soft: #EFF1F4;
+  --rp-border-strong: #C8CFD8;
   --rp-hover: #F6F7F9;
   --rp-soft: #F9FAFB;
   --rp-heading: #101828;
@@ -70,6 +71,7 @@ html.dark {
   --rp-card: #141D19;
   --rp-border: #26332D;
   --rp-border-soft: #1D2823;
+  --rp-border-strong: #3A4A42;
   --rp-hover: #1A241F;
   --rp-soft: #18211D;
   --rp-heading: #F0F4F1;

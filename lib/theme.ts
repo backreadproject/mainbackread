@@ -24,6 +24,9 @@ export const T = {
   card: "var(--rp-card)",
   border: "var(--rp-border)",
   borderSoft: "var(--rp-border-soft)",
+  /** One step above the hairline. For overlay edges and drop targets, where
+   *  the standard border disappears against a scrim. */
+  borderStrong: "var(--rp-border-strong)",
   hover: "var(--rp-hover)",
   soft: "var(--rp-soft)",
   heading: "var(--rp-heading)",

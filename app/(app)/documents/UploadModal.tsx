@@ -75,9 +75,9 @@ export default function UploadModal({
   }, [check, onPick]);
 
   const zone = {
-    border: "1px dashed " + (over ? T.green : T.border),
+    border: "1.5px dashed " + (over ? T.green : T.borderStrong),
     borderRadius: T.rCard,
-    padding: "32px 20px",
+    padding: "40px 20px",
     textAlign: "center" as const,
     background: over ? T.greenSoft : T.soft,
     transition: "background .12s, border-color .12s",
@@ -87,7 +87,7 @@ export default function UploadModal({
     <div onClick={() => !busy && onClose()}
       style={{ position: "fixed", inset: 0, background: T.scrim, display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 20 }}>
       <div onClick={(e) => e.stopPropagation()}
-        style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow,
+        style={{ background: T.card, border: "1px solid " + T.borderStrong, borderRadius: T.rCard, boxShadow: "0 16px 48px -12px rgba(15,40,28,0.35)",
           padding: 24, width: 480, maxWidth: "100%", fontFamily: T.font, letterSpacing: T.tracking }}>
 
         <h3 style={{ fontSize: 17, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 4px" }}>{C.title}</h3>
