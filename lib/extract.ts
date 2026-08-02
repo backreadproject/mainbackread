@@ -137,17 +137,21 @@ export async function extractText(
     return { text, method: "image-ocr", needsPageOcr: false, chars: text.length, pages: 1 };
   }
   if (kind === "pdf") {
+    // pdf.js DETACHES the buffer it is given: it takes ownership and leaves
+    // our view zero-length. Copy first, or anything after this point sees an
+    // empty file.
+    const keep = bytes.slice();
     const { text, pages } = await extractPdfText(bytes);
     // Strip the [Page N] markers when measuring real content length.
     const contentLen = text.replace(/\[Page \d+\]/g, "").replace(/\s+/g, "").length;
     if (contentLen < SCANNED_PDF_THRESHOLD) {
-      console.log("[extract] scanned branch entered.", bytes.length, "bytes, text layer had", contentLen, "chars");
+      console.log("[extract] scanned branch entered.", keep.length, "bytes, text layer had", contentLen, "chars");
       // A scanned PDF: no text layer. Send the WHOLE FILE to the model, which
       // reads the pages itself. This replaces a browser-rendering pipeline
       // that worked perfectly at rendering and never produced a usable result.
       try {
         const { data } = await runAI(ocrTask, {
-          pdfData: Buffer.from(bytes).toString("base64"),
+          pdfData: Buffer.from(keep).toString("base64"),
           documentTitle: name,
         }, { documentId: name });
         const ocr = (data.text ?? "").trim();
