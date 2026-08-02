@@ -39,6 +39,10 @@ export const anthropicProvider: Provider = {
     // A whole PDF rides as a document block. Claude reads both its text layer
     // and its rendered pages, which is why a SCANNED pdf needs nothing more
     // than this -- no canvas, no worker, no page loop.
+    // The token count said 371 for a two-page PDF, which means the document
+    // never reached the request. Logging at the LAST point before the body is
+    // built, rather than deducing which link in the chain dropped it.
+    console.log("[anthropic] pdf present:", !!req.pdf, "data chars:", req.pdf?.data?.length ?? 0, "images:", req.images?.length ?? 0);
     const pdfBlocks = req.pdf
       ? [{
           type: "document" as const,
