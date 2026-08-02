@@ -5,7 +5,6 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
-import { ocrScannedPdf } from "@/lib/ocr-client";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
@@ -75,17 +74,8 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
       // rendering needs a canvas, which exists here in the browser and not
       // in a serverless function. We still hold the file, so this is the
       // one moment it costs nothing extra to do.
-      if (ext?.needsPageOcr) {
-        setStep(dp.readingPages);
-        try {
-          await ocrScannedPdf(inserted.id, file, (done, total) => {
-            setStep(dp.readingPage + " " + done + "/" + total);
-          });
-        } catch {
-          // Non-fatal: the document is uploaded and shareable. Only the
-          // AI features are degraded, and the reader still renders it.
-        }
-      }
+      // A scanned PDF is now read server-side, inside extract-document, by
+      // sending the whole file to the model. Nothing to do here.
     } catch { /* extraction is best-effort */ }
     window.location.reload();
   }
