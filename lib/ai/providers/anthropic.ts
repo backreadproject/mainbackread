@@ -18,16 +18,22 @@ export const anthropicProvider: Provider = {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) throw new Error("ANTHROPIC_API_KEY is not set. Use AI_PROVIDER=mock to build without one.");
     const model = MODELS[req.tier].id;
-    const system = [
-      { type: "text", text: req.system },
-      // Cached block goes LAST -- the cache prefix must be stable, and anything
-      // after a cache breakpoint is re-read every time.
-      {
+    // A task with nothing stable to cache -- OCR, where every document's
+    // images are unique -- returns an empty cacheable, and Anthropic rejects
+    // the whole request with "cache_control cannot be set for empty text
+    // blocks". So the cached block is only emitted when there is something in
+    // it. Before this guard ocrTask could never have worked at all, which is
+    // why scanned PDFs and uploaded images both failed silently.
+    const system: Record<string, unknown>[] = [{ type: "text", text: req.system }];
+    if (req.cacheable && req.cacheable.trim().length > 0) {
+      // Cached block goes LAST -- the cache prefix must be stable, and
+      // anything after a cache breakpoint is re-read every time.
+      system.push({
         type: "text",
         text: req.cacheable,
         cache_control: { type: "ephemeral" },
-      },
-    ];
+      });
+    }
     // Build the user content. Text-only stays a plain string (unchanged behavior).
     // With images, prepend image blocks, then the text block.
     const userContent = (req.images && req.images.length > 0)
