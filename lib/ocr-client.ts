@@ -138,6 +138,11 @@ export async function renderPdfPages(
     canvas.height = viewport.height;
     const ctx = canvas.getContext("2d");
     if (!ctx) continue;
+    // A fresh canvas is transparent and JPEG has no alpha, so every
+    // transparent pixel encodes as black -- black text on a black page, which
+    // is exactly what the model reported seeing. Paint the page white first.
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     await page.render({ canvas, canvasContext: ctx, viewport }).promise;
     out.push(canvas.toDataURL("image/jpeg", 0.75));
     // Released deliberately: twelve full-page canvases held at once is a lot of
