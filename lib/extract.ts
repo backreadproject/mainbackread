@@ -81,8 +81,24 @@ async function extractPdfText(bytes: Uint8Array): Promise<{ text: string; pages:
   // Legacy build is the serverless-friendly entry point.
   stubBrowserGlobals();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  // Disable the worker in Node -- run on the main thread.
-  const loadingTask = pdfjs.getDocument({ data: bytes, useWorkerFetch: false, useSystemFonts: true });
+  // Point pdf.js at the worker that ships inside the package. Without this it
+  // falls back to a "fake worker" which tries to load a chunk the bundler
+  // never emitted, and every PDF fails with "Cannot find module pdf.worker.mjs".
+  try {
+    const { createRequire } = await import("module");
+    const req = createRequire(import.meta.url);
+    pdfjs.GlobalWorkerOptions.workerSrc = req.resolve("pdfjs-dist/legacy/build/pdf.worker.mjs");
+  } catch {
+    // Leave it unset rather than throwing: pdf.js may still manage without,
+    // and a failed extraction is recoverable while a crashed route is not.
+  }
+  // The worker is resolved above, so this runs with a real one rather than
+  // the fake-worker fallback that could not find its chunk.
+  const loadingTask = pdfjs.getDocument({
+    data: bytes,
+    useWorkerFetch: false,
+    useSystemFonts: false,
+  });
   const pdf = await loadingTask.promise;
   const parts: string[] = [];
   for (let n = 1; n <= pdf.numPages; n++) {
