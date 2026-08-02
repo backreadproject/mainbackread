@@ -28,6 +28,11 @@ export interface CompletionRequest {
   thinkingBudget?: number;
   /** Optional images for vision tasks. Text-only requests leave this undefined. */
   images?: CompletionImage[];
+  /** A whole PDF, base64. Claude reads PDFs natively -- text layer AND page
+   *  images -- so a scanned document needs no rendering on our side at all.
+   *  This exists because rendering pages in the browser worked but the
+   *  images never arrived usable, and the whole pipeline was unnecessary. */
+  pdf?: { data: string };
 }
 export interface CompletionResult {
   text: string;
@@ -61,6 +66,8 @@ export interface Task<TInput, TOutput> {
   user(input: TInput): string;
   /** Optional images for vision tasks (OCR). Text tasks omit this. */
   images?(input: TInput): CompletionImage[];
+  /** Optional whole-PDF input. Mutually exclusive with images in practice. */
+  pdf?(input: TInput): { data: string } | undefined;
   /** Deterministic stand-in so the product can be built with no API key. */
   fixture(input: TInput): TOutput;
 }

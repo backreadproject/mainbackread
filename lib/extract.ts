@@ -140,8 +140,23 @@ export async function extractText(
     // Strip the [Page N] markers when measuring real content length.
     const contentLen = text.replace(/\[Page \d+\]/g, "").replace(/\s+/g, "").length;
     if (contentLen < SCANNED_PDF_THRESHOLD) {
-      // Scanned/image-only PDF: no usable text layer. Phase 2 will render + OCR.
-      // The page count is still real and worth keeping.
+      // A scanned PDF: no text layer. Send the WHOLE FILE to the model, which
+      // reads the pages itself. This replaces a browser-rendering pipeline
+      // that worked perfectly at rendering and never produced a usable result.
+      try {
+        const { data } = await runAI(ocrTask, {
+          pdfData: Buffer.from(bytes).toString("base64"),
+          documentTitle: name,
+        }, { documentId: name });
+        const ocr = (data.text ?? "").trim();
+        const real = ocr.replace(/\[Page \d+\]/g, "").replace(/\(no readable text\)/g, "").replace(/\s+/g, "").length;
+        if (real >= SCANNED_PDF_THRESHOLD) {
+          return { text: ocr, method: "image-ocr", needsPageOcr: false, chars: ocr.length, pages };
+        }
+      } catch (err) {
+        console.error("[extract] pdf ocr failed:", err instanceof Error ? err.message : err);
+      }
+      // Genuinely unreadable, or the model failed. Honest empty.
       return { text: "", method: "empty", needsPageOcr: true, chars: 0, pages };
     }
     return { text, method: "pdf-text", needsPageOcr: false, chars: text.length, pages };

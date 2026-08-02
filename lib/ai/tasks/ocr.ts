@@ -2,7 +2,13 @@ import { z } from "zod";
 import type { Task, CompletionImage } from "../types";
 export interface OcrInput {
   /** Page/section images to transcribe, in reading order. */
-  images: CompletionImage[];
+  /** Page images, for an uploaded JPEG or PNG. */
+  images?: CompletionImage[];
+  /** A whole PDF, base64. Claude reads the pages itself, so a SCANNED pdf
+   *  needs no rendering on our side -- which is the whole reason this exists:
+   *  the browser rendered pages perfectly and they still never arrived
+   *  usable, and the entire pipeline was avoidable. */
+  pdfData?: string;
   /** For logging/prompt context only. */
   documentTitle: string;
 }
@@ -18,6 +24,10 @@ export const ocrTask: Task<OcrInput, OcrOutput> = {
   maxTokens: 8000,
   schema: OcrOutput,
   // Nothing stable to cache per call here -- each document's images are unique.
+  // Nothing stable to cache: every document is unique. The provider skips
+  // the cached block entirely when this is empty, because Anthropic rejects
+  // cache_control on an empty text block -- which broke every OCR call until
+  // it was found.
   cacheable: () => "",
   system: () =>
     [
@@ -35,6 +45,8 @@ export const ocrTask: Task<OcrInput, OcrOutput> = {
       'Respond with ONLY a JSON object, no markdown fences, no preamble: {"text":"...the full transcription..."}',
       "The value of \"text\" must be the complete transcription with \\n for line breaks.",
     ].join("\n"),
+  images: (i) => i.images ?? [],
+  pdf: (i) => (i.pdfData ? { data: i.pdfData } : undefined),
   user: (i) => `Transcribe this document titled "${i.documentTitle}". Return the JSON object described.`,
   fixture: (i) => ({
     text: `[fixture OCR] Transcription of "${i.documentTitle}" would appear here. Swap AI_PROVIDER to "anthropic" for real OCR.`,

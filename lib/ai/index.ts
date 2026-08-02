@@ -92,6 +92,7 @@ export async function runAI<TIn, TOut>(
     thinkingBudget: task.thinkingBudget,
     // Vision tasks (OCR) provide images; text tasks leave this undefined.
     images: task.images ? task.images(input) : undefined,
+        pdf: task.pdf ? task.pdf(input) : undefined,
   };
   const retries = opts.retries ?? 1;
   let lastErr: unknown;

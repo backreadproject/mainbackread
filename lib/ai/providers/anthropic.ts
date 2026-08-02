@@ -36,7 +36,18 @@ export const anthropicProvider: Provider = {
     }
     // Build the user content. Text-only stays a plain string (unchanged behavior).
     // With images, prepend image blocks, then the text block.
-    const userContent = (req.images && req.images.length > 0)
+    // A whole PDF rides as a document block. Claude reads both its text layer
+    // and its rendered pages, which is why a SCANNED pdf needs nothing more
+    // than this -- no canvas, no worker, no page loop.
+    const pdfBlocks = req.pdf
+      ? [{
+          type: "document" as const,
+          source: { type: "base64" as const, media_type: "application/pdf" as const, data: req.pdf.data },
+        }]
+      : [];
+    const userContent = (pdfBlocks.length > 0)
+      ? [...pdfBlocks, { type: "text" as const, text: req.user }]
+      : (req.images && req.images.length > 0)
       ? [
           ...req.images.map((img) => ({
             type: "image" as const,
