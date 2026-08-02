@@ -268,6 +268,7 @@ const en = {
     errBuild: "Could not build the report.", errReach: "Could not reach the server.",
   },
   csvImport: {
+    dropWrong: "Choose a .csv file exported from your spreadsheet.",
     title: "Import recipients from CSV",
     intro: "Nothing is created until you choose to send. Fix anything flagged below by typing straight into the row.",
     columns: "Columns",
@@ -1118,6 +1119,7 @@ const fr: Dict = {
     errBuild: "Impossible de cr\u00e9er le rapport.", errReach: "Serveur injoignable.",
   },
   csvImport: {
+    dropWrong: "Choisissez un fichier .csv export\u00e9 depuis votre tableur.",
     title: "Importer des destinataires depuis un CSV",
     intro: "Rien n\u2019est cr\u00e9\u00e9 avant que vous ne choisissiez d\u2019envoyer. Corrigez tout ce qui est signal\u00e9 en tapant directement dans la ligne.",
     columns: "Colonnes",

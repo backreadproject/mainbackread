@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { T } from "@/lib/theme";
+import DropZone from "@/app/(app)/DropZone";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import { parseCsv, downloadCsvTemplate, looksLikeEmail } from "@/lib/csv";
@@ -67,9 +68,7 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
   function removeRow(n: number) {
     setRows((prev) => rebalance(prev.filter((r) => r.n !== n)));
   }
-  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  async function onFile(f: File) {
     setFileName(f.name); setErr("");
     const text = await f.text();
     const { headers, rows: raw } = parseCsv(text);
@@ -158,8 +157,12 @@ export default function CsvImportModal({ documentId, variants, counts, onClose, 
                 </p>
                 <button onClick={() => downloadCsvTemplate()} style={{ ...ghost, height: 30, fontSize: 12.5, marginTop: 12 }}>{C.template}</button>
               </div>
-              <input type="file" accept=".csv,text/csv" onChange={onFile}
-                style={{ width: "100%", boxSizing: "border-box", border: "1px solid " + T.border, borderRadius: T.rInput, padding: "9px 11px", fontSize: 13.5, fontFamily: T.font, background: T.card, color: T.heading }} />
+              <DropZone
+                accept=".csv,text/csv"
+                extensions={/\.csv$/i}
+                onFiles={(files) => onFile(files[0])}
+                wrongMessage={C.dropWrong}
+              />
               {err && <div style={{ marginTop: 12, background: T.dangerSoft, border: "1px solid " + T.dangerBorder, borderRadius: T.rCard, padding: "11px 13px", fontSize: 13.5, color: T.dangerText, lineHeight: 1.5 }}>{err}</div>}
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}>
                 <button onClick={onClose} style={ghost}>{C.cancel}</button>
