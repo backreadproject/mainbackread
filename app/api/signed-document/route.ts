@@ -114,15 +114,12 @@ export async function GET(req: NextRequest) {
     method: r.signature_kind === "typed" ? "Typed" : r.signature_kind === "drawn" ? "Drawn" : "Uploaded image",
     signedAt: (r.signed_at as string) ?? null,
     ip: (r.signed_ip as string) ?? null,
-    signatureData: (r.signature_data as string) ?? null,
   }));
 
   const cert = await renderToBuffer(
     SignatureCertificate({
       reference: "RP-SIG-" + String(doc.id).replace(/-/g, "").slice(0, 8).toUpperCase(),
       title: String(doc.title || "Document"),
-      documentId: String(doc.id),
-      fingerprint,
       completedAt: String(doc.signing_completed_at),
       signers: certSigners,
     }) as React.ReactElement<DocumentProps>,
