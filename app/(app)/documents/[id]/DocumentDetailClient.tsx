@@ -12,11 +12,12 @@ import VariantsPanel from "./VariantsPanel";
 import AccountsPanel from "./AccountsPanel";
 import GapsPanel from "./GapsPanel";
 import LinkControls from "./LinkControls";
+import FieldPlacer, { type Field } from "./FieldPlacer";
 import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
 type Doc = { id: string; title: string; created_at: string };
-type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null };
+type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -24,7 +25,7 @@ const card = { background: T.card, border: "1px solid " + T.border, borderRadius
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
 const ghost = { height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 const dot = (c: string) => ({ width: 6, height: 6, borderRadius: 2, flex: "none" as const, background: c });
-export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingFileUrl, fields: initialFields }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingFileUrl: string; fields: Field[] }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dd = getDict(locale).documentDetailPage;
@@ -38,6 +39,8 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   const [error, setError] = useState("");
   const [sharing, setSharing] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const [fields, setFields] = useState<Field[]>(initialFields);
   const [shareInfo, setShareInfo] = useState<{ isOrg: boolean; canManage: boolean; members: { userId: string; email: string | null }[] }>({ isOrg: false, canManage: false, members: [] });
   useEffect(() => {
     fetch("/api/org-members?docId=" + doc.id).then((r) => r.json()).then((d) => setShareInfo({ isOrg: !!d.isOrg, canManage: !!d.canManage, members: d.members ?? [] })).catch(() => {});
@@ -106,6 +109,27 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
       </div>
       <VariantsPanel documentId={doc.id} variants={variants} recipients={recs} signals={signals} />
+        {signingEnabled && (
+          <div style={{ maxWidth: 1040, padding: "0 28px" }}>
+            <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 16, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading }}>
+                {fr ? "Signatures" : "Signatures"}
+              </span>
+              <span style={{ fontSize: 13, color: T.muted }}>
+                {recs.filter((r) => r.is_signer && r.signed_at).length} / {recs.filter((r) => r.is_signer).length}
+              </span>
+              {fields.length === 0 && (
+                <span style={{ fontSize: 12.5, color: T.amberText }}>
+                  {fr ? "Aucun champ plac\u00e9. Personne ne peut encore signer." : "No fields placed yet. Nobody can sign."}
+                </span>
+              )}
+              <button onClick={() => setPlacing(true)}
+                style={{ marginLeft: "auto", height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>
+                {fields.length === 0 ? (fr ? "Placer les champs" : "Place the fields") : (fr ? "Modifier les champs" : "Edit the fields")}
+              </button>
+            </div>
+          </div>
+        )}
         <GapsPanel documentId={doc.id} />
         <AccountsPanel grouped={grouped} />
       <div style={{ maxWidth: 1040, display: "grid", gridTemplateColumns: "268px minmax(0,1fr)", gap: 16, padding: "20px 28px 120px", alignItems: "start" }} className="dd-grid">
@@ -233,6 +257,17 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           .dd-dwell{ max-width: none !important; }
         }
       `}</style>
+      {placing && (
+        <FieldPlacer
+          documentId={doc.id}
+          fileUrl={signingFileUrl}
+          signers={recs.filter((r) => r.is_signer).map((r) => ({ id: r.id, label: r.label }))
+            .map((r) => ({ id: r.id, name: r.label || (fr ? "Signataire" : "Signer") }))}
+          initial={fields}
+          onClose={() => setPlacing(false)}
+          onSaved={(next) => { setFields(next); setPlacing(false); }}
+        />
+      )}
       {importing && (
         <CsvImportModal
           documentId={doc.id}

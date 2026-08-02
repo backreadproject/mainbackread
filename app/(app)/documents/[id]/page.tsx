@@ -15,7 +15,7 @@ export default async function DocumentDetailPage({
   // RLS ensures this only returns the document if the current user owns it.
   const { data: doc } = await supabase
     .from("documents")
-    .select("id, title, created_at, storage_path")
+    .select("id, title, created_at, storage_path, signing_enabled, signing_completed_at")
     .eq("id", id)
     .single();
 
@@ -23,7 +23,7 @@ export default async function DocumentDetailPage({
 
   const { data: recipients } = await supabase
     .from("recipients")
-    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome, expires_at, revoked_at")
+    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome, expires_at, revoked_at, is_signer, signed_at, declined_at")
     .eq("document_id", id)
     .order("created_at", { ascending: false });
 
@@ -76,6 +76,16 @@ export default async function DocumentDetailPage({
     .eq("document_id", id)
     .order("label", { ascending: true });
 
+  // Signing: the fields already placed, and a URL the placer can render from.
+  // signature_fields is service-role only, read here AFTER RLS above has
+  // proven the caller owns the document.
+  const { data: fieldRows } = doc.signing_enabled
+    ? await admin.from("signature_fields").select("id, recipient_id, page, x, y, w, h, kind").eq("document_id", id)
+    : { data: [] };
+  const { data: signedUrl } = doc.signing_enabled && doc.storage_path
+    ? await admin.storage.from("documents").createSignedUrl(doc.storage_path as string, 3600)
+    : { data: null };
+
   return (
     <DocumentDetailClient
       doc={doc}
@@ -84,6 +94,15 @@ export default async function DocumentDetailPage({
       variants={variants ?? []}
       grouped={grouped}
       storagePath={(doc.storage_path as string | null) ?? null}
+      signingEnabled={!!doc.signing_enabled}
+      signingFileUrl={signedUrl?.signedUrl ?? ""}
+      fields={(fieldRows ?? []).map((f) => ({
+        id: f.id as string,
+        recipientId: f.recipient_id as string,
+        page: Number(f.page),
+        x: Number(f.x), y: Number(f.y), w: Number(f.w), h: Number(f.h),
+        kind: f.kind as "signature" | "date" | "text",
+      }))}
     />
   );
 }
