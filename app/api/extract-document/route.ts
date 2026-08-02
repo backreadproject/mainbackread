@@ -60,8 +60,6 @@ export async function POST(req: NextRequest) {
 
   const buf = await blob.arrayBuffer();
   const bytes = new Uint8Array(buf);
-  console.log("[extract] blob kind:", blob?.constructor?.name, "size:", (blob as { size?: number }).size,
-    "type:", blob.type, "-> arrayBuffer bytes:", bytes.length);
   const mime = blob.type || "";
   const name = targetPath.split("/").pop() || doc.title || "";
 

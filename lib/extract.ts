@@ -145,7 +145,6 @@ export async function extractText(
     // Strip the [Page N] markers when measuring real content length.
     const contentLen = text.replace(/\[Page \d+\]/g, "").replace(/\s+/g, "").length;
     if (contentLen < SCANNED_PDF_THRESHOLD) {
-      console.log("[extract] scanned branch entered.", keep.length, "bytes, text layer had", contentLen, "chars");
       // A scanned PDF: no text layer. Send the WHOLE FILE to the model, which
       // reads the pages itself. This replaces a browser-rendering pipeline
       // that worked perfectly at rendering and never produced a usable result.
@@ -155,11 +154,10 @@ export async function extractText(
           documentTitle: name,
         }, { documentId: name });
         const ocr = (data.text ?? "").trim();
-        // No error was thrown and no text survived the filter, so log what the
-        // model ACTUALLY said. Reasoning about this has failed three times.
+        // Kept: a scanned document returning nothing is a question a customer
+        // will ask about, and this is the only record of what the model saw.
         console.log("[extract] ocr returned", ocr.length, "chars:", JSON.stringify(ocr.slice(0, 300)));
         const real = ocr.replace(/\[Page \d+\]/g, "").replace(/\(no readable text\)/g, "").replace(/\s+/g, "").length;
-        console.log("[extract] after filtering:", real, "chars, threshold is", SCANNED_PDF_THRESHOLD);
         if (real >= SCANNED_PDF_THRESHOLD) {
           return { text: ocr, method: "image-ocr", needsPageOcr: false, chars: ocr.length, pages };
         }
