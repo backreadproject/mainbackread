@@ -17,9 +17,40 @@ import { useState, useRef, useEffect } from "react";
 // Both ship with us under the SIL Open Font Licence, so every signer sees the
 // same face. The old list leaned on 'Brush Script MT', which exists on Windows
 // and almost nowhere else, so most signers were silently getting a fallback.
+// Sixteen faces, ordered by how much they read as a signature rather than as
+// lettering.
+//
+// The first five are monoline or brush: fast, with the stroke thinning where a
+// real pen lifts. Six to fourteen are formal copperplate, beautiful and drawn
+// rather than written, which is a different claim on a contract. The last two
+// are unconnected handwriting, kept for contrast.
+//
+// All of them ship with us rather than being borrowed from the signer's
+// machine: SIL Open Font Licence throughout, except Yellowtail which is Apache
+// 2.0. Both permit commercial use, embedding and self-hosting. The old list
+// leaned on 'Brush Script MT', which exists on Windows and almost nowhere else,
+// so most signers were silently getting whatever cursive their OS had.
+//
+// The fallback is bare `cursive` on purpose. A system-specific fallback would
+// reintroduce the exact problem: the same choice rendering differently per
+// person, invisibly.
 const FONTS = [
-  { id: "fine", family: "Ms Madi", stack: '"Ms Madi", "Segoe Script", cursive' },
-  { id: "bold", family: "Alex Brush", stack: '"Alex Brush", "Brush Script MT", cursive' },
+  { id: "ms-madi",      family: "Ms Madi",              stack: '"Ms Madi", cursive' },
+  { id: "alex-brush",   family: "Alex Brush",           stack: '"Alex Brush", cursive' },
+  { id: "sacramento",   family: "Sacramento",           stack: '"Sacramento", cursive' },
+  { id: "allison",      family: "Allison",              stack: '"Allison", cursive' },
+  { id: "style-script", family: "Style Script",         stack: '"Style Script", cursive' },
+  { id: "birthstone",   family: "Birthstone",           stack: '"Birthstone", cursive' },
+  { id: "yellowtail",   family: "Yellowtail",           stack: '"Yellowtail", cursive' },
+  { id: "great-vibes",  family: "Great Vibes",          stack: '"Great Vibes", cursive' },
+  { id: "pinyon",       family: "Pinyon Script",        stack: '"Pinyon Script", cursive' },
+  { id: "italianno",    family: "Italianno",            stack: '"Italianno", cursive' },
+  { id: "qwigley",      family: "Qwigley",              stack: '"Qwigley", cursive' },
+  { id: "delafield",    family: "Mrs Saint Delafield",  stack: '"Mrs Saint Delafield", cursive' },
+  { id: "muellerhoff",  family: "Herr Von Muellerhoff", stack: '"Herr Von Muellerhoff", cursive' },
+  { id: "doulaise",     family: "Monsieur La Doulaise", stack: '"Monsieur La Doulaise", cursive' },
+  { id: "meddon",       family: "Meddon",               stack: '"Meddon", cursive' },
+  { id: "zeyada",       family: "Zeyada",               stack: '"Zeyada", cursive' },
 ];
 
 export type Captured = { kind: "typed" | "drawn" | "uploaded"; data: string };
@@ -174,13 +205,15 @@ export default function SignaturePad({
         <div style={{ border: "1px solid #E4E7EC", borderRadius: 6, padding: 16, background: "#F9FAFB" }}>
           <input value={typed} onChange={(e) => setTyped(e.target.value)}
             style={{ width: "100%", boxSizing: "border-box", border: "1px solid #E4E7EC", borderRadius: 6, padding: "8px 10px", fontSize: 13.5, marginBottom: 12, background: "#fff" }} />
-          <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
-            {FONTS.map((f) => (
-              <button key={f.id} type="button" onClick={() => setFont(f.stack)}
-                style={{ ...tabStyle(font === f.stack), height: 44, padding: "0 16px", fontFamily: f.stack, fontSize: 22, lineHeight: 1 }}>
-                {typed.trim().slice(0, 14) || "Abc"}
-              </button>
-            ))}
+          <div style={{ maxHeight: 232, overflowY: "auto", marginBottom: 12, paddingRight: 4 }}>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {FONTS.map((f) => (
+                <button key={f.id} type="button" title={f.family} onClick={() => setFont(f.stack)}
+                  style={{ ...tabStyle(font === f.stack), height: 44, padding: "0 14px", fontFamily: f.stack, fontSize: 21, lineHeight: 1 }}>
+                  {typed.trim().slice(0, 14) || "Abc"}
+                </button>
+              ))}
+            </div>
           </div>
           <div style={{ fontFamily: font, fontSize: 40, lineHeight: 1.3, color: "#101828", minHeight: 64, display: "flex", alignItems: "center", overflow: "hidden" }}>
             {typed.trim()}
