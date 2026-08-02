@@ -309,6 +309,7 @@ const en = {
     tooFew: "Too few readers to call a winner yet. Differences at this size are noise, not signal.",
   },
   variantUpload: {
+    dropWrong: "Upload PDFs, or JPEG, PNG, WebP or GIF images.",
     button: "Upload A/B variants",
     intro: "Pick two to four files. Each becomes a variant (A, B, C, D) of the same document. Readers are split between them automatically, and you compare how each one performs.",
     docTitle: "Document title", titlePlaceholder: "Series A deck",
@@ -1160,6 +1161,7 @@ const fr: Dict = {
     tooFew: "Trop peu de lecteurs pour d\u00e9signer un gagnant. \u00c0 cette taille, les \u00e9carts sont du bruit, pas un signal.",
   },
   variantUpload: {
+    dropWrong: "Envoyez des PDF, ou des images JPEG, PNG, WebP ou GIF.",
     button: "T\u00e9l\u00e9verser des variantes A/B",
     intro: "Choisissez deux \u00e0 quatre fichiers. Chacun devient une variante (A, B, C, D) du m\u00eame document. Les lecteurs sont r\u00e9partis automatiquement, et vous comparez leurs performances.",
     docTitle: "Titre du document", titlePlaceholder: "Pr\u00e9sentation s\u00e9rie A",

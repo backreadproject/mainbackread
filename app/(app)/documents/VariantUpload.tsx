@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { T } from "@/lib/theme";
+import DropZone from "@/app/(app)/DropZone";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 
@@ -16,18 +17,13 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
   const [step, setStep] = useState("");
   const [err, setErr] = useState("");
 
-  function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const all = Array.from(e.target.files ?? []).slice(0, 4);
-    const office = all.filter((f) => /\.(docx?|pptx?)$/i.test(f.name) || f.type.includes("officedocument") || f.type.includes("msword") || f.type.includes("ms-powerpoint"));
-    if (office.length > 0) {
-      setErr(U.errOffice);
-      setFiles([]); setNotes([]);
-      return;
-    }
-    const picked = all;
+  // The zone has already refused anything Office or unreadable, so this only
+  // has to take what it is given. Order matters: the FIRST file becomes the
+  // base document and variant A.
+  function onPick(picked: File[]) {
     setFiles(picked);
     setNotes(picked.map(() => ""));
-    if (!title && picked[0]) setTitle(picked[0].name.replace(/\.(pdf|docx|jpe?g|png|webp|gif)$/i, ""));
+    if (!title && picked[0]) setTitle(picked[0].name.replace(/\.(pdf|jpe?g|png|webp|gif)$/i, ""));
     setErr("");
   }
 
@@ -114,7 +110,14 @@ export default function VariantUpload({ isOrg, orgId, projects }: { isOrg: boole
             )}
 
             <span style={{ fontSize: 12, fontWeight: 600, color: T.muted, display: "block", margin: "4px 0 6px" }}>{U.files}</span>
-            <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onPick} style={{ ...input, padding: "9px 10px" }} />
+            <DropZone
+              accept="application/pdf,image/jpeg,image/png,image/webp,image/gif"
+              extensions={/\.(pdf|jpe?g|png|webp|gif)$/i}
+              multiple
+              max={4}
+              onFiles={onPick}
+              wrongMessage={U.dropWrong}
+            />
 
             {files.map((f, i) => (
               <div key={i} style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 0", borderTop: `1px solid ${T.border}` }}>
