@@ -72,7 +72,15 @@ create table if not exists public.admin_users (
   note text,
   created_by uuid,
   created_at timestamp with time zone not null default now(),
-  revoked_at timestamp with time zone
+  revoked_at timestamp with time zone,
+  is_signer boolean not null default false,
+  signed_at timestamp with time zone,
+  signature_kind text,
+  signature_data text,
+  signed_email text,
+  signed_ip text,
+  declined_at timestamp with time zone,
+  decline_reason text
 );
 
 create table if not exists public.api_keys (
@@ -133,6 +141,9 @@ create table if not exists public.document_variants (
   extracted_text text,
   extract_method text,
   needs_page_ocr boolean not null default false,
+  signing_enabled boolean not null default false,
+  signing_completed_at timestamp with time zone,
+  signed_storage_path text
   page_count integer,
   active boolean not null default true,
   created_at timestamp with time zone not null default now()
@@ -332,6 +343,21 @@ create table if not exists public.report_settings (
   logo_url text,
   default_reporter text,
   updated_at timestamp with time zone not null default now()
+);
+
+create table if not exists public.signature_fields (
+  id uuid not null default gen_random_uuid(),
+  document_id uuid not null,
+  recipient_id uuid not null,
+  page integer not null,
+  x numeric not null,
+  y numeric not null,
+  w numeric not null default 0.24,
+  h numeric not null default 0.07,
+  kind text not null default 'signature',
+  label text,
+  value text,
+  created_at timestamp with time zone not null default now()
 );
 
 create table if not exists public.signals (
@@ -788,6 +814,7 @@ $function$
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 
+alter table public.signature_fields add constraint signature_fields_pkey primary key (id);
 alter table public.sales_settings add constraint sales_settings_pkey primary key (user_id);
 alter table public.gaps_cache add constraint gaps_cache_pkey primary key (document_id, fingerprint);
 alter table public.access_grants add constraint access_grants_pkey PRIMARY KEY (id);
@@ -838,6 +865,8 @@ alter table public.withdrawals add constraint withdrawals_pkey PRIMARY KEY (id);
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 -- Foreign keys and checks, which may now reference any table above.
+alter table public.signature_fields add constraint signature_fields_document_id_fkey foreign key (document_id) references public.documents(id) on delete cascade;
+alter table public.signature_fields add constraint signature_fields_recipient_id_fkey foreign key (recipient_id) references public.recipients(id) on delete cascade;
 alter table public.sales_settings add constraint sales_settings_user_id_fkey foreign key (user_id) references auth.users(id) on delete cascade;
 alter table public.sales_settings add constraint sales_settings_quiet_days_check check (quiet_days between 1 and 90);
 alter table public.gaps_cache add constraint gaps_cache_document_id_fkey foreign key (document_id) references public.documents(id) on delete cascade;
@@ -1016,6 +1045,7 @@ create or replace view public.my_commissions with (security_invoker = true) as  
 -- ROW LEVEL SECURITY  (31)
 -- ======================================================================
 
+alter table public.signature_fields enable row level security;
 alter table public.sales_settings enable row level security;
 alter table public.gaps_cache enable row level security;
 alter table public.access_grants enable row level security;

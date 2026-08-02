@@ -205,7 +205,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           canvas.style.width = "100%"; canvas.style.height = "auto"; canvas.style.display = "block";
           const wrapper = document.createElement("div");
           wrapper.dataset.page = String(n);
-          wrapper.style.cssText = `background:#fff;margin-bottom:16px;border-radius:6px;overflow:hidden;border:1px solid ${LINE}`;
+          wrapper.style.cssText = `background:#fff;margin-bottom:16px;border-radius:6px;position:relative;border:1px solid ${LINE}`;
           wrapper.appendChild(canvas);
           container.appendChild(wrapper);
           wrappers.push(wrapper);
