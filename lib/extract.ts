@@ -27,8 +27,59 @@ async function extractDocx(bytes: Uint8Array): Promise<string> {
 }
 /** Text-based PDF -> text layer via pdfjs-dist. No canvas, no rendering.
  *  Returns the page count too: it is the only place we reliably know it. */
+/**
+ * pdf.js reaches for browser globals during initialisation, BEFORE any of our
+ * code runs, and Node has none of them -- which is why every PDF upload has
+ * failed with "DOMMatrix is not defined" while every .docx succeeded.
+ *
+ * We do not render anything. getTextContent() never touches a canvas. But the
+ * library constructs its rendering machinery on load regardless, so the
+ * globals must EXIST. They do not have to work: these are inert stubs, and if
+ * anything ever genuinely tries to draw with them the result would be blank,
+ * which is the correct outcome for a text extractor.
+ *
+ * The @napi-rs/canvas warning in the logs is the same thing from the other
+ * side: pdf.js looking for a real canvas backend and not finding one. That
+ * warning is harmless and installing the package would add a large native
+ * dependency to do work we do not want done.
+ */
+function stubBrowserGlobals() {
+  const g = globalThis as unknown as Record<string, unknown>;
+  if (typeof g.DOMMatrix === "undefined") {
+    g.DOMMatrix = class {
+      a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+      constructor(init?: number[]) {
+        if (Array.isArray(init) && init.length >= 6) {
+          [this.a, this.b, this.c, this.d, this.e, this.f] = init;
+        }
+      }
+      multiply() { return this; }
+      translate() { return this; }
+      scale() { return this; }
+      inverse() { return this; }
+    };
+  }
+  if (typeof g.Path2D === "undefined") {
+    g.Path2D = class {
+      addPath() {} closePath() {} moveTo() {} lineTo() {}
+      bezierCurveTo() {} quadraticCurveTo() {} arc() {} arcTo() {}
+      ellipse() {} rect() {}
+    };
+  }
+  if (typeof g.ImageData === "undefined") {
+    g.ImageData = class {
+      data: Uint8ClampedArray; width: number; height: number;
+      constructor(w: number, h: number) {
+        this.width = w; this.height = h;
+        this.data = new Uint8ClampedArray(w * h * 4);
+      }
+    };
+  }
+}
+
 async function extractPdfText(bytes: Uint8Array): Promise<{ text: string; pages: number }> {
   // Legacy build is the serverless-friendly entry point.
+  stubBrowserGlobals();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   // Disable the worker in Node -- run on the main thread.
   const loadingTask = pdfjs.getDocument({ data: bytes, useWorkerFetch: false, useSystemFonts: true });
