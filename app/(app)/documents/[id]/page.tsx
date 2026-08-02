@@ -15,7 +15,7 @@ export default async function DocumentDetailPage({
   // RLS ensures this only returns the document if the current user owns it.
   const { data: doc } = await supabase
     .from("documents")
-    .select("id, title, created_at")
+    .select("id, title, created_at, storage_path")
     .eq("id", id)
     .single();
 
@@ -83,6 +83,7 @@ export default async function DocumentDetailPage({
       signals={signals ?? []}
       variants={variants ?? []}
       grouped={grouped}
+      storagePath={(doc.storage_path as string | null) ?? null}
     />
   );
 }

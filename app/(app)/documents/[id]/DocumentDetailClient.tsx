@@ -11,6 +11,7 @@ import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
 import AccountsPanel from "./AccountsPanel";
 import GapsPanel from "./GapsPanel";
+import OcrDebug from "./OcrDebug";
 import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
@@ -23,7 +24,7 @@ const card = { background: T.card, border: "1px solid " + T.border, borderRadius
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
 const ghost = { height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 const dot = (c: string) => ({ width: 6, height: 6, borderRadius: 2, flex: "none" as const, background: c });
-export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dd = getDict(locale).documentDetailPage;
@@ -105,6 +106,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
       </div>
       <VariantsPanel documentId={doc.id} variants={variants} recipients={recs} signals={signals} />
+        <OcrDebug documentId={doc.id} storagePath={storagePath} />
         <GapsPanel documentId={doc.id} />
         <AccountsPanel grouped={grouped} />
       <div style={{ maxWidth: 1040, display: "grid", gridTemplateColumns: "268px minmax(0,1fr)", gap: 16, padding: "20px 28px 120px", alignItems: "start" }} className="dd-grid">
