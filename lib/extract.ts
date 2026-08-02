@@ -141,14 +141,13 @@ export async function extractText(
     // Strip the [Page N] markers when measuring real content length.
     const contentLen = text.replace(/\[Page \d+\]/g, "").replace(/\s+/g, "").length;
     if (contentLen < SCANNED_PDF_THRESHOLD) {
+      console.log("[extract] scanned branch entered.", bytes.length, "bytes, text layer had", contentLen, "chars");
       // A scanned PDF: no text layer. Send the WHOLE FILE to the model, which
       // reads the pages itself. This replaces a browser-rendering pipeline
       // that worked perfectly at rendering and never produced a usable result.
       try {
         const { data } = await runAI(ocrTask, {
-        // How big the file actually is, in case it is not arriving at all.
           pdfData: Buffer.from(bytes).toString("base64"),
-        // eslint-disable-next-line no-console
           documentTitle: name,
         }, { documentId: name });
         const ocr = (data.text ?? "").trim();
