@@ -5,7 +5,7 @@ import { T, microLabel, statTile, statTileInk, statTileSub } from "@/lib/theme";
 import { Eye, MessageSquare, FileText } from "lucide-react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
-type Reader = { id: string; name: string; doc: string; opens: number; questions: number; lastAt: string; intent: number; replied?: boolean };
+type Reader = { id: string; name: string; doc: string; opens: number; questions: number; lastAt: string; intent: number; replied?: boolean; cooling?: number };
 type Stats = { documents: number; recipients: number; reads: number; questions: number };
 type Ev = { text: string; at: string; kind: string };
 type Doc = { id: string; title: string; reads: number; spark: number[] };
@@ -70,6 +70,10 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
     lWarm: fr ? "En int\u00e9r\u00eat" : "Warming",
     lGlance: fr ? "Coup d\u2019\u0153il" : "Glanced",
       vReplied: fr ? "A r\u00e9pondu" : "Replied",
+    goneQuiet: fr ? "Silencieux" : "Gone quiet",
+    quietFor: fr ? "jours sans activit\u00e9" : "days with nothing",
+    coolingTitle: fr ? "Ils se sont tus" : "They have gone quiet",
+    coolingSub: fr ? "Engag\u00e9s, puis plus rien." : "They were engaged, then stopped.",
       lReplied: fr ? "A r\u00e9pondu" : "Replied",
       whyReplied: fr ? "Vous a \u00e9crit. Lisez ses mots." : "Wrote back to you. Read their words.",
     reading: fr ? "lit en ce moment" : "is reading now",
@@ -108,6 +112,7 @@ export default function OverviewClient({ stats, recentEvents, readers, documents
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   function flashToast(txt: string) { setToast(txt); if (toastTimer.current) clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(null), 3200); }
   const readyList = readers.filter((r) => r.replied || r.intent >= READY).sort((a, b) => b.intent - a.intent).slice(0, 3);
+  const coolingList = readers.filter((r) => (r.cooling ?? 0) > 0 && !r.replied).sort((a, b) => (b.cooling ?? 0) - (a.cooling ?? 0)).slice(0, 3);
   useEffect(() => {
     const cv = canvasRef.current;
     if (!cv || !hasData) return;

@@ -94,6 +94,30 @@ export default async function OverviewPage() {
       questions: a.questions,
       lastAt: a.lastAt,
       replied: a.replied && !a.handled,
+      // Intent says where a reader is. It has never said which way they are
+      // MOVING -- and a reader who was engaged three weeks ago and has gone
+      // silent is the most expensive thing in a pipeline, while looking
+      // identical to one at their peak.
+      //
+      // A modifier, not a fourth state: the reader keeps their label and
+      // gains a note. Making cooling a state would force the question of
+      // whether a cooling reader ranks above a warm one, which is not a
+      // question the data can answer.
+      //
+      // Seven days, matching the outcome prompt. Two features asking about
+      // the same silence on different clocks would be incoherent, and Mono's
+      // reasoning is that sales moves faster than a fortnight. Still a guess:
+      // once enough outcomes are marked it can be tuned against what closed.
+      cooling: (() => {
+        if (!a.lastAt) return 0;
+        // Only a reader who was genuinely engaged can cool. One glance that
+        // went nowhere is not a deal going cold, it is a document nobody
+        // wanted.
+        const wasEngaged = a.opens >= 2 || a.questions > 0 || a.replied;
+        if (!wasEngaged) return 0;
+        const days = Math.floor((Date.now() - new Date(a.lastAt).getTime()) / 86400000);
+        return days >= 7 ? days : 0;
+      })(),
       intent: intentOf(a.opens, a.questions, a.replied, a.handled),
     };
   });
