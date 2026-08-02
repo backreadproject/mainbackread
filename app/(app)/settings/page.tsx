@@ -5,6 +5,7 @@ import { getOrgContext } from "@/lib/org-context";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import SettingsClient from "./SettingsClient";
+import { getSalesSettings } from "@/lib/sales-settings";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -35,6 +36,8 @@ export default async function SettingsPage() {
     : { data: [] };
   const apiEnabled = isOrg && hasFeature(planCtx.plan.id, "zapier");
 
+  const sales = await getSalesSettings(supabase, user.id);
+
   return (
     <SettingsClient
       email={user.email ?? ""}
@@ -48,6 +51,7 @@ export default async function SettingsPage() {
       planName={planCtx.plan.name}
       apiEnabled={apiEnabled}
       apiKeys={(apiKeys ?? []) as { id: string; name: string; key_prefix: string; scopes: string[]; last_used_at: string | null; revoked_at: string | null; created_at: string }[]}
+      quietDays={sales.quietDays}
     />
   );
 }

@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import RecipientDetailClient from "./RecipientDetailClient";
+import { getSalesSettings } from "@/lib/sales-settings";
 import type { OutcomeValue } from "./OutcomeCard";
 
 // The evidence sentence the outcome prompt asks with.
@@ -51,6 +52,8 @@ function describe(
 export default async function RecipientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const sales = user ? await getSalesSettings(supabase, user.id) : { quietDays: 7 };
 
   const { data: recipient } = await supabase
     .from("recipients")
@@ -77,7 +80,7 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
   // Snoozing suppresses the prompt for one cycle, not forever. Whether a quiet
   // deal is dead is a question whose answer changes.
   const snoozedAt = recipient.outcome_snoozed_at ? new Date(recipient.outcome_snoozed_at).getTime() : 0;
-  const snoozed = snoozedAt > 0 && Date.now() - snoozedAt < 7 * 86400000;
+  const snoozed = snoozedAt > 0 && Date.now() - snoozedAt < sales.quietDays * 86400000;
 
   const name = recipient.label || "This reader";
 
@@ -89,6 +92,7 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
       at: recipient.outcome_at ?? null,
       quietDays,
       snoozed,
+      quietThreshold: sales.quietDays,
       evidenceEn: describe(name, sig, false),
       evidenceFr: describe(name, sig, true),
     }}

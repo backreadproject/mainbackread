@@ -19,7 +19,7 @@ import { useLocale } from "@/lib/useLocale";
 export type OutcomeValue = "won" | "lost" | "no_decision" | null;
 
 export default function OutcomeCard({
-  recipientId, outcome: initial, outcomeAt, quietDays, evidence, snoozed,
+  recipientId, outcome: initial, outcomeAt, quietDays, evidence, snoozed, quietThreshold,
 }: {
   recipientId: string;
   outcome: OutcomeValue;
@@ -29,6 +29,9 @@ export default function OutcomeCard({
   /** What they actually did, in plain words. Empty when there is nothing worth saying. */
   evidence: string;
   snoozed: boolean;
+  /** Days of silence before we ask. From the customer's settings, so the
+   *  prompt and the cooling list never disagree about what quiet means. */
+  quietThreshold: number;
 }) {
   const locale = useLocale();
   const fr = locale === "fr";
@@ -81,7 +84,7 @@ export default function OutcomeCard({
 
   // The prompt earns its place only when there is something real to say: the
   // reader did something, then stopped, and nobody has recorded what happened.
-  const showPrompt = !outcome && !dismissed && quietDays !== null && quietDays >= 7 && evidence !== "";
+  const showPrompt = !outcome && !dismissed && quietDays !== null && quietDays >= quietThreshold && evidence !== "";
 
   if (showPrompt) {
     return (

@@ -16,6 +16,7 @@ type OutcomeState = {
   at: string | null;
   quietDays: number | null;
   snoozed: boolean;
+  quietThreshold: number;
   evidenceEn: string;
   evidenceFr: string;
 };
@@ -115,6 +116,7 @@ export default function RecipientDetailClient({ recipient, signals, outcome }: {
             quietDays={outcome.quietDays}
             evidence={fr ? outcome.evidenceFr : outcome.evidenceEn}
             snoozed={outcome.snoozed}
+            quietThreshold={outcome.quietThreshold}
           />
           {/* Above everything. A reply is the only thing here that is not an
               inference, so it should not sit below charts that estimate what a

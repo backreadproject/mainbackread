@@ -2,12 +2,15 @@ import { createClient } from "@/lib/supabase/server";
 import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
 import OverviewClient from "./OverviewClient";
+import { getSalesSettings } from "@/lib/sales-settings";
 
 export default async function OverviewPage() {
   const supabase = await createClient();
   await supabase.auth.getUser();
   const locale = await getLocale();
   const t = getDict(locale).activity;
+  const { data: { user } } = await supabase.auth.getUser();
+  const sales = user ? await getSalesSettings(supabase, user.id) : { quietDays: 7 };
 
   const { data: docs } = await supabase.from("documents").select("id, title, created_at").order("created_at", { ascending: false });
   const documents = docs ?? [];
@@ -104,10 +107,10 @@ export default async function OverviewPage() {
       // whether a cooling reader ranks above a warm one, which is not a
       // question the data can answer.
       //
-      // Seven days, matching the outcome prompt. Two features asking about
-      // the same silence on different clocks would be incoherent, and Mono's
-      // reasoning is that sales moves faster than a fortnight. Still a guess:
-      // once enough outcomes are marked it can be tuned against what closed.
+      // The threshold comes from the customer's own settings now, defaulting
+      // to seven days. It was hardcoded here and again in the outcome prompt,
+      // which is what earned it a place in Settings: two features asking
+      // about the same silence on different clocks would be incoherent.
       cooling: (() => {
         if (!a.lastAt) return 0;
         // Only a reader who was genuinely engaged can cool. One glance that
@@ -116,7 +119,7 @@ export default async function OverviewPage() {
         const wasEngaged = a.opens >= 2 || a.questions > 0 || a.replied;
         if (!wasEngaged) return 0;
         const days = Math.floor((Date.now() - new Date(a.lastAt).getTime()) / 86400000);
-        return days >= 7 ? days : 0;
+        return days >= sales.quietDays ? days : 0;
       })(),
       intent: intentOf(a.opens, a.questions, a.replied, a.handled),
     };

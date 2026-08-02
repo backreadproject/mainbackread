@@ -6,6 +6,7 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import WebhooksCard from "./WebhooksCard";
 import ApiKeysCard from "./ApiKeysCard";
+import SalesCard from "./SalesCard";
 type Props = {
   email: string;
   isOrg: boolean;
@@ -18,8 +19,9 @@ type Props = {
   planName: string;
   apiEnabled: boolean;
   apiKeys: { id: string; name: string; key_prefix: string; scopes: string[]; last_used_at: string | null; revoked_at: string | null; created_at: string }[];
+  quietDays: number;
 };
-export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgName: initialName, orgDomain: initialDomain, webhooksEnabled, webhooks, planName, apiEnabled, apiKeys }: Props) {
+export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgName: initialName, orgDomain: initialDomain, webhooksEnabled, webhooks, planName, quietDays, apiEnabled, apiKeys }: Props) {
   const locale = useLocale();
   const fr = locale === "fr";
   const st = getDict(locale).settingsPage;
@@ -80,6 +82,7 @@ export default function SettingsClient({ email, isOrg, canManageOrg, orgId, orgN
             </div>
           </div>
         )}
+        <SalesCard quietDays={quietDays} />
         {isOrg && <WebhooksCard enabled={webhooksEnabled} canManage={canManageOrg} hooks={webhooks} planName={planName} />}
         {isOrg && <ApiKeysCard enabled={apiEnabled} canManage={canManageOrg} keys={apiKeys} planName={planName} />}
         <div style={card}>
