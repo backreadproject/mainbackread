@@ -5,6 +5,7 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
+import { ocrScannedPdf } from "@/lib/ocr-client";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
@@ -20,6 +21,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   const [filter, setFilter] = useState<"all" | "opened" | "unopened">("all");
   const [q, setQ] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [step, setStep] = useState("");
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
@@ -66,7 +68,24 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
       setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); return;
     }
     try {
-      await fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: inserted.id }) });
+      const res = await fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: inserted.id }) });
+      const ext = await res.json().catch(() => ({}));
+      // A scanned PDF has no text layer, so the server can extract nothing.
+      // The pages have to be rendered to images and read by vision -- and
+      // rendering needs a canvas, which exists here in the browser and not
+      // in a serverless function. We still hold the file, so this is the
+      // one moment it costs nothing extra to do.
+      if (ext?.needsPageOcr) {
+        setStep(dp.readingPages);
+        try {
+          await ocrScannedPdf(inserted.id, file, (done, total) => {
+            setStep(dp.readingPage + " " + done + "/" + total);
+          });
+        } catch {
+          // Non-fatal: the document is uploaded and shareable. Only the
+          // AI features are degraded, and the reader still renders it.
+        }
+      }
     } catch { /* extraction is best-effort */ }
     window.location.reload();
   }
@@ -143,7 +162,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
             {view === "active" && (
               <label style={{ height: 34, boxSizing: "border-box", display: "inline-flex", alignItems: "center", background: T.green, color: T.onAccent, fontSize: 13.5, fontWeight: 500, padding: "0 13px", borderRadius: T.rBtn, cursor: "pointer", whiteSpace: "nowrap", opacity: uploading ? 0.7 : 1 }}>
                 <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif" onChange={onFile} disabled={uploading} style={{ display: "none" }} />
-                {uploading ? dp.uploading : dp.addDocument}
+                {uploading ? (step || dp.uploading) : dp.addDocument}
               </label>
             )}
           </div>
