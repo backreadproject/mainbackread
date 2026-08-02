@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import "@fontsource-variable/inter";
+import "@fontsource/ms-madi";
+import "@fontsource/alex-brush";
 import "./globals.css";
 import MarketingSupport from "./MarketingSupport";
 import ResponsiveStyles from "./(app)/ResponsiveStyles";

@@ -10,10 +10,16 @@ import { useState, useRef, useEffect } from "react";
 // All three produce a PNG data URL, so everything downstream -- storage, the
 // stamped PDF, the certificate -- handles one shape. Typed is rendered to a
 // canvas rather than kept as text for exactly that reason.
+// Two faces, not five. Someone signing has realistically two pens: a fine one
+// and a heavy one. More options turn the moment into a font picker, and a font
+// picker on a contract invites decoration.
+//
+// Both ship with us under the SIL Open Font Licence, so every signer sees the
+// same face. The old list leaned on 'Brush Script MT', which exists on Windows
+// and almost nowhere else, so most signers were silently getting a fallback.
 const FONTS = [
-  { id: "serif", label: "Georgia, serif" },
-  { id: "script", label: "'Brush Script MT', 'Segoe Script', cursive" },
-  { id: "sans", label: "system-ui, sans-serif" },
+  { id: "fine", family: "Ms Madi", stack: '"Ms Madi", "Segoe Script", cursive' },
+  { id: "bold", family: "Alex Brush", stack: '"Alex Brush", "Brush Script MT", cursive' },
 ];
 
 export type Captured = { kind: "typed" | "drawn" | "uploaded"; data: string };
@@ -27,16 +33,34 @@ export function typedToPng(name: string, font: string): string {
   if (!ctx) return "";
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = "#101828";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  let size = 130;
-  ctx.font = `italic ${size}px ${font}`;
-  // Shrink to fit rather than clipping: a long name must still be readable.
-  while (ctx.measureText(name).width > canvas.width - 60 && size > 28) {
-    size -= 6;
-    ctx.font = `italic ${size}px ${font}`;
+  // Left and alphabetic, not centre and middle, because the ink box is measured
+  // explicitly below. A script face overhangs its advance width, so centring on
+  // measureText().width clips the tail of a capital and sits the name too high.
+  // No synthetic italic either: it skews a connected script after the fact and
+  // breaks the joins where one letter runs into the next.
+  ctx.textAlign = "left";
+  ctx.textBaseline = "alphabetic";
+
+  const PAD_X = 60, PAD_Y = 40;
+  const ink = (size: number) => {
+    ctx.font = size + "px " + font;
+    const m = ctx.measureText(name);
+    const left = m.actualBoundingBoxLeft ?? 0;
+    const right = m.actualBoundingBoxRight ?? m.width;
+    const asc = m.actualBoundingBoxAscent ?? size * 0.8;
+    const desc = m.actualBoundingBoxDescent ?? size * 0.2;
+    return { w: left + right, h: asc + desc, left, asc };
+  };
+
+  // Shrink to fit rather than clipping, on both axes: a long name must stay
+  // readable, and a tall swash must not lose its head.
+  let size = 150;
+  let box = ink(size);
+  while ((box.w > canvas.width - PAD_X || box.h > canvas.height - PAD_Y) && size > 24) {
+    size -= 4;
+    box = ink(size);
   }
-  ctx.fillText(name, canvas.width / 2, canvas.height / 2);
+  ctx.fillText(name, (canvas.width - box.w) / 2 + box.left, (canvas.height - box.h) / 2 + box.asc);
   return canvas.toDataURL("image/png");
 }
 
@@ -49,7 +73,7 @@ export default function SignaturePad({
   labels: { type: string; draw: string; upload: string; clear: string; drawHint: string; uploadHint: string };
 }) {
   const [tab, setTab] = useState<"typed" | "drawn" | "uploaded">("typed");
-  const [font, setFont] = useState(FONTS[0].label);
+  const [font, setFont] = useState(FONTS[0].stack);
   const [typed, setTyped] = useState(name);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
@@ -57,10 +81,25 @@ export default function SignaturePad({
 
   // Typed regenerates whenever the name or face changes, so what is on screen
   // is always what would be stamped.
+  //
+  // The await is not optional. Canvas does not pull a webfont the way rendered
+  // text does, so on a cold load the preview resolves in Ms Madi while the PNG
+  // underneath it rasterises in the fallback. Both look fine on their own. They
+  // are not the same signature, and it only happens to the first signer of a
+  // session, which is the one person who cannot tell you.
   useEffect(() => {
     if (tab !== "typed") return;
     const trimmed = typed.trim();
-    onChange(trimmed ? { kind: "typed", data: typedToPng(trimmed, font) } : null);
+    if (!trimmed) { onChange(null); return; }
+    let cancelled = false;
+    (async () => {
+      const face = FONTS.find((f) => f.stack === font);
+      try {
+        if (face) await document.fonts.load('150px "' + face.family + '"', trimmed);
+      } catch { /* stamp in whatever did resolve rather than blocking the signer */ }
+      if (!cancelled) onChange({ kind: "typed", data: typedToPng(trimmed, font) });
+    })();
+    return () => { cancelled = true; };
   }, [tab, typed, font]);
 
   useEffect(() => {
@@ -137,13 +176,13 @@ export default function SignaturePad({
             style={{ width: "100%", boxSizing: "border-box", border: "1px solid #E4E7EC", borderRadius: 6, padding: "8px 10px", fontSize: 13.5, marginBottom: 12, background: "#fff" }} />
           <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
             {FONTS.map((f) => (
-              <button key={f.id} type="button" onClick={() => setFont(f.label)}
-                style={{ ...tabStyle(font === f.label), fontFamily: f.label, fontStyle: "italic", fontSize: 15 }}>
-                {typed.trim().slice(0, 12) || "Abc"}
+              <button key={f.id} type="button" onClick={() => setFont(f.stack)}
+                style={{ ...tabStyle(font === f.stack), height: 44, padding: "0 16px", fontFamily: f.stack, fontSize: 22, lineHeight: 1 }}>
+                {typed.trim().slice(0, 14) || "Abc"}
               </button>
             ))}
           </div>
-          <div style={{ fontFamily: font, fontStyle: "italic", fontSize: 30, color: "#101828", minHeight: 44, display: "flex", alignItems: "center" }}>
+          <div style={{ fontFamily: font, fontSize: 40, lineHeight: 1.3, color: "#101828", minHeight: 64, display: "flex", alignItems: "center", overflow: "hidden" }}>
             {typed.trim()}
           </div>
         </div>
