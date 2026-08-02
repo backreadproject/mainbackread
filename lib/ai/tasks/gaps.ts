@@ -21,10 +21,10 @@ export const GapsOutput = z.object({
     why: z.string(),
     /** Where it belongs, when the document has an obvious place for it. */
     where: z.string().optional(),
-  })).max(6),
+  })).max(10),
   /** What the document already answers well. Named so the customer knows the
    *  tool read it rather than pattern-matched a template. */
-  covered: z.array(z.string()).max(3),
+  covered: z.array(z.string()).max(8),
   /** Honest statement of the basis. Different sentence with and without
    *  reader history, and the customer should be able to tell which they got. */
   basis: z.string(),
