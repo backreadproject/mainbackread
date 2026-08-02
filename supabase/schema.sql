@@ -301,6 +301,14 @@ create table if not exists public.referrers (
   created_at timestamp with time zone not null default now()
 );
 
+create table if not exists public.gaps_cache (
+  document_id uuid not null,
+  fingerprint text not null,
+  output jsonb not null,
+  question_count integer not null default 0,
+  created_at timestamp with time zone not null default now()
+);
+
 create table if not exists public.report_cache (
   id uuid not null default gen_random_uuid(),
   document_id uuid not null,
@@ -772,6 +780,7 @@ $function$
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 
+alter table public.gaps_cache add constraint gaps_cache_pkey primary key (document_id, fingerprint);
 alter table public.access_grants add constraint access_grants_pkey PRIMARY KEY (id);
 alter table public.admin_audit add constraint admin_audit_pkey PRIMARY KEY (id);
 alter table public.admin_users add constraint admin_users_pkey PRIMARY KEY (user_id);
@@ -820,6 +829,7 @@ alter table public.withdrawals add constraint withdrawals_pkey PRIMARY KEY (id);
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 -- Foreign keys and checks, which may now reference any table above.
+alter table public.gaps_cache add constraint gaps_cache_document_id_fkey foreign key (document_id) references public.documents(id) on delete cascade;
 alter table public.access_grants add constraint access_grants_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.access_grants add constraint access_grants_grantee_type_check CHECK ((grantee_type = ANY (ARRAY['user'::text, 'role'::text])));
 alter table public.access_grants add constraint access_grants_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
@@ -995,6 +1005,7 @@ create or replace view public.my_commissions with (security_invoker = true) as  
 -- ROW LEVEL SECURITY  (31)
 -- ======================================================================
 
+alter table public.gaps_cache enable row level security;
 alter table public.access_grants enable row level security;
 
 alter table public.admin_audit enable row level security;

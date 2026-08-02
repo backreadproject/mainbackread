@@ -10,6 +10,7 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
 import AccountsPanel from "./AccountsPanel";
+import GapsPanel from "./GapsPanel";
 import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
@@ -104,6 +105,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
       </div>
       <VariantsPanel documentId={doc.id} variants={variants} recipients={recs} signals={signals} />
+        <GapsPanel documentId={doc.id} />
         <AccountsPanel grouped={grouped} />
       <div style={{ maxWidth: 1040, display: "grid", gridTemplateColumns: "268px minmax(0,1fr)", gap: 16, padding: "20px 28px 120px", alignItems: "start" }} className="dd-grid">
         <div style={card}>
