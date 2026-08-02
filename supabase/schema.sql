@@ -320,6 +320,12 @@ create table if not exists public.report_cache (
   created_at timestamp with time zone not null default now()
 );
 
+create table if not exists public.sales_settings (
+  user_id uuid not null,
+  quiet_days integer not null default 7,
+  updated_at timestamp with time zone not null default now()
+);
+
 create table if not exists public.report_settings (
   user_id uuid not null,
   company_name text,
@@ -782,6 +788,7 @@ $function$
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 
+alter table public.sales_settings add constraint sales_settings_pkey primary key (user_id);
 alter table public.gaps_cache add constraint gaps_cache_pkey primary key (document_id, fingerprint);
 alter table public.access_grants add constraint access_grants_pkey PRIMARY KEY (id);
 alter table public.admin_audit add constraint admin_audit_pkey PRIMARY KEY (id);
@@ -831,6 +838,8 @@ alter table public.withdrawals add constraint withdrawals_pkey PRIMARY KEY (id);
 -- constraint it references exists, and these were previously interleaved
 -- alphabetically, so a FK to organizations landed before organizations' PK.
 -- Foreign keys and checks, which may now reference any table above.
+alter table public.sales_settings add constraint sales_settings_user_id_fkey foreign key (user_id) references auth.users(id) on delete cascade;
+alter table public.sales_settings add constraint sales_settings_quiet_days_check check (quiet_days between 1 and 90);
 alter table public.gaps_cache add constraint gaps_cache_document_id_fkey foreign key (document_id) references public.documents(id) on delete cascade;
 alter table public.access_grants add constraint access_grants_created_by_fkey FOREIGN KEY (created_by) REFERENCES auth.users(id) ON DELETE CASCADE;
 alter table public.access_grants add constraint access_grants_grantee_type_check CHECK ((grantee_type = ANY (ARRAY['user'::text, 'role'::text])));
@@ -1007,6 +1016,7 @@ create or replace view public.my_commissions with (security_invoker = true) as  
 -- ROW LEVEL SECURITY  (31)
 -- ======================================================================
 
+alter table public.sales_settings enable row level security;
 alter table public.gaps_cache enable row level security;
 alter table public.access_grants enable row level security;
 
@@ -1076,6 +1086,9 @@ alter table public.withdrawals enable row level security;
 -- POLICIES  (43)
 -- ======================================================================
 
+create policy "own sales settings read" on public.sales_settings for select using (auth.uid() = user_id);
+create policy "own sales settings write" on public.sales_settings for insert with check (auth.uid() = user_id);
+create policy "own sales settings update" on public.sales_settings for update using (auth.uid() = user_id);
 create policy "admins create invitations" on public.invitations for insert with check ((org_role(organization_id) = ANY (ARRAY['owner'::text, 'admin'::text])));
 
 create policy "admins delete invitations" on public.invitations for delete using ((org_role(organization_id) = ANY (ARRAY['owner'::text, 'admin'::text])));
