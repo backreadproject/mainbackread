@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const { documentId, mode, firstName, lastName, email, note, variantId } = await req.json();
+  const { documentId, mode, firstName, lastName, email, note, variantId, isSigner } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
   if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
         // readers can be grouped by company. Null when not supplied.
         email: email?.trim() || null,
       delivery: mode === "email" ? "email" : "link",
+        is_signer: isSigner === true,
     })
     .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id")
     .single();

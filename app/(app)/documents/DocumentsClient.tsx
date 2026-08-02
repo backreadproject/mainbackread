@@ -5,13 +5,13 @@ import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantUpload from "./VariantUpload";
-import UploadModal from "./UploadModal";
+import UploadModal, { type Signer } from "./UploadModal";
 type Row = { id: string; title: string; createdAt: string; archived: boolean; recipients: number; reads: number; questions: number; projectId: string | null; projectName: string | null };
 type Project = { id: string; name: string };
 type Stats = { documents: number; shared: number; totalReads: number; pendingReads: number; questions: number; escalated: number; activeReaders: number };
 type Tone = "green" | "amber" | "indigo" | "neutral";
 const COLS = "1.8fr 0.9fr 0.7fr 0.8fr 1fr 0.9fr 0.9fr 40px";
-export default function DocumentsClient({ rows: initialRows, stats, isOrg = false, orgId = null, projects = [], abEnabled = false }: { rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[]; abEnabled?: boolean }) {
+export default function DocumentsClient({ selfName, selfEmail, rows: initialRows, stats, isOrg = false, orgId = null, projects = [], abEnabled = false }: { selfName: string; selfEmail: string; rows: Row[]; stats: Stats; isOrg?: boolean; orgId?: string | null; projects?: Project[]; abEnabled?: boolean }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dp = getDict(locale).documentsPage;
@@ -41,7 +41,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
   const archivedCount = rows.filter((r) => r.archived).length;
   // The modal has already checked the type and explained any refusal, so
   // this only has to do the work.
-  async function onFile(file: File) {
+  async function onFile(file: File, signing: { enabled: boolean; signers: Signer[] }) {
     setUploading(true); setError("");
     setProgress({ name: file.name, size: file.size, step: dp.uploading });
     const supabase = createClient();
@@ -52,7 +52,7 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
     const { error: upErr } = await supabase.storage.from("documents").upload(path, file);
     if (upErr) { setError(dp.uploadFailed + upErr.message); setUploading(false); setProgress(null); return; }
     const cleanTitle = file.name.replace(/\.(pdf|docx|jpe?g|png|webp|gif)$/i, "");
-    const insertRow: Record<string, unknown> = { owner_id: user.id, title: cleanTitle, storage_path: path };
+    const insertRow: Record<string, unknown> = { owner_id: user.id, title: cleanTitle, storage_path: path, signing_enabled: signing.enabled };
     if (isOrg && orgId) { insertRow.organization_id = orgId; if (uploadProject) insertRow.project_id = uploadProject; }
     const { data: inserted, error: dbErr } = await supabase.from("documents").insert(insertRow).select("id").single();
     if (dbErr || !inserted) {
@@ -61,6 +61,25 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
       setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); setProgress(null); return;
     }
     try {
+    if (signing.enabled && signing.signers.length) {
+      setProgress({ name: file.name, size: file.size, step: dp.addingSigners });
+      for (const s of signing.signers) {
+        const parts = s.name.trim().split(/\s+/);
+        try {
+          await fetch("/api/share-prospect", {
+            method: "POST", headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              documentId: inserted.id,
+              mode: "link",
+              firstName: parts[0] || s.name,
+              lastName: parts.slice(1).join(" ") || "",
+              email: s.email,
+              isSigner: true,
+            }),
+          });
+        } catch { /* one signer failing must not lose the document */ }
+      }
+    }
       setProgress({ name: file.name, size: file.size, step: dp.readingPages });
       const res = await fetch("/api/extract-document", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ documentId: inserted.id }) });
       const ext = await res.json().catch(() => ({}));
@@ -219,7 +238,9 @@ export default function DocumentsClient({ rows: initialRows, stats, isOrg = fals
         {adding && (
           <UploadModal
             onClose={() => { setAdding(false); setProgress(null); }}
-            onPick={(file) => { onFile(file); }}
+            onPick={(file, signing) => { onFile(file, signing); }}
+            selfName={selfName}
+            selfEmail={selfEmail}
             busy={uploading}
             progress={progress}
           />

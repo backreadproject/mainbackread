@@ -368,6 +368,7 @@ const en = {
     trialLeft: "left.",
   },
   documentsPage: {
+    addingSigners: "Adding the signers...",
     active: "Active",
     archived: "Archived",
     title: "Documents",
@@ -1224,6 +1225,7 @@ const fr: Dict = {
     trialLeft: "restant.",
   },
   documentsPage: {
+    addingSigners: "Ajout des signataires...",
     active: "Actifs",
     archived: "Archivés",
     title: "Documents",

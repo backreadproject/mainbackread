@@ -82,6 +82,17 @@ export default async function DocumentsPage() {
   const planCtx = user ? await resolvePlanForUser(admin, user.id) : null;
   const abEnabled = isOrg && !!planCtx && hasFeature(planCtx.plan.id, "abVersions");
 
-  return <DocumentsClient rows={rows} stats={stats} isOrg={isOrg} orgId={ctx.org?.id ?? null} projects={projects} abEnabled={abEnabled} />;
+  // For the "I sign this too" line: the sender signs as themselves, so the
+  // name on the certificate comes from their profile rather than being typed.
+  // For the "I sign this too" line. The page tolerates a null user (see the
+  // plan lookup above), so this does too rather than introducing the first
+  // hard dependency on it.
+  const { data: me } = user
+    ? await supabase.from("profiles").select("first_name, last_name").eq("id", user.id).maybeSingle()
+    : { data: null };
+  const selfName = `${(me?.first_name as string) || ""} ${(me?.last_name as string) || ""}`.trim();
+  const selfEmail = user?.email ?? "";
+
+  return <DocumentsClient selfName={selfName} selfEmail={selfEmail} rows={rows} stats={stats} isOrg={isOrg} orgId={ctx.org?.id ?? null} projects={projects} abEnabled={abEnabled} />;
 }
 
