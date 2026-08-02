@@ -256,8 +256,9 @@ export default function FieldPlacer({
         {/* Rendered outside the scroll container so the overlay tracks the page
             wrappers by index rather than being appended into them by hand. */}
         <Overlay fields={fields} containerRef={containerRef} toneOf={toneOf} nameOf={nameOf}
-          onRemove={(i) => setFields((p) => p.filter((_, k) => k !== i))} signsHere={C.signsHere} ready={ready} />
-
+          onRemove={(i) => setFields((p) => p.filter((_, k) => k !== i))}
+          onMove={(i, x, y) => setFields((p) => p.map((f, k) => (k === i ? { ...f, x, y } : f)))}
+          signsHere={C.signsHere} ready={ready} />
         <div style={{ padding: "12px 18px", borderTop: "1px solid " + T.border, display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 12.5, color: T.muted }}>
             {fields.length === 0 ? C.none : fields.length + ""}
@@ -277,13 +278,14 @@ export default function FieldPlacer({
 
 // The placed fields, drawn into the page wrappers after they exist.
 function Overlay({
-  fields, containerRef, toneOf, nameOf, onRemove, signsHere, ready,
+  fields, containerRef, toneOf, nameOf, onRemove, onMove, signsHere, ready,
 }: {
   fields: Field[];
   containerRef: React.RefObject<HTMLDivElement | null>;
   toneOf: (id: string) => string;
   nameOf: (id: string) => string;
   onRemove: (i: number) => void;
+  onMove: (i: number, x: number, y: number) => void;
   signsHere: string;
   ready: boolean;
 }) {
@@ -301,10 +303,43 @@ function Overlay({
       box.dataset.field = String(i);
       box.style.cssText = `position:absolute;left:${f.x * 100}%;top:${f.y * 100}%;width:${f.w * 100}%;height:${f.h * 100}%;border:1.5px dashed ${tone};background:${tone}14;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:${tone};cursor:pointer;text-align:center;padding:2px;box-sizing:border-box`;
       box.textContent = f.kind === "signature" ? `${nameOf(f.recipientId)} ${signsHere}` : f.kind === "date" ? "Date" : "Text";
-      box.title = "Click to remove";
-      box.onclick = (ev) => { ev.stopPropagation(); onRemove(i); };
+      box.style.cursor = "grab";
+
+      // Drag. Offsets are captured against the box, not the page, so the
+      // field moves with the pointer rather than jumping its centre to it.
+      box.onmousedown = (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        const pageRect = page.getBoundingClientRect();
+        const boxRect = box.getBoundingClientRect();
+        const dx = ev.clientX - boxRect.left;
+        const dy = ev.clientY - boxRect.top;
+        box.style.cursor = "grabbing";
+        const move = (m: MouseEvent) => {
+          const nx = Math.min(Math.max((m.clientX - dx - pageRect.left) / pageRect.width, 0), 1 - f.w);
+          const ny = Math.min(Math.max((m.clientY - dy - pageRect.top) / pageRect.height, 0), 1 - f.h);
+          box.style.left = nx * 100 + "%";
+          box.style.top = ny * 100 + "%";
+        };
+        const up = () => {
+          window.removeEventListener("mousemove", move);
+          window.removeEventListener("mouseup", up);
+          box.style.cursor = "grab";
+          // Commit on release rather than on every frame: state updates
+          // during a drag would redraw the box under the pointer.
+          onMove(i, parseFloat(box.style.left) / 100, parseFloat(box.style.top) / 100);
+        };
+        window.addEventListener("mousemove", move);
+        window.addEventListener("mouseup", up);
+      };
+
+      const x = document.createElement("button");
+      x.textContent = "\u00d7";
+      x.setAttribute("aria-label", "Remove");
+      x.style.cssText = `position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:9px;border:1px solid ${tone};background:#fff;color:${tone};font-size:12px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center`;
+      x.onclick = (ev) => { ev.stopPropagation(); onRemove(i); };
+      box.appendChild(x);
       page.appendChild(box);
     });
-  }, [fields, containerRef, toneOf, nameOf, onRemove, signsHere, ready]);
+  }, [fields, containerRef, toneOf, nameOf, onRemove, onMove, signsHere, ready]);
   return null;
 }
