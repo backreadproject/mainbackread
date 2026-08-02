@@ -556,6 +556,7 @@ const en = {
     colAdded: "Added",
   },
   readerPage: {
+    signSection: "Sign this document",
     youSignHere: "You sign here",
     dateHere: "Date",
     textHere: "To fill in",
@@ -1422,6 +1423,7 @@ const fr: Dict = {
     colAdded: "Ajouté",
   },
   readerPage: {
+    signSection: "Signer ce document",
     youSignHere: "Vous signez ici",
     dateHere: "Date",
     textHere: "\u00c0 remplir",

@@ -80,7 +80,7 @@ export default async function DocumentDetailPage({
   // signature_fields is service-role only, read here AFTER RLS above has
   // proven the caller owns the document.
   const { data: fieldRows } = doc.signing_enabled
-    ? await admin.from("signature_fields").select("id, recipient_id, page, x, y, w, h, kind").eq("document_id", id)
+    ? await admin.from("signature_fields").select("id, recipient_id, page, x, y, w, h, kind, date_mode").eq("document_id", id)
     : { data: [] };
   const { data: signedUrl } = doc.signing_enabled && doc.storage_path
     ? await admin.storage.from("documents").createSignedUrl(doc.storage_path as string, 3600)
@@ -102,6 +102,7 @@ export default async function DocumentDetailPage({
         page: Number(f.page),
         x: Number(f.x), y: Number(f.y), w: Number(f.w), h: Number(f.h),
         kind: f.kind as "signature" | "date" | "text",
+        dateMode: (f.date_mode as "signed" | "chosen" | null) ?? undefined,
       }))}
     />
   );

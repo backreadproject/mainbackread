@@ -21,6 +21,9 @@ export type Field = {
   page: number;
   x: number; y: number; w: number; h: number;
   kind: "signature" | "date" | "text";
+  /** Only meaningful on a date field. "signed" fills itself when the
+   *  signature is appended; "chosen" lets the signer pick one. */
+  dateMode?: "signed" | "chosen";
   label?: string | null;
 };
 export type SignerLite = { id: string; name: string };
@@ -116,6 +119,7 @@ export default function FieldPlacer({
   const [fields, setFields] = useState<Field[]>(initial);
   const [who, setWho] = useState(signers[0]?.id ?? "");
   const [kind, setKind] = useState<(typeof KINDS)[number]>("signature");
+  const [dateMode, setDateMode] = useState<"signed" | "chosen">("signed");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const renderedRef = useRef(false);
@@ -128,6 +132,10 @@ export default function FieldPlacer({
     date: fr ? "Date" : "Date",
     text: fr ? "Texte" : "Text",
     hint: fr ? "La date se remplit seule. Le texte est \u00e0 eux." : "Date fills itself. Text is theirs to complete.",
+    dateAuto: fr ? "Date de signature" : "Date they sign",
+    dateChosen: fr ? "Le signataire choisit" : "Signer picks a date",
+    dateAutoWhy: fr ? "Se remplit toute seule." : "Fills itself.",
+    dateChosenWhy: fr ? "Le signataire ouvre un calendrier." : "The signer opens a calendar.",
     save: fr ? "Enregistrer" : "Save",
     saving: fr ? "Enregistrement..." : "Saving...",
     cancel: fr ? "Annuler" : "Cancel",
@@ -196,7 +204,7 @@ export default function FieldPlacer({
     const h = kind === "signature" ? 0.07 : 0.04;
     const x = Math.min(Math.max((e.clientX - rect.left) / rect.width - w / 2, 0), 1 - w);
     const y = Math.min(Math.max((e.clientY - rect.top) / rect.height - h / 2, 0), 1 - h);
-    setFields((p) => [...p, { recipientId: who, page: Number(target.dataset.page), x, y, w, h, kind }]);
+    setFields((p) => [...p, { recipientId: who, page: Number(target.dataset.page), x, y, w, h, kind, ...(kind === "date" ? { dateMode } : {}) }]);
   }
 
   async function save() {
@@ -245,7 +253,14 @@ export default function FieldPlacer({
               {k === "signature" ? C.signature : k === "date" ? C.date : C.text}
             </button>
           ))}
-          <span style={{ marginLeft: "auto", fontSize: 12, color: T.faint }}>{C.hint}</span>
+          {kind === "date" ? (
+            <span style={{ display: "inline-flex", gap: 6, marginLeft: 8 }}>
+              <button onClick={() => setDateMode("signed")} style={chip(dateMode === "signed")} title={C.dateAutoWhy}>{C.dateAuto}</button>
+              <button onClick={() => setDateMode("chosen")} style={chip(dateMode === "chosen")} title={C.dateChosenWhy}>{C.dateChosen}</button>
+            </span>
+          ) : (
+            <span style={{ marginLeft: "auto", fontSize: 12, color: T.faint }}>{C.hint}</span>
+          )}
         </div>
 
         <div ref={containerRef} onClick={onPageClick}
@@ -302,7 +317,7 @@ function Overlay({
       const box = document.createElement("div");
       box.dataset.field = String(i);
       box.style.cssText = `position:absolute;left:${f.x * 100}%;top:${f.y * 100}%;width:${f.w * 100}%;height:${f.h * 100}%;border:1.5px dashed ${tone};background:${tone}14;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:${tone};cursor:pointer;text-align:center;padding:2px;box-sizing:border-box`;
-      box.textContent = f.kind === "signature" ? `${nameOf(f.recipientId)} ${signsHere}` : f.kind === "date" ? "Date" : "Text";
+      box.textContent = f.kind === "signature" ? `${nameOf(f.recipientId)} ${signsHere}` : f.kind === "date" ? (f.dateMode === "chosen" ? "Date (picked)" : "Date") : "Text";
       box.style.cursor = "grab";
 
       // Drag. Offsets are captured against the box, not the page, so the

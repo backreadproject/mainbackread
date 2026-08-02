@@ -135,6 +135,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   const [replyDone, setReplyDone] = useState(false);
   const [signedNow, setSignedNow] = useState(false);
   const [declinedNow, setDeclinedNow] = useState(false);
+  const [signOpen, setSignOpen] = useState(false);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -409,8 +410,48 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
 
         <aside className={`rdr-aside${sheetOpen ? " is-open" : ""}`} style={{ position: "sticky", top: 92, background: CARD, border: `1px solid ${LINE}`, borderRadius: 6, boxShadow: SHADOW_PANEL, display: "flex", flexDirection: "column", height: "78vh", overflow: "hidden" }}>
           <div className="rdr-handle" onClick={toggleSheet} />
+          <div className="rdr-askhead" onClick={toggleSheet} style={{ padding: "15px 16px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 9 }}>
+            <span style={{ width: 6, height: 6, borderRadius: 2, background: BRAND, flexShrink: 0 }} />
+            <span style={{ fontSize: 14, fontWeight: 600, color: INK, lineHeight: 1.25 }}>{r.askTitle}</span>
+            <span className="rdr-chev">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+            </span>
+          </div>
+          <div className="rdr-thread" style={{ flex: signOpen ? "none" : 1, maxHeight: signOpen ? 0 : undefined, paddingTop: signOpen ? 0 : undefined, paddingBottom: signOpen ? 0 : undefined, overflow: signOpen ? "hidden" : undefined, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+            {thread.length === 0 && <p style={{ fontSize: 14, lineHeight: 1.5, color: BODY, margin: 0 }}>{r.askEmpty}</p>}
+            {thread.map((m, i) => (
+              m.role === "user" ? (
+                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", background: NEUTRAL_BUBBLE, border: `1px solid ${LINE}`, borderRadius: "6px 6px 2px 6px", padding: "10px 12px", fontSize: 14, color: INK, lineHeight: 1.45 }}>{m.text}</div>
+              ) : (
+                <div key={i} style={{ maxWidth: "90%" }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: GREEN_TEXT, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{r.theDocument}</div>
+                  <div style={{ background: GREEN_SOFT, borderRadius: "2px 6px 6px 6px", padding: "11px 12px", fontSize: 14, color: ANSWER_INK, lineHeight: 1.5 }}>{m.text}</div>
+                </div>
+              )
+            ))}
+            {asking && <div style={{ fontSize: 13, color: SLATE }}>{r.reading}</div>}
+            <div ref={threadEnd} />
+          </div>
+          <div className="rdr-inputrow" style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 9, alignItems: "center" }}>
+            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder={r.askPlaceholder}
+              style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 6, padding: "9px 12px", fontSize: 14, fontFamily: AEON, background: "#fff", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
+            <button onClick={ask} className="fx-ask" style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 6, padding: "9px 16px", fontSize: 14, fontWeight: 500, fontFamily: AEON, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              {r.ask} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </div>
           {signing && (
-            <div style={{ padding: 16, borderBottom: `1px solid ${LINE}` }}>
+            <div style={{ borderTop: `1px solid ${LINE}`, flex: "none" }}>
+              <div onClick={() => setSignOpen((o) => !o)}
+                style={{ padding: "14px 16px", display: "flex", alignItems: "center", gap: 9, cursor: "pointer", background: signOpen ? GREEN_SOFT : CARD }}>
+                <span style={{ width: 6, height: 6, borderRadius: 2, background: (signing.mySignedAt || signedNow) ? SLATE : GREEN, flexShrink: 0 }} />
+                <span style={{ fontSize: 14, fontWeight: 600, color: signOpen ? GREEN_TEXT : INK }}>{r.signSection}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                  style={{ marginLeft: "auto", color: SLATE, flexShrink: 0, transform: signOpen ? "rotate(180deg)" : "none", transition: "transform .2s" }}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </div>
+              {signOpen && (
+                <div style={{ padding: 16, borderTop: `1px solid ${LINE}`, maxHeight: "58vh", overflowY: "auto" }}>
               {signing.myDeclinedAt || declinedNow ? (
                 <>
                   <div style={{ fontSize: 14, fontWeight: 600, color: INK, marginBottom: 4 }}>{r.declinedTitle}</div>
@@ -433,37 +474,10 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   onDeclined={() => setDeclinedNow(true)}
                 />
               )}
+                </div>
+              )}
             </div>
           )}
-          <div className="rdr-askhead" onClick={toggleSheet} style={{ padding: "15px 16px", borderBottom: `1px solid ${LINE}`, display: "flex", alignItems: "center", gap: 9 }}>
-            <span style={{ width: 6, height: 6, borderRadius: 2, background: BRAND, flexShrink: 0 }} />
-            <span style={{ fontSize: 14, fontWeight: 600, color: INK, lineHeight: 1.25 }}>{r.askTitle}</span>
-            <span className="rdr-chev">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
-            </span>
-          </div>
-          <div className="rdr-thread" style={{ flex: 1, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-            {thread.length === 0 && <p style={{ fontSize: 14, lineHeight: 1.5, color: BODY, margin: 0 }}>{r.askEmpty}</p>}
-            {thread.map((m, i) => (
-              m.role === "user" ? (
-                <div key={i} style={{ alignSelf: "flex-end", maxWidth: "84%", background: NEUTRAL_BUBBLE, border: `1px solid ${LINE}`, borderRadius: "6px 6px 2px 6px", padding: "10px 12px", fontSize: 14, color: INK, lineHeight: 1.45 }}>{m.text}</div>
-              ) : (
-                <div key={i} style={{ maxWidth: "90%" }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: GREEN_TEXT, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 5 }}>{r.theDocument}</div>
-                  <div style={{ background: GREEN_SOFT, borderRadius: "2px 6px 6px 6px", padding: "11px 12px", fontSize: 14, color: ANSWER_INK, lineHeight: 1.5 }}>{m.text}</div>
-                </div>
-              )
-            ))}
-            {asking && <div style={{ fontSize: 13, color: SLATE }}>{r.reading}</div>}
-            <div ref={threadEnd} />
-          </div>
-          <div className="rdr-inputrow" style={{ borderTop: `1px solid ${LINE}`, padding: 12, display: "flex", gap: 9, alignItems: "center" }}>
-            <input className="fx-in" value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => e.key === "Enter" && ask()} placeholder={r.askPlaceholder}
-              style={{ flex: 1, minWidth: 0, border: `1px solid ${LINE}`, borderRadius: 6, padding: "9px 12px", fontSize: 14, fontFamily: AEON, background: "#fff", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
-            <button onClick={ask} className="fx-ask" style={{ background: GREEN, color: "#fff", border: "none", borderRadius: 6, padding: "9px 16px", fontSize: 14, fontWeight: 500, fontFamily: AEON, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-              {r.ask} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </button>
-          </div>
           <div style={{ padding: "0 12px 10px", textAlign: "center" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
               <a href="/privacy" className="rdr-fine" style={{ fontSize: 11, color: "#9AA5A0", textDecoration: "none" }}>{F.privacy}</a>

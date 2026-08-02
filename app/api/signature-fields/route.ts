@@ -10,6 +10,7 @@ type Incoming = {
   page: number;
   x: number; y: number; w: number; h: number;
   kind: "signature" | "date" | "text";
+  dateMode?: "signed" | "chosen";
 };
 
 const KINDS = new Set(["signature", "date", "text"]);
@@ -74,6 +75,9 @@ export async function POST(req: NextRequest) {
       recipient_id: f.recipientId,
       page, x: nums[0], y: nums[1], w: nums[2], h: nums[3],
       kind: f.kind,
+      // Only meaningful on a date field, and defaulted rather than left null
+      // so the stamping code never has to guess what an absent mode means.
+      date_mode: f.kind === "date" ? (f.dateMode === "chosen" ? "chosen" : "signed") : null,
     });
   }
 
