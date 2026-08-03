@@ -323,6 +323,8 @@ function Overlay({
       // Drag. Offsets are captured against the box, not the page, so the
       // field moves with the pointer rather than jumping its centre to it.
       box.onmousedown = (ev) => {
+        // Do not begin a drag if the press started on the remove control.
+        if ((ev.target as HTMLElement)?.closest?.("[data-x-btn]")) return;
         ev.preventDefault(); ev.stopPropagation();
         const pageRect = page.getBoundingClientRect();
         const boxRect = box.getBoundingClientRect();
@@ -350,8 +352,10 @@ function Overlay({
       const x = document.createElement("button");
       x.textContent = "\u00d7";
       x.setAttribute("aria-label", "Remove");
+      x.setAttribute("data-x-btn", "1");
       x.style.cssText = `position:absolute;top:-9px;right:-9px;width:18px;height:18px;border-radius:9px;border:1px solid ${tone};background:#fff;color:${tone};font-size:12px;line-height:1;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center`;
-      x.onclick = (ev) => { ev.stopPropagation(); onRemove(i); };
+      x.onmousedown = (ev) => { ev.stopPropagation(); };
+      x.onclick = (ev) => { ev.preventDefault(); ev.stopPropagation(); onRemove(i); };
       box.appendChild(x);
       page.appendChild(box);
     });
