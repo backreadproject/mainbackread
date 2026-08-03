@@ -19,7 +19,7 @@ import ReportButton from "@/app/(app)/ReportButton";
 import SignedDocumentButton from "@/app/SignedDocumentButton";
 import SigningProgress, { type Concern } from "./SigningProgress";
 type Doc = { id: string; title: string; created_at: string };
-type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null; decline_reason?: string | null; sent_at?: string | null };
+type Rec = { id: string; label: string | null; share_token: string; email?: string | null; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null; decline_reason?: string | null; sent_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -163,7 +163,10 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           <div style={head}>{dd.recipients}</div>
           <div style={{ padding: 12 }}>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-              <ShareButton documentId={doc.id} variants={variants} counts={variantCounts} signedDoc={!!signingCompletedAt} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
+              <ShareButton documentId={doc.id} variants={variants} counts={variantCounts} signedDoc={!!signingCompletedAt}
+                existing={recs}
+                onSent={(id, addr) => setRecs((p) => p.map((x) => (x.id === id ? { ...x, email: x.email ?? addr, sent_at: new Date().toISOString() } : x)))}
+                onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
               <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ ...ghost, flex: 1 }}>CSV</button>
             </div>
             {recs.length === 0 ? <p style={{ fontSize: 13.5, color: T.faint, margin: "8px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
@@ -316,7 +319,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
     </div>
   );
 }
-function ShareButton({ documentId, onCreated, variants = [], counts = {}, signedDoc = false }: { documentId: string; onCreated: (r: Rec) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean }) {
+function ShareButton({ documentId, onCreated, onSent, variants = [], counts = {}, signedDoc = false, existing = [] }: { documentId: string; onCreated: (r: Rec) => void; onSent?: (id: string, email: string) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean; existing?: Rec[] }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
@@ -334,6 +337,8 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {}, signed
       )}
       {open && (
         <ProspectModal
+          existing={existing}
+          onSent={onSent}
           variants={variants}
           counts={counts}
           documentId={documentId}
