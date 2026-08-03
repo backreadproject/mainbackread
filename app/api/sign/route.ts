@@ -14,6 +14,8 @@ export const runtime = "nodejs";
 // document must not be complete or declined, and a signature can only be set
 // once. Rate limited per token like the reader's Ask.
 const MAX_SIGNATURE_CHARS = 400_000; // ~300KB of PNG. A drawn signature is far under.
+const MIN_CONCERN = 10;
+const MAX_CONCERN = 2000;
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
@@ -40,6 +42,34 @@ export async function POST(req: NextRequest) {
   if (!rec) return NextResponse.json({ error: "This link is no longer valid." }, { status: 404 });
 
   const doc = rec.documents as unknown as { id: string; title: string; owner_id: string; signing_enabled: boolean; signing_completed_at: string | null } | undefined;
+
+  if (action === "concern") {
+    if (!doc?.signing_enabled) return NextResponse.json({ error: "This document is not for signing." }, { status: 400 });
+    if (!rec.is_signer) return NextResponse.json({ error: "You are not named as a signer on this document." }, { status: 403 });
+    if (rec.revoked_at) return NextResponse.json({ error: "This link has been withdrawn." }, { status: 403 });
+
+    const raw = typeof body.body === "string" ? body.body.trim() : "";
+    if (raw.length < MIN_CONCERN) {
+      return NextResponse.json({ error: "Tell the sender what the problem is." }, { status: 400 });
+    }
+    const text = raw.slice(0, MAX_CONCERN);
+
+    const { error } = await admin.from("signature_objections").insert({
+      document_id: rec.document_id as string,
+      recipient_id: rec.id as string,
+      body: text,
+    });
+    if (error) return NextResponse.json({ error: "Could not send that." }, { status: 500 });
+
+    await admin.from("signals").insert({
+      recipient_id: rec.id, kind: "concern", value: { body: text },
+    }).select().maybeSingle().then(() => {}, () => {});
+
+    // Nothing about signed_at or declined_at is touched. Raising a concern is
+    // not refusing: the signer can still sign afterwards, which is the entire
+    // reason it exists as a separate act.
+    return NextResponse.json({ ok: true, concern: true });
+  }
 
   // Every reason this link cannot sign, checked before anything is written.
   if (rec.revoked_at) return NextResponse.json({ error: "This link has been withdrawn." }, { status: 403 });

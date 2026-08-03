@@ -79,6 +79,14 @@ export default async function DocumentDetailPage({
   // Signing: the fields already placed, and a URL the placer can render from.
   // signature_fields is service-role only, read here AFTER RLS above has
   // proven the caller owns the document.
+  // Service-role only, read here AFTER RLS above has proven ownership.
+  const { data: concernRows } = doc.signing_enabled
+    ? await admin.from("signature_objections")
+        .select("id, recipient_id, body, created_at, resolved_at, resolution_note")
+        .eq("document_id", id)
+        .order("created_at", { ascending: true })
+    : { data: [] };
+
   const { data: fieldRows } = doc.signing_enabled
     ? await admin.from("signature_fields").select("id, recipient_id, page, x, y, w, h, kind, date_mode").eq("document_id", id)
     : { data: [] };
@@ -96,6 +104,13 @@ export default async function DocumentDetailPage({
       storagePath={(doc.storage_path as string | null) ?? null}
       signingEnabled={!!doc.signing_enabled}
       signingCompletedAt={(doc.signing_completed_at as string | null) ?? null}
+      concerns={(concernRows ?? []).map((x) => ({
+        id: x.id as string,
+        recipientId: x.recipient_id as string,
+        body: x.body as string,
+        createdAt: x.created_at as string,
+        resolvedAt: (x.resolved_at as string) ?? null,
+      }))}
       signingFileUrl={signedUrl?.signedUrl ?? ""}
       fields={(fieldRows ?? []).map((f) => ({
         id: f.id as string,
