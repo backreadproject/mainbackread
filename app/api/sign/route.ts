@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkSignLimits } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -22,12 +23,13 @@ export async function POST(req: NextRequest) {
 
   const admin = createAdminClient();
 
-  // Rate limited before any work: an unauthenticated endpoint that writes must
-  // not be free to hammer. Fails open, like the reader's Ask -- a limiter
-  // outage should not stop someone signing a contract.
-  try {
-    await admin.rpc("bump_rate_limit", { p_key: "sign:" + token, p_limit: 20, p_window_seconds: 3600 });
-  } catch { /* fail open */ }
+  // Counted before any work: an unauthenticated write must not be free to
+  // hammer. The document id is not known yet, so the token bucket carries this
+  // first check and the per-document one follows the lookup below.
+  const preLimit = await checkSignLimits(token, null);
+  if (!preLimit.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
+  }
 
   const { data: rec } = await admin
     .from("recipients")
@@ -48,6 +50,11 @@ export async function POST(req: NextRequest) {
   if (!rec.is_signer) return NextResponse.json({ error: "You are not named as a signer on this document." }, { status: 403 });
   if (rec.signed_at) return NextResponse.json({ error: "You have already signed this." }, { status: 409 });
   if (rec.declined_at) return NextResponse.json({ error: "You have already declined this." }, { status: 409 });
+
+  const docLimit = await checkSignLimits(token, rec.document_id as string);
+  if (!docLimit.allowed) {
+    return NextResponse.json({ error: "Too many attempts. Try again shortly." }, { status: 429 });
+  }
 
   // A declined document can never complete, so nobody else should sign into it.
   const { data: declined } = await admin
