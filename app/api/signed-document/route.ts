@@ -4,7 +4,8 @@ import { renderToBuffer, DocumentProps } from "@react-pdf/renderer";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stampDocument, appendPages, StampSigner } from "@/lib/pdf/compose";
-import { SignatureCertificate, CertSigner } from "@/lib/pdf/SignatureCertificate";
+import { SignatureCertificate } from "@/lib/pdf/SignatureCertificate";
+import { CertRow, certificateRef, verifyUrl, qrDataUrl, firstOpens } from "@/lib/pdf/certificate-data";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -85,7 +86,7 @@ export async function GET(req: NextRequest) {
 
   const { data: recs } = await admin
     .from("recipients")
-    .select("id, label, first_name, last_name, email, signed_email, signed_at, signed_ip, signature_kind, signature_data")
+    .select("id, label, first_name, last_name, email, signed_email, sent_at, signed_at, signed_ip, signature_kind, signature_data")
     .eq("document_id", docId)
     .eq("is_signer", true)
     .order("signed_at", { ascending: true });
@@ -108,20 +109,27 @@ export async function GET(req: NextRequest) {
 
   const stamped = await stampDocument(original, (fields ?? []) as never[], map);
 
-  const certSigners: CertSigner[] = (recs ?? []).map((r) => ({
+  const opens = await firstOpens(admin, (recs ?? []).map((r) => r.id as string));
+
+  const rows: CertRow[] = (recs ?? []).map((r) => ({
     name: nameOf(r),
     email: (r.signed_email as string) || (r.email as string) || null,
-    method: r.signature_kind === "typed" ? "Typed" : r.signature_kind === "drawn" ? "Drawn" : "Uploaded image",
+    sentAt: (r.sent_at as string) ?? null,
+    viewedAt: opens.get(r.id as string) ?? null,
     signedAt: (r.signed_at as string) ?? null,
     ip: (r.signed_ip as string) ?? null,
+    method: r.signature_kind === "typed" ? "Typed" : r.signature_kind === "drawn" ? "Drawn" : "Uploaded image",
+    signature: (r.signature_data as string) ?? null,
   }));
+
+  const qr = await qrDataUrl(verifyUrl(String(doc.id)));
 
   const cert = await renderToBuffer(
     SignatureCertificate({
-      reference: "RP-SIG-" + String(doc.id).replace(/-/g, "").slice(0, 8).toUpperCase(),
-      title: String(doc.title || "Document"),
+      reference: certificateRef(String(doc.id)),
       completedAt: String(doc.signing_completed_at),
-      signers: certSigners,
+      qr,
+      rows,
     }) as React.ReactElement<DocumentProps>,
   );
 
