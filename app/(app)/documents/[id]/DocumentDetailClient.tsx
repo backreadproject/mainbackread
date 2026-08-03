@@ -115,9 +115,14 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           <div style={{ maxWidth: 1040, padding: "0 28px" }}>
             <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 16, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading }}>Signatures</span>
-              <span style={{ fontSize: 13, color: T.muted }}>
-                {recs.filter((r) => r.is_signer && r.signed_at).length} / {recs.filter((r) => r.is_signer).length}
-              </span>
+              {!signingCompletedAt && (
+                <span style={{ fontSize: 13, color: T.muted }}>
+                  {recs.filter((r) => r.is_signer && r.signed_at).length} / {recs.filter((r) => r.is_signer).length}
+                </span>
+              )}
+              {signingCompletedAt && (
+                <span style={{ fontSize: 13, color: T.greenText }}>{fr ? "Compl\u00e9t\u00e9" : "Complete"}</span>
+              )}
               {fields.length === 0 && (
                 <span style={{ fontSize: 12.5, color: T.amberText }}>
                   {fr ? "Aucun champ plac\u00e9. Personne ne peut encore signer." : "No fields placed yet. Nobody can sign."}
@@ -150,7 +155,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             />
           </div>
         )}
-        <GapsPanel documentId={doc.id} />
+        {!recs.some((r) => r.is_signer && r.signed_at) && <GapsPanel documentId={doc.id} />}
         <AccountsPanel grouped={grouped} />
       <div style={{ maxWidth: 1040, display: "grid", gridTemplateColumns: "268px minmax(0,1fr)", gap: 16, padding: "20px 28px 120px", alignItems: "start" }} className="dd-grid">
         <div style={card}>
@@ -254,7 +259,9 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                             <p style={{ fontSize: 14, color: T.heading, margin: 0, lineHeight: 1.5 }}>{verdicts[sel.id].nextAction}</p>
                           </div>
                         </div>
-                        <ComposeWorkspace recipientId={sel.id} verdict={verdicts[sel.id]} />
+                        {!recs.some((r) => r.is_signer && r.signed_at) && (
+                          <ComposeWorkspace recipientId={sel.id} verdict={verdicts[sel.id]} />
+                        )}
                       </>
                     ) : (
                       <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, opacity: verdictBusy === sel.id ? 0.6 : 1 }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
