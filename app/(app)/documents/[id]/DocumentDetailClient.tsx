@@ -17,8 +17,9 @@ import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
 import SignedDocumentButton from "@/app/SignedDocumentButton";
+import SigningProgress from "./SigningProgress";
 type Doc = { id: string; title: string; created_at: string };
-type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null };
+type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null; decline_reason?: string | null; sent_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
 type Sig = { recipient_id: string; kind: string; page: number | null; value: unknown; created_at: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -125,6 +126,12 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                     <SignedDocumentButton documentId={doc.id} title={doc.title} label="Download signed" variant="quiet" />
                   </span>
                 )}
+        {signingEnabled && (
+          <SigningProgress
+            recipients={recs}
+            reading={Object.fromEntries(Object.entries(summary).map(([id, s]) => [id, { opens: s.opens, questions: s.questions.length }]))}
+          />
+        )}
               </span>
               {fields.length === 0 && (
                 <span style={{ fontSize: 12.5, color: T.amberText }}>
