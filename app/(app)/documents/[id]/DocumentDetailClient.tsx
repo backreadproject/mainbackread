@@ -16,6 +16,7 @@ import FieldPlacer, { type Field } from "./FieldPlacer";
 import type { Grouped } from "@/lib/accounts";
 import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
+import SignedDocumentButton from "@/app/SignedDocumentButton";
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
@@ -25,7 +26,7 @@ const card = { background: T.card, border: "1px solid " + T.border, borderRadius
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
 const ghost = { height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 const dot = (c: string) => ({ width: 6, height: 6, borderRadius: 2, flex: "none" as const, background: c });
-export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingFileUrl, fields: initialFields }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingFileUrl: string; fields: Field[] }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingCompletedAt, signingFileUrl, fields: initialFields }: { doc: Doc; recipients: Rec[]; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingCompletedAt: string | null; signingFileUrl: string; fields: Field[] }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dd = getDict(locale).documentDetailPage;
@@ -117,6 +118,13 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
               </span>
               <span style={{ fontSize: 13, color: T.muted }}>
                 {recs.filter((r) => r.is_signer && r.signed_at).length} / {recs.filter((r) => r.is_signer).length}
+                {/* Only once everyone is in. A half-signed PDF in circulation is a
+                    document that looks like an agreement and is not one. */}
+                {signingCompletedAt && (
+                  <span style={{ marginLeft: 14 }}>
+                    <SignedDocumentButton documentId={doc.id} title={doc.title} label="Download signed" variant="quiet" />
+                  </span>
+                )}
               </span>
               {fields.length === 0 && (
                 <span style={{ fontSize: 12.5, color: T.amberText }}>

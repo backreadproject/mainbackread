@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import SigningPanel from "./SigningPanel";
+import SignedDocumentButton from "@/app/SignedDocumentButton";
 
 const INK = "#0F1729", CANVAS = "#F7F8F7", CARD = "#FFFFFF", GREEN = "#0B7A4B", GREEN_HOVER = "#0A6A41", BRAND = "#1FA971", GREEN_SOFT = "#E7F6EF", GREEN_TEXT = "#067647", ANSWER_INK = "#0B3D2A", NEUTRAL_BUBBLE = "#F4F5F4", SLATE = "#8A9299", BODY = "#475467", LINE = "#E3E7E4", HEAT_MID = "#3FB587", HEAT_OFF = "#DDE2DE";
 const AEON = "var(--font-dm-sans), system-ui, sans-serif";
@@ -95,6 +96,7 @@ type SigningState = {
   myDeclinedAt: string | null;
   fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
   documentDeclined: boolean;
+  documentCompleted: boolean;
 };
 
 type Msg = { role: "user" | "doc"; text: string };
@@ -463,6 +465,15 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   <div style={{ fontSize: 13, color: BODY, lineHeight: 1.5 }}>
                     {signing.awaiting > 0 ? r.signedWaiting : r.signedComplete}
                   </div>
+                  {/* Only when the whole document is done. A signer taking away a
+                      half-signed PDF is carrying something that looks like an
+                      agreement and is not one. awaiting===0 is not enough: a
+                      co-signer who declined is neither awaiting nor signed. */}
+                  {signing.documentCompleted && (
+                    <div style={{ marginTop: 14 }}>
+                      <SignedDocumentButton token={token} title={title} label={r.downloadSigned} />
+                    </div>
+                  )}
                 </>
               ) : signing.documentDeclined ? (
                 <div style={{ fontSize: 13, color: BODY, lineHeight: 1.5 }}>{r.docDeclined}</div>

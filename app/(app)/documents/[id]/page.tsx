@@ -95,6 +95,7 @@ export default async function DocumentDetailPage({
       grouped={grouped}
       storagePath={(doc.storage_path as string | null) ?? null}
       signingEnabled={!!doc.signing_enabled}
+      signingCompletedAt={(doc.signing_completed_at as string | null) ?? null}
       signingFileUrl={signedUrl?.signedUrl ?? ""}
       fields={(fieldRows ?? []).map((f) => ({
         id: f.id as string,

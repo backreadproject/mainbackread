@@ -127,6 +127,7 @@ export default async function ReadPage({
     mySignedAt: string | null; myDeclinedAt: string | null;
     fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
     documentDeclined: boolean;
+    documentCompleted: boolean;
   } | null = null;
   if (iSign) {
     const [{ data: co }, { data: myFields }] = await Promise.all([
@@ -143,6 +144,7 @@ export default async function ReadPage({
       myDeclinedAt: (recipient.declined_at as string | null) ?? null,
       fields: (myFields ?? []).map((x) => ({ page: Number(x.page), x: Number(x.x), y: Number(x.y), w: Number(x.w), h: Number(x.h), kind: String(x.kind) })),
       documentDeclined: (co ?? []).some((s) => s.declined_at),
+      documentCompleted: !!recDocFull?.signing_completed_at,
     };
   }
 
