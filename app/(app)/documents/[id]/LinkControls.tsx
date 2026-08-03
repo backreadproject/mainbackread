@@ -16,11 +16,12 @@ import { useLocale } from "@/lib/useLocale";
 const PERIODS = [1, 7, 14, 30, 90] as const;
 
 export default function LinkControls({
-  recipientId, expiresAt, revokedAt, onChange,
+  recipientId, expiresAt, revokedAt, signed = false, onChange,
 }: {
   recipientId: string;
   expiresAt: string | null;
   revokedAt: string | null;
+  signed?: boolean;
   onChange: (next: { expiresAt?: string | null; revokedAt?: string | null }) => void;
 }) {
   const fr = useLocale() === "fr";
@@ -44,6 +45,23 @@ export default function LinkControls({
     days: (n: number) => (fr ? n + " jours" : n + " days"),
     failed: fr ? "Impossible d\u2019enregistrer." : "Could not save that.",
   };
+
+  // A signer who has signed is party to the agreement. Withdrawing their link
+  // does not un-sign anything; it only locks a counterparty out of a contract
+  // they are bound by, which is not a state to offer as a one-click action. Same
+  // for an expiry: their copy should not stop working on a date we chose.
+  //
+  // Explained rather than hidden. A control that silently disappears is a bug to
+  // whoever goes looking for it.
+  if (signed) {
+    return (
+      <div style={{ fontSize: 12.5, color: T.faint, lineHeight: 1.55 }}>
+        {fr
+          ? "Ce lien reste ouvert. Le signataire doit conserver l\u2019acc\u00e8s au document qu\u2019il a sign\u00e9."
+          : "This link stays open. A signer keeps access to the document they signed."}
+      </div>
+    );
+  }
 
   const gone = !!revokedAt;
   const past = !!expiresAt && new Date(expiresAt) < new Date();

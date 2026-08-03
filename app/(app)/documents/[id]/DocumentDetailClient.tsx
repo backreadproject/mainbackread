@@ -211,6 +211,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                     recipientId={sel.id}
                     expiresAt={sel.expires_at ?? null}
                     revokedAt={sel.revoked_at ?? null}
+                    signed={!!sel.signed_at}
                     onChange={(next) => setRecs((prev) => prev.map((x) => (x.id === sel.id ? { ...x, ...(next.expiresAt !== undefined ? { expires_at: next.expiresAt } : {}), ...(next.revokedAt !== undefined ? { revoked_at: next.revokedAt } : {}) } : x)))}
                   />
                 </div>
@@ -263,6 +264,12 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                           <ComposeWorkspace recipientId={sel.id} verdict={verdicts[sel.id]} />
                         )}
                       </>
+                    ) : sel.signed_at ? (
+                      <p style={{ fontSize: 13, color: T.muted, margin: 0, lineHeight: 1.55 }}>
+                        {fr
+                          ? "Sign\u00e9. Il n\u2019y a plus rien \u00e0 lire dans l\u2019intention de ce lecteur."
+                          : "Signed. There is nothing left to read in this reader's intent."}
+                      </p>
                     ) : (
                       <button onClick={() => readTheReader(sel.id)} disabled={verdictBusy === sel.id} className="t-b" style={{ height: 34, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: T.font, opacity: verdictBusy === sel.id ? 0.6 : 1 }}>{verdictBusy === sel.id ? dd.readingBusy : dd.readTheReader}</button>
                     )}
