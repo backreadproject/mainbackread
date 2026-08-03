@@ -162,7 +162,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           <div style={head}>{dd.recipients}</div>
           <div style={{ padding: 12 }}>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-              <ShareButton documentId={doc.id} variants={variants} counts={variantCounts} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
+              <ShareButton documentId={doc.id} variants={variants} counts={variantCounts} signedDoc={!!signingCompletedAt} onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
               <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ ...ghost, flex: 1 }}>CSV</button>
             </div>
             {recs.length === 0 ? <p style={{ fontSize: 13.5, color: T.faint, margin: "8px 2px" }}>{dd.noLinks}</p> : recs.map((r) => {
@@ -227,7 +227,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
                         </div>
                       ))}
                     </div>
-                    {selSum.questions.length === 0 && (
+                    {selSum.questions.length === 0 && !sel.signed_at && (
                 <p style={{ fontSize: 13, color: T.muted, margin: "14px 0 0", lineHeight: 1.55 }}>
                   No questions from this reader yet. They can ask the document anything while reading, and what they ask appears here.
                 </p>
@@ -315,7 +315,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
     </div>
   );
 }
-function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { documentId: string; onCreated: (r: Rec) => void; variants?: Variant[]; counts?: Record<string, number> }) {
+function ShareButton({ documentId, onCreated, variants = [], counts = {}, signedDoc = false }: { documentId: string; onCreated: (r: Rec) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
@@ -324,7 +324,7 @@ function ShareButton({ documentId, onCreated, variants = [], counts = {} }: { do
   const sentMsg = ((dd.emailSent as string) || "").trim() || (locale === "fr" ? "E-mail envoy\u00e9" : "Email sent");
   return (
     <>
-      <button onClick={() => setOpen(true)} style={{ flex: 2, height: 30, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dd.shareWithProspect}</button>
+      <button onClick={() => setOpen(true)} style={{ flex: 2, height: 30, background: T.green, color: T.onAccent, border: "none", borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{signedDoc ? (locale === "fr" ? "Partager le document sign\u00e9" : "Share signed document") : dd.shareWithProspect}</button>
       {notice && (
         <div style={{ position: "fixed", top: 20, left: "50%", transform: "translateX(-50%)", zIndex: 1000, background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, boxShadow: T.overlayShadow, padding: "11px 15px", display: "flex", alignItems: "center", gap: 9, maxWidth: "calc(100vw - 40px)", fontFamily: T.font }}>
           <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: noticeKind === "success" ? T.green : T.faint }} />
