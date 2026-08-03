@@ -1,6 +1,6 @@
 import React from "react";
 import path from "path";
-import { Document, Page, Text, View, Image, StyleSheet, Font } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet, Font, Svg, Rect, Circle } from "@react-pdf/renderer";
 import { CERT_BORDER, CERT_SEAL } from "./certificate-assets";
 import type { CertRow } from "./certificate-data";
 
@@ -64,7 +64,7 @@ const S = StyleSheet.create({
 
   foot: { position: "absolute", left: 52, right: 52, bottom: 40 },
   footRow: { flexDirection: "row", alignItems: "center" },
-  mark: { width: 13, height: 13, backgroundColor: "#1F6F4A", borderRadius: 3, marginRight: 7 },
+  mark: { marginRight: 7 },
   brand: { fontSize: 8.4, fontWeight: 600, color: INK },
   page1: { position: "absolute", left: 0, right: 0, textAlign: "center", fontSize: 7.6,
            letterSpacing: 0.6, color: MUTED },
@@ -168,7 +168,13 @@ export function SignatureCertificate(p: CertProps) {
 
         <View style={S.foot}>
           <View style={S.footRow}>
-            <View style={S.mark} />
+            <View style={S.mark}>
+              <Svg viewBox="0 0 64 64" style={{ width: 14, height: 14 }}>
+                <Rect x="0" y="0" width="64" height="64" rx="14" fill="#071812" />
+                <Circle cx="32" cy="32" r="17" fill="none" stroke="#33E6A2" strokeWidth={5} />
+                <Circle cx="32" cy="32" r="7.5" fill="#33E6A2" />
+              </Svg>
+            </View>
             <Text style={S.brand}>Certificate provided by ReadProspects</Text>
             <Text style={S.page1}>PAGE 1 OF 1</Text>
           </View>

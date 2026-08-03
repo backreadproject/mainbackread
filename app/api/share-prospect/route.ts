@@ -58,6 +58,10 @@ export async function POST(req: Request) {
         email: email?.trim() || null,
       delivery: mode === "email" ? "email" : "link",
         is_signer: isSigner === true,
+        // Stamped only when something is actually sent. A link-mode recipient was
+        // handed a URL by the sender, so there is no send event, and the
+        // certificate must leave SENT blank rather than invent one.
+        sent_at: mode === "email" ? new Date().toISOString() : null,
     })
     .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id")
     .single();
