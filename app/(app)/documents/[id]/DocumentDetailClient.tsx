@@ -114,35 +114,40 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
         {signingEnabled && (
           <div style={{ maxWidth: 1040, padding: "0 28px" }}>
             <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 16, padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading }}>
-                {fr ? "Signatures" : "Signatures"}
-              </span>
+              <span style={{ fontSize: 13.5, fontWeight: 500, color: T.heading }}>Signatures</span>
               <span style={{ fontSize: 13, color: T.muted }}>
                 {recs.filter((r) => r.is_signer && r.signed_at).length} / {recs.filter((r) => r.is_signer).length}
-                {/* Only once everyone is in. A half-signed PDF in circulation is a
-                    document that looks like an agreement and is not one. */}
-                {signingCompletedAt && (
-                  <span style={{ marginLeft: 14 }}>
-                    <SignedDocumentButton documentId={doc.id} title={doc.title} label="Download signed" variant="quiet" />
-                  </span>
-                )}
-        {signingEnabled && (
-          <SigningProgress
-            recipients={recs}
-            reading={Object.fromEntries(Object.entries(summary).map(([id, s]) => [id, { opens: s.opens, questions: s.questions.length }]))}
-          />
-        )}
               </span>
               {fields.length === 0 && (
                 <span style={{ fontSize: 12.5, color: T.amberText }}>
                   {fr ? "Aucun champ plac\u00e9. Personne ne peut encore signer." : "No fields placed yet. Nobody can sign."}
                 </span>
               )}
-              <button onClick={() => setPlacing(true)}
-                style={{ marginLeft: "auto", height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>
-                {fields.length === 0 ? (fr ? "Placer les champs" : "Place the fields") : (fr ? "Modifier les champs" : "Edit the fields")}
-              </button>
+              <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 12 }}>
+                {/* Fields are editable only while nobody has signed. /api/signature-fields
+                    already refuses with a 409 after the first signature, so a button here
+                    was a handle on a locked door: click, place, save, error. */}
+                {recs.some((r) => r.is_signer && r.signed_at) ? (
+                  <span style={{ fontSize: 12.5, color: T.faint }}>
+                    {fr ? "Champs verrouill\u00e9s apr\u00e8s la premi\u00e8re signature." : "Fields locked once someone has signed."}
+                  </span>
+                ) : (
+                  <button onClick={() => setPlacing(true)}
+                    style={{ height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 12px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" }}>
+                    {fields.length === 0 ? (fr ? "Placer les champs" : "Place the fields") : (fr ? "Modifier les champs" : "Edit the fields")}
+                  </button>
+                )}
+                {/* Only once everyone is in. A half-signed PDF in circulation is a
+                    document that looks like an agreement and is not one. */}
+                {signingCompletedAt && (
+                  <SignedDocumentButton documentId={doc.id} title={doc.title} label={fr ? "T\u00e9l\u00e9charger le document sign\u00e9" : "Download signed"} />
+                )}
+              </span>
             </div>
+            <SigningProgress
+              recipients={recs}
+              reading={Object.fromEntries(Object.entries(summary).map(([id, s]) => [id, { opens: s.opens, questions: s.questions.length }]))}
+            />
           </div>
         )}
         <GapsPanel documentId={doc.id} />
