@@ -165,6 +165,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
               <ShareButton documentId={doc.id} variants={variants} counts={variantCounts} signedDoc={!!signingCompletedAt}
                 existing={recs}
+                signingDoc={signingEnabled}
                 onSent={(id, addr) => setRecs((p) => p.map((x) => (x.id === id ? { ...x, email: x.email ?? addr, sent_at: new Date().toISOString() } : x)))}
                 onCreated={(r) => { setRecs((p) => [r, ...p]); setSelected(r.id); }} />
               <button onClick={() => setImporting(true)} title="Import recipients from a CSV file" style={{ ...ghost, flex: 1 }}>CSV</button>
@@ -319,7 +320,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
     </div>
   );
 }
-function ShareButton({ documentId, onCreated, onSent, variants = [], counts = {}, signedDoc = false, existing = [] }: { documentId: string; onCreated: (r: Rec) => void; onSent?: (id: string, email: string) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean; existing?: Rec[] }) {
+function ShareButton({ documentId, onCreated, onSent, variants = [], counts = {}, signedDoc = false, existing = [], signingDoc = false }: { documentId: string; onCreated: (r: Rec) => void; onSent?: (id: string, email: string) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean; existing?: Rec[]; signingDoc?: boolean }) {
   const locale = useLocale();
   const dd = getDict(locale).documentDetailPage;
   const [open, setOpen] = useState(false);
@@ -337,6 +338,7 @@ function ShareButton({ documentId, onCreated, onSent, variants = [], counts = {}
       )}
       {open && (
         <ProspectModal
+          signingDoc={signingDoc}
           existing={existing}
           onSent={onSent}
           variants={variants}

@@ -12,7 +12,7 @@ const choiceBtn = { display: "block", width: "100%", background: T.card, border:
 const iconWrap = { width: 30, height: 30, borderRadius: 4, border: "1px solid " + T.border, background: T.soft, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 };
 const ghostBtn = { height: 34, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 13px", fontSize: 13.5, fontWeight: 500, fontFamily: "inherit", color: T.heading, cursor: "pointer" };
 
-export default function ProspectModal({ documentId, onClose, onCreated, onSent, variants = [], counts = {}, existing = [] }: {
+export default function ProspectModal({ documentId, onClose, onCreated, onSent, variants = [], counts = {}, existing = [], signingDoc = false }: {
   documentId: string;
   onClose: () => void;
   onCreated: (rec: NewRec, readUrl: string, emailInfo: { sent: boolean; warning?: string } | null) => void;
@@ -20,6 +20,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
   variants?: Variant[];
   counts?: Record<string, number>;
   existing?: Existing[];
+  signingDoc?: boolean;
 }) {
   const locale = useLocale();
   const pm = getDict(locale).prospectModal;
@@ -43,6 +44,30 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
   const [sendingTo, setSendingTo] = useState("");
   const [fillEmail, setFillEmail] = useState<Record<string, string>>({});
   const [addNew, setAddNew] = useState(false);
+  const [suggest, setSuggest] = useState<{ firstName: string; lastName: string; label: string; email: string }[]>([]);
+  const [suggestFor, setSuggestFor] = useState<"name" | "email" | "">("");
+
+  // Contacts already typed anywhere in the workspace. Debounced, because this
+  // fires on every keystroke and the query is a double ILIKE.
+  function lookup(q: string, field: "name" | "email") {
+    setSuggestFor(field);
+    if (q.trim().length < 2) { setSuggest([]); return; }
+    window.clearTimeout((lookup as unknown as { t?: number }).t);
+    (lookup as unknown as { t?: number }).t = window.setTimeout(async () => {
+      try {
+        const res = await fetch("/api/contacts?q=" + encodeURIComponent(q.trim()));
+        const json = await res.json();
+        setSuggest(Array.isArray(json.contacts) ? json.contacts : []);
+      } catch { setSuggest([]); }
+    }, 200);
+  }
+
+  // One click fills all three. Typing over it afterwards is still allowed: this
+  // is a shortcut, not a picker.
+  function take(x: { firstName: string; lastName: string; email: string }) {
+    setFirstName(x.firstName); setLastName(x.lastName); setEmail(x.email);
+    setSuggest([]); setSuggestFor("");
+  }
 
   const live = variants.filter((v) => v.active);
   const suggested = live.length ? live.reduce((best, v) => ((counts[v.id] ?? 0) < (counts[best.id] ?? 0) ? v : best), live[0]) : null;
@@ -51,7 +76,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
 
   // The existing list belongs to the EMAIL step only. On the link step these
   // people already have a link and the sidebar already copies it.
-  const showList = step === "email" && existing.length > 0;
+  const showList = signingDoc && step === "email" && existing.length > 0;
   const showForm = step === "link" || !showList || addNew;
 
   // Sends the link this person ALREADY has. No row is created: a second row for
@@ -180,12 +205,25 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
 
             {showForm && (
               <>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <div style={{ flex: 1 }}><span style={label}>{pm.firstName}</span><input className="t-in" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Sarah" style={input} /></div>
+                <div style={{ display: "flex", gap: 10, position: "relative" }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={label}>{pm.firstName}</span>
+                    <input className="t-in" value={firstName} autoComplete="off"
+                      onChange={(e) => { setFirstName(e.target.value); lookup(e.target.value, "name"); }}
+                      onBlur={() => window.setTimeout(() => setSuggest([]), 150)}
+                      placeholder="Sarah" style={input} />
+                    {suggestFor === "name" && suggest.length > 0 && <Suggestions items={suggest} onPick={take} />}
+                  </div>
                   <div style={{ flex: 1 }}><span style={label}>{pm.lastName}</span><input className="t-in" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Chen" style={input} /></div>
                 </div>
                 <span style={label}>{step === "email" ? pm.emailLabel : emailForGrouping}</span>
-                <input className="t-in" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="sarah@company.com" style={step === "email" ? input : { ...input, marginBottom: 6 }} />
+                <div style={{ position: "relative" }}>
+                  <input className="t-in" type="email" value={email} autoComplete="off"
+                    onChange={(e) => { setEmail(e.target.value); lookup(e.target.value, "email"); }}
+                    onBlur={() => window.setTimeout(() => setSuggest([]), 150)}
+                    placeholder="sarah@company.com" style={step === "email" ? input : { ...input, marginBottom: 6 }} />
+                  {suggestFor === "email" && suggest.length > 0 && <Suggestions items={suggest} onPick={take} />}
+                </div>
                 {step === "link" && <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 12px", lineHeight: 1.45 }}>{groupingHint}</p>}
               </>
             )}
@@ -228,6 +266,33 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// The address is shown under every name on purpose: two people called Ben
+// Johnson on different addresses are two contacts, and the name alone cannot
+// tell them apart.
+function Suggestions({ items, onPick }: {
+  items: { firstName: string; lastName: string; label: string; email: string }[];
+  onPick: (x: { firstName: string; lastName: string; email: string }) => void;
+}) {
+  return (
+    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, marginTop: -6, zIndex: 10,
+                  background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard,
+                  boxShadow: T.overlayShadow, maxHeight: 210, overflowY: "auto" }}>
+      {items.map((x, i) => (
+        <button key={x.email} type="button"
+          // onMouseDown, not onClick: blur fires first and would close this
+          // before a click could land.
+          onMouseDown={(e) => { e.preventDefault(); onPick(x); }}
+          style={{ display: "block", width: "100%", textAlign: "left", background: "none",
+                   border: "none", borderTop: i ? "1px solid " + T.borderSoft : "none",
+                   padding: "8px 11px", cursor: "pointer", fontFamily: T.font }}>
+          <span style={{ display: "block", fontSize: 13.5, color: T.heading }}>{x.label}</span>
+          <span style={{ display: "block", fontSize: 12, color: T.faint }}>{x.email}</span>
+        </button>
+      ))}
     </div>
   );
 }
