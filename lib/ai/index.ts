@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { Task, RunResult, Provider, ProviderName } from "./types";
 import { priceOf, ZERO_USAGE } from "./models";
 import { mockProvider } from "./providers/mock";
@@ -51,6 +52,37 @@ function extractJson(raw: string): unknown {
   return JSON.parse(cleaned.slice(start, end + 1));
 }
 /**
+ * The schema, stated to the model.
+ *
+ * Nothing here used to send it. Every prompt had to DESCRIBE its own output in
+ * prose, and a prompt that says "judgedOn is the most important field" does not
+ * tell a model that judgedOn is an array of at most four strings. So the model
+ * invented plausible keys, and zod rejected them: icp-people never once
+ * succeeded, on any account, since the day it was written.
+ *
+ * Describing a contract in prose beside a machine-readable definition of the
+ * same contract is a drift waiting to happen. This sends the definition.
+ */
+function schemaBlock(schema: unknown): string {
+  try {
+    const json = z.toJSONSchema(schema as z.ZodType, { io: "output" });
+    return [
+      "",
+      "",
+      "RETURN JSON MATCHING THIS SCHEMA EXACTLY. Use these key names and no others.",
+      "Enum fields accept ONLY the listed values. Respect every maxItems and maxLength.",
+      "Omit an optional array rather than inventing entries for it. No prose, no code fences.",
+      "",
+      JSON.stringify(json),
+    ].join("\n");
+  } catch {
+    // An unrepresentable schema is not a reason to fail the call. The prompt
+    // still carries its prose description, which is where we were before.
+    return "";
+  }
+}
+
+/**
  * The single entry point for every AI call in ReadProspects.
  *
  * Nothing else in the codebase talks to a model. That means switching provider,
@@ -85,7 +117,7 @@ export async function runAI<TIn, TOut>(
   const provider = PROVIDERS[providerName];
   const req = {
     tier: task.tier,
-    cacheable: task.cacheable(input),
+    cacheable: task.cacheable(input) + schemaBlock(task.schema),
     system: task.system(input),
     user: task.user(input),
     maxTokens: task.maxTokens,
