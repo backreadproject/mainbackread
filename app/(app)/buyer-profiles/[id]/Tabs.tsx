@@ -4,8 +4,9 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import type { Locale } from "@/lib/i18n";
 import type { Profile } from "@/lib/buyer-profile";
-import type { PeopleOutput } from "@/lib/ai/tasks/buyer-passes";
+import type { ObservedSummary } from "@/lib/observed";
 import { PLATFORMS, criteriaFor, nothingToSearchOn, type PlatformId, type ProspectFilters } from "@/lib/search-criteria";
+import { personaSlug } from "@/lib/persona-match";
 
 /**
  * The three basis tiers, as approved.
@@ -80,96 +81,10 @@ const btn: React.CSSProperties = { height: 27, padding: "0 9px", border: "1px so
 
 /* ---------------------------------------------------------------- */
 
-function PersonaDetail({
-  people, index, onBack, locale, attachedDoc,
-}: {
-  people: PeopleOutput;
-  index: number;
-  onBack: () => void;
-  locale: Locale;
-  attachedDoc: { id: string; title: string } | null;
-}) {
-  const fr = locale === "fr";
-  const [i, setI] = useState(index);
-  const p = people.personas[i];
-  const angle = people.angles.find((a) => a.forPersona === p?.name);
-
-  const c = {
-    back: fr ? "Retour au profil" : "Back to profile",
-    role: fr ? "R\u00f4le dans l\u2019affaire" : "Role in the deal",
-    variants: fr ? "Variantes de titre" : "Title variants",
-    reports: fr ? "Rattach\u00e9 \u00e0" : "Reports to",
-    measured: fr ? "\u00c9valu\u00e9 sur" : "Measured on",
-    wants: fr ? "Ce qu\u2019ils veulent" : "What they want",
-    fears: fr ? "Ce qu\u2019ils craignent" : "What they fear",
-    budget: fr ? "Pouvoir d\u2019achat" : "Budget authority",
-    objection: fr ? "Objection qu\u2019ils soul\u00e8vent" : "Objection they raise",
-    responds: fr ? "Ce \u00e0 quoi ils r\u00e9agissent" : "What they respond to",
-    loses: fr ? "Ce qui les perd" : "What loses them",
-    gathers: fr ? "O\u00f9 ils se retrouvent" : "Where they gather",
-    lead: fr ? "Ouvrir avec" : "Lead with",
-    noGather: fr
-      ? "Aucun lieu nomm\u00e9 dans vos r\u00e9ponses. Nous n\u2019en inventons pas : envoyer quelqu\u2019un dans une communaut\u00e9 o\u00f9 son acheteur n\u2019est pas co\u00fbte une semaine."
-      : "None named in your answers. We do not invent one: sending someone to a community their buyer is not in costs a week.",
-    notGenerated: fr ? "Nous ne g\u00e9n\u00e9rons pas ce que cette personne \u00e9coute, cherche sur Google ou fait sur LinkedIn. Ces champs existent dans tous les outils de persona et aucun n\u2019est connu."
-      : "We do not generate what this person listens to, Googles, or does on LinkedIn. Those fields appear in every persona tool and none of them are known.",
-    variantTarget: fr ? "Utiliser comme cible de variante A/B" : "Use as A/B variant target",
-  };
-
-  const ROLE: Record<string, string> = {
-    champion: fr ? "Porte le projet" : "Champion",
-    "economic buyer": fr ? "Acheteur \u00e9conomique" : "Economic buyer",
-    blocker: fr ? "Bloque" : "Blocker",
-    user: fr ? "Utilisateur" : "User",
-    "technical evaluator": fr ? "\u00c9valuateur technique" : "Technical evaluator",
-  };
-
-  if (!p) return null;
-
-  return (
-    <>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-        <select value={i} onChange={(e) => setI(Number(e.target.value))} style={{ ...btn, height: 32, cursor: "pointer", paddingRight: 24 }}>
-          {people.personas.map((x, n) => <option key={x.name} value={n}>{x.name}</option>)}
-        </select>
-        {attachedDoc && (
-          <a href={"/documents/" + attachedDoc.id} style={{ ...btn, height: 32, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
-            {c.variantTarget}
-          </a>
-        )}
-        <button style={{ ...btn, height: 32, marginLeft: "auto" }} onClick={onBack}>{c.back}</button>
-      </div>
-
-      <h2 style={{ fontSize: 22, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 6px" }}>{p.name}</h2>
-      <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 20px" }}>{ROLE[p.roleInDeal] ?? p.roleInDeal}</p>
-
-      <Kv items={[
-        { k: c.variants, v: p.titleVariants.join(", ") },
-        { k: c.reports, v: p.reportsTo },
-        { k: c.measured, v: p.measuredOn },
-        { k: c.wants, v: p.wants },
-        { k: c.fears, v: p.afraidOf },
-        { k: c.budget, v: p.budgetAuthority },
-        { k: c.objection, v: p.objectionTheyRaise },
-        { k: c.responds, v: p.respondsTo },
-        { k: c.loses, v: p.losesThem },
-        { k: c.lead, v: angle?.leadWith ?? "" },
-        { k: c.gathers, v: p.gathersAt.length ? p.gathersAt.join(", ") : c.noGather },
-      ]} />
-
-      <Rule />
-      <Note tone="amber">{c.notGenerated}</Note>
-    </>
-  );
-}
-
-/* ---------------------------------------------------------------- */
-
 export function StatedTab({
-  p, locale, attachedDoc,
-}: { p: Profile; locale: Locale; attachedDoc: { id: string; title: string } | null }) {
+  p, locale, attachedDoc, profileId,
+}: { p: Profile; locale: Locale; attachedDoc: { id: string; title: string } | null; profileId: string }) {
   const fr = locale === "fr";
-  const [persona, setPersona] = useState<number | null>(null);
   const m = p.market;
   const pe = p.people;
 
@@ -214,9 +129,6 @@ export function StatedTab({
 
   if (!m) return <p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>{c.nothing}</p>;
 
-  if (persona !== null && pe) {
-    return <PersonaDetail people={pe} index={persona} onBack={() => setPersona(null)} locale={locale} attachedDoc={attachedDoc} />;
-  }
 
   return (
     <>
@@ -261,14 +173,18 @@ export function StatedTab({
               <th style={th}>{c.colFear}</th><th style={{ ...th, width: 110 }}>{c.colMove}</th><th style={{ ...th, width: 70 }} />
             </tr></thead>
             <tbody>
-              {pe.personas.map((x, i) => (
+              {pe.personas.map((x) => (
                 <tr key={x.name}>
-                  <td style={{ ...td, color: T.green, fontWeight: 500 }}>{x.name}</td>
+                  <td style={{ ...td, fontWeight: 500 }}>
+                    <a href={"/buyer-profiles/" + profileId + "/persona/" + personaSlug(x.name)}
+                       className="dc-title" style={{ textDecoration: "none" }}>{x.name}</a>
+                  </td>
                   <td style={td}>{ROLE[x.roleInDeal] ?? x.roleInDeal}</td>
                   <td style={td}>{x.afraidOf}</td>
                   <td style={{ ...td, color: T.faint }}>{"\u2014"}</td>
                   <td style={{ ...td, textAlign: "right" }}>
-                    <button style={btn} onClick={() => setPersona(i)}>{c.open}</button>
+                    <a href={"/buyer-profiles/" + profileId + "/persona/" + personaSlug(x.name)}
+                       style={{ ...btn, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>{c.open}</a>
                   </td>
                 </tr>
               ))}
@@ -481,13 +397,22 @@ export function FindTab({ p, locale }: { p: Profile; locale: Locale }) {
 
 /* ---------------------------------------------------------------- */
 
-export function ObservedTab({ locale, threshold }: { locale: Locale; threshold: number }) {
+export function ObservedTab({ locale, threshold, summary }: { locale: Locale; threshold: number; summary: ObservedSummary }) {
   const fr = locale === "fr";
+  const engaged = summary.engaged;
+  const short = Math.max(0, threshold - engaged);
   const c = {
-    t: fr ? "Pas encore assez de lecteurs pour dire quoi que ce soit" : "Not enough readers to say anything yet",
-    d: fr
-      ? "Personne n\u2019a encore \u00e9t\u00e9 mesur\u00e9 contre ce profil. En dessous d\u2019environ " + threshold + " lecteurs engag\u00e9s, tout motif ici serait du bruit, et en afficher un serait pire que de ne rien afficher."
-      : "Nobody has been measured against this profile yet. Under about " + threshold + " engaged readers, any pattern here would be noise, and printing one would be worse than printing nothing.",
+    t: engaged === 0
+      ? (fr ? "Pas encore assez de lecteurs pour dire quoi que ce soit" : "Not enough readers to say anything yet")
+      : (fr ? engaged + " lecteurs engag\u00e9s, " + short + " de plus avant de pouvoir conclure"
+            : engaged + " engaged so far, " + short + " more before this can call anything"),
+    d: engaged === 0
+      ? (fr
+        ? "Personne n\u2019a encore \u00e9t\u00e9 mesur\u00e9 contre ce profil. En dessous d\u2019environ " + threshold + " lecteurs engag\u00e9s, tout motif ici serait du bruit, et en afficher un serait pire que de ne rien afficher."
+        : "Nobody has been measured against this profile yet. Under about " + threshold + " engaged readers, any pattern here would be noise, and printing one would be worse than printing nothing.")
+      : (fr
+        ? "Les chiffres ci-dessus sont r\u00e9els et compt\u00e9s. Ce qui manque, ce sont les motifs : en dessous de " + threshold + " lecteurs engag\u00e9s, deux personnes de plus d\u00e9placeraient n\u2019importe quelle conclusion, et nous ne l\u2019afficherons pas."
+        : "The counts above are real. What is missing is the pattern: under " + threshold + " engaged readers, two more people would move any conclusion, so we will not print one."),
     d2: fr ? "Cela se remplit tout seul. Rien \u00e0 configurer." : "This fills in on its own. Nothing to configure.",
     will: fr ? "Ce qui appara\u00eetra ici" : "What will appear here",
     items: [
@@ -500,6 +425,21 @@ export function ObservedTab({ locale, threshold }: { locale: Locale; threshold: 
 
   return (
     <>
+      {summary.readers > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", marginBottom: 4 }}>
+          {([
+            [summary.opened + " / " + summary.readers, fr ? "Ont ouvert" : "Opened", T.green],
+            [String(summary.engaged), fr ? "Engag\u00e9s" : "Engaged", T.green],
+            [String(summary.questioners), fr ? "Ont pos\u00e9 une question" : "Asked a question", T.indigo],
+            [String(summary.outcomesMarked), fr ? "R\u00e9sultats enregistr\u00e9s" : "Outcomes marked", T.amber],
+          ] as [string, string, string][]).map(([v, l, tone], n) => (
+            <div key={n} style={{ padding: "15px 18px", borderLeft: "3px solid " + tone }}>
+              <div style={{ fontSize: 21, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>{v}</div>
+              <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ padding: "22px 0", textAlign: "center" }}>
         <div style={{ fontSize: 15, color: T.heading, fontWeight: 500 }}>{c.t}</div>
         <div style={{ fontSize: 13, color: T.muted, marginTop: 10, lineHeight: 1.65, maxWidth: 470, marginLeft: "auto", marginRight: "auto" }}>

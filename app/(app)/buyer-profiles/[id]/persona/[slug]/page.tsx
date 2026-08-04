@@ -4,8 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { observeProfile, summarise } from "@/lib/observed";
-import { matchPersona } from "@/lib/persona-match";
-import PersonaClient, { type PersonaView, slugify } from "./PersonaClient";
+import { matchPersona, personaSlug } from "@/lib/persona-match";
+import PersonaClient, { type PersonaView } from "./PersonaClient";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +22,11 @@ type StoredPersona = {
   respondsTo?: string;
   losesThem?: string;
   gathersAt?: string[];
+};
+
+type StoredPeople = {
+  personas?: StoredPersona[];
+  angles?: { forPersona: string; leadWith: string }[];
 };
 
 export default async function PersonaPage({
@@ -59,11 +64,12 @@ export default async function PersonaPage({
     .limit(1)
     .maybeSingle();
 
-  const output = (rev?.output ?? null) as { people?: { personas?: StoredPersona[] } } | null;
+  const output = (rev?.output ?? null) as { people?: StoredPeople } | null;
   const personas = output?.people?.personas ?? [];
+  const angles = output?.people?.angles ?? [];
   if (!personas.length) notFound();
 
-  const persona = personas.find((p) => slugify(p.name) === slug);
+  const persona = personas.find((p) => personaSlug(p.name) === slug);
   if (!persona) notFound();
 
   const threshold = (profile.threshold as number) ?? 20;
@@ -76,6 +82,13 @@ export default async function PersonaPage({
     const m = matchPersona({ roles: r.roles, roleOther: r.roleOther, name: r.name }, shapes);
     return m.persona === persona.name;
   });
+
+  const { data: docs } = await supabase
+    .from("documents")
+    .select("id, title")
+    .eq("buyer_profile_id", id)
+    .limit(1);
+  const doc = (docs ?? [])[0] ?? null;
 
   const view: PersonaView = {
     name: persona.name,
@@ -90,15 +103,17 @@ export default async function PersonaPage({
     respondsTo: persona.respondsTo ?? "",
     losesThem: persona.losesThem ?? "",
     gathersAt: persona.gathersAt ?? [],
+    leadWith: angles.find((a) => a.forPersona === persona.name)?.leadWith ?? "",
   };
 
   return (
     <PersonaClient
       profile={{ id: profile.id as string, name: profile.name as string, threshold }}
       persona={view}
-      siblings={personas.map((p) => ({ name: p.name, slug: slugify(p.name) }))}
+      siblings={personas.map((p) => ({ name: p.name, slug: personaSlug(p.name) }))}
       summary={summarise(mine)}
       totalReaders={readers.length}
+      attachedDoc={doc ? { id: doc.id as string, title: (doc.title as string) ?? "Untitled" } : null}
     />
   );
 }

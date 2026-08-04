@@ -7,6 +7,7 @@ import { stepsFor, OBJECTIVES, type Branch, type Objective } from "@/lib/buyer-q
 import { PASSES, type Profile, type Pass } from "@/lib/buyer-profile";
 import DiscoveryForm from "../DiscoveryForm";
 import { Tier, Note, StatedTab, FindTab, ObservedTab } from "./Tabs";
+import type { ObservedSummary } from "@/lib/observed";
 
 type Row = {
   id: string;
@@ -40,10 +41,13 @@ export default function ProfileDetailClient({
   profile,
   documents,
   entitled,
+  observed,
 }: {
   profile: { id: string; name: string; objective: string; cadence: string; threshold: number };
   documents: { id: string; title: string }[];
   entitled: boolean;
+  /** Counted from the readers of the attached documents. No model call. */
+  observed: ObservedSummary;
 }) {
   const locale = useLocale();
   const fr = locale === "fr";
@@ -362,11 +366,11 @@ export default function ProfileDetailClient({
               <button style={btn} onClick={() => { setCurrent(null); setDraft(null); setAnswers({}); }}>{c.reanswer}</button>
             </div>
 
-            {tab === "stated" && <Tier tone={T.faint} name={c.tStated} basis={c.bStated}><StatedTab p={out!} locale={locale} attachedDoc={documents[0] ?? null} /></Tier>}
+            {tab === "stated" && <Tier tone={T.faint} name={c.tStated} basis={c.bStated}><StatedTab p={out!} locale={locale} attachedDoc={documents[0] ?? null} profileId={profile.id} /></Tier>}
             {tab === "find" && <Tier tone={T.indigo} name={fr ? "Fait public" : "Public fact"} basis={c.bFind}><FindTab p={out!} locale={locale} /></Tier>}
             {tab === "observed" && (
-              <Tier tone={T.faint} name={c.tObs} basis={c.bObs} right={"0 / " + profile.threshold + c.needed}>
-                <ObservedTab locale={locale} threshold={profile.threshold} />
+              <Tier tone={observed.engaged > 0 ? T.green : T.faint} name={c.tObs} basis={c.bObs} right={observed.engaged + " / " + profile.threshold + c.needed}>
+                <ObservedTab locale={locale} threshold={profile.threshold} summary={observed} />
               </Tier>
             )}
           </>

@@ -112,3 +112,12 @@ export function summarise<R extends ReaderLike>(readers: R[], personas: PersonaL
   }
   return { byPersona, unmatched, total: readers.length };
 }
+
+/**
+ * A persona has a name and no id, so the URL carries a slug of the name.
+ * Stable across a reorder, which an index would not be, and readable, which
+ * matters when somebody pastes a link into Slack.
+ */
+export function personaSlug(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "persona";
+}
