@@ -12,6 +12,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * failure state.
  */
 
+// Bare, so a client typed against the real schema is assignable.
+type Db = SupabaseClient;
+
+/** Every column the reader fold needs. Kept in one place because two loaders
+ *  select it and a column missing here is a silently empty field there. */
+const RECIPIENT_COLS =
+  "id, document_id, email, first_name, last_name, label, roles, role_other, company, outcome";
+
 export type SignalRow = {
   recipient_id: string;
   kind: string;
@@ -27,6 +35,10 @@ export type RecipientRow = {
   first_name?: string | null;
   last_name?: string | null;
   label?: string | null;
+  roles?: string[] | null;
+  role_other?: string | null;
+  company?: string | null;
+  outcome?: string | null;
 };
 
 /** One PERSON, not one recipient row. Somebody sent two documents is one
@@ -37,6 +49,12 @@ export interface ReaderState {
   key: string;
   name: string;
   email: string | null;
+  company: string | null;
+  /** Role ids from lib/roles.ts. What personas are matched against. */
+  roles: string[];
+  roleOther: string | null;
+  /** won, lost or no_decision, where the sender has recorded it. */
+  outcome: string | null;
   recipientIds: string[];
   documentIds: string[];
   opens: number;
@@ -59,9 +77,17 @@ export interface ObservedSummary {
   opened: number;
   engaged: number;
   questions: number;
+  /** People who asked, as against questions asked. Both appear on the mock. */
+  questioners: number;
   replies: number;
   forwards: number;
+  forwarders: number;
   documents: number;
+  won: number;
+  lost: number;
+  noDecision: number;
+  /** won + lost + no_decision. Below the threshold no rate is printed. */
+  outcomesMarked: number;
   /** Newest signal counted. With no scheduler this is what "last checked"
    *  honestly means: the data is current to here, computed when you looked. */
   lastSignalAt: string | null;
@@ -75,6 +101,14 @@ export interface ProfileObserved {
   basis: Basis;
   /** How many more engaged people before the Observed tier can say anything. */
   toThreshold: number;
+}
+
+export function emptySummary(): ObservedSummary {
+  return {
+    readers: 0, opened: 0, engaged: 0, questions: 0, questioners: 0,
+    replies: 0, forwards: 0, forwarders: 0, documents: 0,
+    won: 0, lost: 0, noDecision: 0, outcomesMarked: 0, lastSignalAt: null,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -154,6 +188,10 @@ export function buildReaders(
         key,
         name: displayName(r),
         email: r.email ? r.email.trim().toLowerCase() : null,
+        company: null,
+        roles: [],
+        roleOther: null,
+        outcome: null,
         recipientIds: [],
         documentIds: [],
         opens: 0,
@@ -173,6 +211,14 @@ export function buildReaders(
     if (!s.documentIds.includes(r.document_id)) s.documentIds.push(r.document_id);
     // A named row beats a bare address if both exist for one person.
     if (s.name === "Unnamed reader" || s.name === s.email) s.name = displayName(r);
+    // Identity merges across a person's rows: recorded on one document and
+    // blank on another is still recorded. First non-empty wins.
+    if (!s.company && r.company) s.company = r.company;
+    if (!s.roleOther && r.role_other) s.roleOther = r.role_other;
+    for (const id of r.roles ?? []) if (!s.roles.includes(id)) s.roles.push(id);
+    // An outcome is recorded per document. Won on any of them wins: somebody
+    // who closed is closed, whatever happened on the other document.
+    if (r.outcome) s.outcome = s.outcome === "won" || r.outcome === "won" ? "won" : (s.outcome ?? r.outcome);
     return s;
   };
 
@@ -225,20 +271,27 @@ export function buildReaders(
 
 export function summarise(readers: ReaderState[]): ObservedSummary {
   const docs = new Set<string>();
-  let opened = 0, engaged = 0, questions = 0, replies = 0, forwards = 0;
-  let lastSignalAt: string | null = null;
+  const s = emptySummary();
+  s.readers = readers.length;
 
   for (const r of readers) {
     for (const d of r.documentIds) docs.add(d);
-    if (r.opens > 0) opened += 1;
-    if (r.engaged) engaged += 1;
-    questions += r.questions;
-    replies += r.replies;
-    forwards += r.forwards;
-    if (r.lastAt && (!lastSignalAt || r.lastAt > lastSignalAt)) lastSignalAt = r.lastAt;
+    if (r.opens > 0) s.opened += 1;
+    if (r.engaged) s.engaged += 1;
+    s.questions += r.questions;
+    if (r.questions > 0) s.questioners += 1;
+    s.replies += r.replies;
+    s.forwards += r.forwards;
+    if (r.forwards > 0) s.forwarders += 1;
+    if (r.outcome === "won") s.won += 1;
+    else if (r.outcome === "lost") s.lost += 1;
+    else if (r.outcome === "no_decision") s.noDecision += 1;
+    if (r.lastAt && (!s.lastSignalAt || r.lastAt > s.lastSignalAt)) s.lastSignalAt = r.lastAt;
   }
 
-  return { readers: readers.length, opened, engaged, questions, replies, forwards, documents: docs.size, lastSignalAt };
+  s.documents = docs.size;
+  s.outcomesMarked = s.won + s.lost + s.noDecision;
+  return s;
 }
 
 /**
@@ -253,9 +306,6 @@ export function basisFor(hasCompleteRevision: boolean, engaged: number, threshol
 
 /* ------------------------------------------------------------------ */
 
-// Bare, so a client typed against the real schema is assignable.
-type Db = SupabaseClient;
-
 /**
  * One round trip per table for every profile at once, rather than per profile.
  * The caller has already proven entitlement; RLS scopes all three reads.
@@ -266,13 +316,14 @@ export async function observeProfiles(
   hasCompleteRevision: Record<string, boolean>,
 ): Promise<Record<string, ProfileObserved>> {
   const out: Record<string, ProfileObserved> = {};
-  const empty = (id: string, threshold: number): ProfileObserved => ({
-    profileId: id,
-    summary: { readers: 0, opened: 0, engaged: 0, questions: 0, replies: 0, forwards: 0, documents: 0, lastSignalAt: null },
-    basis: basisFor(hasCompleteRevision[id] ?? false, 0, threshold),
-    toThreshold: threshold,
-  });
-  for (const p of profiles) out[p.id] = empty(p.id, p.threshold);
+  for (const p of profiles) {
+    out[p.id] = {
+      profileId: p.id,
+      summary: emptySummary(),
+      basis: basisFor(hasCompleteRevision[p.id] ?? false, 0, p.threshold),
+      toThreshold: p.threshold,
+    };
+  }
   if (!profiles.length) return out;
 
   const ids = profiles.map((p) => p.id);
@@ -293,10 +344,10 @@ export async function observeProfiles(
 
   const { data: recs } = await supabase
     .from("recipients")
-    .select("id, document_id, email, first_name, last_name, label")
+    .select(RECIPIENT_COLS)
     .in("document_id", docRows.map((d) => d.id));
 
-  const recRows = (recs ?? []) as RecipientRow[];
+  const recRows = (recs ?? []) as unknown as RecipientRow[];
   if (!recRows.length) return out;
 
   const { data: sigs } = await supabase
@@ -338,7 +389,7 @@ export async function observeProfiles(
   return out;
 }
 
-/** One profile, with the readers themselves. For the detail page. */
+/** One profile, with the readers themselves. For the detail and persona pages. */
 export async function observeProfile(
   supabase: Db,
   profileId: string,
@@ -360,9 +411,9 @@ export async function observeProfile(
   if (docRows.length) {
     const { data: recs } = await supabase
       .from("recipients")
-      .select("id, document_id, email, first_name, last_name, label")
+      .select(RECIPIENT_COLS)
       .in("document_id", docRows.map((d) => d.id));
-    recRows = (recs ?? []) as RecipientRow[];
+    recRows = (recs ?? []) as unknown as RecipientRow[];
 
     if (recRows.length) {
       const { data: sigs } = await supabase
