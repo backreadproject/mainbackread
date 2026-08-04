@@ -1164,3 +1164,46 @@ create index if not exists icp_profiles_profile_idx on public.icp_profiles (prof
 alter table public.documents
   add column if not exists buyer_profile_id uuid references public.buyer_profiles(id) on delete set null;
 create index if not exists documents_buyer_profile_idx on public.documents (buyer_profile_id) where buyer_profile_id is not null;
+
+-- Revisions belong to a buyer profile, not to a workspace. These three were
+-- all scoped to COALESCE(organization_id, owner_id) from when a workspace held
+-- exactly one lineage: the unique revision number blocked a second profile from
+-- ever starting, and the one-draft rule blocked editing two profiles at once.
+drop index if exists icp_profiles_scope_revision;
+drop index if exists icp_profiles_one_draft;
+drop index if exists icp_profiles_asserted;
+
+create unique index if not exists icp_profiles_profile_revision
+  on public.icp_profiles (profile_id, revision);
+
+create unique index if not exists icp_profiles_profile_one_draft
+  on public.icp_profiles (profile_id) where status = 'draft';
+
+create index if not exists icp_profiles_profile_asserted
+  on public.icp_profiles (profile_id, revision desc)
+  where source = 'asserted' and status = 'complete';
+
+-- Merging a pass into the output, atomically. people, demand and market read
+-- the record but not each other, so they run concurrently -- and concurrently,
+-- a read-modify-write from the route would keep only the last of the three.
+create or replace function public.icp_merge_output(
+  p_id uuid, p_patch jsonb, p_pass text, p_confidence jsonb, p_hash text
+) returns public.icp_profiles language plpgsql as $$
+declare r public.icp_profiles; base jsonb; new_done jsonb;
+begin
+  select * into r from public.icp_profiles where id = p_id for update;
+  if not found then raise exception 'no such revision'; end if;
+  if r.answers_hash is not null and r.answers_hash is distinct from p_hash then
+    base := jsonb_build_object('version', 2, 'done', '[]'::jsonb);
+  else
+    base := coalesce(r.output, jsonb_build_object('version', 2, 'done', '[]'::jsonb));
+  end if;
+  new_done := coalesce(base -> 'done', '[]'::jsonb);
+  if not (new_done @> to_jsonb(p_pass)) then new_done := new_done || to_jsonb(p_pass); end if;
+  update public.icp_profiles
+  set output = (base || p_patch) || jsonb_build_object('done', new_done, 'confidence', p_confidence),
+      answers_hash = p_hash, status = 'complete',
+      completed_at = coalesce(completed_at, now()), updated_at = now()
+  where id = p_id returning * into r;
+  return r;
+end; $$;
