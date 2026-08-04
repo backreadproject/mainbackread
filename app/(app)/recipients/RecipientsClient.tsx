@@ -104,17 +104,19 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
                   <span style={{ fontSize: 13, color: T.faint }}>{"\u2014"}</span>
                 )}
               </span>
-              <span className="data-cell" data-label={rp.colDocument} style={{ fontSize: 13.5, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
+              <span className="data-cell" data-label={rp.colDocument} style={{ minWidth: 0 }}>
+                <span style={{ display: "inline-block", maxWidth: "100%", border: "1px solid " + T.border, borderRadius: 4, background: T.soft, padding: "2px 7px", fontSize: 11.5, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", verticalAlign: "middle" }}>{r.documentTitle}</span>
+              </span>
               <span className="data-cell" data-label={rp.colQuestions} style={{ fontSize: 13.5, color: r.questions > 0 ? T.heading : T.faint, fontWeight: r.questions > 0 ? 500 : 400, fontVariantNumeric: "tabular-nums" }}>{r.questions}</span>
               <span className="data-cell" data-label={rp.colShared} style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(r.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
               <span className="data-cell" data-label={rp.colStatus}>
                 {r.outcome && OUT[r.outcome] ? (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", border: "1px solid " + T.border, borderRadius: 4, background: T.soft, padding: "2px 7px", fontSize: 11.5, color: T.body }}>
                     <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: OUT[r.outcome].tone }} />
                     {OUT[r.outcome].label}
                   </span>
                 ) : (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 7, whiteSpace: "nowrap", fontSize: 13.5, color: T.heading }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, whiteSpace: "nowrap", border: "1px solid " + T.border, borderRadius: 4, background: T.soft, padding: "2px 7px", fontSize: 11.5, color: T.body }}>
                     <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: r.opened ? T.green : T.faint }} />
                     {r.opened ? rp.statusOpened : rp.statusNew}
                   </span>
