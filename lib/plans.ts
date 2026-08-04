@@ -170,7 +170,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
       recipientsPerDocument: null,
-      buyerProfiles: null,
+      buyerProfiles: 1,
       sendsPerMonth: null,
       seats: null,
     },
