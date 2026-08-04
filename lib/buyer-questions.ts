@@ -93,6 +93,17 @@ const FUNDER = g("Type", ["Private foundation", "Corporate foundation", "Governm
 const GRANT = g("Smallest to largest", ["Under USD 10,000", "USD 10,000 to 50,000", "USD 50,000 to 250,000", "USD 250,000 to 1 million", "Over USD 1 million"]);
 const PROGRAMME = g("Area", ["Health", "Education", "Livelihoods and enterprise", "Climate and environment", "Governance and rights", "Water and sanitation", "Food security", "Gender and inclusion", "Humanitarian response", "Arts and culture", "Research"]);
 
+/** Agencies quote a fee, not an annual contract, so the DEAL bands with
+ *  their "a year" suffix say the wrong thing on the client branch. */
+const ENGAGE = g("Smallest to largest", ["Under USD 1,000", "USD 1,000 to 5,000", "USD 5,000 to 10,000", "USD 10,000 to 25,000", "USD 25,000 to 50,000", "USD 50,000 to 100,000", "USD 100,000 to 250,000", "Over USD 250,000"]);
+
+/** A partnership is not a sale and headcount says nothing about one. What
+ *  matters is the shape of the arrangement, what the partner gets out of it,
+ *  and how many people they can put in front of you. */
+const PARTNER_TYPE = g("Type", ["Referral partner", "Reseller or VAR", "Technology or integration", "Implementation or delivery partner", "Co-marketing", "Distributor", "Affiliate", "Strategic alliance"]);
+const INCENTIVE = g("What the partner gets", ["Revenue share", "Flat referral fee", "Reseller margin or discount", "Co-selling, no money changes hands", "Marketing development funds", "Reciprocal referrals", "Nothing yet, still deciding"]);
+const AUDIENCE = g("Smallest to largest", ["Under 1,000", "1,000 to 10,000", "10,000 to 50,000", "50,000 to 250,000", "Over 250,000", "Not something you can see"]);
+
 /* ---------------- per objective ---------------- */
 
 const SELLS_LABEL: Record<Objective, [string, string]> = {
@@ -152,15 +163,36 @@ function tailFields(o: Objective, fr: boolean): Field[] {
     sel("close", "Time from first contact to funds", "D\u00e9lai entre premier contact et financement", CLOSE),
   ];
 
-  // outbound, client and partnership all describe an organisation they sell to.
+  if (o === "partnership") return [
+    multi("partnertype", "Type of partner", "Type de partenaire",
+      "Each one is a different conversation and a different contract.",
+      "Chaque type est une conversation et un contrat diff\u00e9rents.", PARTNER_TYPE),
+    multi("incentive", "What the partner gets", "Ce que re\u00e7oit le partenaire",
+      "The incentive is the pitch. A partnership with nothing in it for them does not survive its first quarter.",
+      "L\u2019int\u00e9ressement fait tout le discours.", INCENTIVE),
+    multi("audience", "Size of the audience they reach", "Taille de l\u2019audience qu\u2019ils touchent",
+      "Roughly. Overlap matters more than size, and overlap is the half you cannot estimate from here.",
+      "Approximativement. Le recouvrement compte plus que la taille.", AUDIENCE),
+    sel("close", "Time from first conversation to a live partnership", "D\u00e9lai entre premier \u00e9change et partenariat actif", CLOSE),
+  ];
+
+  if (o === "client") return [
+    multi("deal", "Typical engagement value", "Valeur habituelle d\u2019une mission",
+      "Retainer value over its term, or the project fee. Pick every band you genuinely work in.",
+      "Valeur du forfait sur sa dur\u00e9e, ou le prix du projet.", ENGAGE),
+    multi("size", "Client size", "Taille des clients",
+      "Headcount of the organisations you are approaching.",
+      "Effectif des organisations vis\u00e9es.", SIZE),
+    sel("close", "Time from first conversation to signed", "D\u00e9lai entre premier \u00e9change et signature", CLOSE),
+  ];
+
+  // outbound. A product sold to an organisation, priced per year.
   return [
-    multi("deal", o === "partnership" ? "Value a partnership is worth" : "Typical deal size",
-      o === "partnership" ? "Valeur d\u2019un partenariat" : "Taille d\u2019affaire habituelle",
+    multi("deal", "Typical deal size", "Taille d\u2019affaire habituelle",
       "Pick every band you genuinely close in.", "Chaque tranche o\u00f9 vous concluez vraiment.", DEAL),
-    multi("size", o === "partnership" ? "Partner size" : "Customer size",
-      o === "partnership" ? "Taille du partenaire" : "Taille des clients",
+    multi("size", "Customer size", "Taille des clients",
       "Headcount of the organisations you are approaching.", "Effectif des organisations vis\u00e9es.", SIZE),
-    { id: "close", kind: "select", groups: CLOSE, label: fr ? "D\u00e9lai de conclusion" : "Time to close" },
+    sel("close", "Time to close", "D\u00e9lai de conclusion", CLOSE),
   ];
 }
 

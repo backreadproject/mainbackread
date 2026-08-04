@@ -17,7 +17,7 @@ export const runtime = "nodejs";
  * used one slot, not four.
  */
 
-const OBJECTIVES = ["outbound", "client", "investor", "partnership"] as const;
+const OBJECTIVES = ["outbound", "client", "investor", "partnership", "recruiting", "retail", "nonprofit"] as const;
 const CADENCES = ["daily", "weekly", "monthly", "manual"] as const;
 type Objective = (typeof OBJECTIVES)[number];
 type Cadence = (typeof CADENCES)[number];

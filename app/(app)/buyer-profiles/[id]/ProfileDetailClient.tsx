@@ -389,19 +389,25 @@ export default function ProfileDetailClient({
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 7px" }}>{c.objH}</h2>
                 <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 16px", lineHeight: 1.6, maxWidth: 700 }}>{c.objP}</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
-                  {OBJECTIVES.map((o) => (
-                    <button key={o.id} type="button" onClick={() => setObjective(o.id)} style={{
-                      border: "1px solid " + (objective === o.id ? T.green : T.border),
-                      boxShadow: objective === o.id ? "inset 0 0 0 1px " + T.green : "none",
-                      borderRadius: T.rCard, background: T.card, padding: 15, textAlign: "left",
-                      cursor: "pointer", fontFamily: T.font,
-                    }}>
-                      <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading }}>{fr ? o.fr : o.en}</span>
-                      <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>{fr ? o.hintFr : o.hintEn}</span>
-                    </button>
-                  ))}
-                </div>
+                {([OBJECTIVES.slice(0, 4), OBJECTIVES.slice(4)] as const).map((group, gi) => (
+                  <div key={gi} style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(" + (gi === 0 ? 2 : 3) + ", minmax(0,1fr))",
+                    gap: 12, marginTop: gi === 0 ? 0 : 12,
+                  }}>
+                    {group.map((o) => (
+                      <button key={o.id} type="button" onClick={() => setObjective(o.id)} style={{
+                        border: "1px solid " + (objective === o.id ? T.green : T.border),
+                        boxShadow: objective === o.id ? "inset 0 0 0 1px " + T.green : "none",
+                        borderRadius: T.rCard, background: T.card, padding: 15, textAlign: "left",
+                        cursor: "pointer", fontFamily: T.font,
+                      }}>
+                        <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading }}>{fr ? o.fr : o.en}</span>
+                        <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>{fr ? o.hintFr : o.hintEn}</span>
+                      </button>
+                    ))}
+                  </div>
+                ))}
 
                 <div style={{ height: 1, background: T.border, margin: "26px 0" }} />
 
