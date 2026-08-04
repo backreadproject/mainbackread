@@ -34,7 +34,13 @@ function readAnswers(v: unknown): Stored {
 /** After record, before the rest. The confirm step is a real gate: eight
  *  sections get built on top of that reading, and a misreading here is a
  *  misreading in all of them. */
-const AFTER_RECORD: Pass[] = PASSES.filter((p) => p !== "record");
+/** people, demand and market each read the record and nothing else, so they
+ *  run together. activation reads all three; synthesis reads activation too.
+ *  Four stages rather than six passes, and the wide stage costs as long as its
+ *  slowest member rather than the sum of three. */
+const STAGE_TWO: Pass[] = ["people", "demand", "market"];
+const STAGE_THREE: Pass[] = ["activation"];
+const STAGE_FOUR: Pass[] = ["synthesis"];
 
 export default function ProfileDetailClient({
   profile,
@@ -59,7 +65,8 @@ export default function ProfileDetailClient({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<"" | "record" | "analysis">("");
-  const [running, setRunning] = useState<Pass | null>(null);
+  const [running, setRunning] = useState<Pass[]>([]);
+  const [tick, setTick] = useState(0);
   const [tab, setTab] = useState<"stated" | "find" | "observed">("stated");
   const dirty = useRef(false);
 
@@ -165,6 +172,13 @@ export default function ProfileDetailClient({
 
   useEffect(() => { void load(); }, [load]);
 
+  // Rotates only while work is in flight, and resets when it stops.
+  useEffect(() => {
+    if (phase !== "analysis") { setTick(0); return; }
+    const h = window.setInterval(() => setTick((x) => x + 1), 6000);
+    return () => window.clearInterval(h);
+  }, [phase]);
+
   async function post<R>(body: Record<string, unknown>): Promise<R | null> {
     const res = await fetch("/api/icp", {
       method: "POST",
@@ -214,14 +228,19 @@ export default function ProfileDetailClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft, answers, count, locale]);
 
-  async function runPass(id: string, pass: Pass) {
-    setRunning(pass);
-    const r = await post<{ profile: Row; next: Pass | null }>({ action: "run", id, pass });
-    setRunning(null);
-    if (!r) return null;
-    setCurrent(r.profile);
-    setDraft(null);
-    return r;
+  async function runPass(id: string, pass: Pass, quiet = false) {
+    setRunning((r) => [...r, pass]);
+    try {
+      const r = await post<{ profile: Row; next: Pass | null }>({ action: "run", id, pass });
+      if (!r) return null;
+      // During a concurrent stage the caller reloads once at the end. Writing
+      // state from three racing responses would show whichever landed last,
+      // which is not necessarily the most complete.
+      if (!quiet) { setCurrent(r.profile); setDraft(null); }
+      return r;
+    } finally {
+      setRunning((r) => r.filter((x) => x !== pass));
+    }
   }
 
   /** Step 3. Runs the record pass only, then stops so the reading can be read. */
@@ -238,15 +257,23 @@ export default function ProfileDetailClient({
   /** Step 4. The remaining five, in order. */
   async function generateRest() {
     if (!current) return;
+    const id = current.id;
+    const already = current.output?.done ?? [];
     setBusy(true);
     setPhase("analysis");
-    for (const p of AFTER_RECORD) {
-      if (current.output?.done.includes(p)) continue;
-      const r = await runPass(current.id, p);
-      if (!r) break;
+    try {
+      const todo = (stage: Pass[]) => stage.filter((x) => !already.includes(x));
+      const two = todo(STAGE_TWO);
+      if (two.length) await Promise.all(two.map((x) => runPass(id, x, true)));
+      for (const x of [...todo(STAGE_THREE), ...todo(STAGE_FOUR)]) {
+        const r = await runPass(id, x, true);
+        if (!r) break;
+      }
+    } finally {
+      await load();
+      setBusy(false);
+      setPhase("");
     }
-    setBusy(false);
-    setPhase("");
   }
 
   async function runOne(p: Pass) {
@@ -278,6 +305,34 @@ export default function ProfileDetailClient({
   const recordDone = Boolean(out?.record);
   const allDone = Boolean(out && out.done.length === PASSES.length);
   const stage: 1 | 2 | 3 | 4 = !draft && !current ? 1 : draft ? 2 : !allDone ? 3 : 4;
+
+  // A wait you understand is a different wait. Each line names the work that
+  // pass is actually doing, so the time reads as work rather than as a hang.
+  const TICKS: string[] = fr ? [
+    "Chaque section est enregistr\u00e9e d\u00e8s qu\u2019elle arrive. Vous pouvez quitter la page et revenir.",
+    "Populations : s\u00e9parer les gens qui se ressemblent mais n\u2019ach\u00e8tent pas pareil.",
+    "Comit\u00e9 : qui signe, qui porte le projet, qui bloque.",
+    "Demande : ce que \u00e7a leur co\u00fbte, et o\u00f9 les affaires calent.",
+    "March\u00e9 : ce qu\u2019ils utilisent d\u00e9j\u00e0, et les signaux visibles de l\u2019ext\u00e9rieur.",
+    "Crit\u00e8res : des filtres collables, dans la langue de chaque plateforme.",
+    "Synth\u00e8se : ce qui ressort, et ce que cela ne peut pas vous dire.",
+  ] : [
+    "Each section saves the moment it lands. You can leave this page and come back.",
+    "Populations: separating the people who look alike but do not buy alike.",
+    "Committee: who signs, who champions, and who quietly blocks.",
+    "Demand: what it costs them, and where deals actually stall.",
+    "Market: what they already run, and which signals are visible from outside.",
+    "Criteria: pasteable filters, in each platform's own vocabulary.",
+    "Synthesis: what stands out, and what none of this can tell you.",
+  ];
+
+  function Ticker() {
+    return (
+      <div style={{ borderLeft: "3px solid " + T.indigo, background: "#F5F5FF", padding: "11px 14px", marginTop: 16, fontSize: 12.5, lineHeight: 1.6, color: "#2C2E9E" }}>
+        {TICKS[tick % TICKS.length]}
+      </div>
+    );
+  }
 
   function Steps() {
     const items: [number, string][] = [[1, c.step1], [2, c.step2], [3, c.step3], [4, c.step4]];
@@ -449,7 +504,7 @@ export default function ProfileDetailClient({
                     <div style={{ padding: "4px 16px" }}>
                       {PASSES.map((p) => {
                         const done = out.done.includes(p);
-                        const now = running === p;
+                        const now = running.includes(p);
                         return (
                           <div key={p} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid " + T.border, fontSize: 13.5 }}>
                             <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: done ? T.green : now ? T.amber : T.faint }} />
@@ -461,6 +516,7 @@ export default function ProfileDetailClient({
                         );
                       })}
                     </div>
+                    <Ticker />
                   </div>
                 )}
 

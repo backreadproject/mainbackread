@@ -259,24 +259,26 @@ export async function POST(req: NextRequest) {
         break;
     }
 
-    const done = prof.done.includes(pass) ? prof.done : [...prof.done, pass];
     const weightedIds = questionsFor(row.branch, locale).filter((q) => q.weight).map((q) => q.id);
-    const merged: IcpProfile = {
-      ...prof, ...patch, done,
-      confidence: computeConfidence(stored.items, weightedIds, stored.probes, stored.customerCount, row.branch),
-    };
 
-    const finished = done.length === PASSES.length;
-    const { data, error } = await supabase.from("icp_profiles").update({
-      output: merged,
-      answers_hash: hash,
-      status: "complete",
-      completed_at: row.completed_at ?? new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }).eq("id", row.id).select(COLS).single();
+    // Merged in Postgres under a row lock, not read-modify-write here. people,
+    // demand and market depend on record but not on each other, so they run
+    // concurrently -- and concurrently, three writes of a locally computed
+    // object would leave only the last one.
+    const { data, error } = await supabase.rpc("icp_merge_output", {
+      p_id: row.id,
+      p_patch: patch,
+      p_pass: pass,
+      p_confidence: computeConfidence(stored.items, weightedIds, stored.probes, stored.customerCount, row.branch),
+      p_hash: hash,
+    });
     if (error) return NextResponse.json({ error: "Built it, but could not save it: " + error.message }, { status: 500 });
 
-    return NextResponse.json({ profile: data as IcpRow, pass, next: nextPass(merged), done: finished });
+    // next and done come from what the DATABASE now holds, not from a local
+    // copy that a concurrent pass may already have moved past.
+    const saved = data as unknown as IcpRow;
+    const after = readProfile(saved.output);
+    return NextResponse.json({ profile: saved, pass, next: nextPass(after), done: after.done.length === PASSES.length });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[icp] pass failed", { revisionId: row.id, pass, branch: row.branch, locale, error: msg });
