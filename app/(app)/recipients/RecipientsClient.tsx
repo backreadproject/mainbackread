@@ -87,12 +87,23 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
           {filtered.length === 0 ? (
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{rows.length === 0 ? rp.emptyNone : rp.emptyFilter}</p></div>
           ) : filtered.map((r, i) => (
-            <a key={r.id} href={"/recipients/" + r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "13px 18px", borderBottom: i < filtered.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
+            <a key={r.id} href={"/recipients/" + r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "12px 18px", borderBottom: i < filtered.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
               <span className="dc-who" style={{ minWidth: 0, display: "block" }}>
-                <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{r.label || rp.unnamedReader}</span>
+                <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", justifySelf: "start", maxWidth: "100%" }}>{r.label || rp.unnamedReader}</span>
                 {r.company && <span style={{ display: "block", fontSize: 12, color: T.faint, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.company}</span>}
               </span>
-              <span className="data-cell" data-label={fr ? "R\u00f4le" : "Role"} style={{ fontSize: 13, color: (r.roles.length || r.roleOther) ? T.body : T.faint, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{describeRoles(r.roles, r.roleOther) || (fr ? "\u2014" : "\u2014")}</span>
+              <span className="data-cell" data-label={fr ? "R\u00f4le" : "Role"} style={{ minWidth: 0 }}>
+                {(r.roles.length || r.roleOther) ? (
+                  <span style={{ display: "flex", flexWrap: "wrap", gap: 4, maxHeight: 46, overflow: "hidden" }}>
+                    {r.roles.map((rid) => (
+                      <span key={rid} style={{ border: "1px solid " + T.border, borderRadius: 4, background: T.soft, padding: "2px 6px", fontSize: 11.5, color: T.body, whiteSpace: "nowrap" }}>{roleLabel(rid) ?? rid}</span>
+                    ))}
+                    {r.roleOther && <span style={{ border: "1px dashed " + T.border, borderRadius: 4, background: T.soft, padding: "2px 6px", fontSize: 11.5, color: T.body, whiteSpace: "nowrap" }}>{r.roleOther}</span>}
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 13, color: T.faint }}>{"\u2014"}</span>
+                )}
+              </span>
               <span className="data-cell" data-label={rp.colDocument} style={{ fontSize: 13.5, color: T.body, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.documentTitle}</span>
               <span className="data-cell" data-label={rp.colQuestions} style={{ fontSize: 13.5, color: r.questions > 0 ? T.heading : T.faint, fontWeight: r.questions > 0 ? 500 : 400, fontVariantNumeric: "tabular-nums" }}>{r.questions}</span>
               <span className="data-cell" data-label={rp.colShared} style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(r.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
