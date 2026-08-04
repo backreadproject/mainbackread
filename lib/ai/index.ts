@@ -11,6 +11,7 @@ export { composeTask, type ComposeInput, type ComposeOutput } from "./tasks/comp
 export { supportTask, type SupportInput, type SupportOutput, type SupportTurn } from "./tasks/support";
 export { reportTask, type ReportInput, type ReportOutput, type ReportReader } from "./tasks/report";
 export { gapsTask, type GapsInput, type GapsOutput } from "./tasks/gaps";
+export { gapTask, GapOutput, type GapInput } from "./tasks/gap";
 export {
   marketTask, peopleTask, findTask,
   MarketOutput, PeopleOutput, FindOutput, BuyerProfileOutput,

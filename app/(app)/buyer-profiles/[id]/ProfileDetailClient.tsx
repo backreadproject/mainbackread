@@ -371,7 +371,7 @@ export default function ProfileDetailClient({
             {tab === "find" && <Tier tone={T.indigo} name={fr ? "Fait public" : "Public fact"} basis={c.bFind}><FindTab p={out!} locale={locale} /></Tier>}
             {tab === "observed" && (
               <Tier tone={observed.summary.engaged > 0 ? T.green : T.faint} name={c.tObs} basis={c.bObs} right={observed.summary.engaged + " / " + profile.threshold + c.needed}>
-                <ObservedTab locale={locale} threshold={profile.threshold} view={observed} />
+                <ObservedTab locale={locale} threshold={profile.threshold} view={observed} profileId={profile.id} />
               </Tier>
             )}
           </>

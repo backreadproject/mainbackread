@@ -49,10 +49,12 @@ export default function ObservedTab({
   locale,
   threshold,
   view,
+  profileId,
 }: {
   locale: Locale;
   threshold: number;
   view: ObservedView;
+  profileId: string;
 }) {
   const fr = locale === "fr";
   const { summary, opens, common } = view;
@@ -127,6 +129,11 @@ export default function ObservedTab({
       : (fr
         ? "Les chiffres ci-dessus sont r\u00e9els et compt\u00e9s. Ce qui manque, ce sont les motifs : en dessous de " + threshold + " lecteurs engag\u00e9s, deux personnes de plus d\u00e9placeraient n\u2019importe quelle conclusion."
         : "The counts above are real. What is missing is the pattern: under " + threshold + " engaged readers, two more people would move any conclusion."),
+    gapH: fr ? "Analyse des \u00e9carts" : "Gap analysis",
+    gapP: fr
+      ? "Les chiffres de cette page sont compt\u00e9s. L\u2019analyse des \u00e9carts les lit c\u00f4te \u00e0 c\u00f4te avec ce que vous avez \u00e9crit et dit si les deux se ressemblent. C\u2019est la seule section de cette page qui raisonne plut\u00f4t que de compter."
+      : "Everything on this page is counted. The gap analysis reads it beside what you wrote and says whether the two look like each other. It is the only part of this page that reasons rather than counts.",
+    gapOpen: fr ? "Ouvrir l\u2019analyse des \u00e9carts" : "Open the gap analysis",
     fills: fr ? "Cela se remplit tout seul. Rien \u00e0 configurer." : "This fills in on its own. Nothing to configure.",
   };
 
@@ -257,6 +264,15 @@ export default function ObservedTab({
       <p style={{ fontSize: 13, color: T.muted, margin: 0, lineHeight: 1.65 }}>
         {summary.outcomesMarked === 0 ? c.rateNone : summary.outcomesMarked + c.rateFew}
       </p>
+
+      <Rule />
+      <Head>{c.gapH}</Head>
+      <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.65, maxWidth: 620 }}>{c.gapP}</p>
+      <a href={"/buyer-profiles/" + profileId + "/gap"} style={{
+        height: 32, padding: "0 11px", border: "1px solid " + T.border, borderRadius: T.rBtn,
+        background: T.card, fontSize: 13, color: T.body, fontFamily: T.font,
+        display: "inline-flex", alignItems: "center", textDecoration: "none",
+      }}>{c.gapOpen}</a>
 
       {engaged < threshold && (
         <>
