@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const { documentId, mode, firstName, lastName, email, note, variantId, isSigner, roles, roleOther } = await req.json();
+  const { documentId, mode, firstName, lastName, email, note, variantId, isSigner, roles, roleOther, company } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
   if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
@@ -23,6 +23,9 @@ export async function POST(req: Request) {
   const cleanRoles = Array.isArray(roles)
     ? Array.from(new Set(roles.filter((r: unknown): r is string => typeof r === "string" && isRoleId(r)))).slice(0, 6)
     : [];
+  const cleanCompany = typeof company === "string" && company.trim()
+    ? company.trim().slice(0, 120)
+    : null;
   const cleanRoleOther = typeof roleOther === "string" && roleOther.trim()
     ? roleOther.trim().slice(0, 80)
     : null;
@@ -62,6 +65,7 @@ export async function POST(req: Request) {
       last_name: lastName.trim(),
         roles: cleanRoles,
         role_other: cleanRoleOther,
+        company: cleanCompany,
         // Stored in BOTH modes. In link mode nothing is sent to it; it exists so
         // readers can be grouped by company. Null when not supplied.
         email: email?.trim() || null,
@@ -72,7 +76,7 @@ export async function POST(req: Request) {
         // certificate must leave SENT blank rather than invent one.
         sent_at: mode === "email" ? new Date().toISOString() : null,
     })
-    .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id, roles, role_other")
+    .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id, roles, role_other, company")
     .single();
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
   const readUrl = readerLink(rec.share_token, new URL(req.url).origin);

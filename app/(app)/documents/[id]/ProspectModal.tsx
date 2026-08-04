@@ -42,6 +42,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
   const [note, setNote] = useState("");
   const [roles, setRoles] = useState<string[]>([]);
   const [roleOther, setRoleOther] = useState("");
+  const [company, setCompany] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sendingTo, setSendingTo] = useState("");
@@ -115,7 +116,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
     try {
       const res = await fetch("/api/share-prospect", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ documentId, mode, firstName, lastName, email: email.trim() || undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined, roles, roleOther: roleOther.trim() || undefined }),
+        body: JSON.stringify({ documentId, mode, firstName, lastName, email: email.trim() || undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined, roles, roleOther: roleOther.trim() || undefined, company: company.trim() || undefined }),
       });
       const text = await res.text();
       let json: { recipient?: NewRec; readUrl?: string; emailSent?: boolean; emailWarning?: string; error?: string } = {};
@@ -230,6 +231,14 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
                 {step === "link" && <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 12px", lineHeight: 1.45 }}>{groupingHint}</p>}
               </>
             )}
+
+            <span style={label}>{fr ? "Entreprise (facultatif)" : "Company (optional)"}</span>
+            <input className="t-in" value={company} autoComplete="off"
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder={fr ? "Northwind" : "Northwind"} style={{ ...input, marginBottom: 6 }} />
+            <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 14px", lineHeight: 1.45 }}>
+              {fr ? "Regroupe les lecteurs d\u2019une m\u00eame entreprise, m\u00eame avec des adresses personnelles." : "Groups readers from the same company, even on personal email addresses."}
+            </p>
 
             <RolePicker roles={roles} other={roleOther} onChange={(r, o) => { setRoles(r); setRoleOther(o); }} />
 

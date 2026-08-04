@@ -57,7 +57,7 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
 
   const { data: recipient } = await supabase
     .from("recipients")
-    .select("id, label, share_token, document_id, created_at, email, outcome, outcome_at, outcome_snoozed_at, documents ( title )")
+    .select("id, label, share_token, document_id, created_at, email, outcome, outcome_at, outcome_snoozed_at, roles, role_other, company, delivery, documents ( title )")
     .eq("id", id)
     .single();
 
@@ -86,6 +86,16 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
 
   return <RecipientDetailClient
     recipient={{ id: recipient.id, label: recipient.label, shareToken: recipient.share_token, documentId: recipient.document_id, documentTitle: doc?.title ?? "Untitled" }}
+    identity={{
+      id: recipient.id,
+      label: recipient.label,
+      email: recipient.email ?? null,
+      company: recipient.company ?? null,
+      roles: recipient.roles ?? [],
+      roleOther: recipient.role_other ?? null,
+      delivery: recipient.delivery ?? null,
+      createdAt: recipient.created_at,
+    }}
     signals={sig}
     outcome={{
       value: (recipient.outcome ?? null) as OutcomeValue,
