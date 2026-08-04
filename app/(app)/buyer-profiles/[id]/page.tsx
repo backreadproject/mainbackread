@@ -42,7 +42,7 @@ export default async function BuyerProfilePage({
     .from("icp_profiles").select("id")
     .eq("profile_id", id).eq("status", "complete").limit(1).maybeSingle();
 
-  const { summary } = await observeProfile(
+  const observed = await observeProfile(
     supabase,
     id,
     (profile.threshold as number) ?? 20,
@@ -60,7 +60,7 @@ export default async function BuyerProfilePage({
       }}
       documents={(docs ?? []).map((d) => ({ id: d.id, title: d.title ?? "Untitled" }))}
       entitled={hasFeature(ctx.plan.id, "icp")}
-      observed={summary}
+      observed={observed}
     />
   );
 }

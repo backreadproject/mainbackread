@@ -4,7 +4,6 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import type { Locale } from "@/lib/i18n";
 import type { Profile } from "@/lib/buyer-profile";
-import type { ObservedSummary } from "@/lib/observed";
 import { PLATFORMS, criteriaFor, nothingToSearchOn, type PlatformId, type ProspectFilters } from "@/lib/search-criteria";
 import { personaSlug } from "@/lib/persona-match";
 
@@ -391,64 +390,6 @@ export function FindTab({ p, locale }: { p: Profile; locale: Locale }) {
 
       <Rule />
       <Note tone="amber">{c.noHour}</Note>
-    </>
-  );
-}
-
-/* ---------------------------------------------------------------- */
-
-export function ObservedTab({ locale, threshold, summary }: { locale: Locale; threshold: number; summary: ObservedSummary }) {
-  const fr = locale === "fr";
-  const engaged = summary.engaged;
-  const short = Math.max(0, threshold - engaged);
-  const c = {
-    t: engaged === 0
-      ? (fr ? "Pas encore assez de lecteurs pour dire quoi que ce soit" : "Not enough readers to say anything yet")
-      : (fr ? engaged + " lecteurs engag\u00e9s, " + short + " de plus avant de pouvoir conclure"
-            : engaged + " engaged so far, " + short + " more before this can call anything"),
-    d: engaged === 0
-      ? (fr
-        ? "Personne n\u2019a encore \u00e9t\u00e9 mesur\u00e9 contre ce profil. En dessous d\u2019environ " + threshold + " lecteurs engag\u00e9s, tout motif ici serait du bruit, et en afficher un serait pire que de ne rien afficher."
-        : "Nobody has been measured against this profile yet. Under about " + threshold + " engaged readers, any pattern here would be noise, and printing one would be worse than printing nothing.")
-      : (fr
-        ? "Les chiffres ci-dessus sont r\u00e9els et compt\u00e9s. Ce qui manque, ce sont les motifs : en dessous de " + threshold + " lecteurs engag\u00e9s, deux personnes de plus d\u00e9placeraient n\u2019importe quelle conclusion, et nous ne l\u2019afficherons pas."
-        : "The counts above are real. What is missing is the pattern: under " + threshold + " engaged readers, two more people would move any conclusion, so we will not print one."),
-    d2: fr ? "Cela se remplit tout seul. Rien \u00e0 configurer." : "This fills in on its own. Nothing to configure.",
-    will: fr ? "Ce qui appara\u00eetra ici" : "What will appear here",
-    items: [
-      [fr ? "Quand ils ouvrent" : "When they open", fr ? "Les jours et heures o\u00f9 vos lecteurs ont r\u00e9ellement ouvert, pas une moyenne du secteur." : "The days and hours your readers actually opened, not a benchmark from someone else's data."],
-      [fr ? "Ce qu\u2019ont fait les lecteurs engag\u00e9s" : "What engaged readers did", fr ? "Ce que les lecteurs pass\u00e9s la page trois avaient en commun, que les autres n\u2019avaient pas." : "What the ones who read past page three had in common that the rest did not."],
-      [fr ? "Taux de conclusion par persona" : "Close rate by persona", fr ? "Une fois assez d\u2019issues marqu\u00e9es gagn\u00e9es ou perdues." : "Once enough outcomes are marked won or lost."],
-      [fr ? "Analyse des \u00e9carts" : "Gap analysis", fr ? "Si les personnes qui s\u2019engagent sont celles que vous disiez viser." : "Whether the people engaging are the people you said you were targeting."],
-    ] as [string, string][],
-  };
-
-  return (
-    <>
-      {summary.readers > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", marginBottom: 4 }}>
-          {([
-            [summary.opened + " / " + summary.readers, fr ? "Ont ouvert" : "Opened", T.green],
-            [String(summary.engaged), fr ? "Engag\u00e9s" : "Engaged", T.green],
-            [String(summary.questioners), fr ? "Ont pos\u00e9 une question" : "Asked a question", T.indigo],
-            [String(summary.outcomesMarked), fr ? "R\u00e9sultats enregistr\u00e9s" : "Outcomes marked", T.amber],
-          ] as [string, string, string][]).map(([v, l, tone], n) => (
-            <div key={n} style={{ padding: "15px 18px", borderLeft: "3px solid " + tone }}>
-              <div style={{ fontSize: 21, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>{v}</div>
-              <div style={{ fontSize: 12, color: T.muted, marginTop: 4 }}>{l}</div>
-            </div>
-          ))}
-        </div>
-      )}
-      <div style={{ padding: "22px 0", textAlign: "center" }}>
-        <div style={{ fontSize: 15, color: T.heading, fontWeight: 500 }}>{c.t}</div>
-        <div style={{ fontSize: 13, color: T.muted, marginTop: 10, lineHeight: 1.65, maxWidth: 470, marginLeft: "auto", marginRight: "auto" }}>
-          {c.d}<br /><br />{c.d2}
-        </div>
-      </div>
-      <Rule />
-      <Head>{c.will}</Head>
-      <Kv items={c.items.map(([k, v]) => ({ k, v }))} />
     </>
   );
 }

@@ -18,7 +18,7 @@ type Db = SupabaseClient;
 /** Every column the reader fold needs. Kept in one place because two loaders
  *  select it and a column missing here is a silently empty field there. */
 const RECIPIENT_COLS =
-  "id, document_id, email, first_name, last_name, label, roles, role_other, company, outcome";
+  "id, document_id, email, first_name, last_name, label, roles, role_other, company, outcome, sent_at";
 
 export type SignalRow = {
   recipient_id: string;
@@ -39,7 +39,12 @@ export type RecipientRow = {
   role_other?: string | null;
   company?: string | null;
   outcome?: string | null;
+  /** Null for link-mode readers: nothing was ever sent, so there is no gap
+   *  between sending and opening to measure. */
+  sent_at?: string | null;
 };
+
+export type DocumentRow = { id: string; title: string | null; page_count: number | null };
 
 /** One PERSON, not one recipient row. Somebody sent two documents is one
  *  reader, and the threshold is a claim about people. */
@@ -66,6 +71,11 @@ export interface ReaderState {
   replies: number;
   forwards: number;
   dwellSeconds: number;
+  /** The moment they first opened anything. Distinct from firstAt, which is
+   *  the first signal of any kind. */
+  firstOpenAt: string | null;
+  /** The earliest send across their recipient rows, where one exists. */
+  sentAt: string | null;
   firstAt: string | null;
   lastAt: string | null;
   engaged: boolean;
@@ -93,6 +103,54 @@ export interface ObservedSummary {
   lastSignalAt: string | null;
 }
 
+/** When readers actually opened. Their behaviour, never a benchmark from
+ *  somebody else's data. */
+export interface OpenPattern {
+  /** Seven buckets, Monday first. Counted in UTC, which the UI states. */
+  byDay: number[];
+  firstOpens: number;
+  /** Minutes from send to first open. Null when nothing was ever sent, which
+   *  is every link-mode reader. */
+  medianMinutes: number | null;
+  fastestMinutes: number | null;
+  /** How many opened within a quarter of an hour of the send landing. */
+  within15: number;
+  /** Readers who had both a send and an open, so the median means something. */
+  measured: number;
+}
+
+export interface PageStat {
+  documentId: string;
+  title: string;
+  pageCount: number | null;
+  /** The page with the most total dwell across the cohort. */
+  page: number;
+  seconds: number;
+  /** Distinct readers who spent time on it. */
+  readers: number;
+  /** True when that page is well clear of the second placed one. Below this
+   *  the leader is a coin toss and should not be described as a finding. */
+  standout: boolean;
+}
+
+/** What separated the readers who engaged from the ones who did not. */
+export interface CommonGround {
+  engaged: number;
+  notEngaged: number;
+  askedEngaged: number;
+  askedNotEngaged: number;
+  forwardedEngaged: number;
+  forwardsTotal: number;
+  returnedEngaged: number;
+  pages: PageStat[];
+}
+
+export interface ObservedView {
+  summary: ObservedSummary;
+  opens: OpenPattern;
+  common: CommonGround;
+}
+
 export type Basis = "draft" | "stated" | "tested";
 
 export interface ProfileObserved {
@@ -109,6 +167,21 @@ export function emptySummary(): ObservedSummary {
     replies: 0, forwards: 0, forwarders: 0, documents: 0,
     won: 0, lost: 0, noDecision: 0, outcomesMarked: 0, lastSignalAt: null,
   };
+}
+
+export function emptyOpens(): OpenPattern {
+  return { byDay: [0, 0, 0, 0, 0, 0, 0], firstOpens: 0, medianMinutes: null, fastestMinutes: null, within15: 0, measured: 0 };
+}
+
+export function emptyCommon(): CommonGround {
+  return {
+    engaged: 0, notEngaged: 0, askedEngaged: 0, askedNotEngaged: 0,
+    forwardedEngaged: 0, forwardsTotal: 0, returnedEngaged: 0, pages: [],
+  };
+}
+
+export function emptyView(): ObservedView {
+  return { summary: emptySummary(), opens: emptyOpens(), common: emptyCommon() };
 }
 
 /* ------------------------------------------------------------------ */
@@ -201,6 +274,8 @@ export function buildReaders(
         replies: 0,
         forwards: 0,
         dwellSeconds: 0,
+        firstOpenAt: null,
+        sentAt: null,
         firstAt: null,
         lastAt: null,
         engaged: false,
@@ -219,6 +294,9 @@ export function buildReaders(
     // An outcome is recorded per document. Won on any of them wins: somebody
     // who closed is closed, whatever happened on the other document.
     if (r.outcome) s.outcome = s.outcome === "won" || r.outcome === "won" ? "won" : (s.outcome ?? r.outcome);
+    // Earliest send, so the gap to first open is measured from the first time
+    // this person was contacted rather than the most recent.
+    if (r.sent_at && (!s.sentAt || r.sent_at < s.sentAt)) s.sentAt = r.sent_at;
     return s;
   };
 
@@ -237,6 +315,7 @@ export function buildReaders(
     switch (sig.kind) {
       case "opened":
         s.opens += 1;
+        if (!s.firstOpenAt || sig.created_at < s.firstOpenAt) s.firstOpenAt = sig.created_at;
         break;
       case "page_dwell": {
         s.dwellSeconds += dwellSeconds(sig.value);
@@ -295,6 +374,121 @@ export function summarise(readers: ReaderState[]): ObservedSummary {
 }
 
 /**
+ * When readers opened, and how long they took.
+ *
+ * Days are bucketed in UTC. Converting to the sender's timezone would be a
+ * guess about which timezone matters, since the reader's is the one that
+ * decided the behaviour and we do not know it. The UI says which is used.
+ */
+export function openPattern(readers: ReaderState[]): OpenPattern {
+  const o = emptyOpens();
+  const gaps: number[] = [];
+
+  for (const r of readers) {
+    if (!r.firstOpenAt) continue;
+    o.firstOpens += 1;
+    // JS counts Sunday as 0. Monday first reads better and matches the mock.
+    const day = (new Date(r.firstOpenAt).getUTCDay() + 6) % 7;
+    o.byDay[day] += 1;
+
+    if (!r.sentAt) continue;
+    const mins = (new Date(r.firstOpenAt).getTime() - new Date(r.sentAt).getTime()) / 60000;
+    // A negative gap means the row was sent after it was opened, which happens
+    // when a link was shared before the email went out. Not measurable.
+    if (mins < 0) continue;
+    gaps.push(mins);
+    if (mins <= 15) o.within15 += 1;
+  }
+
+  o.measured = gaps.length;
+  if (gaps.length) {
+    gaps.sort((a, b) => a - b);
+    const mid = Math.floor(gaps.length / 2);
+    o.medianMinutes = Math.round(
+      gaps.length % 2 ? gaps[mid] : (gaps[mid - 1] + gaps[mid]) / 2,
+    );
+    o.fastestMinutes = Math.round(gaps[0]);
+  }
+  return o;
+}
+
+/**
+ * Where the cohort stopped, per document.
+ *
+ * Aggregated across readers deliberately: a page one reader lingered on is
+ * that reader's habit, and a page the whole cohort stops at is a fact about
+ * the document. Per document rather than pooled, because page four of a deck
+ * and page four of a contract have nothing to do with each other.
+ */
+export function aggregatePages(
+  recipients: RecipientRow[],
+  signals: SignalRow[],
+  documents: DocumentRow[],
+): PageStat[] {
+  const docOf = new Map<string, string>();
+  for (const r of recipients) docOf.set(r.id, r.document_id);
+
+  // documentId -> page -> { seconds, readers }
+  const acc = new Map<string, Map<number, { seconds: number; readers: Set<string> }>>();
+
+  for (const s of signals) {
+    if (s.kind !== "page_dwell" || typeof s.page !== "number") continue;
+    const docId = docOf.get(s.recipient_id);
+    if (!docId) continue;
+    const secs = dwellSeconds(s.value);
+    if (secs <= 0) continue;
+    let pages = acc.get(docId);
+    if (!pages) { pages = new Map(); acc.set(docId, pages); }
+    const cur = pages.get(s.page) ?? { seconds: 0, readers: new Set<string>() };
+    cur.seconds += secs;
+    cur.readers.add(s.recipient_id);
+    pages.set(s.page, cur);
+  }
+
+  const out: PageStat[] = [];
+  for (const doc of documents) {
+    const pages = acc.get(doc.id);
+    if (!pages || pages.size === 0) continue;
+    const ranked = [...pages.entries()]
+      .map(([page, v]) => ({ page, seconds: v.seconds, readers: v.readers.size }))
+      .sort((a, b) => b.seconds - a.seconds);
+    const top = ranked[0];
+    const second = ranked[1];
+    out.push({
+      documentId: doc.id,
+      title: doc.title ?? "Untitled",
+      pageCount: doc.page_count,
+      page: top.page,
+      seconds: top.seconds,
+      readers: top.readers,
+      // Half again as much as the runner up. Below that the leader is close to
+      // a coin toss and calling it out would invent a finding.
+      standout: !second || top.seconds >= second.seconds * 1.5,
+    });
+  }
+  return out.sort((a, b) => b.seconds - a.seconds);
+}
+
+/** What the engaged readers did that the rest did not. */
+export function commonGround(readers: ReaderState[], pages: PageStat[]): CommonGround {
+  const c = emptyCommon();
+  c.pages = pages;
+  for (const r of readers) {
+    if (r.engaged) {
+      c.engaged += 1;
+      if (r.questions > 0) c.askedEngaged += 1;
+      if (r.forwards > 0) c.forwardedEngaged += 1;
+      if (r.opens >= 2) c.returnedEngaged += 1;
+    } else {
+      c.notEngaged += 1;
+      if (r.questions > 0) c.askedNotEngaged += 1;
+    }
+    c.forwardsTotal += r.forwards;
+  }
+  return c;
+}
+
+/**
  * Draft until a revision is finished. Stated until the threshold is crossed.
  * Tested after. Nothing here is a quality judgement, only a statement about
  * what the profile has been checked against.
@@ -329,10 +523,10 @@ export async function observeProfiles(
   const ids = profiles.map((p) => p.id);
   const { data: docs } = await supabase
     .from("documents")
-    .select("id, page_count, buyer_profile_id")
+    .select("id, title, page_count, buyer_profile_id")
     .in("buyer_profile_id", ids);
 
-  const docRows = (docs ?? []) as { id: string; page_count: number | null; buyer_profile_id: string }[];
+  const docRows = (docs ?? []) as (DocumentRow & { buyer_profile_id: string })[];
   if (!docRows.length) return out;
 
   const docToProfile: Record<string, string> = {};
@@ -395,13 +589,13 @@ export async function observeProfile(
   profileId: string,
   threshold: number,
   hasCompleteRevision: boolean,
-): Promise<{ readers: ReaderState[]; summary: ObservedSummary; basis: Basis; toThreshold: number }> {
+): Promise<ObservedView & { readers: ReaderState[]; basis: Basis; toThreshold: number }> {
   const { data: docs } = await supabase
     .from("documents")
-    .select("id, page_count")
+    .select("id, title, page_count")
     .eq("buyer_profile_id", profileId);
 
-  const docRows = (docs ?? []) as { id: string; page_count: number | null }[];
+  const docRows = (docs ?? []) as DocumentRow[];
   const pageCounts: Record<string, number | null> = {};
   for (const d of docRows) pageCounts[d.id] = d.page_count;
 
@@ -426,9 +620,13 @@ export async function observeProfile(
 
   const readers = buildReaders(recRows, sigRows, pageCounts);
   const summary = summarise(readers);
+  const pages = aggregatePages(recRows, sigRows, docRows);
+
   return {
     readers,
     summary,
+    opens: openPattern(readers),
+    common: commonGround(readers, pages),
     basis: basisFor(hasCompleteRevision, summary.engaged, threshold),
     toThreshold: Math.max(0, threshold - summary.engaged),
   };

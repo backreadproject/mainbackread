@@ -6,8 +6,9 @@ import { useLocale } from "@/lib/useLocale";
 import { stepsFor, OBJECTIVES, type Branch, type Objective } from "@/lib/buyer-questions";
 import { PASSES, type Profile, type Pass } from "@/lib/buyer-profile";
 import DiscoveryForm from "../DiscoveryForm";
-import { Tier, Note, StatedTab, FindTab, ObservedTab } from "./Tabs";
-import type { ObservedSummary } from "@/lib/observed";
+import { Tier, Note, StatedTab, FindTab } from "./Tabs";
+import ObservedTab from "./ObservedTab";
+import type { ObservedView } from "@/lib/observed";
 
 type Row = {
   id: string;
@@ -47,7 +48,7 @@ export default function ProfileDetailClient({
   documents: { id: string; title: string }[];
   entitled: boolean;
   /** Counted from the readers of the attached documents. No model call. */
-  observed: ObservedSummary;
+  observed: ObservedView;
 }) {
   const locale = useLocale();
   const fr = locale === "fr";
@@ -369,8 +370,8 @@ export default function ProfileDetailClient({
             {tab === "stated" && <Tier tone={T.faint} name={c.tStated} basis={c.bStated}><StatedTab p={out!} locale={locale} attachedDoc={documents[0] ?? null} profileId={profile.id} /></Tier>}
             {tab === "find" && <Tier tone={T.indigo} name={fr ? "Fait public" : "Public fact"} basis={c.bFind}><FindTab p={out!} locale={locale} /></Tier>}
             {tab === "observed" && (
-              <Tier tone={observed.engaged > 0 ? T.green : T.faint} name={c.tObs} basis={c.bObs} right={observed.engaged + " / " + profile.threshold + c.needed}>
-                <ObservedTab locale={locale} threshold={profile.threshold} summary={observed} />
+              <Tier tone={observed.summary.engaged > 0 ? T.green : T.faint} name={c.tObs} basis={c.bObs} right={observed.summary.engaged + " / " + profile.threshold + c.needed}>
+                <ObservedTab locale={locale} threshold={profile.threshold} view={observed} />
               </Tier>
             )}
           </>
