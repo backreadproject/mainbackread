@@ -74,7 +74,7 @@ function withPath(req: NextRequest, res: NextResponse): NextResponse {
   return res;
 }
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const host = hostOf(req);
   const { pathname } = req.nextUrl;
 

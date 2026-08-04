@@ -3,7 +3,7 @@ import { getLocale } from "@/lib/locale-server";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 
 // Terms of use for the reader-delivery domain (relaydocuments.com/terms, rewritten from
-// /relay/terms by middleware). Names the real operating entity, sets out what the service
+// /relay/terms by proxy). Names the real operating entity, sets out what the service
 // does including the measurement, and allocates responsibility for content to the sender.
 // Not legal advice.
 //

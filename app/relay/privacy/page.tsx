@@ -3,7 +3,7 @@ import { getLocale } from "@/lib/locale-server";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 
 // Privacy notice for the reader-delivery domain (relaydocuments.com/privacy, rewritten
-// from /relay/privacy by middleware). It names the real operating entity, and discloses
+// from /relay/privacy by proxy). It names the real operating entity, and discloses
 // the reading measurement, the AI companion and the verdict profiling in plain language.
 // Neutral in tone, complete in substance. Not legal advice.
 //

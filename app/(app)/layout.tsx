@@ -31,7 +31,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // The wall. A lapsed subscription blocks every page except /billing, which
   // must stay reachable or there is no way to pay and the lock is permanent.
   //
-  // A layout cannot see the pathname, so middleware passes it as a header.
+  // A layout cannot see the pathname, so proxy passes it as a header.
   // If that header is ever missing the wall still holds -- an empty pathname
   // does not match /billing, so the safe outcome is the walled one.
   const ctx = await getOrgContext();

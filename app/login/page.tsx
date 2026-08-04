@@ -29,7 +29,7 @@ function LoginForm() {
     setBusy(true); setMsg("");
     const supabase = createClient();
     if (mode === "signup") {
-      // Referral code, set as a cookie by middleware when someone arrived via ?ref=.
+      // Referral code, set as a cookie by proxy when someone arrived via ?ref=.
       // It also goes into user_metadata below, because that is part of the auth
       // record and cannot be lost the way the profile upsert can.
       const refCode = (document.cookie.match(/(?:^|;\s*)rp_ref=([a-z0-9-]{3,32})/) || [])[1] || null;
