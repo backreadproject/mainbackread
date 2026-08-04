@@ -15,7 +15,7 @@ const NAV_MAIN: NavItem[] = [
   { href: "/projects", key: "projects", Icon: Folder },
   { href: "/activity", key: "activity", Icon: Activity },
   { href: "/recipients", key: "recipients", Icon: Users },
-  { href: "/buyer-profile", key: "buyerProfile", Icon: Target },
+  { href: "/buyer-profiles", key: "buyerProfile", Icon: Target },
 ];
 const NAV_CONFIG: NavItem[] = [
   { href: "/members", key: "members", Icon: UsersRound, orgOnly: true },
