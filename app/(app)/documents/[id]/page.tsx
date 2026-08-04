@@ -15,7 +15,7 @@ export default async function DocumentDetailPage({
   // RLS ensures this only returns the document if the current user owns it.
   const { data: doc } = await supabase
     .from("documents")
-    .select("id, title, created_at, storage_path, signing_enabled, signing_completed_at")
+    .select("id, title, created_at, storage_path, signing_enabled, signing_completed_at, buyer_profile_id")
     .eq("id", id)
     .single();
 
@@ -23,7 +23,7 @@ export default async function DocumentDetailPage({
 
   const { data: recipients } = await supabase
     .from("recipients")
-    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome, expires_at, revoked_at, is_signer, signed_at, declined_at, decline_reason, sent_at")
+    .select("id, label, share_token, created_at, variant_id, email, forwarded_by, outcome, expires_at, revoked_at, is_signer, signed_at, declined_at, decline_reason, sent_at, roles, role_other, company")
     .eq("document_id", id)
     .order("created_at", { ascending: false });
 
@@ -69,6 +69,29 @@ export default async function DocumentDetailPage({
   });
   const grouped = groupReaders(groupable);
 
+  // Every profile in the workspace, for the picker, and the personas of the one
+  // actually attached. RLS scopes both.
+  const { data: profileRows } = await supabase
+    .from("buyer_profiles").select("id, name, objective").order("created_at", { ascending: false });
+  const profiles = (profileRows ?? []).map((x) => ({ id: x.id, name: x.name, objective: x.objective as string }));
+
+  const attachedId = (doc.buyer_profile_id as string | null) ?? null;
+  let attached: { id: string; name: string; revision: number; personas: { name: string; titleVariants: string[] }[] } | null = null;
+  if (attachedId) {
+    const found = profiles.find((x) => x.id === attachedId);
+    const { data: rev } = await supabase
+      .from("icp_profiles").select("revision, output")
+      .eq("profile_id", attachedId).eq("status", "complete").eq("source", "asserted")
+      .order("revision", { ascending: false }).limit(1).maybeSingle();
+    const out = (rev?.output ?? null) as { people?: { personas?: { name: string; titleVariants?: string[] }[] } } | null;
+    attached = {
+      id: attachedId,
+      name: found?.name ?? "",
+      revision: (rev?.revision as number) ?? 0,
+      personas: (out?.people?.personas ?? []).map((x) => ({ name: x.name, titleVariants: x.titleVariants ?? [] })),
+    };
+  }
+
   const admin = createAdminClient();
   const { data: variants } = await admin
     .from("document_variants")
@@ -98,6 +121,8 @@ export default async function DocumentDetailPage({
     <DocumentDetailClient
       doc={doc}
       recipients={recs}
+      profiles={profiles}
+      attachedProfile={attached}
       signals={signals ?? []}
       variants={variants ?? []}
       grouped={grouped}
