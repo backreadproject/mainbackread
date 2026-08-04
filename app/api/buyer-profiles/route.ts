@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, requirePaidAccess } from "@/lib/plan-context";
 import { hasFeature, getLimit, withinLimit } from "@/lib/plans";
+import { readNotify } from "@/lib/profile-watch";
 
 export const runtime = "nodejs";
 
@@ -176,7 +177,19 @@ export async function POST(req: NextRequest) {
       patch.name = name;
     }
     if (OBJECTIVES.includes(body.objective)) patch.objective = body.objective as Objective;
-    if (CADENCES.includes(body.cadence)) patch.cadence = body.cadence as Cadence;
+    if (CADENCES.includes(body.cadence)) {
+      if (body.cadence === "daily" && ctx.plan.id !== "business") {
+        return NextResponse.json(
+          { error: "Daily re-checks are on the Business plan.", upgrade: true },
+          { status: 402 },
+        );
+      }
+      patch.cadence = body.cadence as Cadence;
+    }
+
+    // Normalised on the way in, so a stale client cannot write a shape the
+    // watcher does not understand.
+    if (body.notify && typeof body.notify === "object") patch.notify = readNotify(body.notify);
     if (typeof body.threshold === "number") {
       // Below about twenty engaged readers any pattern is noise. The floor of 5
       // exists so a customer testing the feature can see it work, not so anyone

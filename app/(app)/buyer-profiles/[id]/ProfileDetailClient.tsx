@@ -116,6 +116,7 @@ export default function ProfileDetailClient({
       ? "Raisonn\u00e9 \u00e0 partir de vos personas et de vos march\u00e9s. Le raisonnement est montr\u00e9 pour que vous puissiez le contester."
       : "Reasoned from your personas and your markets. The reasoning is shown so you can disagree with it.",
     bObs: fr ? "Vient des lecteurs qui ont r\u00e9ellement ouvert vos documents." : "From readers who actually opened your documents.",
+    settingsLink: fr ? "R\u00e9\u00e9talonnage" : "Re-benchmarking",
     allRevisions: fr ? "Toutes les r\u00e9visions" : "All revisions",
     rev: fr ? "R\u00e9vision" : "Revision",
     asserted: fr ? "\u00e9crite par vous" : "written by you",
@@ -328,6 +329,10 @@ export default function ProfileDetailClient({
         <p style={{ margin: "8px 0 0" }}>
           <a href={"/buyer-profiles/" + profile.id + "/revisions"} style={{ fontSize: 13, color: T.green, textDecoration: "none" }}>
             {c.allRevisions}
+          </a>
+          <span style={{ color: T.faint, margin: "0 8px" }}>{"\u00b7"}</span>
+          <a href={"/buyer-profiles/" + profile.id + "/settings"} style={{ fontSize: 13, color: T.green, textDecoration: "none" }}>
+            {c.settingsLink}
           </a>
         </p>
       )}
