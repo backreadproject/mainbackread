@@ -144,6 +144,15 @@ input, textarea, select, button { color-scheme: inherit; }
 .t-row, .data-row, .ov-r, .rp-row { transition: background .12s; }
 .t-row:hover, .data-row:hover, .ov-r:hover, .rp-row:hover { background: var(--rp-hover); }
 
+/* Link affordance, one definition for every list surface.
+   Green alone is 6.9:1 on white so it reads fine, but only 1.7:1 against the
+   body text beside it, which is short of WCAG 1.4.1 for colour as the sole cue.
+   The hover underline is the second cue, and costs nothing at rest.
+   !important because every dc-title carries an inline colour, and inline styles
+   can only be beaten this way. The alternative was editing eight files. */
+.dc-title { color: var(--rp-green) !important; }
+.t-row:hover .dc-title, .data-row:hover .dc-title, .rp-row:hover .dc-title { text-decoration: underline; text-underline-offset: 2px; }
+
 .set-grid { display: flex; flex-direction: column; gap: 14px; max-width: 760px; }
 .set-grid input, .set-grid textarea, .set-grid select { max-width: 100%; }
 .set-grid code, .set-grid .break { overflow-wrap: anywhere; word-break: break-word; }
