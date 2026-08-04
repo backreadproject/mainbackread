@@ -28,6 +28,8 @@ type Row = {
    *  are actually arriving. */
   willReach: boolean;
   weeksToThreshold: number | null;
+  /** The worked example. Belongs to nobody, counts for nothing. */
+  sample?: boolean;
 };
 
 const COLS = "1.6fr 1fr 0.9fr 0.7fr 0.8fr 1fr";
@@ -39,6 +41,7 @@ export default function ProfilesClient({
   topPlan,
   entitled,
   deletable,
+  sample,
 }: {
   rows: Row[];
   limit: number | null;
@@ -46,6 +49,7 @@ export default function ProfilesClient({
   topPlan: boolean;
   entitled: boolean;
   deletable: Deletable[];
+  sample: Row | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -139,6 +143,10 @@ export default function ProfilesClient({
     plansFoot: fr
       ? "Personal permet 3 profils. Team en permet 15. Business ne les limite pas."
       : "Personal allows 3 profiles. Team allows 15. Business does not limit them.",
+    sampleChip: fr ? "Exemple" : "Sample",
+    sampleFoot: fr
+      ? "Le profil d\u2019exemple ne compte pas dans votre limite et ne peut pas \u00eatre modifi\u00e9."
+      : "The sample profile does not count against your limit and cannot be edited.",
     countedFoot: fr
       ? "Le nombre de lecteurs engag\u00e9s est calcul\u00e9 \u00e0 l\u2019ouverture de cette page, \u00e0 partir des lecteurs des documents li\u00e9s. Les r\u00e9visions ne comptent pas dans votre limite, seuls les profils."
       : "Engaged readers are counted when you open this page, from the readers of the documents each profile is attached to. Revisions do not count against your limit. Only profiles do.",
@@ -180,7 +188,7 @@ export default function ProfilesClient({
   }, [rows]);
 
   const filtered = useMemo(() => {
-    let r = rows;
+    let r = sample ? [sample, ...rows] : rows;
     if (filter !== "all") r = r.filter((x) => x.objective === filter);
     if (state !== "all") r = r.filter((x) => x.basis === state);
     const t = q.trim().toLowerCase();
@@ -289,7 +297,7 @@ export default function ProfilesClient({
         </h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{c.subtitle}</p>
 
-        {rows.length === 0 ? (
+        {rows.length === 0 && !sample ? (
           <>
             <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, padding: "40px 26px", textAlign: "center", marginTop: 26 }}>
               <div style={{ fontSize: 15, color: T.heading, fontWeight: 500 }}>{c.emptyT}</div>
@@ -372,6 +380,13 @@ export default function ProfilesClient({
                   <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", justifySelf: "start", maxWidth: "100%" }}>
                     {r.name}
                   </span>
+                  {r.sample && (
+                    <span style={{
+                      border: "1px solid " + T.indigo, borderRadius: 4, background: "#F5F5FF",
+                      color: T.indigo, fontSize: 10.5, fontWeight: 500, padding: "1px 6px",
+                      whiteSpace: "nowrap", justifySelf: "start", marginLeft: -4,
+                    }}>{c.sampleChip}</span>
+                  )}
                   <span>{r.started ? <span style={chip}>{OBJ[r.objective] ?? r.objective}</span> : <span style={{ fontSize: 13, color: T.faint }}>{"\u2014"}</span>}</span>
                   <span style={{ fontSize: 13.5, color: T.body, whiteSpace: "nowrap" }}>
                     <i style={{ display: "inline-block", width: 6, height: 6, background: BASIS[r.basis].tone, marginRight: 7, verticalAlign: 1 }} />
@@ -433,7 +448,7 @@ export default function ProfilesClient({
             )}
 
             <p style={{ fontSize: 12, color: T.faint, margin: "11px 0 0", lineHeight: 1.6 }}>
-              {full ? c.plansFoot + " " : ""}{c.countedFoot}
+              {sample ? c.sampleFoot + " " : ""}{full ? c.plansFoot + " " : ""}{c.countedFoot}
             </p>
           </>
         )}

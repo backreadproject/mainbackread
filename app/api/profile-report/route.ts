@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, isLocked } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { getLocale } from "@/lib/locale-server";
+import { isSampleId } from "@/lib/sample-profile";
 import { observeProfile } from "@/lib/observed";
 import { readProfile } from "@/lib/buyer-profile";
 import { OBJECTIVES } from "@/lib/buyer-questions";
@@ -51,6 +52,12 @@ export async function POST(req: NextRequest) {
   try { body = (await req.json()) as Body; } catch { return NextResponse.json({ error: "Bad request." }, { status: 400 }); }
   const profileId = (body.profileId ?? "").trim();
   if (!profileId) return NextResponse.json({ error: "No profile given." }, { status: 400 });
+  if (isSampleId(profileId)) {
+    return NextResponse.json(
+      { error: "The sample profile cannot be exported. Build your own and export that." },
+      { status: 403 },
+    );
+  }
 
   // Ownership through RLS: this read runs as the signed in user, so a profile
   // they cannot see returns nothing.

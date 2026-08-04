@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, requirePaidAccess } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { getLocale } from "@/lib/locale-server";
+import { isSampleId } from "@/lib/sample-profile";
 import { runGapFor, GapFailed } from "@/lib/gap-run";
 
 export const runtime = "nodejs";
@@ -34,6 +35,12 @@ export async function POST(req: NextRequest) {
   const profileId = typeof body.profileId === "string" ? body.profileId : "";
   const refresh = body.refresh === true;
   if (!profileId) return NextResponse.json({ error: "Which profile?" }, { status: 400 });
+  if (isSampleId(profileId)) {
+    return NextResponse.json(
+      { error: "The sample profile is an example. Build your own to change anything." },
+      { status: 403 },
+    );
+  }
 
   const locale = await getLocale();
 

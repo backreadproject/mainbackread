@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
+import { isSampleId } from "@/lib/sample-profile";
 import { hasFeature } from "@/lib/plans";
 import { readNotify, type Cadence } from "@/lib/profile-watch";
 import SettingsClient from "./SettingsClient";
@@ -14,6 +15,8 @@ export default async function ProfileSettingsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  // Nothing to edit and nothing to schedule: the sample has no rows.
+  if (isSampleId(id)) redirect("/buyer-profiles/" + id);
 
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -33,6 +33,7 @@ export default function GapClient({
   refusal,
   latest,
   previous,
+  readOnly = false,
 }: {
   profile: { id: string; name: string; threshold: number };
   revision: number | null;
@@ -40,6 +41,8 @@ export default function GapClient({
   refusal: Refusal | null;
   latest: GapRun | null;
   previous: GapRun | null;
+  /** The sample has nothing to re-run against. */
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -298,11 +301,13 @@ export default function GapClient({
                   <Note tone="amber">{c.actP}</Note>
                 </div>
 
+                {!readOnly && (
                 <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
                   <button style={{ ...btn, opacity: busy ? 0.6 : 1 }} disabled={busy} onClick={() => void run(true)}>
                     {busy ? c.running : c.rerun}
                   </button>
                 </div>
+                )}
               </Tier>
             </>
           )}

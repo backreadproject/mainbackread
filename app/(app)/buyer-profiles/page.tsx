@@ -5,6 +5,7 @@ import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature, getLimit } from "@/lib/plans";
 import { observeProfiles } from "@/lib/observed";
 import { reachFor, leastUsed } from "@/lib/profile-reach";
+import { sampleListRow } from "@/lib/sample-profile";
 import ProfilesClient from "./ProfilesClient";
 
 export const dynamic = "force-dynamic";
@@ -95,6 +96,10 @@ export default async function BuyerProfilesPage() {
 
   const limit = getLimit(ctx.plan.id, "buyerProfiles");
 
+  // Not part of `rows`: the cap, the stat strip and the deletable list are
+  // all derived from rows, and an example nobody owns must not take a slot.
+  const sample = sampleListRow(now);
+
   return (
     <ProfilesClient
       rows={rows}
@@ -103,6 +108,7 @@ export default async function BuyerProfilesPage() {
       topPlan={limit === null}
       entitled={hasFeature(ctx.plan.id, "icp")}
       deletable={leastUsed(rows)}
+      sample={sample}
     />
   );
 }

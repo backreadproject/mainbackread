@@ -5,6 +5,8 @@ import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { observeProfile, summarise } from "@/lib/observed";
 import { matchPersona, personaSlug } from "@/lib/persona-match";
+import { isSampleId, SAMPLE_NAME, SAMPLE_PROFILE, SAMPLE_THRESHOLD, samplePersonaObserved } from "@/lib/sample-profile";
+import { emptySummary } from "@/lib/observed";
 import PersonaClient, { type PersonaView } from "./PersonaClient";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +44,25 @@ export default async function PersonaPage({
 
   const admin = createAdminClient();
   const ctx = await resolvePlanForUser(admin, user.id);
+  if (isSampleId(id)) {
+    const people = SAMPLE_PROFILE.people;
+    const found = (people?.personas ?? []).find((p) => personaSlug(p.name) === slug);
+    if (!found) notFound();
+    return (
+      <PersonaClient
+        profile={{ id, name: SAMPLE_NAME, threshold: SAMPLE_THRESHOLD }}
+        persona={{
+          ...found,
+          leadWith: (people?.angles ?? []).find((a) => a.forPersona === found.name)?.leadWith ?? "",
+        }}
+        siblings={(people?.personas ?? []).map((p) => ({ name: p.name, slug: personaSlug(p.name) }))}
+        summary={samplePersonaObserved(slug) ?? emptySummary()}
+        totalReaders={47}
+        attachedDoc={null}
+      />
+    );
+  }
+
   if (!hasFeature(ctx.plan.id, "icp")) redirect("/buyer-profiles/" + id);
 
   // RLS decides. A profile in someone else's workspace returns no row.

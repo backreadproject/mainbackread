@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { answerDiff, readAnswers } from "@/lib/revisions";
+import { isSampleId, SAMPLE_NAME, sampleRevisions } from "@/lib/sample-profile";
 import RevisionsClient, { type RevisionRow } from "./RevisionsClient";
 
 export const dynamic = "force-dynamic";
@@ -34,6 +35,15 @@ export default async function RevisionsPage({
 
   const admin = createAdminClient();
   const ctx = await resolvePlanForUser(admin, user.id);
+  if (isSampleId(id)) {
+    return (
+      <RevisionsClient
+        profile={{ id, name: SAMPLE_NAME }}
+        rows={sampleRevisions(new Date()) as RevisionRow[]}
+      />
+    );
+  }
+
   if (!hasFeature(ctx.plan.id, "icp")) redirect("/buyer-profiles/" + id);
 
   // RLS decides.

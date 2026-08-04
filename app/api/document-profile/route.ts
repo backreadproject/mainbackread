@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requirePaidAccess } from "@/lib/plan-context";
+import { isSampleId } from "@/lib/sample-profile";
 
 export const runtime = "nodejs";
 
@@ -31,6 +32,12 @@ export async function POST(req: NextRequest) {
   // null detaches. Anything else must be a profile the caller can see.
   const profileId = typeof body.profileId === "string" && body.profileId ? body.profileId : null;
   if (!documentId) return NextResponse.json({ error: "Which document?" }, { status: 400 });
+  if (isSampleId(profileId)) {
+    return NextResponse.json(
+      { error: "The sample profile is an example. Build your own to change anything." },
+      { status: 403 },
+    );
+  }
 
   const { data: doc } = await supabase
     .from("documents").select("id").eq("id", documentId).maybeSingle();

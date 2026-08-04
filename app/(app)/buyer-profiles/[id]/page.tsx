@@ -4,6 +4,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { observeProfile } from "@/lib/observed";
+import { isSampleId, SAMPLE_NAME, SAMPLE_PROFILE, SAMPLE_THRESHOLD, SAMPLE_DOCUMENTS, sampleObserved } from "@/lib/sample-profile";
+import SampleDetail from "./SampleDetail";
 import ProfileDetailClient from "./ProfileDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +20,25 @@ export default async function BuyerProfilePage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  if (isSampleId(id)) {
+    // Shown on every plan, including Free. The people who most need to see
+    // what this feature is are the ones who cannot build one yet.
+    return (
+      <SampleDetail
+        profile={{
+          id,
+          name: SAMPLE_NAME,
+          objectiveLabel: "Outbound sales",
+          threshold: SAMPLE_THRESHOLD,
+          revision: 3,
+        }}
+        output={SAMPLE_PROFILE}
+        documents={SAMPLE_DOCUMENTS}
+        observed={sampleObserved(new Date())}
+      />
+    );
+  }
 
   const admin = createAdminClient();
   const ctx = await resolvePlanForUser(admin, user.id);

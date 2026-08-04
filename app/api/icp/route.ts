@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, requirePaidAccess } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { getLocale } from "@/lib/locale-server";
+import { isSampleId } from "@/lib/sample-profile";
 import { stepsFor, weightedIds, type Branch, type Objective } from "@/lib/buyer-questions";
 import { runAI, marketTask, peopleTask, findTask } from "@/lib/ai";
 import { PASSES, readProfile, nextPass, computeConfidence, type Profile, type Pass } from "@/lib/buyer-profile";
@@ -109,6 +110,9 @@ export async function GET(req: NextRequest) {
 
   const profileId = req.nextUrl.searchParams.get("profileId") ?? "";
   if (!profileId) return NextResponse.json({ error: "Which profile?" }, { status: 400 });
+  // The sample has no rows. Asking for them would compare a non-UUID
+  // against a uuid column, which errors rather than returning nothing.
+  if (isSampleId(profileId)) return NextResponse.json({ draft: null, current: null, sample: true });
 
   const { data: d1 } = await base(supabase, scope, user.id, profileId).eq("status", "draft").maybeSingle();
   const { data: d2 } = await base(supabase, scope, user.id, profileId)
@@ -140,6 +144,12 @@ export async function POST(req: NextRequest) {
 
   if (body.action === "start") {
     const profileId = body.profileId;
+    if (isSampleId(profileId)) {
+      return NextResponse.json(
+        { error: "The sample profile is an example. Build your own to change anything." },
+        { status: 403 },
+      );
+    }
 
     // An unfinished draft is work. Hand it back rather than overwriting it.
     const { data: e1 } = await base(supabase, scope, user.id, profileId).eq("status", "draft").maybeSingle();

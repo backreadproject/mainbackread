@@ -5,6 +5,7 @@ import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature } from "@/lib/plans";
 import { observeProfile } from "@/lib/observed";
 import { gapRefusal } from "@/lib/gap-input";
+import { isSampleId, SAMPLE_NAME, SAMPLE_THRESHOLD, sampleGapRun, samplePreviousGapRun, sampleObserved } from "@/lib/sample-profile";
 import GapClient, { type GapRun } from "./GapClient";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,21 @@ export default async function GapPage({
 
   const admin = createAdminClient();
   const ctx = await resolvePlanForUser(admin, user.id);
+  if (isSampleId(id)) {
+    const now = new Date();
+    return (
+      <GapClient
+        profile={{ id, name: SAMPLE_NAME, threshold: SAMPLE_THRESHOLD }}
+        revision={3}
+        summary={sampleObserved(now).summary}
+        refusal={null}
+        latest={sampleGapRun(now) as GapRun}
+        previous={samplePreviousGapRun(now) as GapRun}
+        readOnly
+      />
+    );
+  }
+
   if (!hasFeature(ctx.plan.id, "icp")) redirect("/buyer-profiles/" + id);
 
   // RLS decides.

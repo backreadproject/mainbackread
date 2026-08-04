@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser, requirePaidAccess } from "@/lib/plan-context";
 import { hasFeature, getLimit, withinLimit } from "@/lib/plans";
 import { readNotify } from "@/lib/profile-watch";
+import { isSampleId } from "@/lib/sample-profile";
 
 export const runtime = "nodejs";
 
@@ -157,6 +158,13 @@ export async function POST(req: NextRequest) {
   }
 
   const id = typeof body.id === "string" ? body.id : "";
+  // The example belongs to nobody and has no rows behind it.
+  if (isSampleId(id)) {
+    return NextResponse.json(
+      { error: "The sample profile is an example. Build your own to change anything." },
+      { status: 403 },
+    );
+  }
   if (!id) return NextResponse.json({ error: "Which profile?" }, { status: 400 });
 
   // RLS is the authorisation. A profile the caller cannot see returns no row,
