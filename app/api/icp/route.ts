@@ -23,7 +23,7 @@ const MAX_ANSWER = 4000;
 const Answer = z.object({ id: z.string().min(1).max(40), q: z.string().min(1).max(300), a: z.string().max(MAX_ANSWER) });
 
 const Body = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("start"), branch: z.enum(["operating", "startup"]) }),
+  z.object({ action: z.literal("start"), profileId: z.string().uuid(), branch: z.enum(["operating", "startup"]) }),
   z.object({
     action: z.literal("save"), id: z.string().uuid(),
     sells: z.string().max(600).default(""),
@@ -64,13 +64,19 @@ function readProfile(v: unknown): IcpProfile {
   return o;
 }
 
-const COLS = "id, branch, source, revision, refined_from, status, answers, answers_hash, output, created_at, completed_at";
+const COLS = "id, branch, source, revision, refined_from, status, answers, answers_hash, output, created_at, completed_at, profile_id";
 type Sb = Awaited<ReturnType<typeof createClient>>;
 type Scope = { personal: boolean; orgId: string | null };
 
-function base(supabase: Sb, scope: Scope, userId: string) {
+function scopedRow(supabase: Sb, scope: Scope, userId: string) {
   const q = supabase.from("icp_profiles").select(COLS);
   return scope.personal ? q.eq("owner_id", userId).is("organization_id", null) : q.eq("organization_id", scope.orgId as string);
+}
+
+function base(supabase: Sb, scope: Scope, userId: string, profileId: string) {
+  const q = supabase.from("icp_profiles").select(COLS);
+  const s = scope.personal ? q.eq("owner_id", userId).is("organization_id", null) : q.eq("organization_id", scope.orgId as string);
+  return s.eq("profile_id", profileId);
 }
 
 async function context() {
@@ -86,12 +92,14 @@ async function context() {
   return { supabase, user, ctx, scope };
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const c = await context();
   if ("err" in c) return c.err;
   const { supabase, user, scope } = c;
-  const { data: d1 } = await base(supabase, scope, user.id).eq("status", "draft").maybeSingle();
-  const { data: d2 } = await base(supabase, scope, user.id)
+  const profileId = req.nextUrl.searchParams.get("profileId") ?? "";
+  if (!profileId) return NextResponse.json({ error: "Which profile?" }, { status: 400 });
+  const { data: d1 } = await base(supabase, scope, user.id, profileId).eq("status", "draft").maybeSingle();
+  const { data: d2 } = await base(supabase, scope, user.id, profileId)
     .eq("status", "complete").eq("source", "asserted")
     .order("revision", { ascending: false }).limit(1).maybeSingle();
   return NextResponse.json({
@@ -118,16 +126,18 @@ export async function POST(req: NextRequest) {
   }
 
   if (body.action === "start") {
-    const { data: e1 } = await base(supabase, scope, user.id).eq("status", "draft").maybeSingle();
+    const profileId = body.profileId;
+    const { data: e1 } = await base(supabase, scope, user.id, profileId).eq("status", "draft").maybeSingle();
     const existing = e1 as IcpRow | null;
     if (existing) return NextResponse.json({ profile: existing, resumed: true, branchMismatch: existing.branch !== body.branch });
 
     const q = supabase.from("icp_profiles").select("revision");
-    const sq = scope.personal ? q.eq("owner_id", user.id).is("organization_id", null) : q.eq("organization_id", scope.orgId as string);
+    const sq0 = scope.personal ? q.eq("owner_id", user.id).is("organization_id", null) : q.eq("organization_id", scope.orgId as string);
+    const sq = sq0.eq("profile_id", profileId);
     const { data: l1 } = await sq.order("revision", { ascending: false }).limit(1).maybeSingle();
     const last = l1 as { revision: number } | null;
 
-    const { data: p1 } = await base(supabase, scope, user.id)
+    const { data: p1 } = await base(supabase, scope, user.id, profileId)
       .eq("status", "complete").order("revision", { ascending: false }).limit(1).maybeSingle();
     const prev = p1 as IcpRow | null;
     const seeded = prev && prev.branch === body.branch ? { ...readAnswers(prev.answers), probes: [] } : emptyAnswers();
@@ -135,6 +145,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await supabase.from("icp_profiles").insert({
       owner_id: scope.personal ? user.id : null,
       organization_id: scope.personal ? null : scope.orgId,
+      profile_id: profileId,
       created_by: user.id,
       revision: (last?.revision ?? 0) + 1,
       source: "asserted", refined_from: null, branch: body.branch, status: "draft",
@@ -144,7 +155,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ profile: data as IcpRow, resumed: false, seeded: seeded.items.length > 0 });
   }
 
-  const { data: r1 } = await base(supabase, scope, user.id).eq("id", body.id).maybeSingle();
+  const { data: r1 } = await scopedRow(supabase, scope, user.id).eq("id", body.id).maybeSingle();
   const row = r1 as IcpRow | null;
   if (!row) return NextResponse.json({ error: "Not found." }, { status: 404 });
   const stored = readAnswers(row.answers);
@@ -268,7 +279,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ profile: data as IcpRow, pass, next: nextPass(merged), done: finished });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error("[icp] pass failed", { profileId: row.id, pass, branch: row.branch, locale, error: msg });
+    console.error("[icp] pass failed", { revisionId: row.id, pass, branch: row.branch, locale, error: msg });
     if (msg.startsWith("PREREQ:")) {
       return NextResponse.json({ error: "That section needs an earlier one first. Reload the page and continue.", pass }, { status: 409 });
     }
