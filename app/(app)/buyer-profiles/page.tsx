@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature, getLimit } from "@/lib/plans";
+import { observeProfiles } from "@/lib/observed";
 import ProfilesClient from "./ProfilesClient";
 
 export const dynamic = "force-dynamic";
@@ -50,22 +51,41 @@ export default async function BuyerProfilesPage() {
     docCount[k] = (docCount[k] ?? 0) + 1;
   }
 
-  const rows = list.map((p) => ({
-    id: p.id,
-    name: p.name,
-    objective: p.objective as string,
-    revisions: revCount[p.id] ?? 0,
-    started: Boolean(hasComplete[p.id]),
-    documents: docCount[p.id] ?? 0,
-    updatedAt: (p.updated_at ?? p.created_at) as string,
-  }));
+  // The Observed tier. Counted, never inferred, and computed on view because
+  // nothing runs on a schedule yet: "last checked" is therefore the newest
+  // signal we counted rather than a claim about background work.
+  const observed = await observeProfiles(
+    supabase,
+    list.map((p) => ({ id: p.id, threshold: (p.threshold as number) ?? 20 })),
+    hasComplete,
+  );
+
+  const rows = list.map((p) => {
+    const o = observed[p.id];
+    return {
+      id: p.id,
+      name: p.name,
+      objective: p.objective as string,
+      revisions: revCount[p.id] ?? 0,
+      started: Boolean(hasComplete[p.id]),
+      documents: docCount[p.id] ?? 0,
+      updatedAt: (p.updated_at ?? p.created_at) as string,
+      basis: o?.basis ?? "draft",
+      engaged: o?.summary.engaged ?? 0,
+      readers: o?.summary.readers ?? 0,
+      threshold: (p.threshold as number) ?? 20,
+      lastSignalAt: o?.summary.lastSignalAt ?? null,
+    };
+  });
+
+  const limit = getLimit(ctx.plan.id, "buyerProfiles");
 
   return (
     <ProfilesClient
       rows={rows}
-      limit={getLimit(ctx.plan.id, "buyerProfiles")}
+      limit={limit}
       planName={ctx.plan.name}
-      topPlan={ctx.plan.id === "business"}
+      topPlan={limit === null}
       entitled={hasFeature(ctx.plan.id, "icp")}
     />
   );

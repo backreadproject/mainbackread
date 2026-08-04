@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 
+type Basis = "draft" | "stated" | "tested";
+
 type Row = {
   id: string;
   name: string;
@@ -13,9 +15,17 @@ type Row = {
   started: boolean;
   documents: number;
   updatedAt: string;
+  /** Draft until a revision is finished, Stated until the profile's own
+   *  threshold is crossed, Tested after. Not a quality judgement: a statement
+   *  about what the profile has been checked against. */
+  basis: Basis;
+  engaged: number;
+  readers: number;
+  threshold: number;
+  lastSignalAt: string | null;
 };
 
-const COLS = "1.7fr 1fr 0.7fr 0.7fr 0.9fr";
+const COLS = "1.6fr 1fr 0.9fr 0.7fr 0.8fr 1fr";
 
 export default function ProfilesClient({
   rows,
@@ -39,6 +49,7 @@ export default function ProfilesClient({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
+  const [state, setState] = useState("all");
   const [q, setQ] = useState("");
 
   const c = {
@@ -60,22 +71,23 @@ export default function ProfilesClient({
       : "A profile is not finished when it is generated. It sharpens as readers arrive, and it needs roughly twenty engaged readers before it can tell you anything you did not already say.",
     colName: fr ? "Profil" : "Profile",
     colObjective: fr ? "Objectif" : "Objective",
-    colRevisions: fr ? "R\u00e9visions" : "Revisions",
+    colBasis: fr ? "Base" : "Basis",
     colDocs: fr ? "Documents" : "Documents",
-    colUpdated: fr ? "Mis \u00e0 jour" : "Updated",
+    colEngaged: fr ? "Lecteurs engag\u00e9s" : "Engaged readers",
+    colChecked: fr ? "Derni\u00e8re mesure" : "Last checked",
     statProfiles: fr ? "Profils" : "Profiles",
-    statAttached: fr ? "Li\u00e9s \u00e0 un document" : "Attached to a document",
-    statUnused: fr ? "Jamais li\u00e9s" : "Never attached",
+    statAttached: fr ? "Li\u00e9s \u00e0 un document" : "Attached to documents",
+    statTested: fr ? "Test\u00e9s sur des lecteurs" : "Tested against readers",
+    statEngaged: fr ? "Lecteurs engag\u00e9s" : "Engaged readers",
     unlimited: fr ? "illimit\u00e9" : "unlimited",
     search: fr ? "Rechercher" : "Search profiles",
     all: fr ? "Tous les objectifs" : "All objectives",
-    draft: fr ? "Brouillon" : "Draft",
+    anyState: fr ? "Tout \u00e9tat" : "Any state",
+    bDraft: fr ? "Brouillon" : "Draft",
+    bStated: fr ? "\u00c9nonc\u00e9 seulement" : "Stated only",
+    bTested: fr ? "Test\u00e9" : "Tested",
     nameLabel: fr ? "Nom du profil" : "Profile name",
     namePlaceholder: fr ? "Acheteurs d\u2019onboarding, SaaS mid-market" : "Onboarding buyers, mid-market SaaS",
-    objectiveLabel: fr ? "Que cherchez-vous \u00e0 faire ?" : "What are you here to do?",
-    objectiveHint: fr
-      ? "Cela change ce qui est g\u00e9n\u00e9r\u00e9, pas seulement la formulation."
-      : "This changes what gets generated, not just the wording.",
     create: fr ? "Cr\u00e9er" : "Create",
     cancel: fr ? "Annuler" : "Cancel",
     working: fr ? "Un instant\u2026" : "Working\u2026",
@@ -88,6 +100,12 @@ export default function ProfilesClient({
     none: fr ? "Aucun r\u00e9sultat" : "Nothing matches that",
     countOne: fr ? "profil" : "profile",
     countMany: fr ? "profils" : "profiles",
+    neverAttached: fr ? "Jamais li\u00e9" : "Never attached",
+    noReaders: fr ? "Aucun lecteur" : "No readers yet",
+    unfinished: fr ? "Inachev\u00e9" : "Unfinished",
+    needed: fr ? "lecteurs engag\u00e9s requis" : "engaged readers needed",
+    across: fr ? "sur tous les profils" : "across every profile",
+    noneUnused: fr ? "tous li\u00e9s" : "all attached",
   };
 
   const OBJ: Record<string, string> = {
@@ -95,25 +113,52 @@ export default function ProfilesClient({
     client: fr ? "Prospection client" : "Client prospecting",
     investor: fr ? "Recherche d\u2019investisseurs" : "Investor prospecting",
     partnership: fr ? "Partenariats" : "Partnerships",
+    recruiting: fr ? "Recrutement" : "Recruiting",
+    retail: fr ? "Distribution et vente au d\u00e9tail" : "Distribution and retail",
+    nonprofit: fr ? "Subventions et associations" : "Grants and nonprofit",
   };
 
+  const BASIS: Record<Basis, { label: string; tone: string }> = {
+    draft: { label: c.bDraft, tone: T.faint },
+    stated: { label: c.bStated, tone: T.amber },
+    tested: { label: c.bTested, tone: T.green },
+  };
 
   const used = rows.length;
   const full = limit !== null && used >= limit;
   const attached = rows.filter((r) => r.documents > 0).length;
+  const tested = rows.filter((r) => r.basis === "tested").length;
+  const engagedTotal = rows.reduce((n, r) => n + r.engaged, 0);
+  // The threshold is per profile, so there is no single number to quote. The
+  // commonest one is what a note about "readers needed" should say.
+  const commonThreshold = useMemo(() => {
+    const counts: Record<number, number> = {};
+    for (const r of rows) counts[r.threshold] = (counts[r.threshold] ?? 0) + 1;
+    const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    return best ? Number(best[0]) : 20;
+  }, [rows]);
 
   const filtered = useMemo(() => {
     let r = rows;
     if (filter !== "all") r = r.filter((x) => x.objective === filter);
+    if (state !== "all") r = r.filter((x) => x.basis === state);
     const t = q.trim().toLowerCase();
     if (t) r = r.filter((x) => x.name.toLowerCase().includes(t));
     return r;
-  }, [rows, filter, q]);
+  }, [rows, filter, state, q]);
 
   const objectivesInUse = useMemo(
     () => Array.from(new Set(rows.map((r) => r.objective))),
     [rows],
   );
+
+  /** Absolute, and the locale is pinned. A relative string here depends on the
+   *  render clock and hydrates differently on the server and the browser. */
+  function when(iso: string): string {
+    const d = new Date(iso);
+    return d.toLocaleDateString(fr ? "fr-FR" : "en-GB", { day: "numeric", month: "short" })
+      + ", " + d.toLocaleTimeString(fr ? "fr-FR" : "en-GB", { hour: "2-digit", minute: "2-digit" });
+  }
 
   async function create() {
     if (!name.trim()) return;
@@ -167,6 +212,7 @@ export default function ProfilesClient({
     color: T.body,
     whiteSpace: "nowrap",
   };
+  const num: React.CSSProperties = { fontSize: 13.5, fontVariantNumeric: "tabular-nums" };
 
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
@@ -201,12 +247,20 @@ export default function ProfilesClient({
         ) : (
           <>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, margin: "26px 0 16px", flexWrap: "wrap" }}>
-              <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ ...sel, minWidth: 170 }}>
-                <option value="all">{c.all}</option>
-                {objectivesInUse.map((o) => (
-                  <option key={o} value={o}>{OBJ[o] ?? o}</option>
-                ))}
-              </select>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <select value={filter} onChange={(e) => setFilter(e.target.value)} style={{ ...sel, minWidth: 170 }}>
+                  <option value="all">{c.all}</option>
+                  {objectivesInUse.map((o) => (
+                    <option key={o} value={o}>{OBJ[o] ?? o}</option>
+                  ))}
+                </select>
+                <select value={state} onChange={(e) => setState(e.target.value)} style={{ ...sel, minWidth: 150 }}>
+                  <option value="all">{c.anyState}</option>
+                  <option value="tested">{c.bTested}</option>
+                  <option value="stated">{c.bStated}</option>
+                  <option value="draft">{c.bDraft}</option>
+                </select>
+              </div>
               <div style={{ display: "flex", gap: 8 }}>
                 <input className="bp-in" value={q} onChange={(e) => setQ(e.target.value)} placeholder={c.search} style={{ ...sel, width: 220 }} />
                 <button style={{ ...primary, opacity: full ? 0.5 : 1, cursor: full ? "not-allowed" : "pointer" }} disabled={full} onClick={() => setAdding(true)}>
@@ -221,11 +275,12 @@ export default function ProfilesClient({
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card }} className="stat-strip">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card }} className="stat-strip">
               {([
                 [limit === null ? String(used) : used + " / " + String(limit), c.statProfiles, limit === null ? c.unlimited : planName, T.green],
-                [String(attached), c.statAttached, "", T.indigo],
-                [String(used - attached), c.statUnused, "", T.border],
+                [String(attached), c.statAttached, used - attached > 0 ? String(used - attached) + " " + c.neverAttached.toLowerCase() : c.noneUnused, T.indigo],
+                [String(tested), c.statTested, tested === 0 ? String(commonThreshold) + " " + c.needed : "", T.amber],
+                [String(engagedTotal), c.statEngaged, c.across, T.border],
               ] as [string, string, string, string][]).map(([v, l, note, tone], i) => (
                 <div key={i} style={{ padding: "15px 18px", borderLeft: "3px solid " + tone }}>
                   <div style={{ fontSize: 24, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>{v}</div>
@@ -237,7 +292,7 @@ export default function ProfilesClient({
 
             <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 18 }}>
               <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap" }}>
-                <span>{c.colName}</span><span>{c.colObjective}</span><span>{c.colRevisions}</span><span>{c.colDocs}</span><span>{c.colUpdated}</span>
+                <span>{c.colName}</span><span>{c.colObjective}</span><span>{c.colBasis}</span><span>{c.colDocs}</span><span>{c.colEngaged}</span><span>{c.colChecked}</span>
               </div>
               {filtered.length === 0 ? (
                 <div style={{ padding: 44, textAlign: "center", fontSize: 14, color: T.muted }}>{c.none}</div>
@@ -247,14 +302,24 @@ export default function ProfilesClient({
                     {r.name}
                   </span>
                   <span>{r.started ? <span style={chip}>{OBJ[r.objective] ?? r.objective}</span> : <span style={{ fontSize: 13, color: T.faint }}>{"\u2014"}</span>}</span>
-                  <span style={{ fontSize: 13.5, color: r.started ? T.body : T.faint, fontVariantNumeric: "tabular-nums" }}>
-                    {r.started ? r.revisions : c.draft}
+                  <span style={{ fontSize: 13.5, color: T.body, whiteSpace: "nowrap" }}>
+                    <i style={{ display: "inline-block", width: 6, height: 6, background: BASIS[r.basis].tone, marginRight: 7, verticalAlign: 1 }} />
+                    {BASIS[r.basis].label}
                   </span>
-                  <span style={{ fontSize: 13.5, color: r.documents > 0 ? T.body : T.faint, fontVariantNumeric: "tabular-nums" }}>
+                  <span style={{ ...num, color: r.documents > 0 ? T.body : T.faint }}>
                     {r.documents > 0 ? r.documents : "\u2014"}
                   </span>
-                  <span style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>
-                    {new Date(r.updatedAt).toLocaleDateString(fr ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                  <span style={{ ...num, color: r.engaged > 0 ? T.body : T.faint }}>
+                    {r.readers > 0 ? r.engaged : "\u2014"}
+                  </span>
+                  <span style={{ fontSize: 13, color: T.faint, whiteSpace: "nowrap" }}>
+                    {!r.started
+                      ? c.unfinished
+                      : r.documents === 0
+                        ? c.neverAttached
+                        : r.lastSignalAt
+                          ? when(r.lastSignalAt)
+                          : c.noReaders}
                   </span>
                 </a>
               ))}
@@ -264,6 +329,12 @@ export default function ProfilesClient({
                 </div>
               )}
             </div>
+
+            <p style={{ fontSize: 12, color: T.faint, margin: "11px 0 0", lineHeight: 1.6 }}>
+              {fr
+                ? "Le nombre de lecteurs engag\u00e9s est calcul\u00e9 \u00e0 l\u2019ouverture de cette page, \u00e0 partir des lecteurs des documents li\u00e9s. Les r\u00e9visions ne comptent pas dans votre limite, seuls les profils."
+                : "Engaged readers are counted when you open this page, from the readers of the documents each profile is attached to. Revisions do not count against your limit. Only profiles do."}
+            </p>
           </>
         )}
       </main>
