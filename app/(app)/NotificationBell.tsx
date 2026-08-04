@@ -14,6 +14,10 @@ const NOTE = {
     reader_replied: (p: Record<string, string>) => [p.reader + " replied about " + p.doc, p.preview ?? ""],
     added_to_org: (p: Record<string, string>) => ["You were added to " + p.org, "You now have access as " + p.role + "."],
     doc_shared: (p: Record<string, string>) => [p.sharer + " shared a " + p.resource + " with you", "You now have " + p.permission + " access."],
+    bp_threshold: (p: Record<string, string>) => [p.profile + " has enough readers", p.engaged + " engaged readers. The Observed tab can now tell you things."],
+    bp_gap: (p: Record<string, string>) => ["Your readers disagree with " + p.profile, p.headline ?? ""],
+    bp_finding_moved: (p: Record<string, string>) => [p.profile + ": the finding changed direction", p.headline ?? ""],
+    bp_persona_quiet: (p: Record<string, string>) => [p.persona + " has gone quiet", "No reader matching this persona has engaged in " + p.days + " days."],
   },
   fr: {
     reader_opened: (p: Record<string, string>) => p.again
@@ -23,6 +27,10 @@ const NOTE = {
     reader_replied: (p: Record<string, string>) => [p.reader + " a r\u00e9pondu au sujet de " + p.doc, p.preview ?? ""],
     added_to_org: (p: Record<string, string>) => ["Vous avez \u00e9t\u00e9 ajout\u00e9 \u00e0 " + p.org, "Vous avez d\u00e9sormais l\u2019acc\u00e8s en tant que " + p.role + "."],
     doc_shared: (p: Record<string, string>) => [p.sharer + " a partag\u00e9 un " + p.resource + " avec vous", "Vous avez d\u00e9sormais l\u2019acc\u00e8s " + p.permission + "."],
+    bp_threshold: (p: Record<string, string>) => [p.profile + " a assez de lecteurs", p.engaged + " lecteurs engag\u00e9s. L\u2019onglet Observ\u00e9 peut maintenant vous apprendre quelque chose."],
+    bp_gap: (p: Record<string, string>) => ["Vos lecteurs ne sont pas d\u2019accord avec " + p.profile, p.headline ?? ""],
+    bp_finding_moved: (p: Record<string, string>) => [p.profile + " : le constat a chang\u00e9 de direction", p.headline ?? ""],
+    bp_persona_quiet: (p: Record<string, string>) => [p.persona + " ne se manifeste plus", "Aucun lecteur correspondant \u00e0 ce persona ne s\u2019est engag\u00e9 depuis " + p.days + " jours."],
   },
 } as const;
 /** Falls back to the stored English text when a row predates params. */
