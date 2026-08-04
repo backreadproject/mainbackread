@@ -7,7 +7,7 @@ import { describeRoles, roleLabel } from "@/lib/roles";
 type Row = { id: string; label: string | null; documentTitle: string; createdAt: string; opened: boolean; questions: number; outcome: string | null; company: string | null; roles: string[]; roleOther: string | null };
 type Stats = { total: number; opened: number; unopened: number; questions: number; escalated: number; won: number };
 type Tone = "green" | "amber" | "indigo" | "neutral";
-const COLS = "1.6fr 1.1fr 1.3fr 0.6fr 0.85fr 0.95fr";
+const COLS = "1.5fr 1.5fr 1fr 0.55fr 0.8fr 0.9fr";
 export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: Stats }) {
   const locale = useLocale();
   const fr = locale === "fr";
@@ -49,7 +49,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
   ];
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}.rc-in:focus{outline:none;border-color:var(--rp-green)}.dc-who{display:block}.dc-who>*{display:block}`}</style>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}.rc-in:focus{outline:none;border-color:var(--rp-green)}.dc-who,.dc-who>*{display:block!important;text-align:left!important;width:auto!important;justify-content:flex-start!important}`}</style>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{rp.title}</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rp.subtitle}</p>
