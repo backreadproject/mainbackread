@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
-import { stepsFor, weightedIds, type Branch, type Objective } from "@/lib/buyer-questions";
+import { stepsFor, OBJECTIVES, type Branch, type Objective } from "@/lib/buyer-questions";
 import { PASSES, type Profile, type Pass } from "@/lib/buyer-profile";
 import DiscoveryForm from "../DiscoveryForm";
 import { Tier, Note, StatedTab, FindTab, ObservedTab } from "./Tabs";
@@ -127,12 +127,6 @@ export default function ProfileDetailClient({
     seePlans: fr ? "Voir les plans" : "See plans",
   };
 
-  const OBJ: { id: Objective; label: string; hint: string; live: boolean }[] = [
-    { id: "outbound", live: true, label: fr ? "Vente sortante" : "Outbound sales", hint: fr ? "Vous vendez un produit et vous avez besoin de listes, de personas et d\u2019accroches." : "You are selling a product and need lists, personas and openers." },
-    { id: "client", live: true, label: fr ? "Prospection client" : "Client prospecting", hint: fr ? "Agence ou conseil. S\u2019appuie sur les d\u00e9clencheurs de compte." : "Agency or consultancy work. Leans on account triggers." },
-    { id: "investor", live: true, label: fr ? "Recherche d\u2019investisseurs" : "Investor prospecting", hint: fr ? "Lev\u00e9e de fonds. Les firmographies c\u00e8dent la place au stade du fonds et \u00e0 la taille de ticket." : "Raising. Firmographics are replaced by fund stage, cheque size and thesis fit." },
-    { id: "partnership", live: true, label: fr ? "Partenariats" : "Partnerships", hint: fr ? "Partenaires de r\u00e9f\u00e9rencement, revendeurs ou int\u00e9grations." : "Referral, reseller or integration partners." },
-  ];
 
   const PASS_LABEL: Record<Pass, string> = {
     market: fr ? "D\u00e9finition du march\u00e9" : "Market definition",
@@ -321,7 +315,7 @@ export default function ProfileDetailClient({
       </a>
       <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{profile.name}</h1>
       <p style={{ fontSize: 13.5, color: T.muted, margin: "7px 0 0", lineHeight: 1.55 }}>
-        {current ? (OBJ.find((o) => o.id === profile.objective)?.label ?? profile.objective) + " \u00b7 " + c.rev + " " + current.revision + ", " + (current.source === "asserted" ? c.asserted : c.refined) + " \u00b7 " : ""}
+        {current ? (() => { const x = OBJECTIVES.find((o) => o.id === profile.objective); return x ? (fr ? x.fr : x.en) : profile.objective; })() + " \u00b7 " + c.rev + " " + current.revision + ", " + (current.source === "asserted" ? c.asserted : c.refined) + " \u00b7 " : ""}
         {documents.length > 0 ? c.attached + documents.length + c.docs : c.noDocs}
       </p>
     </>
@@ -395,16 +389,16 @@ export default function ProfileDetailClient({
               <>
                 <h2 style={{ fontSize: 20, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 7px" }}>{c.objH}</h2>
                 <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 16px", lineHeight: 1.6, maxWidth: 700 }}>{c.objP}</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-                  {OBJ.map((o) => (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
+                  {OBJECTIVES.map((o) => (
                     <button key={o.id} type="button" onClick={() => setObjective(o.id)} style={{
                       border: "1px solid " + (objective === o.id ? T.green : T.border),
                       boxShadow: objective === o.id ? "inset 0 0 0 1px " + T.green : "none",
                       borderRadius: T.rCard, background: T.card, padding: 15, textAlign: "left",
                       cursor: "pointer", fontFamily: T.font,
                     }}>
-                      <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading }}>{o.label}</span>
-                      <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>{o.hint}</span>
+                      <span style={{ display: "block", fontSize: 14, fontWeight: 500, color: T.heading }}>{fr ? o.fr : o.en}</span>
+                      <span style={{ display: "block", fontSize: 12.5, color: T.muted, marginTop: 6, lineHeight: 1.55 }}>{fr ? o.hintFr : o.hintEn}</span>
                     </button>
                   ))}
                 </div>
