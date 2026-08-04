@@ -36,7 +36,6 @@ export default function ProfilesClient({
 
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
-  const [objective, setObjective] = useState("outbound");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("all");
@@ -98,20 +97,6 @@ export default function ProfilesClient({
     partnership: fr ? "Partenariats" : "Partnerships",
   };
 
-  const OBJ_HINT: Record<string, string> = {
-    outbound: fr
-      ? "Listes, personas et accroches. S\u2019appuie sur le comit\u00e9 d\u2019achat et les d\u00e9clencheurs."
-      : "Lists, personas and openers. Leans on the buying committee and triggers.",
-    client: fr
-      ? "Agence ou conseil. S\u2019appuie sur les d\u00e9clencheurs de compte."
-      : "Agency or consultancy work. Leans on account triggers.",
-    investor: fr
-      ? "Lev\u00e9e de fonds. Rempla\u00e7e les firmographies par le stade du fonds et la th\u00e8se."
-      : "Raising. Replaces firmographics with fund stage, cheque size and thesis fit.",
-    partnership: fr
-      ? "Partenaires de r\u00e9f\u00e9rencement ou d\u2019int\u00e9gration."
-      : "Referral, reseller or integration partners.",
-  };
 
   const used = rows.length;
   const full = limit !== null && used >= limit;
@@ -138,7 +123,7 @@ export default function ProfilesClient({
       const res = await fetch("/api/buyer-profiles", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "create", name: name.trim(), objective }),
+        body: JSON.stringify({ action: "create", name: name.trim() }),
       });
       const json = (await res.json()) as { profile?: { id: string }; error?: string };
       if (!res.ok || !json.profile) {
@@ -261,7 +246,7 @@ export default function ProfilesClient({
                   <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", justifySelf: "start", maxWidth: "100%" }}>
                     {r.name}
                   </span>
-                  <span><span style={chip}>{OBJ[r.objective] ?? r.objective}</span></span>
+                  <span>{r.started ? <span style={chip}>{OBJ[r.objective] ?? r.objective}</span> : <span style={{ fontSize: 13, color: T.faint }}>{"\u2014"}</span>}</span>
                   <span style={{ fontSize: 13.5, color: r.started ? T.body : T.faint, fontVariantNumeric: "tabular-nums" }}>
                     {r.started ? r.revisions : c.draft}
                   </span>
@@ -285,27 +270,12 @@ export default function ProfilesClient({
 
       {adding && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(16,24,40,.45)", display: "grid", placeItems: "center", zIndex: 60, padding: 20 }} onClick={() => !busy && setAdding(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, width: 560, maxWidth: "100%", boxShadow: T.overlayShadow }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, width: 460, maxWidth: "100%", boxShadow: T.overlayShadow }}>
             <div style={{ padding: "18px 20px 0" }}>
               <h3 style={{ fontSize: 17, fontWeight: 600, color: T.heading, margin: "0 0 18px", letterSpacing: T.trackingTight }}>{c.neu}</h3>
 
               <span style={{ fontSize: 12.5, color: T.muted, display: "block", marginBottom: 6 }}>{c.nameLabel}</span>
               <input className="bp-in" autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder={c.namePlaceholder} style={{ ...sel, width: "100%", marginBottom: 18 }} />
-
-              <span style={{ fontSize: 12.5, color: T.muted, display: "block", marginBottom: 2 }}>{c.objectiveLabel}</span>
-              <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 10px", lineHeight: 1.45 }}>{c.objectiveHint}</p>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 8, marginBottom: 4 }}>
-                {(["outbound", "client", "investor", "partnership"] as const).map((o) => (
-                  <button key={o} type="button" onClick={() => setObjective(o)} style={{
-                    border: "1px solid " + (objective === o ? T.green : T.border),
-                    boxShadow: objective === o ? "inset 0 0 0 1px " + T.green : "none",
-                    borderRadius: T.rBtn, background: T.card, padding: 13, cursor: "pointer", textAlign: "left",
-                  }}>
-                    <span style={{ display: "block", fontSize: 13.5, fontWeight: 500, color: T.heading }}>{OBJ[o]}</span>
-                    <span style={{ display: "block", fontSize: 12, color: T.muted, marginTop: 5, lineHeight: 1.5 }}>{OBJ_HINT[o]}</span>
-                  </button>
-                ))}
-              </div>
 
               {error && <p style={{ fontSize: 13, color: T.dangerText, margin: "14px 0 0" }}>{error}</p>}
             </div>

@@ -3,17 +3,16 @@
 import { useState } from "react";
 import { T } from "@/lib/theme";
 import type { Locale } from "@/lib/i18n";
-import type { IcpProfile } from "@/lib/icp-profile";
+import type { Profile } from "@/lib/buyer-profile";
+import type { PeopleOutput } from "@/lib/ai/tasks/buyer-passes";
 import { PLATFORMS, criteriaFor, nothingToSearchOn, type PlatformId, type ProspectFilters } from "@/lib/search-criteria";
 
 /**
- * The three basis tiers. Every claim the passes produce already carries
- * source: stated | inferred | market, so this is the presentation of something
- * the data already knows rather than a new classification.
+ * The three basis tiers, as approved.
  *
  * Stated is what the customer told us. Where to find them is reasoned from it
- * and from public fact. Observed comes from readers, and starts empty and says
- * so, because a tab that pretends to know is worse than one that admits it.
+ * and from public fact. Observed comes from readers, starts empty, and says so:
+ * a tab that pretends to know is worse than one that admits it does not.
  */
 
 const EMPTY_FILTERS: ProspectFilters = {
@@ -23,9 +22,7 @@ const EMPTY_FILTERS: ProspectFilters = {
 
 export function Tier({
   tone, name, basis, right, children,
-}: {
-  tone: string; name: string; basis: string; right?: string; children: React.ReactNode;
-}) {
+}: { tone: string; name: string; basis: string; right?: string; children: React.ReactNode }) {
   return (
     <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, marginBottom: 16 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid " + T.border, background: T.soft, flexWrap: "wrap" }}>
@@ -55,16 +52,18 @@ export function Note({ tone, children }: { tone: "amber" | "indigo" | "green"; c
 function Head({ children }: { children: React.ReactNode }) {
   return <div style={{ fontSize: 13, fontWeight: 500, color: T.heading, marginBottom: 9 }}>{children}</div>;
 }
-
+function Sub({ children }: { children: React.ReactNode }) {
+  return <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>{children}</p>;
+}
 function Rule() {
   return <div style={{ height: 1, background: T.border, margin: "16px 0" }} />;
 }
-
 function Kv({ items }: { items: { k: string; v: string }[] }) {
-  if (!items.length) return null;
+  const rows = items.filter((x) => x.v && x.v.trim());
+  if (!rows.length) return null;
   return (
     <dl style={{ display: "grid", gridTemplateColumns: "180px minmax(0,1fr)", gap: "10px 16px", fontSize: 13, margin: 0 }}>
-      {items.map((x, i) => (
+      {rows.map((x, i) => (
         <div key={i} style={{ display: "contents" }}>
           <dt style={{ color: T.muted }}>{x.k}</dt>
           <dd style={{ color: T.body, lineHeight: 1.6, margin: 0 }}>{x.v}</dd>
@@ -77,120 +76,235 @@ function Kv({ items }: { items: { k: string; v: string }[] }) {
 const tbl: React.CSSProperties = { width: "100%", borderCollapse: "collapse", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden" };
 const th: React.CSSProperties = { background: T.soft, fontSize: 11.5, fontWeight: 500, color: T.muted, textAlign: "left", padding: "9px 14px", borderBottom: "1px solid " + T.border };
 const td: React.CSSProperties = { padding: "13px 14px", borderBottom: "1px solid " + T.border, fontSize: 13.5, verticalAlign: "top", color: T.body, lineHeight: 1.55 };
+const btn: React.CSSProperties = { height: 27, padding: "0 9px", border: "1px solid " + T.border, borderRadius: T.rBtn, background: T.card, fontSize: 12, color: T.body, cursor: "pointer", fontFamily: T.font };
 
-export function StatedTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
+/* ---------------------------------------------------------------- */
+
+function PersonaDetail({
+  people, index, onBack, locale, attachedDoc,
+}: {
+  people: PeopleOutput;
+  index: number;
+  onBack: () => void;
+  locale: Locale;
+  attachedDoc: { id: string; title: string } | null;
+}) {
   const fr = locale === "fr";
-  const rec = p.record;
-  const people = p.people;
-  const demand = p.demand;
+  const [i, setI] = useState(index);
+  const p = people.personas[i];
+  const angle = people.angles.find((a) => a.forPersona === p?.name);
 
   const c = {
-    market: fr ? "D\u00e9finition du march\u00e9" : "Market definition",
-    triggers: fr ? "\u00c9v\u00e9nements d\u00e9clencheurs" : "Trigger events",
-    committee: fr ? "Comit\u00e9 d\u2019achat" : "Buying committee",
-    committeeSub: fr
-      ? "Ils n\u2019ach\u00e8tent pas de la m\u00eame fa\u00e7on, et un profil moyenn\u00e9 entre eux ne correspond \u00e0 personne."
-      : "They do not buy the same way, and a profile averaged across them fits nobody.",
-    segments: fr ? "Populations" : "Populations",
-    segmentsSub: fr
-      ? "Deux populations moyenn\u00e9es en une seule produisent un profil qui ne d\u00e9crit personne."
-      : "Two populations averaged into one produce a profile that describes nobody.",
-    disq: fr ? "Disqualificateurs" : "Disqualifiers",
-    angles: fr ? "Angles de message" : "Messaging angles",
-    pains: fr ? "Ce que \u00e7a leur co\u00fbte" : "What it costs them",
-    objections: fr ? "Objections" : "Objections",
-    colRole: fr ? "R\u00f4le" : "Role",
-    colStance: fr ? "Dans l\u2019affaire" : "Role in the deal",
-    colCares: fr ? "Ce qui compte pour eux" : "What they care about",
-    colWho: fr ? "Qui" : "Who",
-    colWhy: fr ? "Pourquoi" : "Why",
-    colPersona: fr ? "Persona" : "Persona",
-    colLead: fr ? "Ouvrir avec" : "Lead with",
-    untested: fr
-      ? "Rien sur cette page n\u2019a \u00e9t\u00e9 test\u00e9. C\u2019est une reformulation soign\u00e9e de ce que vous croyez. L\u2019onglet Observ\u00e9 est l\u00e0 o\u00f9 cela sera v\u00e9rifi\u00e9."
-      : "Nothing on this page has been tested. It is a careful restatement of what you believe. The Observed tab is where it gets checked.",
-    nothing: fr ? "Cette section n\u2019a pas encore \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9e." : "This section has not been generated yet.",
+    back: fr ? "Retour au profil" : "Back to profile",
+    role: fr ? "R\u00f4le dans l\u2019affaire" : "Role in the deal",
+    variants: fr ? "Variantes de titre" : "Title variants",
+    reports: fr ? "Rattach\u00e9 \u00e0" : "Reports to",
+    measured: fr ? "\u00c9valu\u00e9 sur" : "Measured on",
+    wants: fr ? "Ce qu\u2019ils veulent" : "What they want",
+    fears: fr ? "Ce qu\u2019ils craignent" : "What they fear",
+    budget: fr ? "Pouvoir d\u2019achat" : "Budget authority",
+    objection: fr ? "Objection qu\u2019ils soul\u00e8vent" : "Objection they raise",
+    responds: fr ? "Ce \u00e0 quoi ils r\u00e9agissent" : "What they respond to",
+    loses: fr ? "Ce qui les perd" : "What loses them",
+    gathers: fr ? "O\u00f9 ils se retrouvent" : "Where they gather",
+    lead: fr ? "Ouvrir avec" : "Lead with",
+    noGather: fr
+      ? "Aucun lieu nomm\u00e9 dans vos r\u00e9ponses. Nous n\u2019en inventons pas : envoyer quelqu\u2019un dans une communaut\u00e9 o\u00f9 son acheteur n\u2019est pas co\u00fbte une semaine."
+      : "None named in your answers. We do not invent one: sending someone to a community their buyer is not in costs a week.",
+    notGenerated: fr ? "Nous ne g\u00e9n\u00e9rons pas ce que cette personne \u00e9coute, cherche sur Google ou fait sur LinkedIn. Ces champs existent dans tous les outils de persona et aucun n\u2019est connu."
+      : "We do not generate what this person listens to, Googles, or does on LinkedIn. Those fields appear in every persona tool and none of them are known.",
+    variantTarget: fr ? "Utiliser comme cible de variante A/B" : "Use as A/B variant target",
   };
 
-  const STANCE: Record<string, string> = {
-    signs: fr ? "Signe" : "Signs",
-    champions: fr ? "Porte le projet" : "Champions",
-    blocks: fr ? "Bloque" : "Blocks",
+  const ROLE: Record<string, string> = {
+    champion: fr ? "Porte le projet" : "Champion",
+    "economic buyer": fr ? "Acheteur \u00e9conomique" : "Economic buyer",
+    blocker: fr ? "Bloque" : "Blocker",
+    user: fr ? "Utilisateur" : "User",
+    "technical evaluator": fr ? "\u00c9valuateur technique" : "Technical evaluator",
   };
 
-  if (!rec) return <p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>{c.nothing}</p>;
+  if (!p) return null;
 
   return (
     <>
-      {rec.headline && (
-        <p style={{ fontSize: 15, lineHeight: 1.7, color: T.heading, margin: "0 0 16px" }}>{rec.headline}</p>
-      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+        <select value={i} onChange={(e) => setI(Number(e.target.value))} style={{ ...btn, height: 32, cursor: "pointer", paddingRight: 24 }}>
+          {people.personas.map((x, n) => <option key={x.name} value={n}>{x.name}</option>)}
+        </select>
+        {attachedDoc && (
+          <a href={"/documents/" + attachedDoc.id} style={{ ...btn, height: 32, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>
+            {c.variantTarget}
+          </a>
+        )}
+        <button style={{ ...btn, height: 32, marginLeft: "auto" }} onClick={onBack}>{c.back}</button>
+      </div>
 
-      {rec.definition.length > 0 && (
+      <h2 style={{ fontSize: 22, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: "0 0 6px" }}>{p.name}</h2>
+      <p style={{ fontSize: 13.5, color: T.muted, margin: "0 0 20px" }}>{ROLE[p.roleInDeal] ?? p.roleInDeal}</p>
+
+      <Kv items={[
+        { k: c.variants, v: p.titleVariants.join(", ") },
+        { k: c.reports, v: p.reportsTo },
+        { k: c.measured, v: p.measuredOn },
+        { k: c.wants, v: p.wants },
+        { k: c.fears, v: p.afraidOf },
+        { k: c.budget, v: p.budgetAuthority },
+        { k: c.objection, v: p.objectionTheyRaise },
+        { k: c.responds, v: p.respondsTo },
+        { k: c.loses, v: p.losesThem },
+        { k: c.lead, v: angle?.leadWith ?? "" },
+        { k: c.gathers, v: p.gathersAt.length ? p.gathersAt.join(", ") : c.noGather },
+      ]} />
+
+      <Rule />
+      <Note tone="amber">{c.notGenerated}</Note>
+    </>
+  );
+}
+
+/* ---------------------------------------------------------------- */
+
+export function StatedTab({
+  p, locale, attachedDoc,
+}: { p: Profile; locale: Locale; attachedDoc: { id: string; title: string } | null }) {
+  const fr = locale === "fr";
+  const [persona, setPersona] = useState<number | null>(null);
+  const m = p.market;
+  const pe = p.people;
+
+  const c = {
+    nothing: fr ? "Cette section n\u2019a pas encore \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9e." : "This section has not been generated yet.",
+    market: fr ? "D\u00e9finition du march\u00e9" : "Market definition",
+    reallyTrue: fr ? "Ce qui doit vraiment \u00eatre vrai" : "What actually has to be true",
+    triggers: fr ? "\u00c9v\u00e9nements d\u00e9clencheurs" : "Trigger events",
+    populations: fr ? "Populations" : "Populations",
+    populationsSub: fr
+      ? "Deux populations moyenn\u00e9es en une seule produisent un profil qui ne d\u00e9crit personne."
+      : "Two populations averaged into one produce a profile that describes nobody.",
+    personas: fr ? "Personas" : "Personas",
+    personasSub: fr
+      ? "Ils n\u2019ach\u00e8tent pas de la m\u00eame fa\u00e7on, et un profil moyenn\u00e9 entre eux ne correspond \u00e0 personne."
+      : "They do not buy the same way, and a profile averaged across them fits nobody.",
+    disq: fr ? "Disqualificateurs" : "Disqualifiers",
+    angles: fr ? "Angles de message" : "Messaging angles",
+    never: fr ? "Ne jamais ouvrir avec" : "Never lead with",
+    objection: fr ? "Objection attendue" : "Objection you will get",
+    limits: fr ? "Ce que ceci ne peut pas vous dire" : "What this cannot tell you",
+    colPersona: fr ? "Persona" : "Persona",
+    colRole: fr ? "R\u00f4le dans l\u2019affaire" : "Role in the deal",
+    colFear: fr ? "Ce qu\u2019ils craignent" : "What they are afraid of",
+    colMove: fr ? "\u00c9volution" : "Movement",
+    open: fr ? "Ouvrir" : "Open",
+    moveNote: fr
+      ? "La colonne \u00c9volution se remplit une fois que des lecteurs ont \u00e9t\u00e9 mesur\u00e9s contre ce profil."
+      : "The movement column fills once readers have been measured against this profile.",
+    untested: fr
+      ? "Rien sur cette page n\u2019a \u00e9t\u00e9 test\u00e9. C\u2019est une reformulation soign\u00e9e de ce que vous croyez. L\u2019onglet Observ\u00e9 est l\u00e0 o\u00f9 cela sera v\u00e9rifi\u00e9."
+      : "Nothing on this page has been tested. It is a careful restatement of what you believe. The Observed tab is where it gets checked.",
+  };
+
+  const ROLE: Record<string, string> = {
+    champion: fr ? "Porte le projet" : "Champion",
+    "economic buyer": fr ? "Acheteur \u00e9conomique" : "Economic buyer",
+    blocker: fr ? "Bloque" : "Blocker",
+    user: fr ? "Utilisateur" : "User",
+    "technical evaluator": fr ? "\u00c9valuateur technique" : "Technical evaluator",
+  };
+
+  if (!m) return <p style={{ fontSize: 13.5, color: T.muted, margin: 0 }}>{c.nothing}</p>;
+
+  if (persona !== null && pe) {
+    return <PersonaDetail people={pe} index={persona} onBack={() => setPersona(null)} locale={locale} attachedDoc={attachedDoc} />;
+  }
+
+  return (
+    <>
+      {m.headline && <p style={{ fontSize: 15, lineHeight: 1.7, color: T.heading, margin: "0 0 18px" }}>{m.headline}</p>}
+
+      <Head>{c.market}</Head>
+      <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.65, margin: 0, whiteSpace: "pre-wrap" }}>{m.definition}</p>
+
+      {m.reallyTrue && (
         <>
-          <Head>{c.market}</Head>
-          <Kv items={rec.definition.map((d) => ({ k: d.label, v: d.value }))} />
+          <Rule />
+          <Head>{c.reallyTrue}</Head>
+          <p style={{ fontSize: 13.5, color: T.body, lineHeight: 1.65, margin: 0 }}>{m.reallyTrue}</p>
         </>
       )}
 
-      {rec.triggers.length > 0 && (
+      {m.triggers.length > 0 && (
         <>
           <Rule />
           <Head>{c.triggers}</Head>
-          <Kv items={rec.triggers.map((t) => ({ k: t.event, v: t.why }))} />
+          <Kv items={m.triggers.map((t) => ({ k: t.event, v: t.why }))} />
         </>
       )}
 
-      {people && people.segments.length > 1 && (
+      {pe && pe.populations.length > 1 && (
         <>
           <Rule />
-          <Head>{c.segments}</Head>
-          <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>{c.segmentsSub}</p>
-          <Kv items={people.segments.map((s) => ({ k: s.name, v: s.howTheyDiffer || s.who }))} />
+          <Head>{c.populations}</Head>
+          <Sub>{c.populationsSub}</Sub>
+          <Kv items={pe.populations.map((s) => ({ k: s.name, v: s.howTheyDiffer }))} />
         </>
       )}
 
-      {rec.committee.length > 0 && (
+      {pe && pe.personas.length > 0 && (
         <>
           <Rule />
-          <Head>{c.committee}</Head>
-          <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>{c.committeeSub}</p>
+          <Head>{c.personas}</Head>
+          <Sub>{c.personasSub}</Sub>
           <table style={tbl}>
-            <thead><tr><th style={th}>{c.colRole}</th><th style={th}>{c.colStance}</th><th style={th}>{c.colCares}</th></tr></thead>
+            <thead><tr>
+              <th style={th}>{c.colPersona}</th><th style={th}>{c.colRole}</th>
+              <th style={th}>{c.colFear}</th><th style={{ ...th, width: 110 }}>{c.colMove}</th><th style={{ ...th, width: 70 }} />
+            </tr></thead>
             <tbody>
-              {rec.committee.map((m, i) => (
-                <tr key={i}>
-                  <td style={{ ...td, color: T.heading, fontWeight: 500 }}>{m.role}</td>
-                  <td style={td}>{STANCE[m.stance] ?? m.stance}</td>
-                  <td style={td}>{m.cares}</td>
+              {pe.personas.map((x, i) => (
+                <tr key={x.name}>
+                  <td style={{ ...td, color: T.green, fontWeight: 500 }}>{x.name}</td>
+                  <td style={td}>{ROLE[x.roleInDeal] ?? x.roleInDeal}</td>
+                  <td style={td}>{x.afraidOf}</td>
+                  <td style={{ ...td, color: T.faint }}>{"\u2014"}</td>
+                  <td style={{ ...td, textAlign: "right" }}>
+                    <button style={btn} onClick={() => setPersona(i)}>{c.open}</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          <p style={{ fontSize: 12, color: T.faint, marginTop: 11, lineHeight: 1.6 }}>{c.moveNote}</p>
         </>
       )}
 
-      {demand && demand.objections.length > 0 && (
-        <>
-          <Rule />
-          <Head>{c.objections}</Head>
-          <Kv items={demand.objections.slice(0, 5).map((o) => ({ k: o.objection, v: o.realConcern }))} />
-        </>
-      )}
-
-      {rec.disqualifiers.length > 0 && (
+      {m.disqualifiers.length > 0 && (
         <>
           <Rule />
           <Head>{c.disq}</Head>
-          <Kv items={rec.disqualifiers.map((d) => ({ k: d.who, v: d.why }))} />
+          <Kv items={m.disqualifiers.map((d) => ({ k: d.who, v: d.why }))} />
         </>
       )}
 
-      {rec.angles.length > 0 && (
+      {pe && (pe.angles.length > 0 || pe.neverLeadWith || pe.expectedObjection) && (
         <>
           <Rule />
           <Head>{c.angles}</Head>
-          <Kv items={rec.angles.map((a) => ({ k: a.persona, v: a.lead }))} />
+          <Kv items={[
+            ...pe.angles.map((a) => ({ k: (fr ? "Pour " : "To ") + a.forPersona, v: a.leadWith })),
+            { k: c.never, v: pe.neverLeadWith },
+            { k: c.objection, v: pe.expectedObjection },
+          ]} />
+        </>
+      )}
+
+      {m.limits.length > 0 && (
+        <>
+          <Rule />
+          <Head>{c.limits}</Head>
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: T.body, lineHeight: 1.7 }}>
+            {m.limits.map((l, i) => <li key={i}>{l}</li>)}
+          </ul>
         </>
       )}
 
@@ -200,23 +314,22 @@ export function StatedTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
   );
 }
 
-export function FindTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
+/* ---------------------------------------------------------------- */
+
+export function FindTab({ p, locale }: { p: Profile; locale: Locale }) {
   const fr = locale === "fr";
   const [platform, setPlatform] = useState<PlatformId>("apollo");
   const [copied, setCopied] = useState(false);
 
-  const act = p.activation;
-  const filters: ProspectFilters = act
-    ? ({ ...EMPTY_FILTERS, ...act.prospectFilters } as ProspectFilters)
+  const filters: ProspectFilters = p.find
+    ? ({ ...EMPTY_FILTERS, ...p.find.filters } as ProspectFilters)
     : EMPTY_FILTERS;
 
   const c = {
     noKey: fr
       ? "Nous ne nous connectons \u00e0 aucun de ces comptes. Rien n\u2019est lanc\u00e9 en votre nom, aucun cr\u00e9dit n\u2019est d\u00e9pens\u00e9, et nous ne d\u00e9tenons jamais votre cl\u00e9. Vous obtenez les crit\u00e8res, dans la langue de chaque plateforme, et vous les lancez."
       : "We never connect to your account on any of these. Nothing is run on your behalf, no credits are spent, and we never hold a key of yours. You get the criteria, in that platform's own language, and you run it.",
-    empty: fr
-      ? "Aucun crit\u00e8re de recherche n\u2019a encore \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9. Lancez la section Activation dans l\u2019onglet \u00c9nonc\u00e9."
-      : "No search criteria have been generated yet. Run the activation section first.",
+    empty: fr ? "Aucun crit\u00e8re n\u2019a encore \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9." : "No search criteria have been generated yet.",
     copy: fr ? "Copier pour cette plateforme" : "Copy for this platform",
     copied: fr ? "Copi\u00e9" : "Copied",
     field: fr ? "Champ" : "Field",
@@ -225,17 +338,23 @@ export function FindTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
     step: fr ? "\u00c9tape" : "Step",
     doThis: fr ? "\u00c0 faire" : "Do this",
     withWhat: fr ? "Avec" : "With",
+    cal: fr ? "Calendriers de travail" : "Working calendars",
+    calSub: fr ? "Calendrier et droit, pas des conseils sur les heures d\u2019envoi." : "Calendar and law, not advice about send times.",
+    colMarket: fr ? "March\u00e9" : "Market",
+    colWeek: fr ? "Semaine de travail" : "Working week",
+    colQuiet: fr ? "P\u00e9riodes creuses" : "Quiet periods",
+    colBudget: fr ? "Cycle budg\u00e9taire" : "Budget cycle",
+    sig: fr ? "Signaux observables" : "Observable signals",
+    sigSub: fr ? "Un d\u00e9clencheur que vous ne pouvez pas d\u00e9tecter est un souhait." : "A trigger you cannot detect is a wish.",
+    colSig: fr ? "Signal" : "Signal",
+    colWhere: fr ? "O\u00f9 c\u2019est visible" : "Where visible",
+    colMeans: fr ? "Ce que \u00e7a veut dire" : "What it means",
     noHour: fr
       ? "Nous ne vous disons pas la meilleure heure ni le meilleur jour pour envoyer. Personne ne peut le savoir \u00e0 partir d\u2019un formulaire, et les chiffres que d\u2019autres outils affichent pour cela sont du folklore. Le moment o\u00f9 vos propres lecteurs ouvrent est un fait, et il est dans l\u2019onglet Observ\u00e9."
       : "We do not tell you the best hour or weekday to send. Nobody can know that from a form, and the numbers other tools print for it are folklore. When your own readers actually open is a fact, and it is on the Observed tab.",
-    where: fr ? "O\u00f9 les trouver" : "Where to find them",
-    signals: fr ? "Signaux observables" : "Observable signals",
-    signalsSub: fr
-      ? "Un d\u00e9clencheur que vous ne pouvez pas d\u00e9tecter est un souhait."
-      : "A trigger you cannot detect is a wish.",
   };
 
-  if (nothingToSearchOn(filters)) {
+  if (!p.find || nothingToSearchOn(filters)) {
     return (
       <>
         <Note tone="green">{c.noKey}</Note>
@@ -265,33 +384,28 @@ export function FindTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "16px 0 14px" }}>
         {PLATFORMS.map((x) => (
           <button key={x.id} onClick={() => setPlatform(x.id)} style={{
-            border: "1px solid " + (platform === x.id ? T.green : T.border),
-            borderRadius: 4,
+            border: "1px solid " + (platform === x.id ? T.green : T.border), borderRadius: 4,
             background: platform === x.id ? "#F2F8F5" : T.card,
             color: platform === x.id ? T.green : T.body,
             fontWeight: platform === x.id ? 500 : 400,
-            padding: "6px 11px", fontSize: 12.5, cursor: "pointer",
+            padding: "6px 11px", fontSize: 12.5, cursor: "pointer", fontFamily: T.font,
           }}>{x.label}</button>
         ))}
-        <button onClick={() => void copy()} style={{
-          marginLeft: "auto", border: "1px solid " + T.border, borderRadius: T.rBtn,
-          background: T.card, color: T.body, padding: "6px 11px", fontSize: 12.5, cursor: "pointer",
-        }}>{copied ? c.copied : c.copy}</button>
+        <button onClick={() => void copy()} style={{ ...btn, marginLeft: "auto", height: 30 }}>
+          {copied ? c.copied : c.copy}
+        </button>
       </div>
 
       <Head>{crit.label}</Head>
-      <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>{crit.note}</p>
+      <Sub>{crit.note}</Sub>
 
       {crit.rows.length > 0 && (
         <table style={tbl}>
-          <thead>
-            <tr>
-              <th style={{ ...th, width: isClay ? 60 : 230 }}>{isClay ? c.step : c.field}</th>
-              <th style={th}>{isClay ? c.doThis : c.value}</th>
-              {!isClay && <th style={{ ...th, width: 250 }}>{c.why}</th>}
-              {isClay && <th style={th}>{c.withWhat}</th>}
-            </tr>
-          </thead>
+          <thead><tr>
+            <th style={{ ...th, width: isClay ? 60 : 230 }}>{isClay ? c.step : c.field}</th>
+            <th style={th}>{isClay ? c.doThis : c.value}</th>
+            <th style={{ ...th, width: 250 }}>{isClay ? c.withWhat : c.why}</th>
+          </tr></thead>
           <tbody>
             {crit.rows.map((r, i) => (
               <tr key={i}>
@@ -313,23 +427,45 @@ export function FindTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
         </div>
       ))}
 
-      {crit.footer && (
-        <p style={{ fontSize: 12, color: T.faint, marginTop: 11, lineHeight: 1.6 }}>{crit.footer}</p>
-      )}
+      {crit.footer && <p style={{ fontSize: 12, color: T.faint, marginTop: 11, lineHeight: 1.6 }}>{crit.footer}</p>}
 
-      {p.market && p.market.detectableSignals.length > 0 && (
+      {p.find.signals.length > 0 && (
         <>
           <Rule />
-          <Head>{c.signals}</Head>
-          <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>{c.signalsSub}</p>
+          <Head>{c.sig}</Head>
+          <Sub>{c.sigSub}</Sub>
           <table style={tbl}>
-            <thead><tr><th style={th}>{fr ? "Signal" : "Signal"}</th><th style={th}>{fr ? "O\u00f9 c\u2019est visible" : "Where visible"}</th><th style={th}>{fr ? "Ce que \u00e7a veut dire" : "What it means"}</th></tr></thead>
+            <thead><tr><th style={th}>{c.colSig}</th><th style={th}>{c.colWhere}</th><th style={th}>{c.colMeans}</th></tr></thead>
             <tbody>
-              {p.market.detectableSignals.map((s, i) => (
+              {p.find.signals.map((s, i) => (
                 <tr key={i}>
                   <td style={{ ...td, color: T.heading }}>{s.signal}</td>
                   <td style={td}>{s.whereVisible}</td>
                   <td style={td}>{s.meaning}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {p.find.calendars.length > 0 && (
+        <>
+          <Rule />
+          <Head>{c.cal}</Head>
+          <Sub>{c.calSub}</Sub>
+          <table style={tbl}>
+            <thead><tr>
+              <th style={th}>{c.colMarket}</th><th style={th}>{c.colWeek}</th>
+              <th style={th}>{c.colQuiet}</th><th style={th}>{c.colBudget}</th>
+            </tr></thead>
+            <tbody>
+              {p.find.calendars.map((x, i) => (
+                <tr key={i}>
+                  <td style={{ ...td, color: T.heading }}>{x.market}</td>
+                  <td style={td}>{x.workingWeek}</td>
+                  <td style={td}>{x.quietPeriods}</td>
+                  <td style={{ ...td, color: T.faint }}>{x.budgetCycle}</td>
                 </tr>
               ))}
             </tbody>
@@ -342,6 +478,8 @@ export function FindTab({ p, locale }: { p: IcpProfile; locale: Locale }) {
     </>
   );
 }
+
+/* ---------------------------------------------------------------- */
 
 export function ObservedTab({ locale, threshold }: { locale: Locale; threshold: number }) {
   const fr = locale === "fr";
@@ -365,9 +503,7 @@ export function ObservedTab({ locale, threshold }: { locale: Locale; threshold: 
       <div style={{ padding: "22px 0", textAlign: "center" }}>
         <div style={{ fontSize: 15, color: T.heading, fontWeight: 500 }}>{c.t}</div>
         <div style={{ fontSize: 13, color: T.muted, marginTop: 10, lineHeight: 1.65, maxWidth: 470, marginLeft: "auto", marginRight: "auto" }}>
-          {c.d}
-          <br /><br />
-          {c.d2}
+          {c.d}<br /><br />{c.d2}
         </div>
       </div>
       <Rule />
