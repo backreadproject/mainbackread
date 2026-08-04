@@ -171,7 +171,18 @@ export default function ProfileDetailClient({
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    const json = (await res.json()) as R & { error?: string };
+    // A timed out function returns an HTML error page, not JSON. Parsing that
+    // throws, and an uncaught throw here left the progress row spinning forever
+    // with nothing on screen to say what happened.
+    const raw = await res.text();
+    const looksLikeJson = raw.trim().startsWith("{");
+    if (!looksLikeJson) {
+      setError(fr
+        ? "Cette section a pris trop de temps et a \u00e9t\u00e9 interrompue. Rien n\u2019est perdu. R\u00e9essayez-la seule."
+        : "That section took too long and was cut off. Nothing is lost. Try it on its own.");
+      return null;
+    }
+    const json = JSON.parse(raw) as R & { error?: string };
     if (!res.ok) { setError(json.error || c.errLoad); return null; }
     setError("");
     return json;
