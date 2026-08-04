@@ -116,6 +116,7 @@ export default function ProfileDetailClient({
       ? "Raisonn\u00e9 \u00e0 partir de vos personas et de vos march\u00e9s. Le raisonnement est montr\u00e9 pour que vous puissiez le contester."
       : "Reasoned from your personas and your markets. The reasoning is shown so you can disagree with it.",
     bObs: fr ? "Vient des lecteurs qui ont r\u00e9ellement ouvert vos documents." : "From readers who actually opened your documents.",
+    allRevisions: fr ? "Toutes les r\u00e9visions" : "All revisions",
     rev: fr ? "R\u00e9vision" : "Revision",
     asserted: fr ? "\u00e9crite par vous" : "written by you",
     refined: fr ? "propos\u00e9e" : "drafted for you",
@@ -323,6 +324,13 @@ export default function ProfileDetailClient({
         {current ? (() => { const x = OBJECTIVES.find((o) => o.id === profile.objective); return x ? (fr ? x.fr : x.en) : profile.objective; })() + " \u00b7 " + c.rev + " " + current.revision + ", " + (current.source === "asserted" ? c.asserted : c.refined) + " \u00b7 " : ""}
         {documents.length > 0 ? c.attached + documents.length + c.docs : c.noDocs}
       </p>
+      {current && (
+        <p style={{ margin: "8px 0 0" }}>
+          <a href={"/buyer-profiles/" + profile.id + "/revisions"} style={{ fontSize: 13, color: T.green, textDecoration: "none" }}>
+            {c.allRevisions}
+          </a>
+        </p>
+      )}
     </>
   );
 
