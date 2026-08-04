@@ -63,7 +63,7 @@ export default function ProjectsClient({ projects, orgless, personal = false }: 
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{pp.emptyNone}</p></div>
           ) : projects.map((p, i) => (
             <a key={p.id} href={"/projects/" + p.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "2.4fr 1fr 1fr", gap: 12, padding: "13px 18px", borderBottom: i < projects.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
-              <span className="data-cell dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{p.name}</span>
+              <span className="data-cell dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", justifySelf: "start", maxWidth: "100%" }}>{p.name}</span>
               <span className="data-cell" data-label="Documents" style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{p.docCount}</span>
               <span className="data-cell" data-label="Created" style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(p.createdAt).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
             </a>

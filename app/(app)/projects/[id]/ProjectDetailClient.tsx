@@ -32,7 +32,7 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{pd.empty}</p></div>
           ) : documents.map((d, i) => (
             <a key={d.id} href={"/documents/" + d.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "13px 18px", borderBottom: i < documents.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
-              <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{d.title}</span>
+              <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", justifySelf: "start", maxWidth: "100%" }}>{d.title}</span>
               <span style={{ fontSize: 13.5, color: T.faint, whiteSpace: "nowrap" }}>{new Date(d.created_at).toLocaleDateString(fr ? "fr-FR" : undefined, { day: "numeric", month: "short", year: "numeric" })}</span>
             </a>
           ))}

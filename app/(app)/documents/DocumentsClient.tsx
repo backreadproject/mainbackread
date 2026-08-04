@@ -190,7 +190,7 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
             </div>
           ) : filtered.map((r, i) => (
             <div key={r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "13px 18px", borderBottom: i < filtered.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center", position: "relative" }}>
-              <a href={"/documents/" + r.id} className="data-cell dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{r.title}</a>
+              <a href={"/documents/" + r.id} className="data-cell dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: "none", justifySelf: "start", maxWidth: "100%" }}>{r.title}</a>
               <span className="data-cell" data-label={dp.colRecipients} style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{r.recipients}</span>
               <span className="data-cell" data-label={dp.colReads} style={{ fontSize: 13.5, color: T.body, fontVariantNumeric: "tabular-nums" }}>{r.reads}</span>
               <span className="data-cell" data-label={dp.colQuestions} style={{ fontSize: 13.5, color: r.questions > 0 ? T.heading : T.faint, fontWeight: r.questions > 0 ? 500 : 400, fontVariantNumeric: "tabular-nums" }}>{r.questions}</span>
