@@ -7,6 +7,7 @@ import { stepsFor, OBJECTIVES, type Branch, type Objective } from "@/lib/buyer-q
 import { PASSES, type Profile, type Pass } from "@/lib/buyer-profile";
 import DiscoveryForm from "../DiscoveryForm";
 import { Tier, Note, StatedTab, FindTab } from "./Tabs";
+import ProfileReportDialog from "./ProfileReportDialog";
 import ObservedTab from "./ObservedTab";
 import type { ObservedView } from "@/lib/observed";
 
@@ -67,6 +68,7 @@ export default function ProfileDetailClient({
   const [running, setRunning] = useState<Pass[]>([]);
   const [tick, setTick] = useState(0);
   const [tab, setTab] = useState<"stated" | "find" | "observed">("stated");
+  const [exporting, setExporting] = useState(false);
   const dirty = useRef(false);
 
   const c = {
@@ -116,6 +118,7 @@ export default function ProfileDetailClient({
       ? "Raisonn\u00e9 \u00e0 partir de vos personas et de vos march\u00e9s. Le raisonnement est montr\u00e9 pour que vous puissiez le contester."
       : "Reasoned from your personas and your markets. The reasoning is shown so you can disagree with it.",
     bObs: fr ? "Vient des lecteurs qui ont r\u00e9ellement ouvert vos documents." : "From readers who actually opened your documents.",
+    exportLink: fr ? "Exporter" : "Export",
     settingsLink: fr ? "R\u00e9\u00e9talonnage" : "Re-benchmarking",
     allRevisions: fr ? "Toutes les r\u00e9visions" : "All revisions",
     rev: fr ? "R\u00e9vision" : "Revision",
@@ -334,6 +337,13 @@ export default function ProfileDetailClient({
           <a href={"/buyer-profiles/" + profile.id + "/settings"} style={{ fontSize: 13, color: T.green, textDecoration: "none" }}>
             {c.settingsLink}
           </a>
+          <span style={{ color: T.faint, margin: "0 8px" }}>{"\u00b7"}</span>
+          <button type="button" onClick={() => setExporting(true)} style={{
+            background: "none", border: "none", padding: 0, fontSize: 13,
+            color: T.green, cursor: "pointer", fontFamily: T.font,
+          }}>
+            {c.exportLink}
+          </button>
         </p>
       )}
     </>
@@ -523,6 +533,13 @@ export default function ProfileDetailClient({
           </>
         )}
       </main>
+      {exporting && (
+        <ProfileReportDialog
+          profileId={profile.id}
+          profileName={profile.name}
+          onClose={() => setExporting(false)}
+        />
+      )}
     </div>
   );
 }
