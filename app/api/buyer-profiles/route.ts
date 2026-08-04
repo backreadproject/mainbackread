@@ -162,11 +162,12 @@ export async function POST(req: NextRequest) {
   // RLS is the authorisation. A profile the caller cannot see returns no row,
   // and the update or delete below simply matches nothing.
   const { data: existing } = await scoped(
-    supabase.from("buyer_profiles").select("id"),
+    supabase.from("buyer_profiles").select("id, objective"),
     scope,
     user.id,
   ).eq("id", id).maybeSingle();
   if (!existing) return NextResponse.json({ error: "No such profile." }, { status: 404 });
+  const existingObjective = (existing as { objective?: string }).objective;
 
   if (action === "update") {
     const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -176,7 +177,21 @@ export async function POST(req: NextRequest) {
       if (!name) return NextResponse.json({ error: "Give the profile a name." }, { status: 400 });
       patch.name = name;
     }
-    if (OBJECTIVES.includes(body.objective)) patch.objective = body.objective as Objective;
+    if (OBJECTIVES.includes(body.objective) && body.objective !== undefined) {
+      // The objective decides which questions get asked, so changing it after
+      // the answers exist would leave a profile generated from questions it no
+      // longer claims to have asked. Changing your objective is a re-answer.
+      const { data: done } = await supabase
+        .from("icp_profiles").select("id")
+        .eq("profile_id", id).eq("status", "complete").limit(1).maybeSingle();
+      if (done && body.objective !== existingObjective) {
+        return NextResponse.json(
+          { error: "This profile has already been generated. Re-answer the questions to change its objective." },
+          { status: 409 },
+        );
+      }
+      patch.objective = body.objective as Objective;
+    }
     if (CADENCES.includes(body.cadence)) {
       if (body.cadence === "daily" && ctx.plan.id !== "business") {
         return NextResponse.json(
