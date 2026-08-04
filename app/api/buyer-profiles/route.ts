@@ -129,7 +129,8 @@ export async function POST(req: NextRequest) {
             String(limit) +
             " buyer profiles on the " +
             ctx.plan.name +
-            " plan. Delete one to free a slot, or move up a plan.",
+            " plan. Delete one to free a slot" +
+            (ctx.plan.id === "business" ? "." : ", or move up a plan."),
           limitReached: true,
           limit,
           used: count ?? 0,
