@@ -258,7 +258,7 @@ export default function ProfileDetailClient({
   async function generateRest() {
     if (!current) return;
     const id = current.id;
-    const already = current.output?.done ?? [];
+    const already: Pass[] = Array.isArray(current.output?.done) ? current.output.done : [];
     setBusy(true);
     setPhase("analysis");
     try {
@@ -302,9 +302,14 @@ export default function ProfileDetailClient({
   const chip: React.CSSProperties = { border: "1px solid " + T.border, borderRadius: 4, background: T.soft, padding: "2px 7px", fontSize: 11.5, color: T.body, whiteSpace: "nowrap" };
 
   const out = current?.output ?? null;
+  const doneList: Pass[] = Array.isArray(out?.done) ? out.done : [];
   const recordDone = Boolean(out?.record);
-  const allDone = Boolean(out && out.done.length === PASSES.length);
-  const stage: 1 | 2 | 3 | 4 = !draft && !current ? 1 : draft ? 2 : !allDone ? 3 : 4;
+  const allDone = doneList.length === PASSES.length;
+  // A complete revision that generated nothing has no reading to confirm, so it
+  // goes back to the start rather than offering a Confirm screen with an empty
+  // playback and a generate button that cannot run.
+  const stage: 1 | 2 | 3 | 4 =
+    draft ? 2 : !current || !recordDone ? 1 : !allDone ? 3 : 4;
 
   // A wait you understand is a different wait. Each line names the work that
   // pass is actually doing, so the time reads as work rather than as a hang.
@@ -503,7 +508,7 @@ export default function ProfileDetailClient({
                     </div>
                     <div style={{ padding: "4px 16px" }}>
                       {PASSES.map((p) => {
-                        const done = out.done.includes(p);
+                        const done = doneList.includes(p);
                         const now = running.includes(p);
                         return (
                           <div key={p} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid " + T.border, fontSize: 13.5 }}>
@@ -520,14 +525,14 @@ export default function ProfileDetailClient({
                   </div>
                 )}
 
-                {phase !== "analysis" && out.done.length > 1 && (
+                {phase !== "analysis" && doneList.length > 1 && (
                   <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 22 }}>
                     <div style={{ background: T.soft, borderBottom: "1px solid " + T.border, padding: "9px 14px", fontSize: 11.5, color: T.muted, fontWeight: 500 }}>
                       {c.building}
                     </div>
                     <div style={{ padding: "4px 16px" }}>
                       {PASSES.map((p) => {
-                        const done = out.done.includes(p);
+                        const done = doneList.includes(p);
                         return (
                           <div key={p} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 0", borderBottom: "1px solid " + T.border, fontSize: 13.5 }}>
                             <i style={{ width: 6, height: 6, borderRadius: 2, flex: "none", background: done ? T.green : T.faint }} />
