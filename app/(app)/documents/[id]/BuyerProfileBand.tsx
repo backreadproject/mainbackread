@@ -54,7 +54,7 @@ export default function BuyerProfileBand({
       ? "Liez un profil et les lecteurs de ce document seront mesur\u00e9s contre lui. C\u2019est ce qui remplit l\u2019onglet Observ\u00e9."
       : "Attach a profile and readers of this document get measured against it. That is what fills the Observed tab.",
     measured: fr ? "Les lecteurs de ce document sont mesur\u00e9s contre la r\u00e9vision " : "Readers of this document are measured against revision ",
-    engagedTail: fr ? " sont engag\u00e9s." : " are engaged.",
+    engagedLabel: fr ? "engag\u00e9s" : "engaged",
     change: fr ? "Changer" : "Change",
     attach: fr ? "Lier un profil" : "Attach a profile",
     detach: fr ? "D\u00e9lier" : "Detach",
@@ -126,9 +126,15 @@ export default function BuyerProfileBand({
 
       {attached && (
         <div style={{ padding: "13px 16px" }}>
-          <p style={{ fontSize: 13, color: T.muted, margin: "0 0 12px", lineHeight: 1.6 }}>
-            {c.measured}{attached.revision}. {engaged}{c.engagedTail}
-          </p>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 16, margin: "0 0 12px" }}>
+            <p style={{ fontSize: 13, color: T.muted, margin: 0, lineHeight: 1.6 }}>
+              {c.measured}{attached.revision}.
+            </p>
+            <span style={{ marginLeft: "auto", fontSize: 13, color: T.body, whiteSpace: "nowrap" }}>
+              <span style={{ fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>{engaged}</span>
+              <span style={{ color: T.muted }}>{" " + c.engagedLabel}</span>
+            </span>
+          </div>
 
           {attached.personas.length === 0 ? (
             <p style={{ fontSize: 12.5, color: T.faint, margin: 0, lineHeight: 1.6 }}>{c.noPersonas}</p>
