@@ -4,13 +4,14 @@ import { getOrgContext } from "@/lib/org-context";
 import { readerLink } from "@/lib/reader-origin";
 import { pickVariantForDocument } from "@/lib/variants";
 import { sendEmail, emailConfigured } from "@/lib/email";
+import { isRoleId } from "@/lib/roles";
 import { resolvePlanForUser, isLocked, checkRecipientLimit, checkSendQuota, logUsage } from "@/lib/plan-context";
 import { NextResponse } from "next/server";
 export async function POST(req: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-  const { documentId, mode, firstName, lastName, email, note, variantId, isSigner } = await req.json();
+  const { documentId, mode, firstName, lastName, email, note, variantId, isSigner, roles, roleOther } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
   if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
@@ -19,6 +20,12 @@ export async function POST(req: Request) {
   if (!docRow) return NextResponse.json({ error: "You don't have access to that document." }, { status: 403 });
   const docTitle = docRow.title ?? "a document";
   const label = `${firstName.trim()} ${lastName.trim()}`;
+  const cleanRoles = Array.isArray(roles)
+    ? Array.from(new Set(roles.filter((r: unknown): r is string => typeof r === "string" && isRoleId(r)))).slice(0, 6)
+    : [];
+  const cleanRoleOther = typeof roleOther === "string" && roleOther.trim()
+    ? roleOther.trim().slice(0, 80)
+    : null;
   const admin = createAdminClient();
 
   // ---- Plan gates -------------------------------------------------------
@@ -53,6 +60,8 @@ export async function POST(req: Request) {
       label,
       first_name: firstName.trim(),
       last_name: lastName.trim(),
+        roles: cleanRoles,
+        role_other: cleanRoleOther,
         // Stored in BOTH modes. In link mode nothing is sent to it; it exists so
         // readers can be grouped by company. Null when not supplied.
         email: email?.trim() || null,
@@ -63,7 +72,7 @@ export async function POST(req: Request) {
         // certificate must leave SENT blank rather than invent one.
         sent_at: mode === "email" ? new Date().toISOString() : null,
     })
-    .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id")
+    .select("id, label, share_token, created_at, first_name, last_name, email, delivery, variant_id, roles, role_other")
     .single();
   if (error || !rec) return NextResponse.json({ error: error?.message ?? "Could not create recipient." }, { status: 400 });
   const readUrl = readerLink(rec.share_token, new URL(req.url).origin);

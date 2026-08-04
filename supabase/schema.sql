@@ -1095,3 +1095,25 @@ CREATE TRIGGER trg_enforce_document_quota BEFORE INSERT ON public.documents FOR 
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 set check_function_bodies = on;
+
+-- Recipient roles. A property of the person, not of any buyer profile:
+-- captured once when they are added, held across every document they receive.
+alter table public.recipients
+  add column if not exists roles text[] not null default '{}',
+  add column if not exists role_other text;
+
+create index if not exists recipients_roles_idx
+  on public.recipients using gin (roles)
+  where array_length(roles, 1) > 0;
+
+alter table public.recipients
+  drop constraint if exists recipients_role_other_len;
+alter table public.recipients
+  add constraint recipients_role_other_len
+  check (role_other is null or char_length(role_other) between 1 and 80);
+
+alter table public.recipients
+  drop constraint if exists recipients_roles_len;
+alter table public.recipients
+  add constraint recipients_roles_len
+  check (coalesce(array_length(roles, 1), 0) <= 6);

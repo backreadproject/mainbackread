@@ -3,6 +3,7 @@ import { useState } from "react";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import RolePicker from "../../RolePicker";
 
 type NewRec = { id: string; label: string | null; share_token: string; created_at: string };
 type Variant = { id: string; label: string; note: string | null; active: boolean };
@@ -39,6 +40,8 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
+  const [roles, setRoles] = useState<string[]>([]);
+  const [roleOther, setRoleOther] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sendingTo, setSendingTo] = useState("");
@@ -112,7 +115,7 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
     try {
       const res = await fetch("/api/share-prospect", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ documentId, mode, firstName, lastName, email: email.trim() || undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined }),
+        body: JSON.stringify({ documentId, mode, firstName, lastName, email: email.trim() || undefined, note: mode === "email" ? note.trim() : undefined, variantId: chosen || undefined, roles, roleOther: roleOther.trim() || undefined }),
       });
       const text = await res.text();
       let json: { recipient?: NewRec; readUrl?: string; emailSent?: boolean; emailWarning?: string; error?: string } = {};
@@ -227,6 +230,8 @@ export default function ProspectModal({ documentId, onClose, onCreated, onSent, 
                 {step === "link" && <p style={{ fontSize: 12.5, color: T.faint, margin: "0 0 12px", lineHeight: 1.45 }}>{groupingHint}</p>}
               </>
             )}
+
+            <RolePicker roles={roles} other={roleOther} onChange={(r, o) => { setRoles(r); setRoleOther(o); }} />
 
             {step === "email" && (
               <>
