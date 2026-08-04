@@ -98,6 +98,9 @@ export interface ObservedSummary {
   noDecision: number;
   /** won + lost + no_decision. Below the threshold no rate is printed. */
   outcomesMarked: number;
+  /** Oldest signal counted. The denominator when working out how fast
+   *  readers arrive for this profile. */
+  firstSignalAt: string | null;
   /** Newest signal counted. With no scheduler this is what "last checked"
    *  honestly means: the data is current to here, computed when you looked. */
   lastSignalAt: string | null;
@@ -165,7 +168,7 @@ export function emptySummary(): ObservedSummary {
   return {
     readers: 0, opened: 0, engaged: 0, questions: 0, questioners: 0,
     replies: 0, forwards: 0, forwarders: 0, documents: 0,
-    won: 0, lost: 0, noDecision: 0, outcomesMarked: 0, lastSignalAt: null,
+    won: 0, lost: 0, noDecision: 0, outcomesMarked: 0, firstSignalAt: null, lastSignalAt: null,
   };
 }
 
@@ -365,6 +368,7 @@ export function summarise(readers: ReaderState[]): ObservedSummary {
     if (r.outcome === "won") s.won += 1;
     else if (r.outcome === "lost") s.lost += 1;
     else if (r.outcome === "no_decision") s.noDecision += 1;
+    if (r.firstAt && (!s.firstSignalAt || r.firstAt < s.firstSignalAt)) s.firstSignalAt = r.firstAt;
     if (r.lastAt && (!s.lastSignalAt || r.lastAt > s.lastSignalAt)) s.lastSignalAt = r.lastAt;
   }
 

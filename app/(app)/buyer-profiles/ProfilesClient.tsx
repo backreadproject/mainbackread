@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { T } from "@/lib/theme";
 import { useLocale } from "@/lib/useLocale";
+import type { Deletable } from "@/lib/profile-reach";
 
 type Basis = "draft" | "stated" | "tested";
 
@@ -23,6 +24,10 @@ type Row = {
   readers: number;
   threshold: number;
   lastSignalAt: string | null;
+  /** On course to reach its threshold within a year, at the rate its readers
+   *  are actually arriving. */
+  willReach: boolean;
+  weeksToThreshold: number | null;
 };
 
 const COLS = "1.6fr 1fr 0.9fr 0.7fr 0.8fr 1fr";
@@ -33,12 +38,14 @@ export default function ProfilesClient({
   planName,
   topPlan,
   entitled,
+  deletable,
 }: {
   rows: Row[];
   limit: number | null;
   planName: string;
   topPlan: boolean;
   entitled: boolean;
+  deletable: Deletable[];
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -51,6 +58,7 @@ export default function ProfilesClient({
   const [filter, setFilter] = useState("all");
   const [state, setState] = useState("all");
   const [q, setQ] = useState("");
+  const [confirm, setConfirm] = useState<Deletable | null>(null);
 
   const c = {
     title: fr ? "Profils d\u2019acheteur" : "Buyer profiles",
@@ -78,7 +86,8 @@ export default function ProfilesClient({
     statProfiles: fr ? "Profils" : "Profiles",
     statAttached: fr ? "Li\u00e9s \u00e0 un document" : "Attached to documents",
     statTested: fr ? "Test\u00e9s sur des lecteurs" : "Tested against readers",
-    statEngaged: fr ? "Lecteurs engag\u00e9s" : "Engaged readers",
+    statNever: fr ? "N\u2019atteindront jamais le seuil" : "Will never reach threshold",
+    statNeverNote: fr ? "\u00c0 votre volume actuel" : "At your current volume",
     unlimited: fr ? "illimit\u00e9" : "unlimited",
     search: fr ? "Rechercher" : "Search profiles",
     all: fr ? "Tous les objectifs" : "All objectives",
@@ -96,16 +105,43 @@ export default function ProfilesClient({
       : "You are using every profile on the " + planName + " plan.",
     fullMore: topPlan
       ? (fr ? " Supprimez-en un pour lib\u00e9rer une place." : " Delete one to free a slot.")
-      : (fr ? " Supprimez-en un ou passez au plan sup\u00e9rieur." : " Delete one to free a slot, or move up a plan."),
+      : (fr ? " Supprimez-en un pour lib\u00e9rer une place, ou passez au plan sup\u00e9rieur." : " Delete one to free a slot, or move up a plan."),
+    fullKeep: fr
+      ? " Rien n\u2019est supprim\u00e9 et chaque profil existant continue de fonctionner."
+      : " Nothing is removed and every existing profile keeps working.",
     none: fr ? "Aucun r\u00e9sultat" : "Nothing matches that",
     countOne: fr ? "profil" : "profile",
     countMany: fr ? "profils" : "profiles",
     neverAttached: fr ? "Jamais li\u00e9" : "Never attached",
     noReaders: fr ? "Aucun lecteur" : "No readers yet",
     unfinished: fr ? "Inachev\u00e9" : "Unfinished",
-    needed: fr ? "lecteurs engag\u00e9s requis" : "engaged readers needed",
-    across: fr ? "sur tous les profils" : "across every profile",
     noneUnused: fr ? "tous li\u00e9s" : "all attached",
+    needed: fr ? "lecteurs engag\u00e9s requis" : "engaged readers needed",
+
+    thinH: fr ? "Avant de passer au plan sup\u00e9rieur" : "Before you upgrade",
+    thinOne: fr
+      ? " de ces profils n\u2019a pas assez de lecteurs pour vous apprendre quoi que ce soit. Il vaut la peine de se demander s\u2019il s\u2019agit de march\u00e9s distincts ou d\u2019un seul march\u00e9 d\u00e9crit de plusieurs fa\u00e7ons. Plus de profils dilue les preuves sur tous."
+      : " of these has too few readers to ever tell you anything. It is worth asking whether they are separate markets, or one market described several ways. More profiles thin the evidence across all of them.",
+    thinMany: fr
+      ? " de ces profils n\u2019ont pas assez de lecteurs pour vous apprendre quoi que ce soit. Il vaut la peine de se demander s\u2019il s\u2019agit de march\u00e9s distincts ou d\u2019un seul march\u00e9 d\u00e9crit de plusieurs fa\u00e7ons. Plus de profils dilue les preuves sur tous."
+      : " of these have too few readers to ever tell you anything. It is worth asking whether they are separate markets, or one market described several ways. More profiles thin the evidence across all of them.",
+
+    leastH: fr ? "Les moins utilis\u00e9s, si vous voulez r\u00e9cup\u00e9rer une place" : "Least used, if you want a slot back",
+    rUnfinished: fr ? "Brouillon, jamais termin\u00e9" : "Draft, never finished",
+    rUnattached: fr ? "Aucun document li\u00e9" : "No documents attached",
+    rQuiet: fr ? "Aucun lecteur engag\u00e9" : "No engaged readers",
+    del: fr ? "Supprimer" : "Delete",
+    delT: fr ? "Supprimer ce profil ?" : "Delete this profile?",
+    delD: fr
+      ? "Le profil et toutes ses r\u00e9visions sont supprim\u00e9s. Les documents qui y \u00e9taient li\u00e9s continuent de fonctionner, ils cessent simplement d\u2019\u00eatre mesur\u00e9s contre lui. Les lecteurs gardent tout leur historique."
+      : "The profile and all its revisions are deleted. Documents that were attached keep working, they just stop being measured against it. Readers keep their whole history.",
+    seePlans: fr ? "Voir les plans" : "See plans",
+    plansFoot: fr
+      ? "Personal permet 3 profils. Team en permet 15. Business ne les limite pas."
+      : "Personal allows 3 profiles. Team allows 15. Business does not limit them.",
+    countedFoot: fr
+      ? "Le nombre de lecteurs engag\u00e9s est calcul\u00e9 \u00e0 l\u2019ouverture de cette page, \u00e0 partir des lecteurs des documents li\u00e9s. Les r\u00e9visions ne comptent pas dans votre limite, seuls les profils."
+      : "Engaged readers are counted when you open this page, from the readers of the documents each profile is attached to. Revisions do not count against your limit. Only profiles do.",
   };
 
   const OBJ: Record<string, string> = {
@@ -124,13 +160,18 @@ export default function ProfilesClient({
     tested: { label: c.bTested, tone: T.green },
   };
 
+  const REASON: Record<Deletable["reason"], string> = {
+    unfinished: c.rUnfinished,
+    unattached: c.rUnattached,
+    quiet: c.rQuiet,
+  };
+
   const used = rows.length;
   const full = limit !== null && used >= limit;
   const attached = rows.filter((r) => r.documents > 0).length;
   const tested = rows.filter((r) => r.basis === "tested").length;
-  const engagedTotal = rows.reduce((n, r) => n + r.engaged, 0);
-  // The threshold is per profile, so there is no single number to quote. The
-  // commonest one is what a note about "readers needed" should say.
+  const stuck = rows.filter((r) => !r.willReach).length;
+
   const commonThreshold = useMemo(() => {
     const counts: Record<number, number> = {};
     for (const r of rows) counts[r.threshold] = (counts[r.threshold] ?? 0) + 1;
@@ -183,6 +224,26 @@ export default function ProfilesClient({
     }
   }
 
+  async function remove(id: string) {
+    setBusy(true);
+    setError("");
+    try {
+      const res = await fetch("/api/buyer-profiles", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action: "delete", id }),
+      });
+      const json = (await res.json()) as { error?: string };
+      if (!res.ok) { setError(json.error || (fr ? "\u00c9chec." : "Could not delete that.")); return; }
+      setConfirm(null);
+      router.refresh();
+    } catch {
+      setError(fr ? "\u00c9chec." : "Could not delete that.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const sel: React.CSSProperties = {
     height: 34,
     boxSizing: "border-box",
@@ -211,6 +272,10 @@ export default function ProfilesClient({
     fontSize: 11.5,
     color: T.body,
     whiteSpace: "nowrap",
+  };
+  const smallBtn: React.CSSProperties = {
+    height: 27, padding: "0 9px", border: "1px solid " + T.border, borderRadius: T.rBtn,
+    background: T.card, fontSize: 12, color: T.body, cursor: "pointer", fontFamily: T.font,
   };
   const num: React.CSSProperties = { fontSize: 13.5, fontVariantNumeric: "tabular-nums" };
 
@@ -271,16 +336,16 @@ export default function ProfilesClient({
 
             {full && (
               <div style={{ borderLeft: "3px solid " + T.amber, background: "#FFFBF5", padding: "11px 14px", marginBottom: 18, fontSize: 12.5, lineHeight: 1.6, color: "#7A3D0A" }}>
-                {c.full}{c.fullMore}
+                {c.full}{c.fullMore}{c.fullKeep}
               </div>
             )}
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card }} className="stat-strip">
               {([
-                [limit === null ? String(used) : used + " / " + String(limit), c.statProfiles, limit === null ? c.unlimited : planName, T.green],
+                [limit === null ? String(used) : used + " / " + String(limit), c.statProfiles, limit === null ? c.unlimited : planName, full ? T.amber : T.green],
                 [String(attached), c.statAttached, used - attached > 0 ? String(used - attached) + " " + c.neverAttached.toLowerCase() : c.noneUnused, T.indigo],
-                [String(tested), c.statTested, tested === 0 ? String(commonThreshold) + " " + c.needed : "", T.amber],
-                [String(engagedTotal), c.statEngaged, c.across, T.border],
+                [String(tested), c.statTested, tested === 0 ? String(commonThreshold) + " " + c.needed : "", T.green],
+                [String(stuck), c.statNever, c.statNeverNote, stuck > 0 ? T.danger : T.border],
               ] as [string, string, string, string][]).map(([v, l, note, tone], i) => (
                 <div key={i} style={{ padding: "15px 18px", borderLeft: "3px solid " + tone }}>
                   <div style={{ fontSize: 24, fontWeight: 600, color: T.heading, letterSpacing: "-0.02em", lineHeight: 1.15, fontVariantNumeric: "tabular-nums" }}>{v}</div>
@@ -289,6 +354,12 @@ export default function ProfilesClient({
                 </div>
               ))}
             </div>
+
+            {stuck > 0 && (
+              <div style={{ borderLeft: "3px solid " + T.indigo, background: "#F5F5FF", padding: "11px 14px", marginTop: 14, fontSize: 12.5, lineHeight: 1.6, color: "#2C2E9E" }}>
+                {stuck}{stuck === 1 ? c.thinOne : c.thinMany}
+              </div>
+            )}
 
             <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 18 }}>
               <div style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, fontSize: 12.5, fontWeight: 600, color: T.body, whiteSpace: "nowrap" }}>
@@ -330,10 +401,39 @@ export default function ProfilesClient({
               )}
             </div>
 
+            {full && deletable.length > 0 && (
+              <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 20 }}>
+                <div style={{ background: T.soft, borderBottom: "1px solid " + T.border, padding: "9px 14px", fontSize: 11.5, color: T.muted, fontWeight: 500 }}>
+                  {c.leastH}
+                </div>
+                <div style={{ padding: "0 16px" }}>
+                  {deletable.map((d, i) => (
+                    <div key={d.id} style={{
+                      display: "grid", gridTemplateColumns: "1fr 220px 100px", gap: 16, alignItems: "center",
+                      padding: "14px 0", borderBottom: i < deletable.length - 1 ? "1px solid " + T.border : "none",
+                    }}>
+                      <a href={"/buyer-profiles/" + d.id} className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, textDecoration: "none" }}>{d.name}</a>
+                      <span style={{ fontSize: 12.5, color: T.faint }}>
+                        {REASON[d.reason]}
+                        {", " + when(d.updatedAt)}
+                      </span>
+                      <span style={{ textAlign: "right" }}>
+                        <button style={smallBtn} onClick={() => setConfirm(d)}>{c.del}</button>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {full && !topPlan && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20 }}>
+                <a href="/billing" style={{ ...primary, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>{c.seePlans}</a>
+              </div>
+            )}
+
             <p style={{ fontSize: 12, color: T.faint, margin: "11px 0 0", lineHeight: 1.6 }}>
-              {fr
-                ? "Le nombre de lecteurs engag\u00e9s est calcul\u00e9 \u00e0 l\u2019ouverture de cette page, \u00e0 partir des lecteurs des documents li\u00e9s. Les r\u00e9visions ne comptent pas dans votre limite, seuls les profils."
-                : "Engaged readers are counted when you open this page, from the readers of the documents each profile is attached to. Revisions do not count against your limit. Only profiles do."}
+              {full ? c.plansFoot + " " : ""}{c.countedFoot}
             </p>
           </>
         )}
@@ -354,6 +454,27 @@ export default function ProfilesClient({
               <button style={{ ...sel, cursor: "pointer" }} disabled={busy} onClick={() => setAdding(false)}>{c.cancel}</button>
               <button style={{ ...primary, opacity: !name.trim() || busy ? 0.5 : 1 }} disabled={!name.trim() || busy} onClick={() => void create()}>
                 {busy ? c.working : c.create}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(16,24,40,.45)", display: "grid", placeItems: "center", zIndex: 60, padding: 20 }} onClick={() => !busy && setConfirm(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, width: 460, maxWidth: "100%", boxShadow: T.overlayShadow, padding: "18px 20px" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: T.heading, margin: "0 0 6px" }}>{c.delT}</h3>
+            <p style={{ fontSize: 13.5, color: T.heading, margin: "0 0 10px", fontWeight: 500 }}>{confirm.name}</p>
+            <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 16px", lineHeight: 1.6 }}>{c.delD}</p>
+            {error && <p style={{ fontSize: 12.5, color: T.dangerText, margin: "0 0 12px" }}>{error}</p>}
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button style={{ ...sel, cursor: "pointer" }} disabled={busy} onClick={() => setConfirm(null)}>{c.cancel}</button>
+              <button
+                style={{ ...sel, cursor: "pointer", background: T.danger, borderColor: T.danger, color: T.onAccent, fontWeight: 500, opacity: busy ? 0.6 : 1 }}
+                disabled={busy}
+                onClick={() => void remove(confirm.id)}
+              >
+                {busy ? c.working : c.del}
               </button>
             </div>
           </div>

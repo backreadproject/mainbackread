@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { resolvePlanForUser } from "@/lib/plan-context";
 import { hasFeature, getLimit } from "@/lib/plans";
 import { observeProfiles } from "@/lib/observed";
+import { reachFor, leastUsed } from "@/lib/profile-reach";
 import ProfilesClient from "./ProfilesClient";
 
 export const dynamic = "force-dynamic";
@@ -60,8 +61,20 @@ export default async function BuyerProfilesPage() {
     hasComplete,
   );
 
+  const now = new Date();
+
   const rows = list.map((p) => {
     const o = observed[p.id];
+    const engaged = o?.summary.engaged ?? 0;
+    const threshold = (p.threshold as number) ?? 20;
+    const reach = reachFor({
+      engaged,
+      threshold,
+      since: o?.summary.firstSignalAt ?? null,
+      createdAt: (p.created_at as string),
+      now,
+    });
+
     return {
       id: p.id,
       name: p.name,
@@ -71,10 +84,12 @@ export default async function BuyerProfilesPage() {
       documents: docCount[p.id] ?? 0,
       updatedAt: (p.updated_at ?? p.created_at) as string,
       basis: o?.basis ?? "draft",
-      engaged: o?.summary.engaged ?? 0,
+      engaged,
       readers: o?.summary.readers ?? 0,
-      threshold: (p.threshold as number) ?? 20,
+      threshold,
       lastSignalAt: o?.summary.lastSignalAt ?? null,
+      willReach: reach.willReach,
+      weeksToThreshold: reach.weeks,
     };
   });
 
@@ -87,6 +102,7 @@ export default async function BuyerProfilesPage() {
       planName={ctx.plan.name}
       topPlan={limit === null}
       entitled={hasFeature(ctx.plan.id, "icp")}
+      deletable={leastUsed(rows)}
     />
   );
 }
