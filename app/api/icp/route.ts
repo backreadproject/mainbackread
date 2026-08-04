@@ -17,7 +17,7 @@ import {
 } from "@/lib/icp-profile";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const MAX_ANSWER = 4000;
 const Answer = z.object({ id: z.string().min(1).max(40), q: z.string().min(1).max(300), a: z.string().max(MAX_ANSWER) });
