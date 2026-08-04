@@ -49,7 +49,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
   ];
   return (
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
-      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}.rc-in:focus{outline:none;border-color:var(--rp-green)}`}</style>
+      <style>{`.t-row{transition:background .12s;text-decoration:none;color:inherit}.t-row:hover{background:var(--rp-hover)}.rc-in:focus{outline:none;border-color:var(--rp-green)}.dc-who{display:block}.dc-who>*{display:block}`}</style>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2 }}>{rp.title}</h1>
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rp.subtitle}</p>
@@ -88,7 +88,7 @@ export default function RecipientsClient({ rows, stats }: { rows: Row[]; stats: 
             <div style={{ padding: 44, textAlign: "center" }}><p style={{ fontSize: 14, color: T.muted, margin: 0 }}>{rows.length === 0 ? rp.emptyNone : rp.emptyFilter}</p></div>
           ) : filtered.map((r, i) => (
             <a key={r.id} href={"/recipients/" + r.id} className="t-row data-row" style={{ display: "grid", gridTemplateColumns: COLS, gap: 12, padding: "13px 18px", borderBottom: i < filtered.length - 1 ? "1px solid " + T.borderSoft : "none", alignItems: "center" }}>
-              <span className="data-cell" style={{ minWidth: 0 }}>
+              <span className="dc-who" style={{ minWidth: 0, display: "block" }}>
                 <span className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, color: T.heading, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", borderBottom: "1px solid " + T.border, paddingBottom: 1, justifySelf: "start", maxWidth: "100%" }}>{r.label || rp.unnamedReader}</span>
                 {r.company && <span style={{ display: "block", fontSize: 12, color: T.faint, marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.company}</span>}
               </span>
