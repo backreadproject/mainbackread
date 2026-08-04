@@ -12,6 +12,11 @@ export interface PlanLimits {
   documentsPerMonth: number | null;
   verdictsPerDocumentPerMonth: number | null;
   recipientsPerDocument: number | null;
+  /** Named buyer profiles, not revisions. Re-answering the questionnaire makes
+   *  a revision, so this counts distinct markets rather than edits. Generous by
+   *  design: a profile says nothing until about twenty engaged readers have been
+   *  measured against it, so evidence density binds long before a cap does. */
+  buyerProfiles: number | null;
   sendsPerMonth: number | null;
   seats: number | null;
 }
@@ -120,6 +125,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       documentsPerMonth: 2,
       verdictsPerDocumentPerMonth: 2,
       recipientsPerDocument: 1,
+      buyerProfiles: 0,
       sendsPerMonth: 5,
       seats: 1,
     },
@@ -134,6 +140,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
       recipientsPerDocument: null,
+      buyerProfiles: 3,
       sendsPerMonth: null,
       seats: 1,
     },
@@ -148,6 +155,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
       recipientsPerDocument: null,
+      buyerProfiles: 15,
       sendsPerMonth: null,
       seats: 20,
     },
@@ -162,6 +170,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       documentsPerMonth: null,
       verdictsPerDocumentPerMonth: null,
       recipientsPerDocument: null,
+      buyerProfiles: null,
       sendsPerMonth: null,
       seats: null,
     },

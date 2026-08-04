@@ -1117,3 +1117,50 @@ alter table public.recipients
 alter table public.recipients
   add constraint recipients_roles_len
   check (coalesce(array_length(roles, 1), 0) <= 6);
+
+-- The named thing a customer calls a buyer profile. icp_profiles keeps its shape
+-- and becomes the REVISIONS beneath this, which is what lets a plan cap count
+-- lineages rather than rows: re-answering the questionnaire makes a revision,
+-- not a new profile.
+create table if not exists public.buyer_profiles (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) on delete cascade,
+  organization_id uuid references public.organizations(id) on delete cascade,
+  created_by uuid references auth.users(id) on delete set null,
+  name text not null,
+  objective text not null default 'outbound'
+    check (objective in ('outbound', 'client', 'investor', 'partnership')),
+  cadence text not null default 'weekly'
+    check (cadence in ('daily', 'weekly', 'monthly', 'manual')),
+  threshold integer not null default 20 check (threshold between 5 and 200),
+  archived_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint buyer_profiles_scope check (
+    (owner_id is not null and organization_id is null) or
+    (owner_id is null and organization_id is not null)
+  ),
+  constraint buyer_profiles_name_len check (char_length(name) between 1 and 120)
+);
+
+create index if not exists buyer_profiles_owner_idx on public.buyer_profiles (owner_id) where owner_id is not null;
+create index if not exists buyer_profiles_org_idx on public.buyer_profiles (organization_id) where organization_id is not null;
+
+alter table public.buyer_profiles enable row level security;
+
+-- Any member reads, only owner and admin write. A plain member should not be
+-- able to rename the thing the whole team measures its readers against.
+create policy "bp_select" on public.buyer_profiles for select using ((owner_id = auth.uid()) or (organization_id is not null and is_org_member(organization_id)));
+create policy "bp_insert" on public.buyer_profiles for insert with check ((owner_id = auth.uid()) or (organization_id is not null and my_org_role(organization_id) = any (array['owner', 'admin'])));
+create policy "bp_update" on public.buyer_profiles for update using ((owner_id = auth.uid()) or (organization_id is not null and my_org_role(organization_id) = any (array['owner', 'admin']))) with check ((owner_id = auth.uid()) or (organization_id is not null and my_org_role(organization_id) = any (array['owner', 'admin'])));
+create policy "bp_delete" on public.buyer_profiles for delete using ((owner_id = auth.uid()) or (organization_id is not null and my_org_role(organization_id) = any (array['owner', 'admin'])));
+
+alter table public.icp_profiles
+  add column if not exists profile_id uuid references public.buyer_profiles(id) on delete cascade;
+create index if not exists icp_profiles_profile_idx on public.icp_profiles (profile_id);
+
+-- Which profile a document's readers are measured against. SET NULL rather than
+-- cascade: deleting a profile must not touch a document.
+alter table public.documents
+  add column if not exists buyer_profile_id uuid references public.buyer_profiles(id) on delete set null;
+create index if not exists documents_buyer_profile_idx on public.documents (buyer_profile_id) where buyer_profile_id is not null;
