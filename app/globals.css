@@ -159,3 +159,75 @@ input, textarea, select, button { color-scheme: inherit; }
 
 :focus-visible { outline: 2px solid var(--rp-green); outline-offset: 2px; }
 
+
+
+/* ============================================================ workspaces
+   CLASSIC is everything above: the shell the app has always had.
+   ELEGANT is denser chrome over the identical components. It is a layer,
+   not a second stylesheet, so every colour still comes from the variables
+   and light and dark keep working in both.
+
+   Scoped to a wrapper class rather than to <html> on purpose: the server
+   renders the class into the markup, so there is no flash and no
+   pre-paint script that could get it wrong. */
+
+.ws-elegant {
+  --rp-pad-page: 20px 24px;
+  --rp-h1: 18px;
+  --rp-radius: 6px;
+}
+
+/* The page itself. Classic breathes at 34/28 with a 1040 measure; Elegant
+   uses the width, because the index pane will take some of it back. */
+.ws-elegant .app-content main {
+  padding: var(--rp-pad-page) !important;
+  max-width: none !important;
+}
+.ws-elegant .app-content h1 {
+  font-size: var(--rp-h1) !important;
+  letter-spacing: -0.018em;
+}
+.ws-elegant .app-content h2 { font-size: 15px !important; }
+
+/* The header row every page opens with becomes a strip: one line, the
+   actions pushed right, a rule under it rather than empty space. */
+.ws-elegant .page-header {
+  align-items: center !important;
+  gap: 12px !important;
+  padding-bottom: 13px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--rp-border);
+}
+.ws-elegant .page-header p { font-size: 12.5px !important; }
+
+/* Density. Rows, cells and controls all step down one notch. */
+.ws-elegant { font-size: 13px; }
+.ws-elegant .t-row, .ws-elegant .data-row, .ws-elegant .ov-r, .ws-elegant .rp-row,
+.ws-elegant .bp-row { font-size: 12.5px; }
+.ws-elegant table td { padding-top: 9px !important; padding-bottom: 9px !important; }
+.ws-elegant table th { padding-top: 8px !important; padding-bottom: 8px !important;
+  font-size: 9.5px !important; letter-spacing: 0.09em; text-transform: uppercase; }
+
+/* Numbers are data. Tabular figures line up in a column and stop the eye
+   re-measuring every row. */
+.ws-elegant { font-variant-numeric: tabular-nums; }
+
+/* Cards lose their outer margin and gain an inner rule, so a column of
+   them reads as one surface rather than as a stack of floating tiles. */
+.ws-elegant .stat-strip { border-radius: var(--rp-radius); }
+
+/* The sidebar narrows. Elegant spends its width on the index pane. */
+.ws-elegant .app-sidebar-wrap aside { width: 196px !important; }
+
+/* Elegant chrome: the strip above the content, carrying the entity and its
+   numbers. Rendered by MobileShell only in this workspace. */
+.ws-elegant .ws-strip {
+  display: flex; align-items: center; gap: 12px;
+  height: 50px; flex: none; padding: 0 18px;
+  background: var(--rp-canvas); border-bottom: 1px solid var(--rp-border);
+}
+.ws-classic .ws-strip { display: none; }
+
+@media (max-width: 600px) {
+  .ws-elegant .app-content main { padding: 16px !important; }
+}

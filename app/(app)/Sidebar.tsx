@@ -7,6 +7,7 @@ import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import NotificationBell from "@/app/(app)/NotificationBell";
 import ThemeToggle from "@/app/(app)/ThemeToggle";
+import WorkspaceToggle from "@/app/(app)/WorkspaceToggle";
 import LanguageSwitcher from "@/lib/LanguageSwitcher";
 type NavItem = { href: string; key: string; Icon: LucideIcon; orgOnly?: boolean };
 const NAV_MAIN: NavItem[] = [
@@ -23,7 +24,21 @@ const NAV_CONFIG: NavItem[] = [
   { href: "/billing", key: "billing", Icon: CreditCard },
   { href: "/account", key: "account", Icon: CircleUser },
 ];
-export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl = null }: { email: string; workspaceName?: string; isOrg?: boolean; avatarUrl?: string | null }) {
+export default function Sidebar({
+  email,
+  workspaceName,
+  isOrg = false,
+  avatarUrl = null,
+  workspace = "classic",
+}: {
+  email: string;
+  workspaceName?: string;
+  isOrg?: boolean;
+  avatarUrl?: string | null;
+  /** Which shell is rendered. Passed down rather than read from the cookie,
+   *  because the cookie is only one of four things that decide it. */
+  workspace?: "classic" | "elegant";
+}) {
   const pathname = usePathname();
   const locale = useLocale();
   const s = getDict(locale).sidebar;
@@ -85,6 +100,7 @@ export default function Sidebar({ email, workspaceName, isOrg = false, avatarUrl
           <div style={{ fontSize: 11, color: T.sidebarSection, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>{email}</div>
           <LanguageSwitcher current={locale} compact />
           <ThemeToggle compact />
+          <WorkspaceToggle current={workspace} compact />
         </div>
         <a href="https://readprospects.com/concepts" target="_blank" rel="noopener noreferrer"
           style={{ display: "block", fontSize: 11.5, color: T.sidebarSection, textDecoration: "none", marginBottom: 10 }}>

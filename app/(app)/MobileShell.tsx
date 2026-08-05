@@ -9,7 +9,18 @@ import { getDict } from "@/lib/i18n";
 // The aurora is gone. Two blurred radial gradients sat fixed behind every
 // screen; at 90px blur they put a soft wash under every card edge and were the
 // single largest reason the UI read as hazy rather than sharp.
-export default function MobileShell({ sidebar, children }: { sidebar: React.ReactNode; children: React.ReactNode }) {
+export default function MobileShell({
+  sidebar,
+  children,
+  workspace = "classic",
+}: {
+  sidebar: React.ReactNode;
+  children: React.ReactNode;
+  /** Which shell. Classic is what the app has always had; elegant is the
+   *  dense workspace. The class is rendered by the server into the markup,
+   *  so there is no flash and no pre-paint script to get wrong. */
+  workspace?: "classic" | "elegant";
+}) {
   const M = getDict(useLocale()).chrome;
   const [open, setOpen] = useState(false);
   // Close on browser back.
@@ -19,7 +30,7 @@ export default function MobileShell({ sidebar, children }: { sidebar: React.Reac
     return () => window.removeEventListener("popstate", close);
   }, []);
   return (
-    <div className={`app-shell${open ? " drawer-open" : ""}`}>
+    <div className={`app-shell ws-${workspace}${open ? " drawer-open" : ""}`}>
       <style>{`
         .app-shell { display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: ${T.canvas}; }
         .app-topbar { display: none; }
