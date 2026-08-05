@@ -19,6 +19,8 @@ import CsvImportModal from "./CsvImportModal";
 import ReportButton from "@/app/(app)/ReportButton";
 import SignedDocumentButton from "@/app/SignedDocumentButton";
 import SigningProgress, { type Concern } from "./SigningProgress";
+import Workbench, { WorkbenchRow, WorkbenchGroup } from "@/app/(app)/Workbench";
+import type { DocGroup } from "@/lib/document-index";
 type Doc = { id: string; title: string; created_at: string };
 type Rec = { id: string; label: string | null; share_token: string; email?: string | null; created_at: string; variant_id?: string | null; expires_at?: string | null; revoked_at?: string | null; is_signer?: boolean; signed_at?: string | null; declined_at?: string | null; decline_reason?: string | null; sent_at?: string | null };
 type Variant = { id: string; label: string; note: string | null; active: boolean; storage_path: string | null };
@@ -28,7 +30,7 @@ const card = { background: T.card, border: "1px solid " + T.border, borderRadius
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
 const ghost = { height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 const dot = (c: string) => ({ width: 6, height: 6, borderRadius: 2, flex: "none" as const, background: c });
-export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingCompletedAt, signingFileUrl, fields: initialFields, concerns = [], profiles = [], attachedProfile = null }: { doc: Doc; recipients: Rec[]; profiles?: ProfileOption[]; attachedProfile?: Attached | null; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingCompletedAt: string | null; signingFileUrl: string; fields: Field[]; concerns?: Concern[] }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingCompletedAt, signingFileUrl, fields: initialFields, concerns = [], profiles = [], attachedProfile = null, workspace = "classic", indexGroups = [] }: { doc: Doc; recipients: Rec[]; profiles?: ProfileOption[]; attachedProfile?: Attached | null; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingCompletedAt: string | null; signingFileUrl: string; fields: Field[]; concerns?: Concern[]; workspace?: "classic" | "elegant"; indexGroups?: DocGroup[] }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dd = getDict(locale).documentDetailPage;
@@ -92,10 +94,55 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
   const sel = recs.find((r) => r.id === selected);
   const selSum = selected ? summary[selected] : null;
   const maxDwell = selSum ? Math.max(1, ...Object.values(selSum.dwell)) : 1;
+  // The strip. Same definition of engaged as the buyer profile band below,
+  // so the two cannot disagree on the same screen.
+  const opened = recs.filter((r) => (summary[r.id]?.opens ?? 0) > 0).length;
+  const engagedCount = recs.filter((r) => { const s = summary[r.id]; return !!s && (s.opens > 1 || s.questions.length > 0); }).length;
+  const questionCount = recs.reduce((n, r) => n + (summary[r.id]?.questions.length ?? 0), 0);
+  // Where the COHORT stops, which is a fact about the document rather than
+  // about any one reader. Summed across everyone, not taken from the deepest.
+  const cohortPage = (() => {
+    const total: Record<number, number> = {};
+    for (const r of recs) {
+      const d = summary[r.id]?.dwell ?? {};
+      for (const [p, ms] of Object.entries(d)) total[Number(p)] = (total[Number(p)] ?? 0) + Number(ms);
+    }
+    const best = Object.entries(total).sort((a, b) => b[1] - a[1])[0];
+    return best ? Number(best[0]) : 0;
+  })();
   const variantCounts = recs.reduce((m, r) => { if (r.variant_id) m[r.variant_id] = (m[r.variant_id] ?? 0) + 1; return m; }, {} as Record<string, number>);  return (
+    <Workbench
+      workspace={workspace}
+      title={doc.title}
+      subtitle={recs.length + " " + (recs.length === 1 ? dd.recipientOne : dd.recipientMany)}
+      indexLabel={dd.back}
+      stats={[
+        { value: opened + " / " + recs.length, label: "opened" },
+        { value: String(engagedCount), label: "engaged", tone: "green" },
+        { value: String(questionCount), label: "questions" },
+        { value: cohortPage ? "p" + cohortPage : "\u2014", label: "they stop at", tone: "amber" },
+      ]}
+      index={indexGroups.map((g) => (
+        <div key={g.label}>
+          <WorkbenchGroup label={g.label} count={g.count} />
+          {g.docs.map((x) => (
+            <WorkbenchRow
+              key={x.id}
+              href={"/documents/" + x.id}
+              active={x.id === doc.id}
+              tone={x.tone}
+              title={x.title}
+              sub={x.sub}
+              right={x.right}
+            />
+          ))}
+        </div>
+      ))}
+    >
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <style>{`.t-b{cursor:pointer}.t-rec{transition:background .12s;cursor:pointer}.t-rec:hover{background:var(--rp-hover)}.t-in:focus{outline:none;border-color:var(--rp-green)}`}</style>
       <div className="dd-wrap" style={{ maxWidth: 1040, padding: "34px 28px 0" }}>
+        <div className="wb-page-header">
         <a href="/documents" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}>
           <span>{"\u2039"}</span> {dd.back}
         </a>
@@ -108,6 +155,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
             <ReportButton documentId={doc.id} recipients={recs.map((r) => ({ id: r.id, label: r.label }))} />
   {shareInfo.isOrg && shareInfo.canManage && <button onClick={() => setSharing(true)} style={ghost}>{dd.shareWithTeam}</button>}
           </span>
+        </div>
         </div>
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
       </div>
@@ -332,6 +380,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
       )}
       {sharing && <ShareDialog resourceType="document" resourceId={doc.id} resourceName={doc.title} members={shareInfo.members} onClose={() => setSharing(false)} />}
     </div>
+    </Workbench>
   );
 }
 function ShareButton({ documentId, onCreated, onSent, variants = [], counts = {}, signedDoc = false, existing = [], signingDoc = false }: { documentId: string; onCreated: (r: Rec) => void; onSent?: (id: string, email: string) => void; variants?: Variant[]; counts?: Record<string, number>; signedDoc?: boolean; existing?: Rec[]; signingDoc?: boolean }) {

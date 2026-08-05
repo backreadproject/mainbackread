@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import RecipientDetailClient from "./RecipientDetailClient";
 import { getSalesSettings } from "@/lib/sales-settings";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveWorkspace } from "@/lib/workspace";
+import { recipientIndex } from "@/lib/recipient-index";
 import type { OutcomeValue } from "./OutcomeCard";
 
 // The evidence sentence the outcome prompt asks with.
@@ -84,7 +87,12 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
 
   const name = recipient.label || "This reader";
 
+  const workspace = await resolveWorkspace(createAdminClient(), user?.id ?? null);
+  const indexGroups = await recipientIndex(supabase, { quietDays: sales.quietDays });
+
   return <RecipientDetailClient
+    workspace={workspace}
+    indexGroups={indexGroups}
     recipient={{ id: recipient.id, label: recipient.label, shareToken: recipient.share_token, documentId: recipient.document_id, documentTitle: doc?.title ?? "Untitled" }}
     identity={{
       id: recipient.id,

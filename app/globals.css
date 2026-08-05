@@ -231,3 +231,8 @@ input, textarea, select, button { color-scheme: inherit; }
 @media (max-width: 600px) {
   .ws-elegant .app-content main { padding: 16px !important; }
 }
+
+/* A converted route keeps its own header for Classic and hides it in
+   Elegant, where the strip carries the same information. Hiding rather
+   than moving means the markup is untouched and reverting is a class. */
+.ws-elegant .wb-page-header { display: none; }

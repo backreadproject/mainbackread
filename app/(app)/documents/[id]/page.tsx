@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import DocumentDetailClient from "./DocumentDetailClient";
 import { groupReaders, type GroupableReader } from "@/lib/accounts";
+import { resolveWorkspace } from "@/lib/workspace";
+import { documentIndex } from "@/lib/document-index";
 
 export default async function DocumentDetailPage({
   params,
@@ -117,8 +119,14 @@ export default async function DocumentDetailPage({
     ? await admin.storage.from("documents").createSignedUrl(doc.storage_path as string, 3600)
     : { data: null };
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const workspace = await resolveWorkspace(admin, user?.id ?? null);
+  const indexGroups = await documentIndex(supabase);
+
   return (
     <DocumentDetailClient
+      workspace={workspace}
+      indexGroups={indexGroups}
       doc={doc}
       recipients={recs}
       profiles={profiles}

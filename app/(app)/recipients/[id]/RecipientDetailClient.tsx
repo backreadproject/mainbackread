@@ -8,6 +8,8 @@ import ReportButton from "@/app/(app)/ReportButton";
 import Blank from "@/app/(app)/Blank";
 import OutcomeCard, { type OutcomeValue } from "./OutcomeCard";
 import IdentityCard, { type Identity } from "./IdentityCard";
+import Workbench, { WorkbenchRow, WorkbenchGroup } from "@/app/(app)/Workbench";
+import type { IndexGroup } from "@/lib/recipient-index";
 type Sig = { kind: string; page: number | null; value: unknown; created_at: string };
 type Rec = { id: string; label: string | null; shareToken: string; documentId: string; documentTitle: string };
 type Verdict = { headline: string; reasoning: string; nextAction: string; confidence: string; evidence: string[] };
@@ -21,7 +23,7 @@ type OutcomeState = {
   evidenceEn: string;
   evidenceFr: string;
 };
-export default function RecipientDetailClient({ recipient, identity, signals, outcome }: { recipient: Rec; identity: Identity; signals: Sig[]; outcome: OutcomeState }) {
+export default function RecipientDetailClient({ recipient, identity, signals, outcome, workspace = "classic", indexGroups = [] }: { recipient: Rec; identity: Identity; signals: Sig[]; outcome: OutcomeState; workspace?: "classic" | "elegant"; indexGroups?: IndexGroup[] }) {
   const locale = useLocale();
   const rd = getDict(locale).recipientDetailPage;
   const fr = locale === "fr";
@@ -45,6 +47,9 @@ export default function RecipientDetailClient({ recipient, identity, signals, ou
     return { dwell, questions, replies, opens };
   }, [signals]);
   const maxDwell = Math.max(1, ...Object.values(summary.dwell));
+  // The furthest page they reached. Quoted in the strip because it is the
+  // one number that says whether they read it or glanced at it.
+  const deepest = Object.keys(summary.dwell).map(Number).reduce((a, b) => Math.max(a, b), 0);
   const RP = {
     title: fr ? "Ils ont r\u00e9pondu" : "They replied",
     sub: fr ? "Leurs mots, pas une inf\u00e9rence." : "Their words, not an inference.",
@@ -97,8 +102,36 @@ export default function RecipientDetailClient({ recipient, identity, signals, ou
   const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
   const mono = "'DM Mono', ui-monospace, monospace";
   return (
+    <Workbench
+      workspace={workspace}
+      title={recipient.label || rd.unnamedReader}
+      subtitle={recipient.documentTitle}
+      indexLabel={rd.back}
+      stats={[
+        { value: String(summary.opens), label: fr ? "ouvertures" : "opens" },
+        { value: String(summary.questions.length), label: fr ? "questions" : "questions" },
+        { value: deepest ? String(deepest) : "\u2014", label: fr ? "page la plus loin" : "deepest page" },
+      ]}
+      index={indexGroups.map((g) => (
+        <div key={g.label}>
+          <WorkbenchGroup label={g.label} count={g.count} />
+          {g.readers.map((x) => (
+            <WorkbenchRow
+              key={x.id}
+              href={"/recipients/" + x.id}
+              active={x.id === recipient.id}
+              tone={x.tone}
+              title={x.name}
+              sub={x.sub}
+              right={x.right}
+            />
+          ))}
+        </div>
+      ))}
+    >
     <div style={{ fontFamily: T.font, letterSpacing: T.tracking, color: T.body, minHeight: "100vh" }}>
       <main style={{ maxWidth: 1040, padding: "34px 28px 120px" }}>
+        <div className="wb-page-header">
         <a href="/recipients" style={{ fontSize: 13, color: T.muted, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, marginBottom: 14 }}><span>{"\u2039"}</span> {rd.back}</a>
         <h1 style={{ fontSize: 26, fontWeight: 600, color: T.heading, letterSpacing: T.trackingTight, margin: 0, lineHeight: 1.2, display: "flex", alignItems: "center", gap: 10 }}>
           {summary.replies.length > 0 && <i title={RP.title} style={{ width: 7, height: 7, borderRadius: 2, flex: "none", background: T.green }} />}
@@ -107,6 +140,7 @@ export default function RecipientDetailClient({ recipient, identity, signals, ou
         <p style={{ fontSize: 14, color: T.muted, margin: "7px 0 0" }}>{rd.onDoc} <a href={"/documents/" + recipient.documentId} style={{ color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>{recipient.documentTitle}</a></p>
         <div style={{ marginTop: 16 }}>
           <ReportButton documentId={recipient.documentId} recipientIds={[recipient.id]} label={rd.downloadReport} compact />
+        </div>
         </div>
         {error && <p style={{ color: T.dangerText, fontSize: 14, margin: "16px 0 0" }}>{error}</p>}
         <div style={{ marginTop: 26 }}>
@@ -217,5 +251,6 @@ export default function RecipientDetailClient({ recipient, identity, signals, ou
         </div>
       </main>
     </div>
+    </Workbench>
   );
 }
