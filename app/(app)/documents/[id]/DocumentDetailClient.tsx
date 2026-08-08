@@ -9,7 +9,7 @@ import ComposeWorkspace from "@/app/(app)/documents/[id]/ComposeWorkspace";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
 import VariantsPanel from "./VariantsPanel";
-import BuyerProfileBand, { type ProfileOption, type Attached } from "./BuyerProfileBand";
+import BuyerProfileBand, { type ProfileOption, type Attached, type Inheritance } from "./BuyerProfileBand";
 import AccountsPanel from "./AccountsPanel";
 import GapsPanel from "./GapsPanel";
 import LinkControls from "./LinkControls";
@@ -30,7 +30,7 @@ const card = { background: T.card, border: "1px solid " + T.border, borderRadius
 const head = { padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body };
 const ghost = { height: 30, background: T.card, border: "1px solid " + T.border, borderRadius: T.rBtn, padding: "0 11px", fontSize: 12.5, fontWeight: 500, fontFamily: T.font, color: T.heading, cursor: "pointer" };
 const dot = (c: string) => ({ width: 6, height: 6, borderRadius: 2, flex: "none" as const, background: c });
-export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingCompletedAt, signingFileUrl, fields: initialFields, concerns = [], profiles = [], attachedProfile = null, workspace = "classic", indexGroups = [] }: { doc: Doc; recipients: Rec[]; profiles?: ProfileOption[]; attachedProfile?: Attached | null; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingCompletedAt: string | null; signingFileUrl: string; fields: Field[]; concerns?: Concern[]; workspace?: "classic" | "elegant"; indexGroups?: DocGroup[] }) {
+export default function DocumentDetailClient({ doc, recipients, signals, variants = [], grouped, storagePath, signingEnabled, signingCompletedAt, signingFileUrl, fields: initialFields, concerns = [], profiles = [], attachedProfile = null, inheritance = null, workspace = "classic", indexGroups = [] }: { doc: Doc; recipients: Rec[]; profiles?: ProfileOption[]; attachedProfile?: Attached | null; inheritance?: Inheritance | null; signals: Sig[]; variants?: Variant[]; grouped: Grouped; storagePath: string | null; signingEnabled: boolean; signingCompletedAt: string | null; signingFileUrl: string; fields: Field[]; concerns?: Concern[]; workspace?: "classic" | "elegant"; indexGroups?: DocGroup[] }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const dd = getDict(locale).documentDetailPage;
@@ -164,6 +164,7 @@ export default function DocumentDetailClient({ doc, recipients, signals, variant
           documentId={doc.id}
           profiles={profiles}
           attached={attachedProfile}
+          inheritance={inheritance}
           readers={recs.map((r) => ({
             roles: (r as { roles?: string[] }).roles ?? [],
             roleOther: (r as { role_other?: string | null }).role_other ?? null,

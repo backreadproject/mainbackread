@@ -12,6 +12,11 @@ import { summarise, type PersonaLike, type ReaderLike } from "@/lib/persona-matc
  * This is the link that closes the loop. Without it a profile is a document
  * nobody is measured against, and the observed tier can never fill.
  *
+ * Three states, not two. A document carries its own profile, inherits the one
+ * on its project, or is deliberately left out even though its project has one.
+ * The third is why detachment has its own flag in the schema: a null column
+ * cannot mean both "inherit" and "deliberately not inheriting".
+ *
  * Readers who match no persona are counted and named rather than hidden. Two
  * readers matching nothing is not an error, it is the beginning of the finding
  * that the people engaging are not the people the sender said they were after.
@@ -19,6 +24,12 @@ import { summarise, type PersonaLike, type ReaderLike } from "@/lib/persona-matc
 
 export type ProfileOption = { id: string; name: string; objective: string };
 export type Attached = { id: string; name: string; revision: number; personas: PersonaLike[] };
+export type Inheritance = {
+  source: "own" | "project" | "detached" | "none";
+  project: { id: string; name: string; profileId: string | null; profileName: string | null } | null;
+};
+
+type Action = "use" | "project" | "none";
 
 export default function BuyerProfileBand({
   documentId,
@@ -26,6 +37,7 @@ export default function BuyerProfileBand({
   attached,
   readers,
   engaged,
+  inheritance = null,
 }: {
   documentId: string;
   profiles: ProfileOption[];
@@ -34,6 +46,8 @@ export default function BuyerProfileBand({
   /** How many readers did more than glance. Computed by the caller, which
    *  already has the signals. */
   engaged: number;
+  /** Where the attached profile came from, and what the project chose. */
+  inheritance?: Inheritance | null;
 }) {
   const router = useRouter();
   const locale = useLocale();
@@ -47,6 +61,10 @@ export default function BuyerProfileBand({
     [readers, attached],
   );
 
+  const source = inheritance?.source ?? (attached ? "own" : "none");
+  const project = inheritance?.project ?? null;
+  const projectHasProfile = Boolean(project?.profileId);
+
   const c = {
     label: fr ? "Profil d\u2019acheteur" : "Buyer profile",
     none: fr ? "Aucun profil li\u00e9" : "No profile attached",
@@ -57,9 +75,7 @@ export default function BuyerProfileBand({
     engagedLabel: fr ? "engag\u00e9s" : "engaged",
     change: fr ? "Changer" : "Change",
     attach: fr ? "Lier un profil" : "Attach a profile",
-    detach: fr ? "D\u00e9lier" : "Detach",
     cancel: fr ? "Annuler" : "Cancel",
-    save: fr ? "Enregistrer" : "Save",
     saving: fr ? "Un instant\u2026" : "Working\u2026",
     pick: fr ? "Quel profil ?" : "Which profile?",
     noProfiles: fr ? "Vous n\u2019avez encore aucun profil." : "You have no profiles yet.",
@@ -74,16 +90,35 @@ export default function BuyerProfileBand({
       ? " lecteurs ne correspondent \u00e0 aucun persona du profil li\u00e9. Ce n\u2019est pas une erreur, et c\u2019est de l\u00e0 que part l\u2019analyse des \u00e9carts."
       : " readers match no persona on the attached profile. Not an error, and part of what the gap analysis is built from.",
     failed: fr ? "\u00c9chec." : "Could not save that.",
+
+    fromProject: fr ? "Du projet" : "From the project",
+    ownHere: fr ? "D\u00e9fini sur ce document" : "Set on this document",
+    notUsing: fr ? "N\u2019utilise pas celui du projet" : "Not using the project\u2019s",
+    followsProject: fr
+      ? "Changez le profil du projet et ce document suivra."
+      : "Change the project\u2019s profile and this document follows.",
+    projectUses: fr ? "Le projet utilise " : "The project uses ",
+    useProjectInstead: fr ? "Utiliser celui du projet" : "Use the project\u2019s instead",
+    leftOut: fr
+      ? "Ce document est exclu de l\u2019analyse de profil."
+      : "This document is left out of profile analysis.",
+    menuProject: fr ? "Utiliser le profil du projet" : "Use the project\u2019s profile",
+    menuProjectWhy: fr ? "Suit le projet s\u2019il change." : "Follows the project if it changes.",
+    menuNone: fr ? "Ne pas utiliser de profil ici" : "Do not use a profile here",
+    menuNoneWhy: fr
+      ? "Exclut ce document, m\u00eame si le projet en a un."
+      : "Leaves this document out, even though the project has one.",
+    onlyHere: fr ? "D\u00e9fini sur ce document uniquement." : "Set on this document only.",
   };
 
-  async function save(profileId: string | null) {
+  async function save(action: Action, profileId: string | null) {
     setBusy(true);
     setError("");
     try {
       const res = await fetch("/api/document-profile", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ documentId, profileId }),
+        body: JSON.stringify({ documentId, action, profileId }),
       });
       const json = (await res.json()) as { error?: string };
       if (!res.ok) { setError(json.error || c.failed); return; }
@@ -104,10 +139,48 @@ export default function BuyerProfileBand({
     border: "1px solid " + T.border, borderRadius: 4, background: T.soft,
     padding: "2px 7px", fontSize: 11.5, color: T.body, whiteSpace: "nowrap",
   };
+  // Colour separates the three states at a glance. Real values, not opacity.
+  const stateChip = (kind: "project" | "own" | "off"): React.CSSProperties => ({
+    borderRadius: 4, padding: "2px 7px", fontSize: 11, fontWeight: 500, whiteSpace: "nowrap",
+    border: "1px solid " + (kind === "project" ? "#CFE7DA" : kind === "own" ? "#FDE49C" : T.border),
+    background: kind === "project" ? "#F1F9F5" : kind === "own" ? "#FFFAEB" : T.soft,
+    color: kind === "project" ? "#1F6F4A" : kind === "own" ? "#B54708" : T.faint,
+  });
+
+  // Shown only when there is a project profile to contrast against. Without
+  // one, "set on this document" is not telling anybody anything.
+  const badge =
+    source === "project" ? <span style={stateChip("project")}>{c.fromProject}</span>
+    : source === "own" && projectHasProfile ? <span style={stateChip("own")}>{c.ownHere}</span>
+    : source === "detached" && projectHasProfile ? <span style={stateChip("off")}>{c.notUsing}</span>
+    : null;
+
+  const footer =
+    source === "project" && project ? (
+      <>
+        <span>{c.followsProject}</span>
+        <a href={"/projects/" + project.id} style={{ marginLeft: "auto", color: T.green, textDecoration: "none", whiteSpace: "nowrap" }}>
+          {project.name} {"\u2192"}
+        </a>
+      </>
+    ) : (source === "own" || source === "detached") && projectHasProfile && project ? (
+      <>
+        <span>{c.projectUses}{project.profileName}.</span>
+        <button
+          style={{ ...btn, height: 26, marginLeft: "auto" }}
+          disabled={busy}
+          onClick={() => void save("project", null)}
+        >
+          {c.useProjectInstead}
+        </button>
+      </>
+    ) : source === "detached" ? (
+      <span>{c.leftOut}</span>
+    ) : null;
 
   return (
     <div style={{ border: "1px solid " + T.border, borderRadius: T.rCard, background: T.card, marginBottom: 18 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: attached ? "1px solid " + T.border : "none", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: attached || footer ? "1px solid " + T.border : "none", flexWrap: "wrap" }}>
         <span style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: T.faint }}>{c.label}</span>
         {attached ? (
           <a href={"/buyer-profiles/" + attached.id} className="dc-title" style={{ fontSize: 13.5, fontWeight: 500, textDecoration: "none" }}>
@@ -116,10 +189,8 @@ export default function BuyerProfileBand({
         ) : (
           <span style={{ fontSize: 13.5, color: T.muted }}>{c.none}</span>
         )}
+        {badge}
         <span style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          {attached && (
-            <button style={btn} disabled={busy} onClick={() => void save(null)}>{c.detach}</button>
-          )}
           <button style={btn} onClick={() => setOpen(true)}>{attached ? c.change : c.attach}</button>
         </span>
       </div>
@@ -158,6 +229,12 @@ export default function BuyerProfileBand({
         </div>
       )}
 
+      {footer && (
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", borderTop: attached ? "1px solid " + T.border : "none", fontSize: 12.5, color: T.muted, flexWrap: "wrap" }}>
+          {footer}
+        </div>
+      )}
+
       {open && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(16,24,40,.45)", display: "grid", placeItems: "center", zIndex: 60, padding: 20 }}
           onClick={() => !busy && setOpen(false)}>
@@ -165,23 +242,62 @@ export default function BuyerProfileBand({
             <h3 style={{ fontSize: 16, fontWeight: 600, color: T.heading, margin: "0 0 6px" }}>{c.pick}</h3>
             <p style={{ fontSize: 12.5, color: T.muted, margin: "0 0 16px", lineHeight: 1.55 }}>{c.noneWhy}</p>
 
-            {profiles.length === 0 ? (
-              <p style={{ fontSize: 13, color: T.muted, margin: "0 0 16px" }}>
-                {c.noProfiles} <a href="/buyer-profiles" style={{ color: T.green }}>{c.create}</a>
-              </p>
-            ) : (
-              <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
-                {profiles.map((p) => (
-                  <button key={p.id} type="button" disabled={busy} onClick={() => void save(p.id)} style={{
-                    border: "1px solid " + (attached?.id === p.id ? T.green : T.border),
+            {/* One menu covers all three transitions, so no Detach button ends
+                up competing with Change for the same decision. */}
+            <div style={{ display: "grid", gap: 8, marginBottom: 16 }}>
+              {projectHasProfile && project && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void save("project", null)}
+                  style={{
+                    border: "1px solid " + (source === "project" ? T.green : T.border),
+                    borderRadius: T.rBtn, background: T.card, padding: "10px 12px",
+                    textAlign: "left", cursor: "pointer", fontFamily: T.font,
+                  }}
+                >
+                  <span style={{ display: "block", fontSize: 13.5, fontWeight: 500, color: T.heading }}>{c.menuProject}</span>
+                  <span style={{ display: "block", fontSize: 11.5, color: T.muted, marginTop: 2, lineHeight: 1.5 }}>
+                    {project.profileName}. {c.menuProjectWhy}
+                  </span>
+                </button>
+              )}
+
+              {profiles.length === 0 ? (
+                <p style={{ fontSize: 13, color: T.muted, margin: 0 }}>
+                  {c.noProfiles} <a href="/buyer-profiles" style={{ color: T.green }}>{c.create}</a>
+                </p>
+              ) : (
+                profiles.map((p) => (
+                  <button key={p.id} type="button" disabled={busy} onClick={() => void save("use", p.id)} style={{
+                    border: "1px solid " + (source === "own" && attached?.id === p.id ? T.green : T.border),
                     borderRadius: T.rBtn, background: T.card, padding: "10px 12px",
                     textAlign: "left", cursor: "pointer", fontFamily: T.font,
                   }}>
                     <span style={{ display: "block", fontSize: 13.5, fontWeight: 500, color: T.heading }}>{p.name}</span>
+                    {projectHasProfile && (
+                      <span style={{ display: "block", fontSize: 11.5, color: T.muted, marginTop: 2 }}>{c.onlyHere}</span>
+                    )}
                   </button>
-                ))}
-              </div>
-            )}
+                ))
+              )}
+
+              {projectHasProfile && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => void save("none", null)}
+                  style={{
+                    border: "1px solid " + (source === "detached" ? T.green : T.border),
+                    borderRadius: T.rBtn, background: T.card, padding: "10px 12px",
+                    textAlign: "left", cursor: "pointer", fontFamily: T.font,
+                  }}
+                >
+                  <span style={{ display: "block", fontSize: 13.5, fontWeight: 500, color: "#B54708" }}>{c.menuNone}</span>
+                  <span style={{ display: "block", fontSize: 11.5, color: T.muted, marginTop: 2, lineHeight: 1.5 }}>{c.menuNoneWhy}</span>
+                </button>
+              )}
+            </div>
 
             {error && <p style={{ fontSize: 12.5, color: T.dangerText, margin: "0 0 12px" }}>{error}</p>}
 

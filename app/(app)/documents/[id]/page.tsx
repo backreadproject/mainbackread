@@ -17,7 +17,7 @@ export default async function DocumentDetailPage({
   // RLS ensures this only returns the document if the current user owns it.
   const { data: doc } = await supabase
     .from("documents")
-    .select("id, title, created_at, storage_path, signing_enabled, signing_completed_at, buyer_profile_id")
+    .select("id, title, created_at, storage_path, signing_enabled, signing_completed_at, buyer_profile_id, buyer_profile_detached, project_id")
     .eq("id", id)
     .single();
 
@@ -77,7 +77,37 @@ export default async function DocumentDetailPage({
     .from("buyer_profiles").select("id, name, objective").order("created_at", { ascending: false });
   const profiles = (profileRows ?? []).map((x) => ({ id: x.id, name: x.name, objective: x.objective as string }));
 
-  const attachedId = (doc.buyer_profile_id as string | null) ?? null;
+  // Which profile this document is actually measured against, resolved rather
+  // than read off the column. A document carries its own, inherits the one on
+  // its project, or is deliberately left out. Reading buyer_profile_id here
+  // would show "no profile" on every inherited document.
+  const { data: resolvedRow } = await supabase
+    .from("document_buyer_profile")
+    .select("buyer_profile_id, source")
+    .eq("document_id", id)
+    .maybeSingle();
+
+  const attachedId = (resolvedRow?.buyer_profile_id as string | null) ?? null;
+  const profileSource = ((resolvedRow?.source as string) ?? "none") as "own" | "project" | "detached" | "none";
+
+  // The project's own choice, so the band can name what a document is
+  // overriding, or offer to fall back to it.
+  let project: { id: string; name: string; profileId: string | null; profileName: string | null } | null = null;
+  if (doc.project_id) {
+    const { data: pr } = await supabase
+      .from("projects").select("id, name, buyer_profile_id")
+      .eq("id", doc.project_id as string).maybeSingle();
+    if (pr) {
+      const pid = (pr.buyer_profile_id as string | null) ?? null;
+      project = {
+        id: pr.id as string,
+        name: pr.name as string,
+        profileId: pid,
+        profileName: pid ? (profiles.find((x) => x.id === pid)?.name ?? "") : null,
+      };
+    }
+  }
+
   let attached: { id: string; name: string; revision: number; personas: { name: string; titleVariants: string[] }[] } | null = null;
   if (attachedId) {
     const found = profiles.find((x) => x.id === attachedId);
@@ -131,6 +161,7 @@ export default async function DocumentDetailPage({
       recipients={recs}
       profiles={profiles}
       attachedProfile={attached}
+      inheritance={{ source: profileSource, project }}
       signals={signals ?? []}
       variants={variants ?? []}
       grouped={grouped}

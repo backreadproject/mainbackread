@@ -525,20 +525,34 @@ export async function observeProfiles(
   if (!profiles.length) return out;
 
   const ids = profiles.map((p) => p.id);
-  const { data: docs } = await supabase
-    .from("documents")
-    .select("id, title, page_count, buyer_profile_id")
+
+  // Resolved, not raw. A document carries its own profile, inherits the one on
+  // its project, or is detached from both. Reading documents.buyer_profile_id
+  // directly would miss every inherited document, and the profile would report
+  // no evidence while sitting on a project full of readers.
+  const { data: links } = await supabase
+    .from("document_buyer_profile")
+    .select("document_id, buyer_profile_id")
     .in("buyer_profile_id", ids);
 
-  const docRows = (docs ?? []) as (DocumentRow & { buyer_profile_id: string })[];
-  if (!docRows.length) return out;
+  const linkRows = (links ?? []) as { document_id: string; buyer_profile_id: string }[];
+  if (!linkRows.length) return out;
 
   const docToProfile: Record<string, string> = {};
+  for (const l of linkRows) docToProfile[l.document_id] = l.buyer_profile_id;
+
+  // The view carries the resolution but not the page counts, and PostgREST
+  // will not join a view to a table. Two reads rather than one.
+  const { data: docs } = await supabase
+    .from("documents")
+    .select("id, title, page_count")
+    .in("id", linkRows.map((l) => l.document_id));
+
+  const docRows = (docs ?? []) as DocumentRow[];
+  if (!docRows.length) return out;
+
   const pageCounts: Record<string, number | null> = {};
-  for (const d of docRows) {
-    docToProfile[d.id] = d.buyer_profile_id;
-    pageCounts[d.id] = d.page_count;
-  }
+  for (const d of docRows) pageCounts[d.id] = d.page_count;
 
   const { data: recs } = await supabase
     .from("recipients")
@@ -594,10 +608,18 @@ export async function observeProfile(
   threshold: number,
   hasCompleteRevision: boolean,
 ): Promise<ObservedView & { readers: ReaderState[]; basis: Basis; toThreshold: number }> {
-  const { data: docs } = await supabase
-    .from("documents")
-    .select("id, title, page_count")
+  // Same resolution as observeProfiles. A document inheriting this profile
+  // from its project counts exactly as one attached directly.
+  const { data: links } = await supabase
+    .from("document_buyer_profile")
+    .select("document_id")
     .eq("buyer_profile_id", profileId);
+
+  const linkIds = (links ?? []).map((l) => (l as { document_id: string }).document_id);
+
+  const { data: docs } = linkIds.length
+    ? await supabase.from("documents").select("id, title, page_count").in("id", linkIds)
+    : { data: [] };
 
   const docRows = (docs ?? []) as DocumentRow[];
   const pageCounts: Record<string, number | null> = {};

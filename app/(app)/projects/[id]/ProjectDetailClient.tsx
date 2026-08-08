@@ -4,10 +4,11 @@ import { T } from "@/lib/theme";
 import ShareDialog from "@/app/(app)/ShareDialog";
 import { useLocale } from "@/lib/useLocale";
 import { getDict } from "@/lib/i18n";
+import ProjectProfileBand, { type ProfileOption, type Counts } from "./ProjectProfileBand";
 type Project = { id: string; name: string; created_at: string };
 type Doc = { id: string; title: string; created_at: string };
 type Member = { userId: string; email: string | null };
-export default function ProjectDetailClient({ project, documents, canManage, members }: { project: Project; documents: Doc[]; canManage: boolean; members: Member[] }) {
+export default function ProjectDetailClient({ project, documents, canManage, members, profiles, attached, counts }: { project: Project; documents: Doc[]; canManage: boolean; members: Member[]; profiles: ProfileOption[]; attached: ProfileOption | null; counts: Counts }) {
   const locale = useLocale();
   const fr = locale === "fr";
   const pd = getDict(locale).projectDetailPage;
@@ -24,7 +25,8 @@ export default function ProjectDetailClient({ project, documents, canManage, mem
           </div>
           {canManage && <button onClick={() => setSharing(true)} style={{ height: 34, background: T.green, color: T.onAccent, fontSize: 13.5, fontWeight: 500, padding: "0 13px", borderRadius: T.rBtn, border: "none", cursor: "pointer", fontFamily: T.font, whiteSpace: "nowrap" }}>{pd.shareWithTeam}</button>}
         </div>
-        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 26, boxShadow: T.shadow }}>
+        <ProjectProfileBand projectId={project.id} profiles={profiles} attached={attached} counts={counts} canManage={canManage} />
+        <div style={{ background: T.card, border: "1px solid " + T.border, borderRadius: T.rCard, marginTop: 22, boxShadow: T.shadow }}>
           <div className="row-head" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 18px", background: T.soft, borderBottom: "1px solid " + T.border, borderTopLeftRadius: T.rCard, borderTopRightRadius: T.rCard, fontSize: 12.5, fontWeight: 600, color: T.body }}>
             <span>{pd.colDocument}</span><span>{pd.colAdded}</span>
           </div>
