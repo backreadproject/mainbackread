@@ -147,6 +147,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   // The boxes themselves, so the signature can be drawn into the one the
   // sender placed and the inputs can be closed once the record is.
   const fieldBoxesRef = useRef<Record<string, HTMLDivElement>>({});
+  const resizeRef = useRef<ResizeObserver | null>(null);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -206,9 +207,12 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         } catch {
           pdfjs.GlobalWorkerOptions.workerSrc = cdnWorker;
         }
-        // Some mobile browsers/WebViews mangle text when pdf.js renders through generated
-        // web-fonts. disableFontFace makes pdf.js paint the glyph outlines directly, which
-        // renders correctly everywhere (verified against this exact pdf.js version).
+        // disableFontFace was on to dodge mobile WebViews mangling generated
+        // web-fonts, at the cost of every glyph being painted as a filled path:
+        // no hinting, no browser text antialiasing, and type that reads thin at
+        // any resolution. Off now, with standardFontDataUrl supplied below so
+        // the fonts it needs are reachable. If a WebView ever mangles text
+        // again, this single value is the revert.
         const assets = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}`;
         const pdf = await pdfjs.getDocument({
           url: fileUrl,
@@ -223,18 +227,37 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         if (!container) return;
         const wrappers: HTMLDivElement[] = [];
         const textParts: string[] = [];
+        // Rasterise to the canvas as it actually sits, at the screen's density.
+        //
+        // Two things were wrong before. The scale was a fixed number, so it was
+        // a bet on one window and one display. Then it was measured from
+        // container.clientWidth, which includes padding the canvas does not get,
+        // so a 774px canvas received an 887px bitmap and the browser resampled
+        // it down: more pixels rendered, a softer page, and worse the wider the
+        // column grew. Measuring the canvas itself gives an exact 1:1.
+        //
+        // Measured ONCE is still wrong, because a window resize or a devtools
+        // dock changes the column and the bitmap does not follow. So this is a
+        // function, and the observer below calls it again.
+        type Painted = { page: Awaited<ReturnType<typeof pdf.getPage>>; canvas: HTMLCanvasElement };
+        const painted: Painted[] = [];
+        const paint = async (page: Painted["page"], canvas: HTMLCanvasElement) => {
+          const base = page.getViewport({ scale: 1 }).width;
+          const shownPx = canvas.getBoundingClientRect().width || container.clientWidth || 900;
+          const dpr = Math.min(typeof window === "undefined" ? 1 : (window.devicePixelRatio || 1), 3);
+          const vp = page.getViewport({ scale: Math.max(0.5, Math.min((shownPx / base) * dpr, 4)) });
+          const w = Math.round(vp.width), h = Math.round(vp.height);
+          // Nothing to do when the size has not moved. Redrawing anyway would
+          // flash every page white on any resize that does not change the width.
+          if (canvas.width === w && canvas.height === h) return;
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (ctx) await page.render({ canvas, canvasContext: ctx, viewport: vp }).promise;
+        };
+
         for (let n = 1; n <= pdf.numPages; n++) {
           const page = await pdf.getPage(n);
 
-          // Built and inserted FIRST, then measured, then rendered.
-          //
-          // Every earlier attempt sized the raster from container.clientWidth,
-          // which is the column including padding and border, while the canvas
-          // lays out narrower inside it. On a 774px canvas that produced an 887px
-          // bitmap: fifteen percent of pixels rendered, thrown away by the
-          // browser, and the fractional downsample softening the page in the
-          // process. Measuring the canvas itself gives an exact 1:1 with no
-          // resampling at all, at any window size and any pixel density.
           const canvas = document.createElement("canvas");
           canvas.style.width = "100%"; canvas.style.height = "auto"; canvas.style.display = "block";
           const wrapper = document.createElement("div");
@@ -243,16 +266,8 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           wrapper.appendChild(canvas);
           container.appendChild(wrapper);
           wrappers.push(wrapper);
-
-          const base = page.getViewport({ scale: 1 }).width;
-          const shownPx = canvas.getBoundingClientRect().width || container.clientWidth || 900;
-          const dpr = Math.min(typeof window === "undefined" ? 1 : (window.devicePixelRatio || 1), 3);
-          const viewport = page.getViewport({ scale: Math.max(0.5, Math.min((shownPx / base) * dpr, 4)) });
-          canvas.width = Math.round(viewport.width);
-          canvas.height = Math.round(viewport.height);
-
-          const ctx = canvas.getContext("2d");
-          if (ctx) await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+          painted.push({ page, canvas });
+          await paint(page, canvas);
           const tc = await page.getTextContent();
           textParts.push(`[Page ${n}]\n` + tc.items.map((it) => ("str" in it ? it.str : "")).join(" "));
         }
@@ -298,6 +313,25 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           leavePage(); currentPage.current = p; enteredAt.current = Date.now(); setActivePage(p);
         }, { threshold: [0.25, 0.5, 0.75] });
         wrappers.forEach((w) => observer.observe(w));
+
+        // The field boxes are positioned in percentages on the WRAPPER, not the
+        // canvas, and the dwell observer watches the wrappers too, so both
+        // survive a re-render untouched. Only the bitmap is replaced.
+        let pending: ReturnType<typeof setTimeout> | null = null;
+        let lastWidth = container.clientWidth;
+        const ro = new ResizeObserver(() => {
+          const w = container.clientWidth;
+          // A scrollbar appearing moves this by a few pixels and is not worth
+          // rasterising a whole document for.
+          if (Math.abs(w - lastWidth) < 4) return;
+          lastWidth = w;
+          if (pending) clearTimeout(pending);
+          pending = setTimeout(() => {
+            for (const p of painted) void paint(p.page, p.canvas);
+          }, 200);
+        });
+        ro.observe(container);
+        resizeRef.current = ro;
       } catch (err) {
         setStatus(r.couldntOpen + (err instanceof Error ? err.message : String(err)));
       }
@@ -305,7 +339,11 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
     const onHide = () => leavePage();
     window.addEventListener("pagehide", onHide);
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") leavePage(); });
-    return () => window.removeEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      resizeRef.current?.disconnect();
+      resizeRef.current = null;
+    };
   }, [fileUrl, token]);
 
   const maxDwell = Math.max(1, ...Object.values(dwellView));
