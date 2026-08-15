@@ -57,14 +57,16 @@ const S = StyleSheet.create({
 
   sealWrap: { alignItems: "center", marginTop: 26 },
   seal: { width: 176, height: 176 },
-  // Spanning the wrap and centring inside it, rather than letting the box
-  // shrink to fit. react-pdf measures a letter-spaced string narrower than it
-  // draws it, so a shrink-to-fit box overflows at both ends and clips the
-  // first and last character: 15 AUG 2026 printed as AUG 202, COMPLETE as
-  // OMPLET. The paddingLeft offsets the trailing space letterSpacing adds
-  // after the final glyph, which would otherwise pull the centre left.
-  sealT: { position: "absolute", left: 0, right: 0, textAlign: "center", paddingLeft: 1.1,
-           fontSize: 6.4, letterSpacing: 1.1, color: MUTED },
+  // The seal has no clear ground at these two rows. The widest white run
+  // through its centre measures under 14pt and the date needs about fifty, so
+  // the text was drawn straight onto the guilloche and only the characters
+  // crossing the pale medallion survived, which read as clipping and was not.
+  // A white plate stamped over the pattern is what engraved certificates do,
+  // and it is the only thing that makes these legible without shrinking them
+  // past reading.
+  sealRow: { position: "absolute", left: 0, right: 0, alignItems: "center" },
+  sealPlate: { backgroundColor: "#FFFFFF", paddingHorizontal: 6, paddingVertical: 2.4 },
+  sealT: { fontSize: 6.4, letterSpacing: 1.1, paddingLeft: 1.1, color: MUTED },
 
   qrWrap: { position: "absolute", right: 52, bottom: 118, alignItems: "center" },
   qr: { width: 72, height: 72 },
@@ -163,8 +165,12 @@ export function SignatureCertificate(p: CertProps) {
 
           <View style={S.sealWrap}>
             <Image src={CERT_SEAL} style={S.seal} />
-            <Text style={[S.sealT, { top: 72 }]}>{shortDate(p.completedAt)}</Text>
-            <Text style={[S.sealT, { top: 96 }]}>COMPLETE</Text>
+            <View style={[S.sealRow, { top: 70 }]}>
+              <View style={S.sealPlate}><Text style={S.sealT}>{shortDate(p.completedAt)}</Text></View>
+            </View>
+            <View style={[S.sealRow, { top: 94 }]}>
+              <View style={S.sealPlate}><Text style={S.sealT}>COMPLETE</Text></View>
+            </View>
           </View>
         </View>
 
