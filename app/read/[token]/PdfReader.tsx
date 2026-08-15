@@ -94,7 +94,7 @@ type SigningState = {
   awaiting: number;
   mySignedAt: string | null;
   myDeclinedAt: string | null;
-  fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
+  fields: { id: string; page: number; x: number; y: number; w: number; h: number; kind: string; dateMode: string | null }[];
   documentDeclined: boolean;
   documentCompleted: boolean;
 };
@@ -138,6 +138,12 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   const [signedNow, setSignedNow] = useState(false);
   const [declinedNow, setDeclinedNow] = useState(false);
   const [signOpen, setSignOpen] = useState(false);
+  // What the signer types into the boxes on the page. Held here rather than
+  // in the panel because the boxes are built imperatively into the pdf.js
+  // page wrappers, and the ref mirror is what lets those handlers write
+  // without capturing a stale copy of state.
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
+  const fieldValuesRef = useRef<Record<string, string>>({});
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -236,9 +242,31 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           for (const fld of signing.fields) {
             const w = wrappers[fld.page - 1];
             if (!w) continue;
+            // A signature is captured by the pad, and a date set to the day
+            // they sign fills itself at composition. Everything else is the
+            // signer's to complete, and the box used to carry
+            // pointer-events:none with a caption inside it -- so those fields
+            // could be placed, shown, and then dropped from the composed PDF
+            // with no error on any surface.
+            const fillable = fld.kind === "text" || (fld.kind === "date" && fld.dateMode === "chosen");
             const box = document.createElement("div");
-            box.style.cssText = `position:absolute;left:${fld.x * 100}%;top:${fld.y * 100}%;width:${fld.w * 100}%;height:${fld.h * 100}%;border:1.5px dashed ${GREEN};background:${GREEN_SOFT};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:${GREEN_TEXT};pointer-events:none;box-sizing:border-box;text-align:center;padding:2px`;
-            box.textContent = fld.kind === "signature" ? r.youSignHere : fld.kind === "date" ? r.dateHere : r.textHere;
+            box.style.cssText = `position:absolute;left:${fld.x * 100}%;top:${fld.y * 100}%;width:${fld.w * 100}%;height:${fld.h * 100}%;border:1.5px dashed ${GREEN};background:${GREEN_SOFT};border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;color:${GREEN_TEXT};pointer-events:${fillable ? "auto" : "none"};box-sizing:border-box;text-align:center;padding:2px`;
+            if (fillable) {
+              const input = document.createElement("input");
+              input.type = fld.kind === "date" ? "date" : "text";
+              if (fld.kind === "text") input.maxLength = 200;
+              input.setAttribute("data-field-id", fld.id);
+              input.setAttribute("aria-label", fld.kind === "date" ? r.dateHere : r.textHere);
+              input.style.cssText = `width:100%;height:100%;min-width:0;border:none;outline:none;background:transparent;text-align:center;font-family:inherit;font-size:12px;color:${INK};padding:0 4px;box-sizing:border-box`;
+              input.oninput = () => {
+                const next = { ...fieldValuesRef.current, [fld.id]: input.value };
+                fieldValuesRef.current = next;
+                setFieldValues(next);
+              };
+              box.appendChild(input);
+            } else {
+              box.textContent = fld.kind === "signature" ? r.youSignHere : fld.kind === "date" ? r.dateHere : r.textHere;
+            }
             w.appendChild(box);
           }
         }
@@ -481,6 +509,8 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                 <SigningPanel
                   token={token}
                   state={{ name: signing.name, sentToEmail: signing.sentToEmail, alreadySigned: signing.alreadySigned, awaiting: signing.awaiting }}
+                  fields={signing.fields.map((f) => ({ id: f.id, kind: f.kind, dateMode: f.dateMode }))}
+                  values={fieldValues}
                   onSigned={() => setSignedNow(true)}
                   onDeclined={() => setDeclinedNow(true)}
                 />

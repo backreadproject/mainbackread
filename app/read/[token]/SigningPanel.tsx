@@ -13,6 +13,11 @@ import SignaturePad, { type Captured } from "./SignaturePad";
 // address it went to, which is the sender's assertion of who this is, and the
 // signer confirming it is theirs is the confirming act. When it arrived as a
 // link there is nothing to show and the field simply has to be filled.
+//
+// Placed fields are checked here BEFORE the request goes out. The server checks
+// them again and is the authority; this exists so the signer is told what is
+// missing while they can still see the page, rather than being handed a refusal
+// after committing to sign.
 export type SignerState = {
   name: string;
   sentToEmail: string | null;
@@ -20,13 +25,24 @@ export type SignerState = {
   awaiting: number;
 };
 
+export type PanelField = { id: string; kind: string; dateMode: string | null };
+
 const MIN_CONCERN = 10;
 
+/** A field the signer has to fill. A signature is captured by the pad, and a
+ *  date set to "the day they sign" fills itself at composition. Everything else
+ *  is theirs to complete, and used to be undoable. */
+export function needsInput(f: PanelField) {
+  return f.kind === "text" || (f.kind === "date" && f.dateMode === "chosen");
+}
+
 export default function SigningPanel({
-  token, state, onSigned, onDeclined,
+  token, state, fields = [], values = {}, onSigned, onDeclined,
 }: {
   token: string;
   state: SignerState;
+  fields?: PanelField[];
+  values?: Record<string, string>;
   onSigned: () => void;
   onDeclined: () => void;
 }) {
@@ -40,6 +56,9 @@ export default function SigningPanel({
   const [raised, setRaised] = useState(false);
 
   const others = state.alreadySigned.filter((s) => s.name);
+
+  const toFill = fields.filter(needsInput);
+  const pending = toFill.filter((f) => !String(values[f.id] ?? "").trim());
 
   async function post(body: Record<string, unknown>) {
     const res = await fetch("/api/sign", {
@@ -59,9 +78,21 @@ export default function SigningPanel({
       setErr("Enter the email address you want on the record.");
       return;
     }
+    if (pending.length) {
+      setErr(pending.length === 1
+        ? "One field on the document still needs filling in. It is outlined on the page."
+        : pending.length + " fields on the document still need filling in. They are outlined on the page.");
+      return;
+    }
     setBusy(true); setErr("");
     try {
-      await post({ action: "sign", kind: sig.kind, data: sig.data, email: clean });
+      await post({
+        action: "sign",
+        kind: sig.kind,
+        data: sig.data,
+        email: clean,
+        fields: toFill.map((f) => ({ id: f.id, value: String(values[f.id] ?? "").trim() })),
+      });
       onSigned();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not sign.");
@@ -156,6 +187,22 @@ export default function SigningPanel({
         You are signing as {state.name}.
         {others.length > 0 && " " + others.map((s) => s.name).join(" and ") + (others.length === 1 ? " has" : " have") + " already signed."}
       </p>
+
+      {/* Named before they reach the button, not after. The boxes are on the
+          page itself and easy to scroll past, and a signer who only learns
+          about them from a refusal has already decided to sign. */}
+      {toFill.length > 0 && (
+        <p style={{ fontSize: 13, lineHeight: 1.55, margin: "0 0 16px", padding: "10px 12px", borderRadius: 6,
+                    color: pending.length ? "#B54708" : "#067647",
+                    background: pending.length ? "#FFFAEB" : "#E7F6EF",
+                    border: "1px solid " + (pending.length ? "#FEDF89" : "#CFE3D9") }}>
+          {pending.length === 0
+            ? (toFill.length === 1 ? "The field on the document is filled in." : "All " + toFill.length + " fields on the document are filled in.")
+            : pending.length === 1
+              ? "One field on the document is waiting for you. It is outlined on the page."
+              : pending.length + " fields on the document are waiting for you. They are outlined on the page."}
+        </p>
+      )}
 
       {raised && (
         <p style={{ fontSize: 13, color: "#B54708", background: "#FFFAEB", border: "1px solid #FEDF89",

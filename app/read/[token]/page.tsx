@@ -143,14 +143,17 @@ export default async function ReadPage({
     alreadySigned: { name: string; at: string }[];
     awaiting: number;
     mySignedAt: string | null; myDeclinedAt: string | null;
-    fields: { page: number; x: number; y: number; w: number; h: number; kind: string }[];
+    fields: { id: string; page: number; x: number; y: number; w: number; h: number; kind: string; dateMode: string | null }[];
     documentDeclined: boolean;
     documentCompleted: boolean;
   } | null = null;
   if (iSign) {
     const [{ data: co }, { data: myFields }] = await Promise.all([
       admin.from("recipients").select("id, label, signed_at, declined_at").eq("document_id", recipient.document_id as string).eq("is_signer", true),
-      admin.from("signature_fields").select("page, x, y, w, h, kind").eq("recipient_id", recipient.id as string),
+      // id and date_mode were missing here, which is the whole reason a
+      // signer-picked date could not be picked: the browser had no id to write
+      // back against and no way to tell a chosen date from a stamped one.
+      admin.from("signature_fields").select("id, page, x, y, w, h, kind, date_mode").eq("recipient_id", recipient.id as string),
     ]);
     const others = (co ?? []).filter((s) => s.id !== recipient.id);
     signing = {
@@ -160,7 +163,12 @@ export default async function ReadPage({
       awaiting: others.filter((s) => !s.signed_at && !s.declined_at).length,
       mySignedAt: (recipient.signed_at as string | null) ?? null,
       myDeclinedAt: (recipient.declined_at as string | null) ?? null,
-      fields: (myFields ?? []).map((x) => ({ page: Number(x.page), x: Number(x.x), y: Number(x.y), w: Number(x.w), h: Number(x.h), kind: String(x.kind) })),
+      fields: (myFields ?? []).map((x) => ({
+        id: String(x.id),
+        page: Number(x.page), x: Number(x.x), y: Number(x.y), w: Number(x.w), h: Number(x.h),
+        kind: String(x.kind),
+        dateMode: (x.date_mode as string | null) ?? null,
+      })),
       documentDeclined: (co ?? []).some((s) => s.declined_at),
       documentCompleted: !!recDocFull?.signing_completed_at,
     };

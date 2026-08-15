@@ -96,6 +96,23 @@ export async function GET(req: NextRequest) {
     .select("page, x, y, w, h, kind, date_mode, value, recipient_id")
     .eq("document_id", docId);
 
+  // Refuse rather than compose around a hole.
+  //
+  // The stamper skips a field with no value, so an unfilled text or
+  // signer-picked date would vanish from the finished PDF while the
+  // certificate went on attesting to it. That is a false completion on a
+  // legal artifact, and it is worth failing loudly for. /api/sign will not
+  // let a signature land with an empty field any more, so this only fires on
+  // documents signed before that existed, or if that path is ever broken.
+  const unfilled = (fields ?? []).filter(
+    (f) => (f.kind === "text" || (f.kind === "date" && f.date_mode === "chosen")) && !String(f.value ?? "").trim()
+  );
+  if (unfilled.length > 0) {
+    return NextResponse.json({
+      error: "This document cannot be produced: " + unfilled.length + (unfilled.length === 1 ? " field was" : " fields were") + " left empty when it was signed.",
+    }, { status: 409 });
+  }
+
   const nameOf = (r: Record<string, unknown>) =>
     String(r.label || [r.first_name, r.last_name].filter(Boolean).join(" ") || r.signed_email || r.email || "Signer");
 

@@ -16,6 +16,7 @@ export const runtime = "nodejs";
 const MAX_SIGNATURE_CHARS = 400_000; // ~300KB of PNG. A drawn signature is far under.
 const MIN_CONCERN = 10;
 const MAX_CONCERN = 2000;
+const MAX_FIELD_CHARS = 200;
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
@@ -128,6 +129,56 @@ export async function POST(req: NextRequest) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
   }
+
+  // ---- Placed fields, written BEFORE the signature -----------------------
+  //
+  // A signature landing while a text or signer-picked date field is still
+  // empty is the failure this exists to prevent. The composer skips an empty
+  // field silently, so the document would complete, issue a certificate, and
+  // be missing the very fields the sender placed, with no error on any
+  // surface. Values go in first and the signature only follows if every one of
+  // them was accepted.
+  //
+  // Scoped by recipient_id on both the read and the write, so a crafted id
+  // cannot reach another signer's field.
+  const { data: myFields } = await admin
+    .from("signature_fields")
+    .select("id, kind, date_mode")
+    .eq("recipient_id", rec.id as string);
+
+  const mustFill = (myFields ?? []).filter(
+    (f) => f.kind === "text" || (f.kind === "date" && f.date_mode === "chosen")
+  );
+
+  if (mustFill.length > 0) {
+    const incoming = Array.isArray(body.fields) ? body.fields : [];
+    const given = new Map<string, string>();
+    for (const f of incoming) {
+      if (!f || typeof f.id !== "string" || typeof f.value !== "string") continue;
+      given.set(f.id, f.value.trim().slice(0, MAX_FIELD_CHARS));
+    }
+
+    const missing = mustFill.filter((f) => !(given.get(f.id as string) ?? ""));
+    if (missing.length > 0) {
+      return NextResponse.json({
+        error: missing.length === 1
+          ? "One field on the document still needs filling in."
+          : missing.length + " fields on the document still need filling in.",
+      }, { status: 400 });
+    }
+
+    for (const f of mustFill) {
+      const { error: fieldErr } = await admin
+        .from("signature_fields")
+        .update({ value: given.get(f.id as string) ?? "" })
+        .eq("id", f.id as string)
+        .eq("recipient_id", rec.id as string);
+      if (fieldErr) {
+        return NextResponse.json({ error: "Could not save what you filled in." }, { status: 500 });
+      }
+    }
+  }
+  // ------------------------------------------------------------------------
 
   const now = new Date().toISOString();
   const { error } = await admin

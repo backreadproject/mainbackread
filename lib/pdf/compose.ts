@@ -106,7 +106,7 @@ export async function stampDocument(
 
     const text =
       f.kind === "date"
-        ? (f.date_mode === "chosen" && f.value ? f.value : longDate(signer.signed_at))
+        ? (f.date_mode === "chosen" && f.value ? longDate(f.value) : longDate(signer.signed_at))
         : (f.value || "");
     if (!text) continue;
 
