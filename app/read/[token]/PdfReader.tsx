@@ -225,12 +225,20 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         const textParts: string[] = [];
         for (let n = 1; n <= pdf.numPages; n++) {
           const page = await pdf.getPage(n);
-          // Sized for the column, not for the old one. The canvas is stretched
-          // to 100% of whatever width the grid gives it, so a raster narrower
-          // than the column is upscaled and the page reads soft. At 2.0 an A4
-          // rasterises near 1190px into a column around 940px, which stays
-          // downsampled and holds up on a retina screen.
-          const viewport = page.getViewport({ scale: 2.0 });
+          // Rasterise to the column at the screen's real pixel density.
+          //
+          // The canvas is stretched to 100% of the column, so a fixed scale is
+          // a bet on one window size and one display. It was 1.3, which was
+          // upscaled the moment the column grew; 2.0 was upscaled again on any
+          // machine running above 1.37x. Measuring instead means the bitmap is
+          // never smaller than what the screen asks for, on any of them.
+          const base = page.getViewport({ scale: 1 }).width;
+          const columnPx = (container.clientWidth || 900);
+          const dpr = Math.min(typeof window === "undefined" ? 1 : (window.devicePixelRatio || 1), 3);
+          // Floored at 1.3 so a narrow phone still renders enough to pinch into,
+          // capped at 4 so a very wide window cannot allocate an absurd canvas.
+          const shown = Math.max(1.3, Math.min((columnPx / base) * dpr, 4));
+          const viewport = page.getViewport({ scale: shown });
           const canvas = document.createElement("canvas");
           canvas.width = viewport.width; canvas.height = viewport.height;
           canvas.style.width = "100%"; canvas.style.height = "auto"; canvas.style.display = "block";
