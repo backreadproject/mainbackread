@@ -24,6 +24,7 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
   const [adding, setAdding] = useState(false);
   const [progress, setProgress] = useState<{ name: string; size: number; step: string } | null>(null);
   const [error, setError] = useState("");
+  const [failDocId, setFailDocId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Row | null>(null);
   const [busy, setBusy] = useState(false);
@@ -60,13 +61,15 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
       try { await supabase.storage.from("documents").remove([path]); } catch { /* best effort */ }
       setError(dp.couldntRecord + (dbErr?.message ?? "")); setUploading(false); setProgress(null); return;
     }
+    const failedSigners: string[] = [];
     try {
     if (signing.enabled && signing.signers.length) {
       setProgress({ name: file.name, size: file.size, step: dp.addingSigners });
       for (const s of signing.signers) {
         const parts = s.name.trim().split(/\s+/);
+        const who = s.name.trim() || s.email.trim();
         try {
-          await fetch("/api/share-prospect", {
+          const r = await fetch("/api/share-prospect", {
             method: "POST", headers: { "content-type": "application/json" },
             body: JSON.stringify({
               documentId: inserted.id,
@@ -77,7 +80,17 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
               isSigner: true,
             }),
           });
-        } catch { /* one signer failing must not lose the document */ }
+          // A refusal arrives as an ordinary response, not a throw, so the
+          // catch below never saw it. Skipping res.ok is how a declared
+          // signer went missing while the upload reported success and the
+          // route's own explanation reached nobody.
+          if (!r.ok) {
+            const j = (await r.json().catch(() => ({}))) as { error?: string };
+            failedSigners.push(who + ": " + (j.error || (fr ? "Refus\u00e9 (" + r.status + ")." : "Refused (" + r.status + ").")));
+          }
+        } catch {
+          failedSigners.push(who + ": " + (fr ? "La requ\u00eate n\u2019a pas abouti." : "The request did not reach the server."));
+        }
       }
     }
       setProgress({ name: file.name, size: file.size, step: dp.readingPages });
@@ -91,6 +104,16 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
       // A scanned PDF is now read server-side, inside extract-document, by
       // sending the whole file to the model. Nothing to do here.
     } catch { /* extraction is best-effort */ }
+    if (failedSigners.length) {
+      // The document exists and extraction ran. Only the named signers are
+      // missing, so reloading here would discard the one line that says so.
+      setFailDocId(inserted.id);
+      setError((fr ? "Document cr\u00e9\u00e9, mais ces signataires n\u2019ont pas \u00e9t\u00e9 ajout\u00e9s. " : "The document was created, but these signers were not added. ") + failedSigners.join("  "));
+      setUploading(false);
+      setProgress(null);
+      setAdding(false);
+      return;
+    }
     window.location.reload();
   }
   async function setArchived(id: string, archived: boolean) {
@@ -170,7 +193,16 @@ export default function DocumentsClient({ selfName, selfEmail, rows: initialRows
             )}
           </div>
         </div>
-        {error && <p style={{ color: T.dangerText, fontSize: 14, marginBottom: 16 }}>{error}</p>}
+        {error && (
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ color: T.dangerText, fontSize: 14, margin: 0, lineHeight: 1.55 }}>{error}</p>
+            {failDocId && (
+              <a href={"/documents/" + failDocId} style={{ display: "inline-block", marginTop: 6, fontSize: 13.5, color: T.greenText, textDecoration: "none", borderBottom: "1px solid " + T.greenBorder }}>
+                {fr ? "Ouvrir le document et ajouter les signataires" : "Open the document and add the signers"}
+              </a>
+            )}
+          </div>
+        )}
         {view === "active" && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", border: "1px solid " + T.border, borderRadius: T.rCard, overflow: "hidden", background: T.card }} className="stat-strip">
             {cells.map(([v, l, tone], i) => (

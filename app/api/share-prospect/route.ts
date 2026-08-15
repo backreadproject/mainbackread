@@ -13,13 +13,19 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   const { documentId, mode, firstName, lastName, email, note, variantId, isSigner, roles, roleOther, company } = await req.json();
   if (!documentId) return NextResponse.json({ error: "Missing document." }, { status: 400 });
-  if (!firstName?.trim() || !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
+  // A signer may go by one name. The prospect form asks for two fields and
+  // validates them in the browser; the signer path derives both by splitting
+  // a single field, so demanding a surname there rejects a real person for a
+  // parsing reason and does it silently.
+  if (!firstName?.trim()) return NextResponse.json({ error: "A first name is required." }, { status: 400 });
+  if (isSigner !== true && !lastName?.trim()) return NextResponse.json({ error: "First and last name are required." }, { status: 400 });
   if (mode === "email" && !email?.trim()) return NextResponse.json({ error: "Email is required to send." }, { status: 400 });
   const noteClean = typeof note === "string" ? note.trim().slice(0, 2000) : "";
   const { data: docRow } = await supabase.from("documents").select("title").eq("id", documentId).single();
   if (!docRow) return NextResponse.json({ error: "You don't have access to that document." }, { status: 403 });
   const docTitle = docRow.title ?? "a document";
-  const label = `${firstName.trim()} ${lastName.trim()}`;
+  const lastClean = typeof lastName === "string" ? lastName.trim() : "";
+  const label = [firstName.trim(), lastClean].filter(Boolean).join(" ");
   const cleanRoles = Array.isArray(roles)
     ? Array.from(new Set(roles.filter((r: unknown): r is string => typeof r === "string" && isRoleId(r)))).slice(0, 6)
     : [];
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
       variant_id: assignedVariant,
       label,
       first_name: firstName.trim(),
-      last_name: lastName.trim(),
+      last_name: lastClean || null,
         roles: cleanRoles,
         role_other: cleanRoleOther,
         company: cleanCompany,
