@@ -57,7 +57,14 @@ const S = StyleSheet.create({
 
   sealWrap: { alignItems: "center", marginTop: 26 },
   seal: { width: 176, height: 176 },
-  sealT: { position: "absolute", fontSize: 6.4, letterSpacing: 1.1, color: MUTED },
+  // Spanning the wrap and centring inside it, rather than letting the box
+  // shrink to fit. react-pdf measures a letter-spaced string narrower than it
+  // draws it, so a shrink-to-fit box overflows at both ends and clips the
+  // first and last character: 15 AUG 2026 printed as AUG 202, COMPLETE as
+  // OMPLET. The paddingLeft offsets the trailing space letterSpacing adds
+  // after the final glyph, which would otherwise pull the centre left.
+  sealT: { position: "absolute", left: 0, right: 0, textAlign: "center", paddingLeft: 1.1,
+           fontSize: 6.4, letterSpacing: 1.1, color: MUTED },
 
   qrWrap: { position: "absolute", right: 52, bottom: 118, alignItems: "center" },
   qr: { width: 72, height: 72 },
