@@ -5,6 +5,7 @@ import { getSalesSettings } from "@/lib/sales-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveWorkspace } from "@/lib/workspace";
 import { recipientIndex } from "@/lib/recipient-index";
+import { readerOrigin } from "@/lib/reader-origin";
 import type { OutcomeValue } from "./OutcomeCard";
 
 // The evidence sentence the outcome prompt asks with.
@@ -52,6 +53,17 @@ function describe(
   return fr ? `${name} ${list}, puis plus rien.` : `${name} ${list}, then went quiet.`;
 }
 
+// Readers created before first_name existed, or imported by CSV, carry a label
+// and nothing else. Seeding the edit form from that label stops a save wiping
+// the only name on the record.
+function splitLabel(label: string | null): { first: string | null; last: string | null } {
+  const t = (label ?? "").trim();
+  if (!t) return { first: null, last: null };
+  const i = t.indexOf(" ");
+  if (i < 0) return { first: t, last: null };
+  return { first: t.slice(0, i), last: t.slice(i + 1).trim() || null };
+}
+
 export default async function RecipientDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
@@ -60,7 +72,7 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
 
   const { data: recipient } = await supabase
     .from("recipients")
-    .select("id, label, share_token, document_id, created_at, email, outcome, outcome_at, outcome_snoozed_at, roles, role_other, company, delivery, documents ( title )")
+    .select("id, label, first_name, last_name, share_token, custom_slug, signed_at, document_id, created_at, email, outcome, outcome_at, outcome_snoozed_at, roles, role_other, company, delivery, documents ( title )")
     .eq("id", id)
     .single();
 
@@ -87,6 +99,8 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
 
   const name = recipient.label || "This reader";
 
+  const fallbackName = splitLabel(recipient.label ?? null);
+
   const workspace = await resolveWorkspace(createAdminClient(), user?.id ?? null);
   const indexGroups = await recipientIndex(supabase, { quietDays: sales.quietDays });
 
@@ -97,12 +111,18 @@ export default async function RecipientDetailPage({ params }: { params: Promise<
     identity={{
       id: recipient.id,
       label: recipient.label,
+      firstName: recipient.first_name ?? fallbackName.first,
+      lastName: recipient.last_name ?? fallbackName.last,
       email: recipient.email ?? null,
       company: recipient.company ?? null,
       roles: recipient.roles ?? [],
       roleOther: recipient.role_other ?? null,
       delivery: recipient.delivery ?? null,
       createdAt: recipient.created_at,
+      shareToken: recipient.share_token,
+      customSlug: recipient.custom_slug ?? null,
+      signedAt: recipient.signed_at ?? null,
+      readerOrigin: readerOrigin(""),
     }}
     signals={sig}
     outcome={{

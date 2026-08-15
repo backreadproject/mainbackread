@@ -5,6 +5,28 @@ import { getLocale } from "@/lib/locale-server";
 import { getDict } from "@/lib/i18n";
 import { sourceForRecipient } from "@/lib/variants";
 
+type Admin = ReturnType<typeof createAdminClient>;
+type Row = Record<string, unknown>;
+
+// One address, two ways of spelling it.
+//
+// share_token is the row's permanent identity and is tried FIRST, so a link
+// already sitting in someone's inbox can never be shadowed by an alias someone
+// else claims later. custom_slug is a sender-chosen alias resolved only on a
+// miss, which means the extra query fires on 404s and on aliases, never on the
+// normal path.
+//
+// The slug column rejects anything shaped like a token at the database level,
+// so the ordering here cannot make a real link unreachable.
+async function resolveRecipient(admin: Admin, token: string, select: string): Promise<Row | null> {
+  const byToken = await admin.from("recipients").select(select).eq("share_token", token).maybeSingle();
+  if (byToken.data) return byToken.data as unknown as Row;
+  const slug = token.trim().toLowerCase();
+  if (!slug) return null;
+  const bySlug = await admin.from("recipients").select(select).eq("custom_slug", slug).maybeSingle();
+  return (bySlug.data as unknown as Row) ?? null;
+}
+
 // Neutral, un-branded metadata for the reader surface. This runs on relaydocuments.com
 // and must never fall back to the marketing default title (which names ReadProspects). We show
 // the document's own name in the tab and mark the page no-index so nothing branded leaks.
@@ -17,11 +39,7 @@ export async function generateMetadata({
   try {
     const { token } = await params;
     const admin = createAdminClient();
-    const { data } = await admin
-      .from("recipients")
-      .select("documents ( title )")
-      .eq("share_token", token)
-      .single();
+    const data = await resolveRecipient(admin, token, "documents ( title )");
     const doc = data?.documents as unknown as { title?: string } | undefined;
     if (doc?.title && doc.title.trim()) name = doc.title.trim();
   } catch {
@@ -44,11 +62,11 @@ export default async function ReadPage({
   const locale = await getLocale();
   const r = getDict(locale).readerPage;
   const admin = createAdminClient();
-  const { data: recipient } = await admin
-    .from("recipients")
-    .select("id, label, first_name, email, document_id, expires_at, revoked_at, is_signer, signed_at, declined_at, documents ( owner_id, organization_id, title, signing_enabled, signing_completed_at )")
-    .eq("share_token", token)
-    .single();
+  const recipient = await resolveRecipient(
+    admin,
+    token,
+    "id, label, first_name, email, share_token, document_id, expires_at, revoked_at, is_signer, signed_at, declined_at, documents ( owner_id, organization_id, title, signing_enabled, signing_completed_at )"
+  );
   const doc = recipient ? await sourceForRecipient(admin, recipient.id as string) : null;
 
   const readerEmail = ((recipient?.email as string | null) ?? "").trim();
@@ -168,7 +186,11 @@ export default async function ReadPage({
     <PdfReader
       title={doc.title}
       fileUrl={signed?.signedUrl ?? ""}
-      token={token}
+      /* The REAL token, not the URL segment. Every reader route downstream
+         resolves this string with .eq("share_token", ...), so handing them the
+         alias would break asking, replying, signalling and signing for anyone
+         who arrived by the custom address. */
+      token={recipient.share_token as string}
       greeting={greeting}
       initialThread={initialThread}
       senderName={senderName}
