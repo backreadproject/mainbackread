@@ -148,6 +148,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   // sender placed and the inputs can be closed once the record is.
   const fieldBoxesRef = useRef<Record<string, HTMLDivElement>>({});
   const resizeRef = useRef<ResizeObserver | null>(null);
+  // Zoom widens the PAGE, which widens the canvas, which the painter reads and
+  // rasterises to. So zooming in renders more detail rather than magnifying a
+  // bitmap: the opposite of a CSS transform, and the reason the raster work had
+  // to come first.
+  const [zoom, setZoom] = useState(1);
+  const zoomRef = useRef(1);
+  const wrappersRef = useRef<HTMLDivElement[]>([]);
+  const repaintRef = useRef<(() => void) | null>(null);
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -184,6 +192,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   }
 
   useEffect(() => { threadEnd.current?.scrollIntoView({ behavior: "smooth" }); }, [thread, asking]);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+    for (const w of wrappersRef.current) w.style.width = zoom * 100 + "%";
+    // After the widths land, not before: the painter measures the canvas.
+    const t = setTimeout(() => repaintRef.current?.(), 60);
+    return () => clearTimeout(t);
+  }, [zoom]);
 
   useEffect(() => {
     if (!fileUrl || renderedRef.current) return;
@@ -266,6 +282,8 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           wrapper.appendChild(canvas);
           container.appendChild(wrapper);
           wrappers.push(wrapper);
+          wrappersRef.current.push(wrapper);
+          wrapper.style.width = zoomRef.current * 100 + "%";
           painted.push({ page, canvas });
           await paint(page, canvas);
           const tc = await page.getTextContent();
@@ -332,6 +350,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         });
         ro.observe(container);
         resizeRef.current = ro;
+        repaintRef.current = () => { for (const p of painted) void paint(p.page, p.canvas); };
       } catch (err) {
         setStatus(r.couldntOpen + (err instanceof Error ? err.message : String(err)));
       }
@@ -445,6 +464,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         .rpl-short{display:none}
         .rdr-chev{display:none}
         @media ${MOBILE}{
+          .rdr-zoom{display:none !important;}
           .rdr-grid{grid-template-columns:1fr !important;gap:0 !important;padding:10px !important;}
           .rdr-rail{display:none !important;}
           .rdr-title{display:none !important;}
@@ -467,7 +487,28 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={BRAND} strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill={BRAND} /></svg>
           </span>
           <span style={{ fontSize: 18, fontWeight: 600, letterSpacing: "-0.01em", color: INK }}>{greeting}</span>
-          <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, marginLeft: "auto", color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "38%" }}>{title}</h1>
+          <div className="rdr-zoom" style={{ display: "flex", alignItems: "center", gap: 2, marginLeft: "auto", border: `1px solid ${LINE}`, borderRadius: 6, padding: 2, background: "#fff" }}>
+            {([
+              ["\u2212", -1, locale === "fr" ? "R\u00e9duire" : "Smaller"],
+              ["+", 1, locale === "fr" ? "Agrandir" : "Larger"],
+            ] as [string, number, string][]).map(([glyph, dir, label], i) => (
+              <button key={i} onClick={() => setZoom((z) => {
+                const steps = [0.75, 1, 1.25, 1.5, 2];
+                const at = steps.findIndex((s) => Math.abs(s - z) < 0.01);
+                const next = steps[Math.min(steps.length - 1, Math.max(0, (at < 0 ? 1 : at) + dir))];
+                return next;
+              })} aria-label={label} title={label}
+                style={{ width: 26, height: 24, border: "none", background: "none", cursor: "pointer", fontSize: 14, lineHeight: 1, color: SLATE, fontFamily: AEON, borderRadius: 4 }}>
+                {glyph}
+              </button>
+            ))}
+            <button onClick={() => setZoom(1)} aria-label={locale === "fr" ? "Taille normale" : "Actual size"}
+              title={locale === "fr" ? "Taille normale" : "Actual size"}
+              style={{ minWidth: 42, height: 24, border: "none", background: "none", cursor: "pointer", fontSize: 11.5, color: zoom === 1 ? SLATE : INK, fontFamily: AEON, fontVariantNumeric: "tabular-nums" }}>
+              {Math.round(zoom * 100)}%
+            </button>
+          </div>
+          <h1 className="rdr-title" style={{ fontSize: 15, fontWeight: 500, margin: 0, color: SLATE, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "38%" }}>{title}</h1>
             <button onClick={() => { setReplyOpen(true); setReplyDone(false); setReplyErr(""); }} style={{ marginLeft: 12, flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 7, background: "#fff", color: GREEN, border: `1px solid ${GREEN}`, borderRadius: 6, padding: "8px 13px", fontSize: 13, fontWeight: 500, fontFamily: AEON, cursor: "pointer" }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17l-6-5 6-5" /><path d="M3 12h11a6 6 0 016 6v1" /></svg>
               <span className="rpl-full">{RP.btn}</span><span className="rpl-short">{RP.btnShort}</span>
@@ -490,7 +531,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           })}
         </div>
 
-        <main className="rdr-main">
+        <main className="rdr-main" style={{ overflowX: zoom > 1 ? "auto" : "visible" }}>
           {status && <p style={{ fontSize: 15, color: BODY, textAlign: "center", padding: 48 }}>{status}</p>}
           <div ref={containerRef} />
           {pageCount > 0 && <p style={{ fontSize: 13, color: SLATE, textAlign: "center", padding: "16px 0" }}>{pageCount} {pageCount > 1 ? r.pageMany : r.pageOne}</p>}
