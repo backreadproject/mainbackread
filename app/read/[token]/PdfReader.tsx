@@ -225,7 +225,12 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         const textParts: string[] = [];
         for (let n = 1; n <= pdf.numPages; n++) {
           const page = await pdf.getPage(n);
-          const viewport = page.getViewport({ scale: 1.3 });
+          // Sized for the column, not for the old one. The canvas is stretched
+          // to 100% of whatever width the grid gives it, so a raster narrower
+          // than the column is upscaled and the page reads soft. At 2.0 an A4
+          // rasterises near 1190px into a column around 940px, which stays
+          // downsampled and holds up on a retina screen.
+          const viewport = page.getViewport({ scale: 2.0 });
           const canvas = document.createElement("canvas");
           canvas.width = viewport.width; canvas.height = viewport.height;
           canvas.style.width = "100%"; canvas.style.height = "auto"; canvas.style.display = "block";
@@ -408,7 +413,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
       `}</style>
 
       <header style={{ background: CARD, borderBottom: `1px solid ${LINE}`, position: "sticky", top: 0, zIndex: 10 }}>
-        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ maxWidth: 1440, margin: "0 auto", padding: "14px 28px", display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ width: 26, height: 26, borderRadius: 4, background: GREEN_SOFT, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={BRAND} strokeWidth="2.2" /><circle cx="12" cy="12" r="3.5" fill={BRAND} /></svg>
           </span>
@@ -425,7 +430,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         </div>
       </header>
 
-      <div className="rdr-grid" style={{ maxWidth: 1180, margin: "0 auto", padding: 24, display: "grid", gridTemplateColumns: "14px minmax(0,1.5fr) minmax(0,1fr)", gap: 18, alignItems: "start" }}>
+      <div className="rdr-grid" style={{ maxWidth: 1440, margin: "0 auto", padding: 24, display: "grid", gridTemplateColumns: "14px minmax(0,1fr) 380px", gap: 18, alignItems: "start" }}>
 
         <div className="rdr-rail" style={{ position: "sticky", top: 92, height: "78vh", display: "flex", flexDirection: "column", gap: 6, paddingTop: 6, alignItems: "center" }}>
           {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => {
