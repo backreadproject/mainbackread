@@ -37,12 +37,16 @@ export function needsInput(f: PanelField) {
 }
 
 export default function SigningPanel({
-  token, state, fields = [], values = {}, onSigned, onDeclined,
+  token, state, fields = [], values = {}, onSigned, onDeclined, onSignature,
 }: {
   token: string;
   state: SignerState;
   fields?: PanelField[];
   values?: Record<string, string>;
+  /** Lifted so the page can show the signature inside the box the sender
+   *  placed. Without it a signer commits to a mark they have never seen in
+   *  position, and cannot tell whether it fits. */
+  onSignature?: (sig: Captured | null) => void;
   onSigned: () => void;
   onDeclined: () => void;
 }) {
@@ -54,6 +58,11 @@ export default function SigningPanel({
   const [reason, setReason] = useState("");
   const [concern, setConcern] = useState("");
   const [raised, setRaised] = useState(false);
+  // Kept apart from `err`. A refusal about empty fields must disappear the
+  // moment they are filled, and a message stored in `err` only clears on the
+  // next submit -- so a signer who did exactly what was asked still saw the
+  // refusal and had no reason to believe pressing Sign again would help.
+  const [fieldBlock, setFieldBlock] = useState(false);
 
   const others = state.alreadySigned.filter((s) => s.name);
 
@@ -78,13 +87,8 @@ export default function SigningPanel({
       setErr("Enter the email address you want on the record.");
       return;
     }
-    if (pending.length) {
-      setErr(pending.length === 1
-        ? "One field on the document still needs filling in. It is outlined on the page."
-        : pending.length + " fields on the document still need filling in. They are outlined on the page.");
-      return;
-    }
-    setBusy(true); setErr("");
+    if (pending.length) { setFieldBlock(true); return; }
+    setBusy(true); setErr(""); setFieldBlock(false);
     try {
       await post({
         action: "sign",
@@ -211,7 +215,7 @@ export default function SigningPanel({
         </p>
       )}
 
-      <SignaturePad name={state.name} value={sig} onChange={setSig}
+      <SignaturePad name={state.name} value={sig} onChange={(v) => { setSig(v); onSignature?.(v); }}
         labels={{
           type: "Type it", draw: "Draw it", upload: "Upload an image", clear: "Clear",
           drawHint: "Use your mouse or finger", uploadHint: "Choose a PNG or JPEG of your signature",
@@ -233,6 +237,14 @@ export default function SigningPanel({
       </p>
 
       {err && <p style={{ fontSize: 13, color: "#B42318", margin: "0 0 12px" }}>{err}</p>}
+
+      {fieldBlock && pending.length > 0 && (
+        <p style={{ fontSize: 13, color: "#B54708", margin: "0 0 12px", lineHeight: 1.55 }}>
+          {pending.length === 1
+            ? "One field on the document is still empty. It is outlined on the page above."
+            : pending.length + " fields on the document are still empty. They are outlined on the page above."}
+        </p>
+      )}
 
       {/* Three options, weighted. Sign is the action; the other two are quiet
           links, with the concern first because it is the lighter of the two and

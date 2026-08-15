@@ -144,6 +144,9 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
   // without capturing a stale copy of state.
   const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const fieldValuesRef = useRef<Record<string, string>>({});
+  // The boxes themselves, so the signature can be drawn into the one the
+  // sender placed and the inputs can be closed once the record is.
+  const fieldBoxesRef = useRef<Record<string, HTMLDivElement>>({});
   const threadEnd = useRef<HTMLDivElement>(null);
 
   const onMobile = () => typeof window !== "undefined" && window.matchMedia(MOBILE).matches;
@@ -267,6 +270,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
             } else {
               box.textContent = fld.kind === "signature" ? r.youSignHere : fld.kind === "date" ? r.dateHere : r.textHere;
             }
+            fieldBoxesRef.current[fld.id] = box;
             w.appendChild(box);
           }
         }
@@ -511,7 +515,45 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
                   state={{ name: signing.name, sentToEmail: signing.sentToEmail, alreadySigned: signing.alreadySigned, awaiting: signing.awaiting }}
                   fields={signing.fields.map((f) => ({ id: f.id, kind: f.kind, dateMode: f.dateMode }))}
                   values={fieldValues}
-                  onSigned={() => setSignedNow(true)}
+                  onSignature={(v) => {
+                    for (const f of signing.fields) {
+                      if (f.kind !== "signature") continue;
+                      const b = fieldBoxesRef.current[f.id];
+                      if (!b) continue;
+                      b.textContent = "";
+                      if (v && v.data) {
+                        const img = document.createElement("img");
+                        img.src = v.data;
+                        img.alt = "";
+                        img.style.cssText = "max-width:100%;max-height:100%;object-fit:contain;display:block";
+                        b.appendChild(img);
+                        b.style.background = "transparent";
+                      } else {
+                        b.textContent = r.youSignHere;
+                        b.style.background = GREEN_SOFT;
+                      }
+                    }
+                  }}
+                  onSigned={() => {
+                    // Close the boxes. The overlay is built once when the PDF
+                    // loads, so without this the inputs stay live and the
+                    // caption stays put on a record that is already final.
+                    for (const f of signing.fields) {
+                      const b = fieldBoxesRef.current[f.id];
+                      if (!b) continue;
+                      const input = b.querySelector("input");
+                      if (input) {
+                        const v = input.value;
+                        b.removeChild(input);
+                        b.textContent = v;
+                        b.style.color = INK;
+                        b.style.fontSize = "12px";
+                      }
+                      b.style.pointerEvents = "none";
+                      b.style.borderStyle = "solid";
+                    }
+                    setSignedNow(true);
+                  }}
                   onDeclined={() => setDeclinedNow(true)}
                 />
               )}
