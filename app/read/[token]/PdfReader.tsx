@@ -215,7 +215,7 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           cMapUrl: `${assets}/cmaps/`,
           cMapPacked: true,
           standardFontDataUrl: `${assets}/standard_fonts/`,
-          disableFontFace: true,
+          disableFontFace: false,
         }).promise;
         setPageCount(pdf.numPages); setStatus("");
         send("opened", null, { pages: pdf.numPages });
@@ -225,22 +225,17 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
         const textParts: string[] = [];
         for (let n = 1; n <= pdf.numPages; n++) {
           const page = await pdf.getPage(n);
-          // Rasterise to the column at the screen's real pixel density.
+
+          // Built and inserted FIRST, then measured, then rendered.
           //
-          // The canvas is stretched to 100% of the column, so a fixed scale is
-          // a bet on one window size and one display. It was 1.3, which was
-          // upscaled the moment the column grew; 2.0 was upscaled again on any
-          // machine running above 1.37x. Measuring instead means the bitmap is
-          // never smaller than what the screen asks for, on any of them.
-          const base = page.getViewport({ scale: 1 }).width;
-          const columnPx = (container.clientWidth || 900);
-          const dpr = Math.min(typeof window === "undefined" ? 1 : (window.devicePixelRatio || 1), 3);
-          // Floored at 1.3 so a narrow phone still renders enough to pinch into,
-          // capped at 4 so a very wide window cannot allocate an absurd canvas.
-          const shown = Math.max(1.3, Math.min((columnPx / base) * dpr, 4));
-          const viewport = page.getViewport({ scale: shown });
+          // Every earlier attempt sized the raster from container.clientWidth,
+          // which is the column including padding and border, while the canvas
+          // lays out narrower inside it. On a 774px canvas that produced an 887px
+          // bitmap: fifteen percent of pixels rendered, thrown away by the
+          // browser, and the fractional downsample softening the page in the
+          // process. Measuring the canvas itself gives an exact 1:1 with no
+          // resampling at all, at any window size and any pixel density.
           const canvas = document.createElement("canvas");
-          canvas.width = viewport.width; canvas.height = viewport.height;
           canvas.style.width = "100%"; canvas.style.height = "auto"; canvas.style.display = "block";
           const wrapper = document.createElement("div");
           wrapper.dataset.page = String(n);
@@ -248,6 +243,14 @@ export default function PdfReader({ title, fileUrl, token, greeting, initialThre
           wrapper.appendChild(canvas);
           container.appendChild(wrapper);
           wrappers.push(wrapper);
+
+          const base = page.getViewport({ scale: 1 }).width;
+          const shownPx = canvas.getBoundingClientRect().width || container.clientWidth || 900;
+          const dpr = Math.min(typeof window === "undefined" ? 1 : (window.devicePixelRatio || 1), 3);
+          const viewport = page.getViewport({ scale: Math.max(0.5, Math.min((shownPx / base) * dpr, 4)) });
+          canvas.width = Math.round(viewport.width);
+          canvas.height = Math.round(viewport.height);
+
           const ctx = canvas.getContext("2d");
           if (ctx) await page.render({ canvas, canvasContext: ctx, viewport }).promise;
           const tc = await page.getTextContent();
