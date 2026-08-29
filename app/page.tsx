@@ -317,7 +317,7 @@ const CSS = `
     .rp-cap{grid-template-columns:1fr}.rp-cap.rev .txt{order:0}
   }
   @media (max-width:560px){
-    .rp-wrap{padding:0 18px}
+    .rp-wrap{padding:0 14px}
     .rp-stage{padding:0 14px;margin-top:40px}
     .rp-hero{padding:36px 0 20px}.rp-h1{font-size:32px}.rp-hero .rp-lead{font-size:16px}
     .rp-h2{font-size:25px}.rp-sec{padding:60px 0}
@@ -325,7 +325,7 @@ const CSS = `
     .rp-m4{grid-template-columns:1fr 1fr}
     .rp-dash{padding:14px;gap:12px}
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
-    /* mobile cta sizing */.rp-btn{font-size:12.5px;padding:8px 12px}.rp-brand{font-size:15px;flex-shrink:0;white-space:nowrap}.rp-ring{flex-shrink:0}.rp-navr{gap:8px;flex-shrink:0}.rp-nav{gap:10px}.rp-navr a.sign{display:inline-block;font-size:12.5px;font-weight:600;color:#F2F7F4;padding:8px 12px;border:1px solid rgba(255,255,255,0.25);border-radius:8px;white-space:nowrap}
+    /* mobile nav sizing */.rp-nav{gap:8px;min-width:0}.rp-brand{font-size:15px;gap:7px;flex-shrink:0;white-space:nowrap}.rp-ring{width:16px;height:16px;border-width:2px;flex-shrink:0}.rp-ring::after{inset:4px}.rp-menu summary{width:30px;height:30px;flex-shrink:0}.rp-navr{gap:7px;flex-shrink:0}.rp-navr>div{padding:1px!important}.rp-navr>div>button{font-size:11px!important;padding:3px 6px!important}.rp-btn{font-size:12.5px;padding:8px 11px}.rp-navr a.sign{display:inline-block;font-size:12.5px;font-weight:600;color:#F2F7F4;padding:8px 11px;border:1px solid rgba(255,255,255,0.25);border-radius:8px;white-space:nowrap}
     .rp-full{display:none}.rp-short{display:inline}
     .rp-btn-fr{font-size:11.5px;padding:8px 11px}
     .rp-statb{padding:26px 20px}.rp-statb .claim{font-size:20px}
