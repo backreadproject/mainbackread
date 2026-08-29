@@ -325,7 +325,7 @@ const CSS = `
     .rp-m4{grid-template-columns:1fr 1fr}
     .rp-dash{padding:14px;gap:12px}
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
-    /* mobile cta sizing */.rp-btn{font-size:12.5px;padding:8px 12px}.rp-brand{min-width:0;flex-shrink:1;overflow:hidden;text-overflow:ellipsis}.rp-navr{gap:8px}
+    /* mobile cta sizing */.rp-btn{font-size:12.5px;padding:8px 12px}.rp-brand{font-size:15px;flex-shrink:0;white-space:nowrap}.rp-ring{flex-shrink:0}.rp-navr{gap:8px;flex-shrink:0}
     .rp-full{display:none}.rp-short{display:inline}
     .rp-btn-fr{font-size:11.5px;padding:8px 11px}
     .rp-statb{padding:26px 20px}.rp-statb .claim{font-size:20px}
