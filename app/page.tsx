@@ -187,7 +187,7 @@ const CSS = `
   .rp-card{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.09);border-radius:16px}
   .rp-glow{display:none}
   .rp-heroglow{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0}
-  .rp-btn{background:#D8E84A;color:#082019;font-weight:600;font-size:14px;padding:9px 18px;border-radius:8px;display:inline-block;transition:background .15s}
+  .rp-btn{background:#D8E84A;color:#082019;font-weight:600;font-size:14px;padding:9px 18px;border-radius:8px;display:inline-block;white-space:nowrap;transition:background .15s}
   .rp-btn:hover{background:#CDDD3F}
   .rp-full{display:inline}.rp-short{display:none}
   .rp-btnlg{background:#1FA971;color:#04120C;font-weight:700;font-size:15px;padding:14px 26px;border-radius:12px;display:inline-block;box-shadow:0 8px 20px -8px rgba(0,0,0,0.5)}
@@ -325,6 +325,7 @@ const CSS = `
     .rp-m4{grid-template-columns:1fr 1fr}
     .rp-dash{padding:14px;gap:12px}
     .rp-navr{gap:10px}.rp-navr a.sign{display:none}.rp-brand{font-size:17px}
+    /* mobile cta sizing */.rp-btn{font-size:12.5px;padding:8px 12px}.rp-brand{min-width:0;flex-shrink:1;overflow:hidden;text-overflow:ellipsis}.rp-navr{gap:8px}
     .rp-full{display:none}.rp-short{display:inline}
     .rp-btn-fr{font-size:11.5px;padding:8px 11px}
     .rp-statb{padding:26px 20px}.rp-statb .claim{font-size:20px}
